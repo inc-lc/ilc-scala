@@ -6,8 +6,6 @@ object ILC {
 
 sealed abstract class Exp
 
-val magic = 1997
-
 // Well-typed programs should not go Wrong.
 case object Wrong extends Exp
 
@@ -29,17 +27,14 @@ case class Add(e1: Exp, e2: Exp) extends Exp { override def toString = e1.toStri
 case class Pair(e1: Exp, e2: Exp) extends Exp { override def toString = "("+e1.toString+","+e2.toString+")" }
 case class Proj1(e: Exp) extends Exp { override def toString = e.toString + "._1" }
 case class Proj2(e: Exp) extends Exp { override def toString = e.toString + "._2" }
-case object True
-case object False
-case class Left(e: Exp) extends Exp {
-  override def toString = if (e == Num(magic)) "True" else "Left("+e.toString+")"  // hack for representation of booleans
-}
-case class Right(e: Exp) extends Exp {
-  override def toString = if (e == Num(magic)) "False" else "Right("+e.toString+")"  // hack for representation of booleans
-}
+case class Left(e: Exp) extends Exp
+case class Right(e: Exp) extends Exp
 case class Case(e: Exp, x: Symbol, left: Exp, right: Exp) extends Exp {
   override def toString = "case " +e.toString+ " of Left("+x.name+") => "+left.toString + "; Right("+x.name+") => "+right.toString
 }
+case object True extends Exp
+case object False extends Exp
+case class If(cond: Exp, thenBranch: Exp, elseBranch: Exp) extends Exp
 implicit def num2exp(n: Int) = Num(n)
 implicit def id2exp(s: Symbol) = Var(s)
 
@@ -55,7 +50,10 @@ case class ExpVisitor[B] (
   tProj2: B => B,
   tLeft : B => B,
   tRight: B => B,
-  tCase : (B, Symbol, B, B) => B
+  tCase : (B, Symbol, B, B) => B,
+  tTrue : B,
+  tFalse: B,
+  tIf   : (B, B, B) => B
 )
 
 // foldExp : forall B. ExpVisitor[B] -> Exp -> B
@@ -74,6 +72,9 @@ object foldExp {
       case Left(e0)                   => v.tLeft(this(e0))
       case Right(e0)                  => v.tRight(this(e0))
       case Case(cond, x, left, right) => v.tCase(this(cond), x, this(left), this(right))
+      case True                       => v.tTrue
+      case False                      => v.tFalse
+      case If(cond, thenBr, elseBr)   => v.tIf(this(cond), this(thenBr), this(elseBr))
       case Wrong                      => sys error "visiting Wrong"
     }
   }
@@ -96,8 +97,8 @@ def freshName : Symbol = {
 }
 
 // some syntactic sugar
-val etrue = Left(magic)
-val efalse = Right(magic)
+val etrue = True
+val efalse = False
 def ifthenelse(c: Exp, t: Exp, e: Exp) = Case(c, freshName, t, e)
 def and(e1: Exp, e2: Exp) = Case(e1, freshName, e2, efalse)
 def or(e1: Exp, e2: Exp) = Case(e1, freshName, etrue, e2)
@@ -115,7 +116,10 @@ def freevars(e: Exp): Set[Symbol] = foldExp(ExpVisitor[Set[Symbol]](
   identity,
   identity,
   identity,
-  (fvCond, x, fvLeft, fvRight) => fvCond ++ ((fvLeft ++ fvRight) - x)
+  (fvCond, x, fvLeft, fvRight) => fvCond ++ ((fvLeft ++ fvRight) - x),
+  Set(),
+  Set(),
+  _ ++ _ ++ _
 ))(e)
 
 def eIsOpen(e: Exp): Exp = if(freevars(e).size == 0) efalse else etrue

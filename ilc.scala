@@ -3,6 +3,9 @@ import language.implicitConversions
 // Put everything into an object, since Scala does not have top-level definition
 // (except at the REPL).
 object ILC {
+
+  // SYNTAX
+
   sealed abstract class Exp
 
   // Well-typed programs should not go Wrong.
@@ -65,6 +68,8 @@ object ILC {
 
   implicit def id2exp(s: Symbol) = Var(s)
 
+  // FOLDING
+
   case class ExpVisitor[B] (
     tVar   : Symbol => B,
     tApp   : (B, B) => B,
@@ -107,12 +112,16 @@ object ILC {
     }
   }
 
+  // VALUES
+
   sealed abstract class Value
   case class NumV(n: Int) extends Value
   case class ClosureV(f: Lam, e: Map[Symbol,Value]) extends Value
   case class PairV(x: Value, y: Value) extends Value
   case class LeftV(x: Value) extends Value
   case class RightV(x: Value) extends Value
+
+  // NAME MANIPULATION
 
   def xtodx(x: Symbol) : Symbol = Symbol("d"+x.name)
 
@@ -122,13 +131,16 @@ object ILC {
     Symbol("x"+varcount.toString)
   }
 
-  // some syntactic sugar
+  // SYNTACTIC SUGAR
+
   val etrue = True
   val efalse = False
   def ifthenelse(c: Exp, t: Exp, e: Exp) = Case(c, freshName, t, e)
   def and(e1: Exp, e2: Exp) = Case(e1, freshName, e2, efalse)
   def or(e1: Exp, e2: Exp) = Case(e1, freshName, etrue, e2)
   def let(x: Symbol, e1: Exp, e2: Exp) = App(Lam(x, e2), e1)
+
+  // FREE VARIABLES
 
   def freevars(e: Exp): Set[Symbol] = foldExp(ExpVisitor[Set[Symbol]](
     Set(_),
@@ -153,6 +165,9 @@ object ILC {
       efalse
     else
       etrue
+
+  // LIFTING OPERATIONS
+  // (to account for boolean isNil tags)
 
   // this code is so schematic that it could mostly be generated
   // e.g. as a datatype-generic algorithm
@@ -191,6 +206,8 @@ object ILC {
           Pair(f(Proj1(x), Proj1(y), Proj1(z)),
                or(or(Proj2(x), Proj2(y)), Proj2(z))))))
   }
+
+  // SYMBOLIC DERIVATION
 
   /*
   derive :: Exp T -> Exp delta(T)
@@ -315,6 +332,8 @@ object ILC {
       // Example motivates additionally the examination of the derivation of injections.
   }
 
+  // EVALUATION
+
   /*
    * ignore eval for now
    *
@@ -362,6 +381,8 @@ object ILC {
     }
   }
   */
+
+  // EXAMPLES
 
   val f = Lam('x, Pair(Add(Proj2('x), 1), Add(Proj1('x), -1)))
 }

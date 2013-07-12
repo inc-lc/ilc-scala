@@ -1,3 +1,7 @@
+// Put everything into an object, since Scala does not have top-level definition
+// (except at the REPL).
+object ILC {
+
 sealed abstract class Exp
 
 val magic = 1997
@@ -293,3 +297,4 @@ def eval(e: Exp, env: Map[Symbol, Value]) : Value = e match {
 
 
 val f = Lam('x, Pair(Add(Proj2('x),1), Add(Proj1('x),-1)))
+}

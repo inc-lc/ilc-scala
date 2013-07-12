@@ -29,6 +29,8 @@ case class Add(e1: Exp, e2: Exp) extends Exp { override def toString = e1.toStri
 case class Pair(e1: Exp, e2: Exp) extends Exp { override def toString = "("+e1.toString+","+e2.toString+")" }
 case class Proj1(e: Exp) extends Exp { override def toString = e.toString + "._1" }
 case class Proj2(e: Exp) extends Exp { override def toString = e.toString + "._2" }
+case object True
+case object False
 case class Left(e: Exp) extends Exp {
   override def toString = if (e == Num(magic)) "True" else "Left("+e.toString+")"  // hack for representation of booleans
 }

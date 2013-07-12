@@ -68,6 +68,16 @@ object ILC {
 
   implicit def id2exp(s: Symbol) = Var(s)
 
+  // NAME MANIPULATION
+
+  def xtodx(x: Symbol) : Symbol = Symbol("d" + x.name)
+
+  var varcount = 0
+  def freshName : Symbol = {
+    varcount += 1
+    Symbol("x" + varcount.toString)
+  }
+
   // FOLDING
 
   case class ExpVisitor[B] (
@@ -120,16 +130,6 @@ object ILC {
   case class PairV(x: Value, y: Value) extends Value
   case class LeftV(x: Value) extends Value
   case class RightV(x: Value) extends Value
-
-  // NAME MANIPULATION
-
-  def xtodx(x: Symbol) : Symbol = Symbol("d"+x.name)
-
-  var varcount = 0
-  def freshName : Symbol = {
-    varcount += 1
-    Symbol("x"+varcount.toString)
-  }
 
   // SYNTACTIC SUGAR
 

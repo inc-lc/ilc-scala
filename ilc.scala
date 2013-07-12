@@ -1,3 +1,5 @@
+import language.implicitConversions
+
 // Put everything into an object, since Scala does not have top-level definition
 // (except at the REPL).
 object ILC {

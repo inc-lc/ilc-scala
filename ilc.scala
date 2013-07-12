@@ -122,15 +122,6 @@ object ILC {
     }
   }
 
-  // VALUES
-
-  sealed abstract class Value
-  case class NumV(n: Int) extends Value
-  case class ClosureV(f: Lam, e: Map[Symbol,Value]) extends Value
-  case class PairV(x: Value, y: Value) extends Value
-  case class LeftV(x: Value) extends Value
-  case class RightV(x: Value) extends Value
-
   // SYNTACTIC SUGAR
 
   val etrue = True
@@ -331,6 +322,15 @@ object ILC {
       //
       // Example motivates additionally the examination of the derivation of injections.
   }
+
+  // VALUES
+
+  sealed abstract class Value
+  case class NumV(n: Int) extends Value
+  case class ClosureV(f: Lam, e: Map[Symbol, Value]) extends Value
+  case class PairV(x: Value, y: Value) extends Value
+  case class LeftV(x: Value) extends Value
+  case class RightV(x: Value) extends Value
 
   // EVALUATION
 

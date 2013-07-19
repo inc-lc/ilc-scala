@@ -6,7 +6,7 @@ object ILC {
 
   // SYNTAX
 
-  sealed abstract class Exp
+  abstract class Exp
 
   // Well-typed programs should not go Wrong.
   case object Wrong extends Exp

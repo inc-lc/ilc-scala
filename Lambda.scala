@@ -45,8 +45,8 @@ object Lambda {
   trait Visitor[C, T] {
     def Const(c: C): T
     def Var(i: Int): T
-    def App(s: T, t: T): T
-    def Abs(x: String, t: T): T
+    def App(me: App[C], s: T, t: T): T
+    def Abs(me: Abs[C], x: String, t: T): T
 
     // variable name resolution
 
@@ -55,7 +55,7 @@ object Lambda {
     // bind/unbind should be private to Term[C], but
     // Term[C] is not an enclosing class. What to do?
     def bind(x: String) { pushName(x) }
-    def unbind(t: T): T = { Abs(popName(), t) }
+    def unbind(me: Abs[C], t: T): T = { Abs(me, popName(), t) }
 
     // stack of names: private to Visitor
 
@@ -74,32 +74,13 @@ object Lambda {
 
   sealed abstract trait Term[C] {
     def accept[T](v: Visitor[C, T]): T = this match {
-      case Const(c)  => v.Const(c)
-      case Var(i)    => v.Var(i)
-      case App(s, t) => v.App(s.accept(v), t.accept(v))
-      case Abs(x, t) => { v.bind(x) ; v.unbind(t.accept(v)) }
+      case Const(c)    => v.Const(c)
+      case Var(i)      => v.Var(i)
+      case me@App(s, t) => v.App(me, s.accept(v), t.accept(v))
+      case me@Abs(x, t) => { v.bind(x) ; v.unbind(me, t.accept(v)) }
     }
 
-    override def toString = {
-      accept(new Pretty(accept(logger)))
-    }
-  }
-
-  // LOGGING TRAVERSAL SEQUENCE
-
-  def logger[C] = new Visitor[C, List[Term[C]]] {
-    type Log = List[Term[C]]
-
-    def Const(c: C)            = push(new Const(c))
-    def Var(i: Int)            = push(new Var(i))
-    def App(s: Log, t: Log)    = push(new App(s.head, t.head))
-    def Abs(x: String, t: Log) = push(new Abs(x, t.head))
-
-    var log: Log = Nil
-    def push(t: Term[C]): Log = {
-      log = t :: log
-      log
-    }
+    override def toString = accept(new Pretty)
   }
 
   // PRETTY PRINTING
@@ -114,38 +95,27 @@ object Lambda {
   // scala> val z = Abs("x", Abs("x", Abs("x", Abs("x", Var(2)))))
   // z: Lambda.Abs[Nothing] = λx. λx₁. λx₂. λx₃. x₁
 
-  class Pretty[C](log: List[Term[C]]) extends Visitor[C, String] {
+  class Pretty[C] extends Visitor[C, String] {
 
-    def Const(c: C) = {
-      proceed()
-      c.toString
-    }
+    def Const(c: C) = c.toString
 
-    def Var(i: Int) = {
-      proceed()
-      resolveName(i)
-    }
+    def Var(i: Int) = resolveName(i)
 
-    def App(s: String, t: String) = {
-      proceed()
-      parenthesizeWisely(s, LeftChild) ++ " " ++
-        parenthesizeWisely(t, RightChild)
-    }
+    def App(me: App[C], s: String, t: String) =
+      parenthesizeWisely(me, s, LeftChild) ++ " " ++
+        parenthesizeWisely(me, t, RightChild)
 
-    def Abs(x: String, t: String) = {
-      proceed()
-      "λ" ++ x ++ ". " ++ parenthesizeWisely(t)
-    }
+    def Abs(me: Abs[C], x: String, t: String) =
+      "λ" ++ x ++ ". " ++ parenthesizeWisely(me, t)
 
     // variable disambiguation
 
-    val subscripts = "₀₁₂₃₄₅₆₇₈₉"
+    val subscript = "₀₁₂₃₄₅₆₇₈₉".toCharArray
 
     def toSubscript(s: String): String = {
-      val arr: Array[Char] = s.toCharArray.map({ char =>
-        if (char.isDigit) ('₀' + (char - '0')).toChar else char
-      })
-      arr.mkString
+      s.map({ (char: Char) =>
+        if (char.isDigit) subscript(char - '0') else char
+      }).mkString
     }
 
     override def pushName(x: String) {
@@ -163,17 +133,12 @@ object Lambda {
     // - variables are not parenthesized
     // - all other subterms are parenthesized
 
-    var upcoming = new Var[C](0) :: log.reverse
-    def proceed() { upcoming = upcoming.tail }
-
     sealed trait Laterality
     case object LeftChild extends Laterality
     case object RightChild extends Laterality
 
-    def myself = upcoming.head      
-
-    def shouldParenthesize(child: Laterality): Boolean = {
-      myself match {
+    def shouldParenthesize(me: Term[C], child: Laterality): Boolean = {
+      me match {
         case Abs(x, t) => false
         case App(s, t) => shouldParenthesizeApp(child, s, t)
         case _ =>
@@ -192,9 +157,10 @@ object Lambda {
       }
     }
 
-    def parenthesizeWisely(subterm: String,
+    def parenthesizeWisely(me: Term[C],
+                           subterm: String,
                            child: Laterality = RightChild): String = {
-      if (shouldParenthesize(child))
+      if (shouldParenthesize(me, child))
         "(" ++ subterm ++ ")"
       else
         subterm

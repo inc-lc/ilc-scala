@@ -14,7 +14,7 @@ object Atlas extends Syntax.Lambda {
   case object False extends Constant
 
   def deriveConst(c: Constant): Term = c match {
-  case True  => Const(False)
-  case False => Const(False)
+    case True  => Const(False)
+    case False => Const(False)
   }
 }

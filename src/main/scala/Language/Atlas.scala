@@ -7,8 +7,7 @@
 
 package Language
 
-object Atlas extends Calculus {
-  import Syntax._
+object Atlas extends Syntax.Lambda {
 
   sealed trait Constant
   case object True  extends Constant

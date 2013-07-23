@@ -5,13 +5,18 @@ package Syntax
  * extensible by constants and primitives
  */
 
+import language.implicitConversions
+
 trait Lambda {
+
+  // SUBCLASS OBLIGATIONS
+
+  type Constant
+  def deriveConst(c: Constant): Term
 
   // SYNTAX
 
   // Terms are parametric in the set `Constant` of constants.
-
-  type Constant
 
   sealed abstract trait Term {
     override def toString = (new Pretty)(this)
@@ -25,6 +30,10 @@ trait Lambda {
 
   case class Const(c: Constant) extends Term
 
+  // implicit conversion to stop writing `Const`
+  implicit def liftConstant(c: Constant): Term = Const(c)
+
+
   // DERIVATION
 
   // String transformation
@@ -33,14 +42,11 @@ trait Lambda {
   // Derivation follows Agda module
   // Syntax.Derive.Canon-Popl14
 
-  def mkDerive(deriveConst: Constant => Term): Term => Term = {
-    def derive(t: Term): Term = t match {
-      case Const(c)  => deriveConst(c)
-      case Var(i)    => Var(2 * i)
-      case Abs(x, t) => Abs(x, Abs(delta(x), derive(t)))
-      case App(s, t) => App(App(derive(s), t), derive(t))
-    }
-    derive
+  def derive(t: Term): Term = t match {
+    case Const(c)  => deriveConst(c)
+    case Var(i)    => Var(2 * i)
+    case Abs(x, t) => Abs(x, Abs(delta(x), derive(t)))
+    case App(s, t) => App(App(derive(s), t), derive(t))
   }
 
   // VISITOR/FOLDING

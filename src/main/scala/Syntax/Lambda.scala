@@ -36,9 +36,7 @@ object Lambda {
   // The first argument of abstraction serves as documentation
   // alone. Variables are de-Bruijn indices.
 
-  case class Const(c: Constant) extends Term {
-    override def toString = c.toString
-  }
+  case class Const(c: Constant) extends Term
 
   // DERIVATION
 

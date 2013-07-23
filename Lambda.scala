@@ -11,6 +11,10 @@ object Lambda {
 
   // Terms are parametric in the set C of constants.
 
+  sealed abstract trait Term[C] {
+    override def toString = (new Pretty)(this)
+  }
+
   case class Var[C](i: Int) extends Term[C]
   case class App[C](s: Term[C], t: Term[C]) extends Term[C]
   case class Abs[C](x: String, t: Term[C]) extends Term[C]
@@ -77,10 +81,6 @@ object Lambda {
       nameStack = nameStack.tail
       topName
     }
-  }
-
-  sealed abstract trait Term[C] {
-    override def toString = (new Pretty)(this)
   }
 
   // PRETTY PRINTING

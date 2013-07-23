@@ -43,6 +43,7 @@ object Lambda {
   // VISITOR/FOLDING
 
   trait Visitor[C, T] {
+
     def Const(c: C): T
     def Var(i: Int): T
     def App(me: App[C], s: T, t: T): T
@@ -50,7 +51,18 @@ object Lambda {
 
     // variable name resolution
 
-    def resolveName(i: Int) = nameStack(i)
+    def resolveName(i: Int) =
+      if (i < nameStack.length)
+        nameStack(i)
+      else {
+        // come up with a default name for free variables:
+        // 1. convert de-Bruijn index to negated de-Bruijn level
+        // 2. de-Bruijn level can be used to disambiguate names,
+        //    because all occurrences of a variable have the
+        //    same level.
+        val negLevel = i - nameStack.length
+        "FV#" ++ negLevel.toString
+      }
 
     // bind/unbind should be private to Term[C], but
     // Term[C] is not an enclosing class. What to do?

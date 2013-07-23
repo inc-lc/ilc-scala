@@ -11,6 +11,10 @@ object Lambda {
 
   // Terms are parametric in the set C of constants.
 
+  sealed abstract trait Term[C] {
+    override def toString = (new Pretty)(this)
+  }
+
   case class Var[C](i: Int) extends Term[C]
   case class App[C](s: Term[C], t: Term[C]) extends Term[C]
   case class Abs[C](x: String, t: Term[C]) extends Term[C]
@@ -49,6 +53,15 @@ object Lambda {
     def App(me: App[C], s: T, t: T): T
     def Abs(me: Abs[C], x: String, t: T): T
 
+    // folding
+
+    def apply(t: Term[C]): T = t match {
+      case Const(c)     => Const(c)
+      case Var(i)       => Var(i)
+      case me@App(s, t) => App(me, this(s), this(t))
+      case me@Abs(x, t) => { bind(x) ; unbind(me, this(t)) }
+    }
+
     // variable name resolution
 
     def resolveName(i: Int) =
@@ -64,12 +77,10 @@ object Lambda {
         "FV#" ++ negLevel.toString
       }
 
-    // bind/unbind should be private to Term[C], but
-    // Term[C] is not an enclosing class. What to do?
-    def bind(x: String) { pushName(x) }
-    def unbind(me: Abs[C], t: T): T = { Abs(me, popName(), t) }
-
     // stack of names: private to Visitor
+
+    protected[this] def bind(x: String) { pushName(x) }
+    protected[this] def unbind(me: Abs[C], t: T): T = { Abs(me, popName(), t) }
 
     protected[this] var nameStack = List.empty[String]
 
@@ -82,17 +93,6 @@ object Lambda {
       nameStack = nameStack.tail
       topName
     }
-  }
-
-  sealed abstract trait Term[C] {
-    def accept[T](v: Visitor[C, T]): T = this match {
-      case Const(c)    => v.Const(c)
-      case Var(i)      => v.Var(i)
-      case me@App(s, t) => v.App(me, s.accept(v), t.accept(v))
-      case me@Abs(x, t) => { v.bind(x) ; v.unbind(me, t.accept(v)) }
-    }
-
-    override def toString = accept(new Pretty)
   }
 
   // PRETTY PRINTING

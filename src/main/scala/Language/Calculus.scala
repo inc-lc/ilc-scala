@@ -21,7 +21,7 @@ trait Calculus {
 
   // specialize the abstract syntax of lambda terms and their
   // visitorsto the current calculus
-  val Syntax = Lambda.instantiate[Constant]
+  object Syntax extends Lambda[Constant]
   import Syntax._
   // Cai 23.07.13 [
   //

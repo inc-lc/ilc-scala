@@ -1,26 +1,11 @@
 package Syntax
 
-import language.implicitConversions
-
 /**
  * Untyped lambda calculi with abstraction and application
  * extensible by constants and primitives
  */
 
-object Lambda {
-
- // To use Lambda to instantiate a new calculus with user-defined
- // constants C, write:
- //
- //     val AbstractSyntax = Lambda.instantiate[C]
- //     import AbstractSyntax._
-
- def instantiate[C] = new AbstractSyntax[C]
-
- // An enclosing class to take the parameter `Constant`
- // so that it needn't be passed everywhere.
-
- class AbstractSyntax[Constant] {
+trait Lambda[Constant] {
 
   // SYNTAX
 
@@ -198,6 +183,4 @@ object Lambda {
     }
   }
 
- }// END OF private class AbstractSyntax
-
-} // END OF object Lambda
+}

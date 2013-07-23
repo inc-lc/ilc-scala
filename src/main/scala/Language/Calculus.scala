@@ -7,6 +7,7 @@
 
 package Language
 
+import language.implicitConversions
 import Syntax.Lambda
 
 trait Calculus {
@@ -42,5 +43,9 @@ trait Calculus {
   //   Method 1 seems the lesser evil. Is there another way?
   // ]
 
+  // convenient incremental transformation
   val derive: Term => Term = mkDerive(deriveConst)
+
+  // implicit conversion to stop writing `Const`
+  implicit def liftConstant(c: Constant): Term = Const(c)
 }

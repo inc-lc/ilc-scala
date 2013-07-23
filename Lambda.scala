@@ -61,12 +61,10 @@ object Lambda {
 
     def resolveName(i: Int) = nameStack(i)
 
-    // bind/unbind should be private to Term[C], but
-    // Term[C] is not an enclosing class. What to do?
-    def bind(x: String) { pushName(x) }
-    def unbind(me: Abs[C], t: T): T = { Abs(me, popName(), t) }
-
     // stack of names: private to Visitor
+
+    protected[this] def bind(x: String) { pushName(x) }
+    protected[this] def unbind(me: Abs[C], t: T): T = { Abs(me, popName(), t) }
 
     protected[this] var nameStack = List.empty[String]
 

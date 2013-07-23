@@ -5,11 +5,13 @@ package Syntax
  * extensible by constants and primitives
  */
 
-trait Lambda[Constant] {
+trait Lambda {
 
   // SYNTAX
 
-  // Terms are parametric in the set C of constants.
+  // Terms are parametric in the set `Constant` of constants.
+
+  type Constant
 
   sealed abstract trait Term {
     override def toString = (new Pretty)(this)
@@ -94,8 +96,8 @@ trait Lambda[Constant] {
 
   // PRETTY PRINTING
 
-  // scala> import Language.Atlas.Syntax._
-  // import Language.Atlas.Syntax._
+  // scala> import Language.Atlas._
+  // import Language.Atlas._
   //
   // scala> val id = Abs("x", Var(0))
   // id: Language.Atlas.Syntax.Abs = λx. x

@@ -21,13 +21,11 @@ trait Calculus {
   // specialize the abstract syntax of lambda terms and their
   // visitorsto the current calculus
   val Syntax = Lambda.instantiate[Constant]
-
-  // import Syntax._
-  //
+  import Syntax._
   // Cai 23.07.13 [
   //
-  //   We want all names in Syntax to be available to
-  //   subclasses. This import statement is useless, because
+  //   We want all names in Syntax to be available to subclasses.
+  //   The import above is useless in this regard, because
   //   subclasses do not inherit imported names. I see 2 methods
   //   to deal with the situation.
   //
@@ -44,4 +42,5 @@ trait Calculus {
   //   Method 1 seems the lesser evil. Is there another way?
   // ]
 
+  val derive: Term => Term = mkDerive(deriveConst)
 }

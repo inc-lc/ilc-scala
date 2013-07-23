@@ -48,15 +48,14 @@ object Lambda {
   // Derivation follows Agda module
   // Syntax.Derive.Canon-Popl14
 
-  def mkDerive(deriveConst: Constant => Term,
-                  t: Term): Term = {
-    def derive(t: Term) = mkDerive(deriveConst, t)
-    t match {
+  def mkDerive(deriveConst: Constant => Term): Term => Term = {
+    def derive(t: Term): Term = t match {
       case Const(c)  => deriveConst(c)
       case Var(i)    => Var(2 * i)
       case Abs(x, t) => Abs(x, Abs(delta(x), derive(t)))
       case App(s, t) => App(App(derive(s), t), derive(t))
     }
+    derive
   }
 
   // VISITOR/FOLDING

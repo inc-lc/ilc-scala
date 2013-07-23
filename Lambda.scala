@@ -7,21 +7,34 @@ import language.implicitConversions
 
 object Lambda {
 
+ // To use Lambda to instantiate a new calculus with user-defined
+ // constants C, write:
+ //
+ //     val AbstractSyntax = Lambda.instantiate[C]
+ //     import AbstractSyntax._
+
+ def instantiate[C] = new AbstractSyntax[C]
+
+ // An enclosing class to take the parameter `Constant`
+ // so that it needn't be passed everywhere.
+
+ class AbstractSyntax[Constant] {
+
   // SYNTAX
 
   // Terms are parametric in the set C of constants.
 
-  sealed abstract trait Term[C] {
+  sealed abstract trait Term {
     override def toString = (new Pretty)(this)
   }
 
-  case class Var[C](i: Int) extends Term[C]
-  case class App[C](s: Term[C], t: Term[C]) extends Term[C]
-  case class Abs[C](x: String, t: Term[C]) extends Term[C]
+  case class Var(i: Int) extends Term
+  case class App(s: Term, t: Term) extends Term
+  case class Abs(x: String, t: Term) extends Term
   // The first argument of abstraction serves as documentation
   // alone. Variables are de-Bruijn indices.
 
-  case class Const[C](c: C) extends Term[C] {
+  case class Const(c: Constant) extends Term {
     override def toString = c.toString
   }
 
@@ -33,9 +46,9 @@ object Lambda {
   // Derivation follows Agda module
   // Syntax.Derive.Canon-Popl14
 
-  def mkDerive[C](deriveConst: C => Term[C],
-                  t: Term[C]): Term[C] = {
-    def derive(t: Term[C]) = mkDerive(deriveConst, t)
+  def mkDerive(deriveConst: Constant => Term,
+                  t: Term): Term = {
+    def derive(t: Term) = mkDerive(deriveConst, t)
     t match {
       case Const(c)  => deriveConst(c)
       case Var(i)    => Var(2 * i)
@@ -46,16 +59,16 @@ object Lambda {
 
   // VISITOR/FOLDING
 
-  trait Visitor[C, T] {
+  trait Visitor[T] {
 
-    def Const(c: C): T
+    def Const(c: Constant): T
     def Var(i: Int): T
-    def App(me: App[C], s: T, t: T): T
-    def Abs(me: Abs[C], x: String, t: T): T
+    def App(me: App, s: T, t: T): T
+    def Abs(me: Abs, x: String, t: T): T
 
     // folding
 
-    def apply(t: Term[C]): T = t match {
+    def apply(t: Term): T = t match {
       case Const(c)     => Const(c)
       case Var(i)       => Var(i)
       case me@App(s, t) => App(me, this(s), this(t))
@@ -80,7 +93,7 @@ object Lambda {
     // stack of names: private to Visitor
 
     protected[this] def bind(x: String) { pushName(x) }
-    protected[this] def unbind(me: Abs[C], t: T): T = { Abs(me, popName(), t) }
+    protected[this] def unbind(me: Abs, t: T): T = { Abs(me, popName(), t) }
 
     protected[this] var nameStack = List.empty[String]
 
@@ -107,17 +120,21 @@ object Lambda {
   // scala> val z = Abs("x", Abs("x", Abs("x", Abs("x", Var(2)))))
   // z: Lambda.Abs[Nothing] = λx. λx₁. λx₂. λx₃. x₁
 
-  class Pretty[C] extends Visitor[C, String] {
+  // The pretty-printing visitor Pretty is in this file because
+  // it depends on Visitor, which depends on Term, which depends
+  // on Pretty.
 
-    def Const(c: C) = c.toString
+  class Pretty extends Visitor[String] {
+
+    def Const(c: Constant) = c.toString
 
     def Var(i: Int) = resolveName(i)
 
-    def App(me: App[C], s: String, t: String) =
+    def App(me: App, s: String, t: String) =
       parenthesizeWisely(me, s, LeftChild) ++ " " ++
         parenthesizeWisely(me, t, RightChild)
 
-    def Abs(me: Abs[C], x: String, t: String) =
+    def Abs(me: Abs, x: String, t: String) =
       "λ" ++ x ++ ". " ++ parenthesizeWisely(me, t)
 
     // variable disambiguation
@@ -132,9 +149,10 @@ object Lambda {
 
     override def pushName(x: String) {
       val freq = nameStack.count(_.matches("^" ++ x ++ "[₀-₉]*$"))
-      nameStack =
-        (if (freq == 0) x
-         else x ++ toSubscript(freq.toString)) :: nameStack
+      super.pushName(if (freq == 0)
+                       x
+                     else
+                       x ++ toSubscript(freq.toString))
     }
 
     // parentheses handling
@@ -146,10 +164,10 @@ object Lambda {
     // - all other subterms are parenthesized
 
     sealed trait Laterality
-    case object LeftChild extends Laterality
+    case object LeftChild  extends Laterality
     case object RightChild extends Laterality
 
-    def shouldParenthesize(me: Term[C], child: Laterality): Boolean = {
+    def shouldParenthesize(me: Term, child: Laterality): Boolean = {
       me match {
         case Abs(x, t) => false
         case App(s, t) => shouldParenthesizeApp(child, s, t)
@@ -159,8 +177,8 @@ object Lambda {
     }
 
     def shouldParenthesizeApp(child: Laterality,
-                              s: Term[C],
-                              t: Term[C]): Boolean = {
+                              s: Term,
+                              t: Term): Boolean = {
       (if (child == LeftChild) s else t) match {
           case Const(c)  => false
           case Var(i)    => false
@@ -169,7 +187,7 @@ object Lambda {
       }
     }
 
-    def parenthesizeWisely(me: Term[C],
+    def parenthesizeWisely(me: Term,
                            subterm: String,
                            child: Laterality = RightChild): String = {
       if (shouldParenthesize(me, child))
@@ -178,4 +196,7 @@ object Lambda {
         subterm
     }
   }
-}
+
+ }// END OF private class AbstractSyntax
+
+} // END OF object Lambda

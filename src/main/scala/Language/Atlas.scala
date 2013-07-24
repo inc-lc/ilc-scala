@@ -33,6 +33,7 @@ object Atlas extends Syntax.Lambda {
     override def toString = n.toString
   }
   case object Plus extends Constant
+  case object Negate extends Constant
 
   case class Empty(k: Type, v: Type)  extends Constant
   case class Update(k: Type, v: Type) extends Constant

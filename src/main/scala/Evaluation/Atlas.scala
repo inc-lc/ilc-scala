@@ -48,7 +48,7 @@ object Atlas {
           eval(neutralTerm(valType))
     case Zip(keyType, valType1, valType2) =>
       (f: Any => Any => Any => Any) => (m1: map) => (m2: map) => {
-        val m1WithDefault = m1.withDefaultValue(neutral(valType2))
+        val m1WithDefault = m1.withDefaultValue(neutral(valType1))
         val m2WithDefault = m2.withDefaultValue(neutral(valType2))
         val result: map = m1.map(p1 =>
             p1._1 -> f(p1._1)(p1._2)(m2WithDefault(p1._1))) ++

@@ -175,6 +175,50 @@ class AtlasTest extends FunSuite {
     assert(eval(sum(negMap1256)) === -14)
   }
 
+  // TESTING DIFF, APPLY, NIL
+
+  test("nil-terms denote nil changes") {
+    def applyNil(tau: Type, t: Term): Any =
+      eval(apply(tau, nilTerm(tau), t))
+
+    typesAndTerms.foreach { p =>
+      assert(applyNil(p._1, p._2) === eval(p._2))
+    }
+  }
+
+  test("difference with self is the nil change") {
+    typesAndTerms.foreach { p =>
+      assert(eval(diff(p._1, p._2, p._2)) === eval(nilTerm(p._1)))
+    }
+  }
+
+  test("[s ⊕ (t ⊝ s) == t] holds for Booleans, numbers and maps") {
+    def applyDiff(tau: Type, s: Term, t: Term): Any =
+      eval(apply(tau, diff(tau, t, s), s))
+    List.apply[(Type, Term, Term)](
+      (Bool, False, False),
+      (Bool, False, True ),
+      (Bool, True , False),
+      (Bool, True , True ),
+      (Number, 392, -1522),
+      (Number, sum(negMap1234), sum(negMap1256)),
+      (Map(Number, Number), negMap1234, negMap1256),
+      (Map(Number, Bool), primeMap10, oddityMap1234),
+      (Map(Map(Number, Number), Map(Number, Bool)),
+        mapLit(Map(Number, Number), Map(Number, Bool),
+               negMap1234 -> oddityMap1234,
+               negMap1256 -> primeMap10,
+               mapLit(Number, Number, 99 -> 217) ->
+                 mapLit(Number, Bool, 2012 -> True)),
+        mapLit(Map(Number, Number), Map(Number, Bool),
+               negMap1234 -> primeMap10,
+               negMap1256 -> primeMap10,
+               Empty(Number, Number) -> primeMap10))
+    ).foreach { trio =>
+      assert(applyDiff(trio._1, trio._2, trio._3) === eval(trio._3))
+    }
+  }
+
   // TRUTH-TABLE-BASED TESTING TOOLS FOR BOOLEANS
 
   // Usage example:

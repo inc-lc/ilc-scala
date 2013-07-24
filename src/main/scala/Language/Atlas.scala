@@ -14,11 +14,12 @@ object Atlas extends Syntax.Lambda {
   sealed trait Type
 
   case object Bool extends Type
+  case object Number extends Type
   case class Map(k: Type, v: Type) extends Type
 
   def deltaType(iota: Type): Type = iota match {
     case Bool => Bool
-
+    case Number => Number
     case Map(k, v) => Map(k, deltaType(v))
   }
 
@@ -28,12 +29,24 @@ object Atlas extends Syntax.Lambda {
   case object False extends Constant
   case object Xor   extends Constant
 
+  case class Num(n: Int) extends Constant {
+    override def toString = n.toString
+  }
+  case object Plus extends Constant
+
   case class Empty(k: Type, v: Type)  extends Constant
   case class Update(k: Type, v: Type) extends Constant
   case class Lookup(k: Type, v: Type) extends Constant
   case class Zip(k: Type, u: Type, v: Type) extends Constant
   case class Fold(k: Type, v: Type, b: Type) extends Constant
 
+  // syntactic sugars for constants and terms via implict conversion
+  implicit def intToConstant(i: Int): Constant = Num(i)
+  implicit def intToTerm(i: Int): Term = Const(intToConstant(i))
+  implicit def liftPair[S, T]
+    (p: (S, T))
+    (implicit impS: S => Term, impT: T => Term): (Term, Term) =
+      (impS(p._1), impT(p._2))
 
   // shorthand term constructors
   def zip(keyType: Type, valType1: Type, valType2: Type,
@@ -85,6 +98,8 @@ object Atlas extends Syntax.Lambda {
   def diffTerm(tau: Type): Term = tau match {
     // b₀ ⊝ b₁ = b₀ xor b₁
     case Bool => Xor
+    // n₀ ⊝ n₁ = (n₀, n₁) // replacement pair
+    case Number => pairTerm(Number, Number)
     // m₀ ⊝ m₁ = zip _⊝_  m₀ m₁
     case Map(k, v) => App(Zip(k, v, v), Abs("_", diffTerm(v)))
   }
@@ -92,6 +107,11 @@ object Atlas extends Syntax.Lambda {
   def applyTerm(tau: Type): Term = tau match {
     // b ⊕ Δb = b xor Δb
     case Bool => Xor
+
+    // n ⊕ Δn = lookup n Δn
+    // replace by new value... if old one is correct
+    case Number => flip(Lookup(Number, Number))
+
     // m ⊕ Δm = zip _⊕_ m Δm
     case Map(k, v) =>
       App(Zip(k, v, deltaType(v)), Abs("_", applyTerm(v)))
@@ -99,6 +119,7 @@ object Atlas extends Syntax.Lambda {
 
   def neutralTerm(tau: Type): Term = tau match {
     case Bool => False
+    case Number => 0
     case Map(k, v) => Empty(k, v)
   }
 

@@ -97,25 +97,30 @@ object Atlas extends Syntax.Lambda {
     Abs("x", Abs("y", pair(sType, tType, Var(1), Var(0))))
 
   def diffTerm(tau: Type): Term = tau match {
-    // b₀ ⊝ b₁ = b₀ xor b₁
+    // b₁ ⊝ b₀ = b₁ xor b₀
     case Bool => Xor
-    // n₀ ⊝ n₁ = (n₀, n₁) // replacement pair
-    case Number => pairTerm(Number, Number)
-    // m₀ ⊝ m₁ = zip _⊝_  m₀ m₁
+    // n₁ ⊝ n₀ = (n₀, n₁ - n₀) // old -> summand
+    case Number => Abs("n₁", Abs("n₀",
+      pair(Number, Number,
+           Var(0),
+           App(App(Plus, Var(1)), App(Negate, Var(0))))))
+    // m₁ ⊝ m₀ = zip _⊝_  m₁ m₀
     case Map(k, v) => App(Zip(k, v, v), Abs("_", diffTerm(v)))
   }
 
   def applyTerm(tau: Type): Term = tau match {
-    // b ⊕ Δb = b xor Δb
+    // apply Δb b = Δb xor b
     case Bool => Xor
 
-    // n ⊕ Δn = lookup n Δn
+    // apply Δn n = n + lookup n Δn
     // replace by new value... if old one is correct
-    case Number => flip(Lookup(Number, Number))
+    case Number => Abs("Δn", Abs("n",
+      App(App(Plus, Var(0)),
+        App(App(Lookup(Number, Number), Var(0)), Var(1)))))
 
-    // m ⊕ Δm = zip _⊕_ m Δm
+    // apply Δm m = zip apply Δm m
     case Map(k, v) =>
-      App(Zip(k, v, deltaType(v)), Abs("_", applyTerm(v)))
+      App(Zip(k, deltaType(v), v), Abs("_", applyTerm(v)))
   }
 
   def neutralTerm(tau: Type): Term = tau match {

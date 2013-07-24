@@ -55,6 +55,27 @@ class AtlasTest extends FunSuite {
   val oddityMap1234: Term =
     mapLit(Number, Bool, 1 -> True, 2 -> False, 3 -> True, 4 -> False)
 
+  val primeMap10: Term =
+    mapLit(Number, Bool,
+      2 -> True,  3 -> True, 4 -> False, 5 -> True,
+      6 -> False, 7 -> True, 8 -> False, 9 -> False, 10 -> False)
+
+  // TEST CANDIDATES
+
+  val typesAndTerms = List.apply[(Type, Term)](
+    Bool -> True,
+    Bool -> False,
+    Bool -> App(App(Lookup(Number, Bool), 2), oddityMap1234),
+    Number -> 1984,
+    Number -> sum(negMap1256),
+    Map(Number, Number) -> negMap1234,
+    Map(Number, Bool) -> primeMap10,
+    Map(Map(Number, Number), Map(Number, Bool)) ->
+      mapLit(Map(Number, Number), Map(Number, Bool),
+             negMap1234 -> oddityMap1234,
+             negMap1256 -> primeMap10)
+  )
+
   // TESTING ABSTRACTION AND APPLICATION
 
   test("the constant function is λ_. t") {

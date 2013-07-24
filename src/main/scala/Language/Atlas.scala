@@ -19,7 +19,7 @@ object Atlas extends Syntax.Lambda {
 
   def deltaType(iota: Type): Type = iota match {
     case Bool => Bool
-    case Number => Number
+    case Number => Map(Number, Number) // old -> summand
     case Map(k, v) => Map(k, deltaType(v))
   }
 

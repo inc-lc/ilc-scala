@@ -129,6 +129,8 @@ object Atlas extends Syntax.Lambda {
     case Map(k, v) => Empty(k, v)
   }
 
+  def nilTerm(tau: Type): Term = neutralTerm(deltaType(tau))
+
   def insert(keyType: Type,
              valType: Type,
              key: Term,

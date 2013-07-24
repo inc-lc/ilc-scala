@@ -32,6 +32,7 @@ object Atlas {
     }
     case Num(i) => i
     case Plus => (x: Int) => (y: Int) => x + y
+    case Negate => (x: Int) => - x
     case _: Empty => map.empty[Any, Any]
     case _: Update =>
       (k: Any) => (v: Any) => (m: map) =>

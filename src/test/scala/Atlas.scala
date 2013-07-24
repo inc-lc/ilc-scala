@@ -82,7 +82,7 @@ class AtlasTest extends FunSuite {
     val lhs = Array(914, 649, 869, 432, 795, 761)
     val rhs = Array(904, 772, 178, 470, 484, 889)
     (lhs, rhs).zipped.foreach { (x, y) =>
-      assert(x + y === eval(App(App(Plus, x), y)))
+      assert(eval(App(App(Plus, x), y)) === x + y)
     }
   }
 
@@ -123,7 +123,7 @@ class AtlasTest extends FunSuite {
 
   test("looking up an existing key returns the associated value") {
     Range.inclusive(1, 4) foreach { i =>
-      assert(-i === lookup(i, negMap1234))
+      assert(lookup(i, negMap1234) === -i)
     }
   }
 

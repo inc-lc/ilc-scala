@@ -26,6 +26,12 @@ class AtlasTest extends FunSuite {
   def foldNumMap(f: Term, z: Term, m: Term): Any =
     eval(fold(Number, Number, Number, f, z, m))
 
+  def diff(tau: Type, s: Term, t: Term): Term =
+    App(App(diffTerm(tau), s), t)
+
+  def apply(tau: Type, dt: Term, t: Term): Term =
+    App(App(applyTerm(tau), dt), t)
+
   // USABLE TERM CONSTRUCTORS
 
   // λf. λx. f x
@@ -36,6 +42,9 @@ class AtlasTest extends FunSuite {
 
   // λx. x
   val idFun = Abs("x", Var(0))
+
+  def sum(t: Term): Term =
+    fold(Number, Number, Number, constFun(Plus), 0, t)
 
   val negMap1234: Term =
     mapLit(Number, Number, 1 -> -1, 2 -> -2, 3 -> -3, 4 -> -4)
@@ -141,9 +150,8 @@ class AtlasTest extends FunSuite {
   }
 
   test("folding with Plus over a map yields the sum of its values") {
-    def sum(m: Term) = foldNumMap(constFun(Plus), 0, m)
-    assert(sum(negMap1234) === -10)
-    assert(sum(negMap1256) === -14)
+    assert(eval(sum(negMap1234)) === -10)
+    assert(eval(sum(negMap1256)) === -14)
   }
 
   // TRUTH-TABLE-BASED TESTING TOOLS FOR BOOLEANS

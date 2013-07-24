@@ -90,7 +90,7 @@ object Atlas extends Syntax.Lambda {
   def pair(sType: Type, tType: Type, s: Term, t: Term): Term = {
     val update: Term = Update(sType, tType)
     val empty : Term = Empty (sType, tType)
-    App(App(update, s), App(App(update, t), empty))
+    App(App(App(update, s), t), empty)
   }
 
   def pairTerm(sType: Type, tType: Type): Term =

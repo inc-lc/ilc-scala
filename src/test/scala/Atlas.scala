@@ -25,7 +25,7 @@ class AtlasTest extends FunSuite {
     eval(App(App(Lookup(Number, Number), key), m))
 
   def foldNumMap(f: Term, z: Term, m: Term): Any =
-    eval(fold(Number, Number, Number, f, z, m))
+    eval(fold(Number, Number, f, z, m))
 
   def diff(tau: Type, s: Term, t: Term): Term =
     App(App(diffTerm(tau), s), t)
@@ -45,7 +45,7 @@ class AtlasTest extends FunSuite {
   val idFun = Abs("x", Var(0))
 
   def sum(t: Term): Term =
-    fold(Number, Number, Number, constFun(Plus), 0, t)
+    fold(Number, Number, constFun(Plus), 0, t)
 
   val negMap1234: Term =
     mapLit(Number, Number, 1 -> -1, 2 -> -2, 3 -> -3, 4 -> -4)

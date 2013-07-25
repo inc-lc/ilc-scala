@@ -224,6 +224,55 @@ class AtlasTest extends FunSuite {
     }
   }
 
+  // TESTING DERIVATIVES OF CONSTANTS
+
+  test("the derivative of base-type constants is the nil change") {
+    assert(eval(derive(True)) === eval(nilTerm(Bool)))
+    assert(eval(derive(False)) === eval(nilTerm(Bool)))
+    assert(eval(derive(Num(12341))) === eval(nilTerm(Number)))
+    assert(eval(derive(Empty(Bool, Number))) ===
+           eval(nilTerm(Map(Bool, Number))))
+  }
+
+
+  test("the derivatives of Xor and Plus are versions of themselves") {
+
+    //                   x = 0000 0000 1111 1111
+    //                  dx = 0000 1111 0000 1111
+    //                   y = 0011 0011 0011 0011
+    //                  dy = 0101 0101 0101 0101
+    //                xNew = 0000 1111 1111 0000
+    //                yNew = 0110 0110 0110 0110
+    //             x xor y = 0011 0011 1100 1100
+    //       xNew xor yNew = 0110 1001 1001 0110
+    //              change = 0101 1010 0101 1010
+    truthTable(derive(Xor), "0101 1010 0101 1010")
+
+    (intsAndInts, intsAndInts.reverse).zipped.foreach { (p1, p2) =>
+      val ((x, xNew), (yNew, y)) = (p1, p2)
+      val dx = diff(Number, xNew, x)
+      val dy = diff(Number, yNew, y)
+      val result = apply(Number,
+                     App(App(App(App(derive(Plus), x), dx), y), dy),
+                     App(App(Plus, x), y))
+      assert(eval(result) === xNew + yNew)
+    }
+  }
+
+  // TESTING DERIVATIVES OF ABSTRACTION AND APPLICATION
+
+  test("the derivative of identity is snd") {
+    truthTable(derive(idFun), "0101")
+  }
+
+  test("the derivative of the constant function does not react") {
+    truthTable(App(Abs("y", constFun(Var(0))), False), "00")
+  }
+
+  test("the derivative of [λf. λx. f x] computes [Δf x Δx]") {
+    truthTable(derive(App(appFun, App(Xor, True))), "0101")
+  }
+
   // TRUTH-TABLE-BASED TESTING TOOLS FOR BOOLEANS
 
   // Usage example:

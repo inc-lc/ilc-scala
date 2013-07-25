@@ -262,6 +262,38 @@ class AtlasTest extends FunSuite {
     }
   }
 
+  test("the derivative of Negate is correct") {
+    intsAndInts.foreach { p =>
+      assertCorrect(Number, Negate, List((Number, p._1, p._2)))
+    }
+  }
+
+  test("the derivative of Update is correct") {
+    (intsAndInts, intsAndInts.reverse).zipped.foreach { (p, q) =>
+      assertCorrect(Map(Number, Number), Update(Number, Number),
+        List((Number, p._1, p._2), // old/new keys
+             (Number, q._1, q._2), // old/new values
+             (Map(Number, Number), negMap1234, negMap1256)))
+    }
+  }
+
+  test("the derivative of Lookup is correct") {
+    // A key can be in 4 states:
+    // 1. in both the old and the new maps,
+    // 2. outside the old map and in the new map,
+    // 3. in the old map and outside the new map,
+    // 4. outside both the old and the new maps.
+    // This test tests all combinations of the states
+    // of the old key and of the new key.
+    (List(1,1,1,1,3,3,3,3,5,5,5,5,7,7,7,7),
+     List(1,3,5,7,1,3,5,7,1,3,5,7,1,3,5,7)).zipped.foreach {
+      (i, j) =>
+        assertCorrect(Number, Lookup(Number, Number),
+          List((Number, i, j), // old/new keys
+               (Map(Number, Number), negMap1256, negMap1234)))
+    }
+  }
+
   // TESTING DERIVATIVES OF ABSTRACTION AND APPLICATION
 
   test("the derivative of identity is snd") {

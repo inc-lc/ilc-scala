@@ -122,13 +122,13 @@ class AtlasTest extends FunSuite {
   }
 
   test("Empty is empty map") {
-    // areEqual(t: Term, assoc: (Any, Any)*)
+    // assertMap(t: Term, assoc: (Any, Any)*)
     // when no other argument is given,
-    // areEqual(t) tests if t evaluates to the empty map.
-    areEqual(Empty(Bool, Bool))
+    // assertMap(t) tests if t evaluates to the empty map.
+    assertMap(Empty(Bool, Bool))
     // test that type parameters to Emtpy don't influence anything
-    areEqual(Empty(Map(Bool, Map(Bool, Bool)),
-                   Map(Map(Bool, Bool), Bool)))
+    assertMap(Empty(Map(Bool, Map(Bool, Bool)),
+                    Map(Map(Bool, Bool), Bool)))
   }
 
   test("neutral elements are false, 0, emptyMap") {
@@ -140,20 +140,20 @@ class AtlasTest extends FunSuite {
   }
 
   test("updating with nonexistent key is insertion") {
-    areEqual(negMap1234, 1 -> -1, 2 -> -2, 3 -> -3, 4 -> -4)
+    assertMap(negMap1234, 1 -> -1, 2 -> -2, 3 -> -3, 4 -> -4)
   }
 
   test("updating with neutral element is deletion") {
-    areEqual(updatesFrom(Number, Number, negMap1234,
-                         1 -> 0, 3 -> 0, 5 -> 0),
-             2 -> -2, 4 -> -4)
-    areEqual(updatesFrom(Number, Bool, oddityMap1234, 1 -> False),
-             3 -> true)
+    assertMap(updatesFrom(Number, Number, negMap1234,
+                          1 -> 0, 3 -> 0, 5 -> 0),
+              2 -> -2, 4 -> -4)
+    assertMap(updatesFrom(Number, Bool, oddityMap1234, 1 -> False),
+              3 -> true)
   }
 
   test("updating with existing key changes the value") {
-    areEqual(updatesFrom(Number, Number, negMap1234, 2 -> 99, 3 -> 75),
-             1 -> -1, 2 -> 99, 3 -> 75, 4 -> -4)
+    assertMap(updatesFrom(Number, Number, negMap1234, 2 -> 99, 3 -> 75),
+              1 -> -1, 2 -> 99, 3 -> 75, 4 -> -4)
   }
 
   test("looking up an existing key returns the associated value") {
@@ -169,10 +169,10 @@ class AtlasTest extends FunSuite {
   }
 
   test("zipping two maps traverses the union of their keys") {
-    areEqual(zip(Number, Number, Number,
-                 constFun(Plus), negMap1234, negMap1256),
-             1 -> (- 1 - 1), 2 -> (- 2 - 2),
-             3 -> -3, 4 -> -4, 5 -> -5, 6 -> -6)
+    assertMap(zip(Number, Number, Number,
+                  constFun(Plus), negMap1234, negMap1256),
+              1 -> (- 1 - 1), 2 -> (- 2 - 2),
+              3 -> -3, 4 -> -4, 5 -> -5, 6 -> -6)
   }
 
   test("folding with Plus over a map yields the sum of its values") {
@@ -351,11 +351,11 @@ class AtlasTest extends FunSuite {
 
   // ASSOC-LIST-BASED TESTING TOOLS FOR MAPS
 
-  def areEqual(t: Term, assoc: (Any, Any)*) {
-    areEqualMaps(eval(t), assoc: _*)
+  def assertMap(t: Term, assoc: (Any, Any)*) {
+    assertMapVal(eval(t), assoc: _*)
   }
 
-  def areEqualMaps(t: Any, assoc: (Any, Any)*) {
+  def assertMapVal(t: Any, assoc: (Any, Any)*) {
     assert(t === map(assoc: _*))
   }
 

@@ -152,13 +152,14 @@ object Atlas extends Syntax.Lambda {
   }
 
   def deriveConst(c: Constant): Term = c match {
+
+    // Constants
     case True  => False
     case False => False
+    case Empty(k, v) => Empty(k, deltaType(v))
 
     // λx. λΔx. λy. λΔy. Xor Δx x
     case Xor => Abs("x", Abs("Δx", Abs("y", Abs("Δy",
                     App(App(Xor, Var(2)), Var(3))))))
-
-    case Empty(k, v) => Empty(k, deltaType(v))
   }
 }

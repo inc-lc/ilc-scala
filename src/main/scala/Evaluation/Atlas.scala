@@ -13,15 +13,21 @@ object Atlas {
 
   def eval(t: Term): Any = evalWithEnv(t, Nil)
 
-  def evalWithEnv(t: Term, env: List[Any]): Any = t match {
-    case Abs(x, t) =>
-      (arg: Any) => evalWithEnv(t, arg :: env)
-    case App(s, t) =>
-      evalWithEnv(s, env).
-        asInstanceOf[Any => Any](evalWithEnv(t, env))
-    case Var(i) =>
-      env(i) // Index out of bound error = free var
-    case Const(c) => evalConst(c)
+  def evalWithEnv(t: Term, env: List[Any]): Any = try {
+    t match {
+      case Abs(x, t) =>
+        (arg: Any) => evalWithEnv(t, arg :: env)
+      case App(s, t) =>
+        evalWithEnv(s, env).
+          asInstanceOf[Any => Any](evalWithEnv(t, env))
+      case Var(i) =>
+        env(i) // Index out of bound error = free var
+      case Const(c) => evalConst(c)
+    }
+  } catch { case err: java.lang.ClassCastException =>
+    throw new java.lang.
+      IllegalArgumentException("bad cast when evaluating:\n    "
+        ++ t.toString)
   }
 
   def evalConst(c: Constant): Any = c match {

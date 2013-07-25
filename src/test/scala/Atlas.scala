@@ -235,27 +235,19 @@ class AtlasTest extends FunSuite {
   }
 
 
-  test("the derivatives of Xor and Plus are versions of themselves") {
+  test("the derivatives of Xor and Plus are correct") {
 
-    //                   x = 0000 0000 1111 1111
-    //                  dx = 0000 1111 0000 1111
-    //                   y = 0011 0011 0011 0011
-    //                  dy = 0101 0101 0101 0101
-    //                xNew = 0000 1111 1111 0000
-    //                yNew = 0110 0110 0110 0110
-    //             x xor y = 0011 0011 1100 1100
-    //       xNew xor yNew = 0110 1001 1001 0110
-    //              change = 0101 1010 0101 1010
-    truthTable(derive(Xor), "0101 1010 0101 1010")
+    def isOdd(i: Int): Term = if (i % 2 == 1) True else False
+    Range.inclusive(0, 16).foreach { i =>
+      assertCorrect(Bool, Xor,
+        (Bool, isOdd(i / 8), isOdd(i / 4)) ::
+        (Bool, isOdd(i / 2), isOdd(i)) :: Nil)
+    }
 
     (intsAndInts, intsAndInts.reverse).zipped.foreach { (p1, p2) =>
       val ((x, xNew), (yNew, y)) = (p1, p2)
-      val dx = diff(Number, xNew, x)
-      val dy = diff(Number, yNew, y)
-      val result = apply(Number,
-                     App(App(App(App(derive(Plus), x), dx), y), dy),
-                     App(App(Plus, x), y))
-      assert(eval(result) === xNew + yNew)
+      assertCorrect(Number, Plus,
+        List((Number, x, xNew), (Number, y, yNew)))
     }
   }
 
@@ -357,6 +349,59 @@ class AtlasTest extends FunSuite {
 
   def assertMapVal(t: Any, assoc: (Any, Any)*) {
     assert(t === map(assoc: _*))
+  }
+
+  // TESTING TOOLS FOR DERIVATIVES
+
+  // assert the correctness of the derivative of t
+  // according to
+  //
+  //     f x ⊕ derive(f) x (y ⊝ x) == f y
+  //
+  def assertCorrect(tau: Type,
+                    f: Term,
+                    input: List[(Type, Term, Term)]) {
+    val reversedInput = input.reverse
+    val theOld    = assembleOld(f, reversedInput)
+    val theNew    = assembleNew(f, reversedInput)
+    val theChange = assembleChange(derive(f), reversedInput)
+    try {
+      assert(eval(apply(tau, theChange, theOld)) === eval(theNew))
+    } catch { case err: TestFailedException =>
+      val msg = "wrong derivative:" ++
+        "\n     old = " ++ eval(theOld).toString ++
+        "\n     new = " ++ eval(theNew).toString ++
+        "\n  change = " ++ eval(theChange).toString ++
+        "\n  result " ++ err.getMessage() ++
+        "\n   old-t = " ++ theOld.toString ++
+        "\n   new-t = " ++ theNew.toString
+      throw new TestFailedException(msg, err, err.failedCodeStackDepth)
+    }
+  }
+
+  def assembleChange(dt: Term,
+                     reversedInput: List[(Type, Term, Term)]): Term =
+    reversedInput match {
+      case Nil => dt
+      case (tau, z, zNew) :: theRest => {
+        val dz = diff(tau, zNew, z)
+        App(App(assembleChange(dt, theRest), z), dz)
+      }
+    }
+
+  val assembleOld = assembleAccordingTo(_._2)
+  val assembleNew = assembleAccordingTo(_._3)
+
+  def assembleAccordingTo(chooser: ((Type, Term, Term)) => Term):
+        (Term, List[(Type, Term, Term)]) => Term = {
+    def assemble(t: Term,
+                 reversedInput: List[(Type, Term, Term)]): Term =
+      reversedInput match {
+        case Nil => t
+        case triple :: theRest =>
+          App(assemble(t, theRest), chooser(triple))
+      }
+    assemble
   }
 
 }

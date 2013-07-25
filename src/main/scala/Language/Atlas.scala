@@ -39,7 +39,7 @@ object Atlas extends Syntax.Lambda {
   case class Update(k: Type, v: Type) extends Constant
   case class Lookup(k: Type, v: Type) extends Constant
   case class Zip(k: Type, u: Type, v: Type) extends Constant
-  case class Fold(k: Type, v: Type, b: Type) extends Constant
+  case class Fold(k: Type, v: Type) extends Constant
 
   // syntactic sugars for constants and terms via implict conversion
   implicit def intToConstant(i: Int): Constant = Num(i)
@@ -54,9 +54,9 @@ object Atlas extends Syntax.Lambda {
           f: Term, map1: Term, map2: Term): Term =
     App(App(App(Zip(keyType, valType1, valType2), f), map1), map2)
 
-  def fold(keyType: Type, valType: Type, resultType: Type,
+  def fold(keyType: Type, valType: Type,
            f: Term, z: Term, m: Term): Term =
-    App(App(App(Fold(keyType, valType, resultType), f), z), m)
+    App(App(App(Fold(keyType, valType), f), z), m)
 
   // swap argument order
   def flip(t: Term): Term =

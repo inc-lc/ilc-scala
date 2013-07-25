@@ -162,5 +162,15 @@ object Atlas extends Syntax.Lambda {
     // λx. λΔx. λy. λΔy. Xor Δx Δy
     case Xor => Abs("x", Abs("Δx", Abs("y", Abs("Δy",
                     App(App(Xor, Var(2)), Var(0))))))
+
+    // λx. λΔx. λy. λΔy. (x + y, lookup x Δx + lookup y Δy)
+    case Plus => Abs("x", Abs("Δx", Abs("y", Abs("Δy",
+                     pair(Number, Number,
+                          App(App(Plus, Var(3)), Var(1)),
+                          App(App(Plus,
+                            App(App(Lookup(Number, Number),
+                              Var(3)), Var(2))),
+                            App(App(Lookup(Number, Number),
+                              Var(1)), Var(0))))))))
   }
 }

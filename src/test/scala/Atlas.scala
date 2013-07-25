@@ -77,6 +77,12 @@ class AtlasTest extends FunSuite {
              negMap1256 -> primeMap10)
   )
 
+  val intsAndInts = {
+    val lhs = Array(914, 649, 869, 432, 795, 761)
+    val rhs = Array(904, 772, 178, 470, 484, 889)
+    (lhs, rhs).zipped.toList
+  }
+
   // TESTING ABSTRACTION AND APPLICATION
 
   test("the constant function is λ_. t") {
@@ -110,10 +116,8 @@ class AtlasTest extends FunSuite {
   }
 
   test("adding two numbers yields their sum") {
-    val lhs = Array(914, 649, 869, 432, 795, 761)
-    val rhs = Array(904, 772, 178, 470, 484, 889)
-    (lhs, rhs).zipped.foreach { (x, y) =>
-      assert(eval(App(App(Plus, x), y)) === x + y)
+    intsAndInts.foreach { p =>
+      assert(eval(App(App(Plus, p._1), p._2)) === p._1 + p._2)
     }
   }
 

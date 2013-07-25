@@ -56,7 +56,7 @@ object Atlas {
             p2._1 -> f(p2._1)(m1WithDefault(p2._1))(p2._2))
         result.filter(p => ! isNeutral(p._2))
       }
-    case Fold(keyType, valType, resultType) =>
+    case Fold(keyType, valType) =>
       (f: Any => Any => Any => Any) => (z: Any) => (m: map) =>
         m.foldRight(z)((p, b) => f(p._1)(p._2)(b))
   }

@@ -100,6 +100,17 @@ trait Lambda {
     }
   }
 
+  // WEAKENING
+
+  def weaken(adjustIndex: Int => Int, t: Term): Term = t match {
+    case c: Const => c
+    case Var(i: Int) => Var(adjustIndex(i))
+    case App(s1, s2) =>
+      new App(weaken(adjustIndex, s1), weaken(adjustIndex, s2))
+    case Abs(x, s) => new Abs(x,
+      weaken(i => if (i <= 0) i else 1 + adjustIndex(i - 1), s))
+  }
+
   // PRETTY PRINTING
 
   // scala> import Language.Atlas._

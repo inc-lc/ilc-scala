@@ -46,7 +46,8 @@ trait Lambda {
     case Const(c)  => deriveConst(c)
     case Var(i)    => Var(2 * i)
     case Abs(x, t) => Abs(x, Abs(delta(x), derive(t)))
-    case App(s, t) => App(App(derive(s), t), derive(t))
+    case App(s, t) =>
+      App(App(derive(s), weaken(_ * 2 + 1, t)), derive(t))
   }
 
   // VISITOR/FOLDING

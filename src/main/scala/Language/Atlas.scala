@@ -156,6 +156,7 @@ object Atlas extends Syntax.Lambda {
     // Constants
     case True  => False
     case False => False
+    case Num(n) => Empty(Number, Number)
     case Empty(k, v) => Empty(k, deltaType(v))
 
     // λx. λΔx. λy. λΔy. Xor Δx x

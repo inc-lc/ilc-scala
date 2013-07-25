@@ -183,5 +183,55 @@ object Atlas extends Syntax.Lambda {
                               Var(3)), Var(2))),
                             App(App(Lookup(Number, Number),
                               Var(1)), Var(0))))))))
+
+    // λx. λΔx. (x, - lookup x Δx)
+    case Negate => Abs("x", Abs("Δx", pair(Number, Number,
+                     App(Negate, Var(1)),
+                     App(Negate,
+                       App(App(Lookup(Number, Number),
+                         Var(1)), Var(0))))))
+
+    // λ k Δk v Δv m Δm →
+    //   let
+    //     k' = apply Δk k
+    //   in
+    //     update k' (diff (apply Δv v) (lookup k' (update k v m)))
+    //       (update k (diff (apply Δm[k] m[k]), v) Δm)
+    case Update(k, v) => {
+      val update: Term = Update(k, deltaType(v))
+      val (key, dKey, value, dValue, map, dMap) =
+        (Var(5), Var(4), Var(3), Var(2), Var(1), Var(0))
+      val newKey: Term = App(App(applyTerm(k), dKey  ), key  )
+      val newVal: Term = App(App(applyTerm(v), dValue), value)
+      //   5         4        3         2        1         0
+      Abs("k", Abs("Δk", Abs("v", Abs("Δv", Abs("m", Abs("Δm",
+        App(App(App(update, newKey),
+          App(App(diffTerm(v), newVal),
+            App(App(Lookup(k, v), newKey),
+              App(App(App(Update(k, v), key), value), map)))),
+        App(App(App(update, key),
+          App(App(diffTerm(v),
+            App(App(applyTerm(v),
+              App(App(Lookup(k, deltaType(v)), key), dMap)),
+              App(App(Lookup(k, v), key), map))),
+            value)),
+          dMap))))))))
+    }
+
+    // λ k Δk m Δm →
+    //   diff (apply (lookup (apply Δk k) Δm)
+    //               (lookup (apply Δk k) m))
+    //        (lookup k m)
+    case Lookup(k, v) => {
+      val (key, dKey, map, dMap) =
+        (Var(3), Var(2), Var(1), Var(0))
+      val newKey = App(App(applyTerm(k), dKey), key)
+      Abs("k", Abs("Δk", Abs("m", Abs("Δm",
+        App(App(diffTerm(v),
+          App(App(applyTerm(v),
+            App(App(Lookup(k, deltaType(v)), newKey), dMap)),
+            App(App(Lookup(k, v), newKey), map))),
+          App(App(Lookup(k, v), key), map))))))
+    }
   }
 }

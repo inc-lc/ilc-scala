@@ -159,8 +159,8 @@ object Atlas extends Syntax.Lambda {
     case Num(n) => Empty(Number, Number)
     case Empty(k, v) => Empty(k, deltaType(v))
 
-    // λx. λΔx. λy. λΔy. Xor Δx x
+    // λx. λΔx. λy. λΔy. Xor Δx Δy
     case Xor => Abs("x", Abs("Δx", Abs("y", Abs("Δy",
-                    App(App(Xor, Var(2)), Var(3))))))
+                    App(App(Xor, Var(2)), Var(0))))))
   }
 }

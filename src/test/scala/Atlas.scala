@@ -78,8 +78,8 @@ class AtlasTest extends FunSuite {
   )
 
   val intsAndInts = {
-    val lhs = Array(914, 649, 869, 432, 795, 761)
-    val rhs = Array(904, 772, 178, 470, 484, 889)
+    val lhs = Array(914, 649, 869, 432, 795, 761, 1, 3, 5)
+    val rhs = Array(904, 772, 178, 470, 484, 889, 2, 4, 6)
     (lhs, rhs).zipped.toList
   }
 

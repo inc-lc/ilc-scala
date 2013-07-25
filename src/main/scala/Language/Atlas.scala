@@ -96,6 +96,17 @@ object Atlas extends Syntax.Lambda {
   def pairTerm(sType: Type, tType: Type): Term =
     Abs("x", Abs("y", pair(sType, tType, Var(1), Var(0))))
 
+  def uncurry(type1: Type, type2: Type, f: Term, p: Term): Term = {
+    val g = Abs("x", Abs("y", Abs("_",
+      App(App(weaken(_ + 3, f), Var(2)), Var(1)))))
+    App(App(App(Fold(type1, type2), g),
+      // the second argument of `fold` should be a term that
+      // evaluates to something that raises an exception
+      // when examined but does not when left undisturbed.
+      Num(13000)),
+      p)
+  }
+
   def diffTerm(tau: Type): Term = tau match {
     // b₁ ⊝ b₀ = b₁ xor b₀
     case Bool => Xor

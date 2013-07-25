@@ -74,13 +74,7 @@ trait Lambda {
       if (i < nameStack.length)
         nameStack(i)
       else {
-        // come up with a default name for free variables:
-        // 1. convert de-Bruijn index to negated de-Bruijn level
-        // 2. de-Bruijn level can be used to disambiguate names,
-        //    because all occurrences of a variable have the
-        //    same level.
-        val negLevel = i - nameStack.length
-        "FV#" ++ negLevel.toString
+        "Var(" ++ i.toString ++ ")"
       }
 
     // stack of names: private to Visitor

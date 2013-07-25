@@ -39,7 +39,7 @@ class AtlasTest extends FunSuite {
   val appFun = Abs("f", Abs("x", App(Var(1), Var(0))))
 
   // λ_. t
-  def constFun(t: Term) = Abs("_", t)
+  def constFun(t: Term) = Abs("_", weaken(_ + 1, t))
 
   // λx. x
   val idFun = Abs("x", Var(0))

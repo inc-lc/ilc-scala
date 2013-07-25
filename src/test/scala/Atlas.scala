@@ -101,6 +101,17 @@ class AtlasTest extends FunSuite {
     truthTable(app(idFun), "01")
   }
 
+  // TESTING WEAKENING
+
+  test("weakening closed terms has no effect") {
+    def weak(t: Term) = weaken(i => i * i, t)
+    assert(weak(pairTerm(Bool, Bool)) === pairTerm(Bool, Bool))
+    assert(weak(diffTerm(Map(Bool, Number))) ===
+           diffTerm(Map(Bool, Number)))
+    assert(weak(applyTerm(Map(Bool, Number))) ===
+           applyTerm(Map(Bool, Number)))
+  }
+
   // TESTING CONSTANTS
 
   test("False is false") {

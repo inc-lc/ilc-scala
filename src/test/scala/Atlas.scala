@@ -9,6 +9,7 @@
 // soon, when tests here will have to be ported as well.
 
 import org.scalatest.FunSuite
+import org.scalatest.exceptions.TestFailedException
 import Language.Atlas._
 import Evaluation.Atlas._
  
@@ -234,28 +235,65 @@ class AtlasTest extends FunSuite {
   //                            0101 0001 0000 0101""")
 
   def truthTable(t: Term, spec: String) {
-    truthTableVal(eval(t), spec)
+    try {
+      truthTableVal(eval(t), spec)
+    } catch {
+      case err: TestFailedException =>
+        val msg =
+          "truth table mismatch when testing:\n    " ++
+          t.toString ++
+          "\n  where " ++ err.getMessage()
+        throw new TestFailedException(msg,
+                    err.getCause(),
+                    err.failedCodeStackDepth)
+    }
   }
 
   def truthTableVal(v: Any, spec: String) {
-    val results = (spec.replaceAll("""(?m)\s+""", "") map {
-      (x: Char) => if (x == '0') false else true
-    }).toList
-    testTruthTable(v, results)
+      val results = (spec.replaceAll("""(?m)\s+""", "") map {
+        (x: Char) => if (x == '0') false else true
+      }).toList
+      testTruthTable(v, results)
   }
 
   def testTruthTable(f: Any, spec: List[Boolean]) {
     val size = spec.size
     size match {
       case 0 => sys error "wrong truth table specification"
-      case 1 => assert(f === spec.head)
+      case 1 => try {
+        assert(f === spec.head)
+      } catch {
+        case err: TestFailedException =>
+          val msg = " didn't map to " ++ (if (spec.head) "1" else "0")
+          throw new TestFailedException(msg, err,
+                      err.failedCodeStackDepth)
+      }
       case _ => {
-        testTruthTable(f.asInstanceOf[Any => Any](false),
-                       spec.slice(0, size / 2))
-        testTruthTable(f.asInstanceOf[Any => Any](true),
-                       spec.slice(size / 2, size))
+        try {
+          testTruthTable(f.asInstanceOf[Any => Any](false),
+                         spec.slice(0, size / 2))
+        } catch {
+          case err: TestFailedException =>
+            throw nextErr(err, false, err.getMessage())
+        }
+        try {
+          testTruthTable(f.asInstanceOf[Any => Any](true),
+                         spec.slice(size / 2, size))
+        } catch {
+          case err: TestFailedException =>
+            throw nextErr(err, true, err.getMessage())
+        }
       }
     }
+  }
+
+  def nextErr(err: TestFailedException,
+              lastArg: Boolean,
+              initMsg: String): TestFailedException = {
+    val msg = (if (lastArg) "1" else "0") ++ initMsg
+    val cause = err.getCause()
+    val stackDepth = err.failedCodeStackDepth
+    new TestFailedException(msg, cause, stackDepth)
   }
 
   // ASSOC-LIST-BASED TESTING TOOLS FOR MAPS

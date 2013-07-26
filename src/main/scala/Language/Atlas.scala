@@ -87,23 +87,36 @@ object Atlas extends Syntax.Lambda {
     fromList(keyType, valType, base, assoc.toList)
 
   // pairs encoded as maps
+  // A × B = Map[A, Map[B, Bool]]
+  // a , b = mapLit(a -> mapLit(b -> True))
+
+  def pairType(type1: Type, type2: Type): Type =
+    Map(type1, Map(type2, Bool))
+
   def pair(sType: Type, tType: Type, s: Term, t: Term): Term = {
-    val update: Term = Update(sType, tType)
-    val empty : Term = Empty (sType, tType)
-    App(App(App(update, s), t), empty)
+    val Map(t1, t2) = pairType(sType, tType)
+    val Map(t3, t4) = t2
+    mapLit(t1, t2, s -> mapLit(t3, t4, t -> True))
   }
 
   def pairTerm(sType: Type, tType: Type): Term =
     Abs("x", Abs("y", pair(sType, tType, Var(1), Var(0))))
 
   def uncurry(type1: Type, type2: Type, f: Term, p: Term): Term = {
-    val g = Abs("x", Abs("y", Abs("_",
-      App(App(weaken(_ + 3, f), Var(2)), Var(1)))))
-    App(App(App(Fold(type1, type2), g),
-      // the second argument of `fold` should be a term that
-      // evaluates to something that raises an exception
-      // when examined but does not when left undisturbed.
-      Num(13000)),
+    val Map(t1, t2) = pairType(type1, type2)
+    val Map(t3, t4) = t2
+    val f6 = weaken(_ + 6, f)
+    val f3 = weaken(_ + 3, f)
+    val xOut = Var(2)
+    val (x, y, yt) = (weaken(_ + 3, xOut), Var(2), Var(1))
+    App(App(App(Fold(t1, t2),
+      Abs("x", Abs("yt", Abs("_",
+        App(App(App(Fold(t3, t4),
+          Abs("y", Abs("tt", Abs("_",
+            App(App(f6, x), y))))),
+          App(App(f3, xOut), neutralTerm(type2))),
+          yt))))),
+      App(App(f, neutralTerm(type1)), neutralTerm(type2))),
       p)
   }
 
@@ -112,9 +125,9 @@ object Atlas extends Syntax.Lambda {
     case Bool => Xor
     // n₁ ⊝ n₀ = (n₀, n₁ - n₀) // old -> summand
     case Number => Abs("n₁", Abs("n₀",
-      pair(Number, Number,
-           Var(0),
-           App(App(Plus, Var(1)), App(Negate, Var(0))))))
+      mapLit(Number, Number,
+        Var(0) ->
+          App(App(Plus, Var(1)), App(Negate, Var(0))))))
     // m₁ ⊝ m₀ = zip _⊝_  m₁ m₀
     case Map(k, v) => App(Zip(k, v, v), Abs("_", diffTerm(v)))
   }
@@ -162,6 +175,7 @@ object Atlas extends Syntax.Lambda {
       deltaMap)
   }
 
+
   def deriveConst(c: Constant): Term = c match {
 
     // Constants
@@ -174,19 +188,19 @@ object Atlas extends Syntax.Lambda {
     case Xor => Abs("x", Abs("Δx", Abs("y", Abs("Δy",
                     App(App(Xor, Var(2)), Var(0))))))
 
-    // λx. λΔx. λy. λΔy. (x + y, lookup x Δx + lookup y Δy)
+    // λx. λΔx. λy. λΔy. Map(x + y -> lookup x Δx + lookup y Δy)
     case Plus => Abs("x", Abs("Δx", Abs("y", Abs("Δy",
-                     pair(Number, Number,
-                          App(App(Plus, Var(3)), Var(1)),
+                   mapLit(Number, Number,
+                          App(App(Plus, Var(3)), Var(1)) ->
                           App(App(Plus,
                             App(App(Lookup(Number, Number),
                               Var(3)), Var(2))),
                             App(App(Lookup(Number, Number),
                               Var(1)), Var(0))))))))
 
-    // λx. λΔx. (x, - lookup x Δx)
-    case Negate => Abs("x", Abs("Δx", pair(Number, Number,
-                     App(Negate, Var(1)),
+    // λx. λΔx. Map(x -> - lookup x Δx)
+    case Negate => Abs("x", Abs("Δx", mapLit(Number, Number,
+                     App(Negate, Var(1)) ->
                      App(Negate,
                        App(App(Lookup(Number, Number),
                          Var(1)), Var(0))))))

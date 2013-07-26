@@ -60,51 +60,6 @@ trait Lambda {
       App(App(derive(s), weaken(_ * 2 + 1, t)), derive(t))
   }
 
-  // VISITOR/FOLDING
-
-  trait Visitor[T] {
-
-    def Const(c: Constant): T
-    def Var(i: Int): T
-    def App(me: App, s: T, t: T): T
-    def Abs(me: Abs, x: String, t: T): T
-
-    // folding
-
-    def apply(t: Term): T = t match {
-      case Const(c)     => Const(c)
-      case Var(i)       => Var(i)
-      case me@App(s, t) => App(me, this(s), this(t))
-      case me@Abs(x, t) => { bind(x) ; unbind(me, this(t)) }
-    }
-
-    // variable name resolution
-
-    def resolveName(i: Int) =
-      if (i < nameStack.length)
-        nameStack(i)
-      else {
-        "Var(" ++ i.toString ++ ")"
-      }
-
-    // stack of names: private to Visitor
-
-    protected[this] def bind(x: String) { pushName(x) }
-    protected[this] def unbind(me: Abs, t: T): T = { Abs(me, popName(), t) }
-
-    protected[this] var nameStack = List.empty[String]
-
-    protected[this] def pushName(x: String) {
-      nameStack = x :: nameStack
-    }
-
-    protected[this] def popName(): String = {
-      val topName = nameStack.head
-      nameStack = nameStack.tail
-      topName
-    }
-  }
-
   // PRETTY PRINTING
 
   // scala> import Language.Atlas._

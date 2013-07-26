@@ -118,6 +118,34 @@ class AtlasTest extends FunSuite {
            applyTerm(Map(Bool, Number)))
   }
 
+  // TESTING ENCODINGS
+
+  test("pair encoding preserves information") {
+    val typeList: List[(Type, Type)] =
+      List((Number, Bool),
+           (Bool, Map(Number, Bool)),
+           (Map(Number, Number), Map(Number, Bool)))
+    val termList: List[(Term, Term)] =
+      List((0, False),
+           (App(App(Lookup(Number, Bool), 2), oddityMap1234), primeMap10),
+           (negMap1234, App(App(Lookup(Number, Bool), 4), primeMap10)),
+           (negMap1256, primeMap10))
+    val fst = Abs("x", Abs("y", Var(1)))
+    val snd = Abs("x", Abs("y", Var(0)))
+    def mkProj(proj: Term): (Type, Type, Term, Term) => Any =
+      (sType, tType, s, t) =>
+        eval(uncurry(sType, tType, proj, pair(sType, tType, s, t)))
+    val proj1 = mkProj(fst)
+    val proj2 = mkProj(snd)
+    (typeList, termList).zipped.foreach {
+      (types, terms) => {
+        val ((tau1, tau2), (t1, t2)) = (types, terms)
+        assert(proj1(tau1, tau2, t1, t2) === eval(t1))
+        assert(proj2(tau1, tau2, t1, t2) === eval(t2))
+      }
+    }
+  }
+
   // TESTING CONSTANTS
 
   test("False is false") {

@@ -146,6 +146,19 @@ class AtlasTest extends FunSuite {
     }
   }
 
+  test("zip4 traverses the union of all maps") {
+    val plus4 = Abs("k", Abs("a", Abs("b", Abs("c", Abs("d",
+      App(App(Plus,
+        App(App(Plus, Var(3)), Var(2))),
+        App(App(Plus, Var(1)), Var(0))))))))
+    def ezmap(i: Int, j: Int) =
+      mapLit(Number, Number, i -> j)
+    def t = zip4(Number, Number, Number, Number, Number,
+      plus4,
+      ezmap(1, 2), ezmap(3, 4), ezmap(5, 6), ezmap(7, 8))
+    assertMap(t, 1 -> 2, 3 -> 4, 5 -> 6, 7 -> 8)
+  }
+
   // TESTING CONSTANTS
 
   test("False is false") {

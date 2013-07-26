@@ -33,6 +33,16 @@ trait Lambda {
   // implicit conversion to stop writing `Const`
   implicit def liftConstant(c: Constant): Term = Const(c)
 
+  // WEAKENING
+
+  def weaken(adjustIndex: Int => Int, t: Term): Term = t match {
+    case c: Const => c
+    case Var(i: Int) => Var(adjustIndex(i))
+    case App(s1, s2) =>
+      new App(weaken(adjustIndex, s1), weaken(adjustIndex, s2))
+    case Abs(x, s) => new Abs(x,
+      weaken(i => if (i <= 0) i else 1 + adjustIndex(i - 1), s))
+  }
 
   // DERIVATION
 
@@ -93,17 +103,6 @@ trait Lambda {
       nameStack = nameStack.tail
       topName
     }
-  }
-
-  // WEAKENING
-
-  def weaken(adjustIndex: Int => Int, t: Term): Term = t match {
-    case c: Const => c
-    case Var(i: Int) => Var(adjustIndex(i))
-    case App(s1, s2) =>
-      new App(weaken(adjustIndex, s1), weaken(adjustIndex, s2))
-    case Abs(x, s) => new Abs(x,
-      weaken(i => if (i <= 0) i else 1 + adjustIndex(i - 1), s))
   }
 
   // PRETTY PRINTING

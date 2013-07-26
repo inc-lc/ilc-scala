@@ -53,6 +53,12 @@ class AtlasTest extends FunSuite {
   val negMap1256: Term =
     mapLit(Number, Number, 1 -> -1, 2 -> -2, 5 -> -5, 6 -> -6)
 
+  val idMap2367: Term = mapLit(Number, Number,
+    2 -> 2, 3 -> 3, 6 -> 6, 7 -> 7)
+
+  val map1368: Term = mapLit(Number, Number,
+    1 -> 10, 3 -> 3, 6 -> 60, 8 -> 80)
+
   val oddityMap1234: Term =
     mapLit(Number, Bool, 1 -> True, 2 -> False, 3 -> True, 4 -> False)
 

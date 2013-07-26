@@ -62,11 +62,11 @@ object Atlas {
       (f: Any => Any => Any => Any) => (m1: map) => (m2: map) => {
         val m1WithDefault = m1.withDefaultValue(neutral(valType1))
         val m2WithDefault = m2.withDefaultValue(neutral(valType2))
-        val result: map = m1.map(p1 =>
-            p1._1 -> f(p1._1)(p1._2)(m2WithDefault(p1._1))) ++
-          m2.withFilter(p2 => ! m1.contains(p2._1)).map(p2 =>
-            p2._1 -> f(p2._1)(m1WithDefault(p2._1))(p2._2))
-        result.filter(p => ! isNeutral(p._2))
+        val keySet = m1.keySet ++ m2.keySet
+        val output: map = keySet.map({ key =>
+          key -> f(key)(m1WithDefault(key))(m2WithDefault(key))
+        })(collection.breakOut)
+        output.filter(p => ! isNeutral(p._2))
       }
     case Fold(keyType, valType) =>
       (f: Any => Any => Any => Any) => (z: Any) => (m: map) =>

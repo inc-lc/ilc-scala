@@ -22,9 +22,9 @@ trait Lambda {
     override def toString = (new Pretty)(this)
   }
 
-  case class Var(i: Int) extends Term
-  case class App(s: Term, t: Term) extends Term
-  case class Abs(x: String, t: Term) extends Term
+  case class Var(index: Int) extends Term
+  case class App(operator: Term, operand: Term) extends Term
+  case class Abs(name: String, body: Term) extends Term
   // The first argument of abstraction serves as documentation
   // alone. Variables are de-Bruijn indices.
 

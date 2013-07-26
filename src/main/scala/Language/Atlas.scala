@@ -120,6 +120,44 @@ object Atlas extends Syntax.Lambda {
       p)
   }
 
+  def zipPair(keyType: Type,
+              valType1: Type,
+              valType2: Type,
+              map1: Term,
+              map2: Term): Term =
+    zip(keyType, valType1, valType2,
+        // pair-term needn't be weakened because it's closed
+        // relevant test: "weakening closed terms has no effect"
+        Abs("_", pairTerm(valType1, valType2)),
+        map1, map2)
+
+  def zip4(k: Type, v1: Type, v2: Type, v3: Type, v4: Type,
+           f: Term, // k → v1 → v2 → v3 → v4 → b
+           m1: Term, m2: Term, m3: Term, m4: Term): Term = {
+    // g = λ key p12 p34 → uncurry
+    //       (λ val1 val2 → uncurry
+    //         (λ val3 val4 →
+    //           fw key val1 val2 val3 val4)
+    //         p34)
+    //       p12
+    val fw  = weaken(_ + 7, f)
+    val key = weaken(_ + 4, Var(2))
+    val p12 = Var(1)
+    val p34 = weaken(_ + 2, Var(0))
+    val (val1, val2, val3, val4) = (Var(3), Var(2), Var(1), Var(0))
+    val g =
+      Abs("key", Abs("p12", Abs("p34", uncurry(v1, v2,
+        Abs("val1", Abs("val2", uncurry(v3, v4,
+          Abs("val3", Abs("val4", App(App(App(App(App
+            (fw, key), val1), val2), val3), val4))),
+          p34))),
+        p12))))
+    zip(k, pairType(v1, v2), pairType(v3, v4),
+      g,
+      zipPair(k, v1, v2, m1, m2),
+      zipPair(k, v3, v4, m3, m4))
+  }
+
   def diffTerm(tau: Type): Term = tau match {
     // b₁ ⊝ b₀ = b₁ xor b₀
     case Bool => Xor
@@ -174,7 +212,6 @@ object Atlas extends Syntax.Lambda {
       App(App(diffTerm(valType), neutralTerm(valType)), value)),
       deltaMap)
   }
-
 
   def deriveConst(c: Constant): Term = c match {
 
@@ -246,6 +283,18 @@ object Atlas extends Syntax.Lambda {
             App(App(Lookup(k, deltaType(v)), newKey), dMap)),
             App(App(Lookup(k, v), newKey), map))),
           App(App(Lookup(k, v), key), map))))))
+    }
+
+    // λ f Δf m1 Δm1 m2 Δm2 → zip4 Δf m1 Δm1 m2 Δm2
+    case Zip(k, v1, v2) => {
+      val (df, m1, dm1, m2, dm2) =
+        (Var(4), Var(3), Var(2), Var(1), Var(0))
+      val dg = Abs("k",
+        App(App(weaken(_ + 1, df), Var(0)), nilTerm(k)))
+      Abs("f", Abs("Δf",
+        Abs("m₁", Abs("Δm₁", Abs("m₂", Abs("Δm₂",
+          zip4(k, v1, deltaType(v1), v2, deltaType(v2),
+            dg, m1, dm1, m2, dm2)))))))
     }
   }
 }

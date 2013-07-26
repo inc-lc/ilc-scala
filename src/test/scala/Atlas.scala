@@ -341,6 +341,18 @@ class AtlasTest extends FunSuite {
     }
   }
 
+  test("the derivative of Zip is correct") {
+    val m = Map(Number, Number)
+    val n = Number
+    // λx. zip (λ_. λy. λz. x + y + z)
+    val t = Abs("x", App(Zip(n, n, n), Abs("_", Abs("y", Abs("z",
+      App(App(Plus, App(App(Plus, Var(3)), Var(1))), Var(0)))))))
+    assertCorrect(m, t,
+      List((n, 100, 1000),
+           (m, negMap1234, negMap1256),
+           (m, idMap2367, map1368)))
+  }
+
   // TESTING DERIVATIVES OF ABSTRACTION AND APPLICATION
 
   test("the derivative of identity is snd") {

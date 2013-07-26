@@ -11,7 +11,13 @@ object Atlas {
   private type map = collection.immutable.Map[Any, Any]
   private val map = collection.immutable.Map
 
-  def eval(t: Term): Any = evalWithEnv(t, Nil)
+  def eval(t: Term): Any = try {
+    evalWithEnv(t, Nil)
+  } catch { case err: java.lang.IllegalArgumentException =>
+    throw new java.lang.
+      IllegalArgumentException(err.getMessage() ++
+        "\n in the term\n    " ++ t.toString)
+  }
 
   def evalWithEnv(t: Term, env: List[Any]): Any = try {
     t match {
@@ -26,8 +32,8 @@ object Atlas {
     }
   } catch { case err: java.lang.ClassCastException =>
     throw new java.lang.
-      IllegalArgumentException("bad cast when evaluating:\n    "
-        ++ t.toString)
+      IllegalArgumentException(err.getMessage() ++
+        " when evaluating:\n    " ++ t.toString)
   }
 
   def evalConst(c: Constant): Any = c match {

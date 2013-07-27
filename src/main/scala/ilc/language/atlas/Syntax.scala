@@ -5,11 +5,12 @@
  * https://github.com/ps-mr/ilc/blob/9aafd0c2835ff027b57e44ed2930f4f57147e0de/agda/Syntax/Language/Atlas.agda
  */
 
-package Language
+package ilc
+package language.atlas
 
 import scala.language.implicitConversions
 
-object Atlas extends Syntax.Lambda {
+object Syntax extends feature.functions.Syntax {
 
   sealed trait Type
 

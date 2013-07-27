@@ -1,11 +1,11 @@
-package Syntax
-
+package ilc
+package feature.functions
 
 import org.scalatest.FunSuite
 import org.scalatest.matchers.ShouldMatchers
 
 class PrettySuite extends FunSuite with ShouldMatchers {
-  object Language extends Lambda {
+  object Language extends Syntax {
     def deriveConst(constant : Constant) : Term = null
   }
 

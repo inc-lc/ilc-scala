@@ -1,3 +1,6 @@
+package ilc
+package language.atlas
+
 /**
  * Tests for Atlas
  */
@@ -10,8 +13,9 @@
 
 import org.scalatest.FunSuite
 import org.scalatest.exceptions.TestFailedException
-import Language.Atlas._
-import Evaluation.Atlas._
+
+import Syntax._
+import Evaluation._
  
 class AtlasTest extends FunSuite {
 

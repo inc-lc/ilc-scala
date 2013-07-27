@@ -2,11 +2,12 @@
  * Provisional evaluator for Atlas to pass tests
  */
 
-package Evaluation
+package ilc
+package language.atlas
 
-import Language.Atlas._
+import Syntax._
 
-object Atlas {
+object Evaluation {
 
   private type map = collection.immutable.Map[Any, Any]
   private val map = collection.immutable.Map

@@ -1,13 +1,14 @@
-package Syntax
+package ilc
+package feature.functions
 
 /**
  * Untyped lambda calculi with abstraction and application
  * extensible by constants and primitives
  */
 
-import language.implicitConversions
+import scala.language.implicitConversions
 
-trait Lambda {
+trait Syntax {
 
   // SUBCLASS OBLIGATIONS
 

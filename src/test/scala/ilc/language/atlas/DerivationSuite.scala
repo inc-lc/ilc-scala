@@ -17,7 +17,7 @@ import org.scalatest.exceptions.TestFailedException
 import Syntax._
 import Evaluation._
  
-class AtlasTest extends FunSuite {
+class DerivationSuite extends FunSuite {
 
   // SHORTHANDS
 

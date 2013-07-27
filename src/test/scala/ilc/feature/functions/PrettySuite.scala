@@ -5,9 +5,7 @@ import org.scalatest.FunSuite
 import org.scalatest.matchers.ShouldMatchers
 
 class PrettySuite extends FunSuite with ShouldMatchers {
-  object Language extends Syntax {
-    def deriveConst(constant : Constant) : Term = null
-  }
+  object Language extends Syntax
 
   import Language._
 

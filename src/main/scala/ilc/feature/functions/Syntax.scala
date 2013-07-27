@@ -13,7 +13,6 @@ trait Syntax {
   // SUBCLASS OBLIGATIONS
 
   type Constant
-  def deriveConst(c: Constant): Term
 
   // SYNTAX
 
@@ -43,22 +42,6 @@ trait Syntax {
       new App(weaken(adjustIndex, s1), weaken(adjustIndex, s2))
     case Abs(x, s) => new Abs(x,
       weaken(i => if (i <= 0) i else 1 + adjustIndex(i - 1), s))
-  }
-
-  // DERIVATION
-
-  // String transformation
-  def delta(x: String): String = "Δ" ++ x
-
-  // Derivation follows Agda module
-  // Syntax.Derive.Canon-Popl14
-
-  def derive(t: Term): Term = t match {
-    case Const(c)  => deriveConst(c)
-    case Var(i)    => Var(2 * i)
-    case Abs(x, t) => Abs(x, Abs(delta(x), derive(t)))
-    case App(s, t) =>
-      App(App(derive(s), weaken(_ * 2 + 1, t)), derive(t))
   }
 
   // PRETTY PRINTING

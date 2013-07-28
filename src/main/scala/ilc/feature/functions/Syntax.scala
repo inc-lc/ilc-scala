@@ -18,9 +18,7 @@ trait Syntax {
 
   // Terms are parametric in the set `Constant` of constants.
 
-  sealed abstract trait Term {
-    override def toString = (new Pretty)(this)
-  }
+  sealed abstract trait Term
 
   case class Var(index: Int) extends Term
   case class App(operator: Term, operand: Term) extends Term
@@ -62,7 +60,7 @@ trait Syntax {
   // it depends on Visitor, which depends on Term, which depends
   // on Pretty.
 
-  class Pretty {
+  object pretty extends (Term => String) {
     /**
      * Pretty print an expression according to a template.
      *

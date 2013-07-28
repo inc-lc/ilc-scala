@@ -5,9 +5,7 @@ import org.scalatest.FunSuite
 import org.scalatest.matchers.ShouldMatchers
 
 class PrettySuite extends FunSuite with ShouldMatchers {
-  object Language extends Syntax with Pretty
-
-  import Language._
+  import feature.Functions._
 
   val id = Abs("x", Var(0))
 

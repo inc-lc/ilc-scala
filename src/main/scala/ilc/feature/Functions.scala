@@ -6,4 +6,5 @@ package feature
  */
 trait Functions
   extends functions.Syntax
+  with functions.Pretty
   with functions.Derivation

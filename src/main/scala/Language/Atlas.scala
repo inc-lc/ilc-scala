@@ -190,6 +190,17 @@ object Atlas extends Syntax.Lambda {
       App(Zip(k, deltaType(v), v, v), Abs("_", applyTerm(v)))
   }
 
+  def applyBaseFun(types: Type*): Term =
+    if (types.length < 1)
+      sys error "too few types"
+    else if (types.length == 1)
+      applyTerm(types.head)
+    else
+      Abs("Δf", Abs("f", Abs("x",
+        App(App(applyBaseFun(types.tail: _*),
+          App(App(Var(2), Var(0)), nilTerm(types.head))),
+          App(Var(1), Var(0))))))
+
   def neutralTerm(tau: Type): Term = tau match {
     case Bool => False
     case Number => 0
@@ -290,17 +301,27 @@ object Atlas extends Syntax.Lambda {
           App(App(Lookup(k, v), key), map))))))
     }
 
-    // λ f Δf m1 Δm1 m2 Δm2 → zip4 Δf m1 Δm1 m2 Δm2
+    // This would be nice, but it can't handle deletion from both
+    // m1 and m2.
+    //
+    //   λ f Δf m₁ Δm₁ m₂ Δm₂ → zip4 Δf m₁ Δm₁ m₂ Δm₂
+    //
+    // Instead, the unoptimized derivative of Zip must recompute.
+    //
+    //   λ f Δf m₁ Δm₁ m₂ Δm₂ → diff
+    //     (zip (apply Δf f) (apply Δm₁ m₁) (apply Δm₂ m₂))
+    //     (zip f m₁ m₂)
+    //
     case Zip(k, v1, v2, w) => {
-      val (df, m1, dm1, m2, dm2) =
-        (Var(4), Var(3), Var(2), Var(1), Var(0))
-      val dg = Abs("k",
-        App(App(weaken(_ + 1, df), Var(0)), nilTerm(k)))
-      Abs("f", Abs("Δf",
-        Abs("m₁", Abs("Δm₁", Abs("m₂", Abs("Δm₂",
-          zip4(k, v1, deltaType(v1), v2, deltaType(v2),
-            deltaType(w),
-            dg, m1, dm1, m2, dm2)))))))
+      val (f, df, m1, dm1, m2, dm2) =
+        (Var(5), Var(4), Var(3), Var(2), Var(1), Var(0))
+      Abs("f", Abs("Δf", Abs("m₁", Abs("Δm₁", Abs("m₂", Abs("Δm₂",
+        App(App(diffTerm(Map(k, w)),
+          zip(k, v1, v2, w,
+              App(App(applyBaseFun(k, v1, v2, w), df), f),
+              App(App(applyTerm(Map(k, v1)), dm1), m1),
+              App(App(applyTerm(Map(k, v2)), dm2), m2))),
+          zip(k, v1, v2, w, f, m1, m2))))))))
     }
   }
 }

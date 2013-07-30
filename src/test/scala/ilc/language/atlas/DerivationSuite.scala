@@ -1,21 +1,16 @@
+package ilc
+package language.atlas
+
 /**
  * Tests for Atlas
  */
 
-// Right now, tests for evaluation of lambda terms are also
-// included, reason being the evaluation framework is based on
-// Syntax.Lambda, which will probably be replaced by a more
-// reasonable language descriptor in the branch scala-mixin
-// soon, when tests here will have to be ported as well.
-
-package Language
-
 import org.scalatest.FunSuite
 import org.scalatest.exceptions.TestFailedException
-import Language.Atlas._
-import Evaluation.Atlas._
+import ilc.language.atlas.Syntax._
+import ilc.language.atlas.Evaluation._
  
-class AtlasSuite extends FunSuite {
+class DerivationSuite extends FunSuite {
 
   // SHORTHANDS
 

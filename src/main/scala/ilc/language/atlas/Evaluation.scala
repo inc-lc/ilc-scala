@@ -2,13 +2,15 @@
  * Provisional evaluator for Atlas to pass tests
  */
 
-package Evaluation
+package ilc
+package language.atlas
 
-import Language.Atlas._
+import Syntax._
 
 import collection.immutable
 
-object Atlas {
+object Evaluation {
+
   private type AnyMap = immutable.Map[Any, Any]
 
   def eval(t: Term): Any = try {

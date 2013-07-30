@@ -1,84 +1,12 @@
-package Syntax
+package ilc
+package feature.functions
 
 /**
- * Untyped lambda calculi with abstraction and application
- * extensible by constants and primitives
+ * Pretty printing for first-class functions.
  */
 
-import language.implicitConversions
-
-trait Lambda {
-
-  // SUBCLASS OBLIGATIONS
-
-  type Constant
-  def deriveConst(c: Constant): Term
-
-  // SYNTAX
-
-  // Terms are parametric in the set `Constant` of constants.
-
-  sealed abstract trait Term {
-    override def toString = (new Pretty)(this)
-  }
-
-  case class Var(index: Int) extends Term
-  case class App(operator: Term, operand: Term) extends Term
-  case class Abs(name: String, body: Term) extends Term
-  // The first argument of abstraction serves as documentation
-  // alone. Variables are de-Bruijn indices.
-
-  case class Const(c: Constant) extends Term
-
-  // implicit conversion to stop writing `Const`
-  implicit def liftConstant(c: Constant): Term = Const(c)
-
-  // WEAKENING
-
-  def weaken(adjustIndex: Int => Int, t: Term): Term = t match {
-    case c: Const => c
-    case Var(i: Int) => Var(adjustIndex(i))
-    case App(s1, s2) =>
-      new App(weaken(adjustIndex, s1), weaken(adjustIndex, s2))
-    case Abs(x, s) => new Abs(x,
-      weaken(i => if (i <= 0) i else 1 + adjustIndex(i - 1), s))
-  }
-
-  // DERIVATION
-
-  // String transformation
-  def delta(x: String): String = "Δ" ++ x
-
-  // Derivation follows Agda module
-  // Syntax.Derive.Canon-Popl14
-
-  def derive(t: Term): Term = t match {
-    case Const(c)  => deriveConst(c)
-    case Var(i)    => Var(2 * i)
-    case Abs(x, t) => Abs(x, Abs(delta(x), derive(t)))
-    case App(s, t) =>
-      App(App(derive(s), weaken(_ * 2 + 1, t)), derive(t))
-  }
-
-  // PRETTY PRINTING
-
-  // scala> import Language.Atlas._
-  // import Language.Atlas._
-  //
-  // scala> val id = Abs("x", Var(0))
-  // id: Language.Atlas.Syntax.Abs = λx. x
-  //
-  // scala> val y = App(App(id, id), id)
-  // y: Language.Atlas.Syntax.app = (λx. x) (λx. x) (λx. x)
-  //
-  // scala> val z = Abs("x", Abs("x", Abs("x", Abs("x", Var(2)))))
-  // z: Language.Atlas.Syntax.Abs = λx. λx₁. λx₂. λx₃. x₁
-  //
-  // The pretty-printing visitor Pretty is in this file because
-  // it depends on Visitor, which depends on Term, which depends
-  // on Pretty.
-
-  class Pretty {
+trait Pretty extends Syntax {
+  object pretty extends (Term => String) {
     /**
      * Pretty print an expression according to a template.
      *
@@ -192,5 +120,4 @@ trait Lambda {
      */
     val outermostPriority : Priority = 3
   }
-
 }

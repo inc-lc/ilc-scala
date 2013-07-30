@@ -5,6 +5,7 @@ package language.atlas
  * Tests for Atlas
  */
 
+import collection.immutable
 import org.scalatest.FunSuite
 import org.scalatest.exceptions.TestFailedException
 import ilc.language.atlas.Syntax._
@@ -14,9 +15,7 @@ class DerivationSuite extends FunSuite {
 
   // SHORTHANDS
 
-  private type map[K, V] = collection.immutable.Map[K, V]
-  private val map = collection.immutable.Map
-  private val emptyMap = map.empty[Any, Any]
+  val emptyMap = immutable.Map.empty[Any, Any]
 
   def lookup(key: Term, m: Term) =
     eval(App(App(Lookup(Number, Number), key), m))
@@ -440,7 +439,7 @@ class DerivationSuite extends FunSuite {
   }
 
   def assertMapVal(t: Any, assoc: (Any, Any)*) {
-    assert(t === map(assoc: _*))
+    assert(t === immutable.Map(assoc: _*))
   }
 
   // TESTING TOOLS FOR DERIVATIVES

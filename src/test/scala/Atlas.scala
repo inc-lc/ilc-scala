@@ -153,7 +153,7 @@ class AtlasTest extends FunSuite {
         App(App(Plus, Var(1)), Var(0))))))))
     def ezmap(i: Int, j: Int) =
       mapLit(Number, Number, i -> j)
-    def t = zip4(Number, Number, Number, Number, Number,
+    def t = zip4(Number, Number, Number, Number, Number, Number,
       plus4,
       ezmap(1, 2), ezmap(3, 4), ezmap(5, 6), ezmap(7, 8))
     assertMap(t, 1 -> 2, 3 -> 4, 5 -> 6, 7 -> 8)
@@ -227,7 +227,7 @@ class AtlasTest extends FunSuite {
   }
 
   test("zipping two maps traverses the union of their keys") {
-    assertMap(zip(Number, Number, Number,
+    assertMap(zip(Number, Number, Number, Number,
                   constFun(Plus), negMap1234, negMap1256),
               1 -> (- 1 - 1), 2 -> (- 2 - 2),
               3 -> -3, 4 -> -4, 5 -> -5, 6 -> -6)
@@ -345,12 +345,15 @@ class AtlasTest extends FunSuite {
     val m = Map(Number, Number)
     val n = Number
     // λx. zip (λ_. λy. λz. x + y + z)
-    val t = Abs("x", App(Zip(n, n, n), Abs("_", Abs("y", Abs("z",
+    val t = Abs("x", App(Zip(n, n, n, n),
+      Abs("_", Abs("y", Abs("z",
       App(App(Plus, App(App(Plus, Var(3)), Var(1))), Var(0)))))))
     assertCorrect(m, t,
       List((n, 100, 1000),
            (m, negMap1234, negMap1256),
            (m, idMap2367, map1368)))
+    // this is a good test case: result change contains all of
+    // insertion, deletion and update.
   }
 
   // TESTING DERIVATIVES OF ABSTRACTION AND APPLICATION

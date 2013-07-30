@@ -38,7 +38,7 @@ object Atlas extends Syntax.Lambda {
   case class Empty(k: Type, v: Type)  extends Constant
   case class Update(k: Type, v: Type) extends Constant
   case class Lookup(k: Type, v: Type) extends Constant
-  case class Zip(k: Type, u: Type, v: Type) extends Constant
+  case class Zip(k: Type, u: Type, v: Type, w: Type) extends Constant
   case class Fold(k: Type, v: Type) extends Constant
 
   // syntactic sugars for constants and terms via implict conversion
@@ -51,8 +51,10 @@ object Atlas extends Syntax.Lambda {
 
   // shorthand term constructors
   def zip(keyType: Type, valType1: Type, valType2: Type,
+          resultType: Type,
           f: Term, map1: Term, map2: Term): Term =
-    App(App(App(Zip(keyType, valType1, valType2), f), map1), map2)
+    App(App(App(Zip(keyType, valType1, valType2, resultType),
+      f), map1), map2)
 
   def fold(keyType: Type, valType: Type,
            f: Term, z: Term, m: Term): Term =
@@ -123,15 +125,17 @@ object Atlas extends Syntax.Lambda {
   def zipPair(keyType: Type,
               valType1: Type,
               valType2: Type,
+              resultType: Type,
               map1: Term,
               map2: Term): Term =
-    zip(keyType, valType1, valType2,
+    zip(keyType, valType1, valType2, resultType,
         // pair-term needn't be weakened because it's closed
         // relevant test: "weakening closed terms has no effect"
         Abs("_", pairTerm(valType1, valType2)),
         map1, map2)
 
   def zip4(k: Type, v1: Type, v2: Type, v3: Type, v4: Type,
+           resultType: Type,
            f: Term, // k → v1 → v2 → v3 → v4 → b
            m1: Term, m2: Term, m3: Term, m4: Term): Term = {
     // g = λ key p12 p34 → uncurry
@@ -152,10 +156,10 @@ object Atlas extends Syntax.Lambda {
             (fw, key), val1), val2), val3), val4))),
           p34))),
         p12))))
-    zip(k, pairType(v1, v2), pairType(v3, v4),
+    zip(k, pairType(v1, v2), pairType(v3, v4), resultType,
       g,
-      zipPair(k, v1, v2, m1, m2),
-      zipPair(k, v3, v4, m3, m4))
+      zipPair(k, v1, v2, pairType(v1, v2), m1, m2),
+      zipPair(k, v3, v4, pairType(v3, v4), m3, m4))
   }
 
   def diffTerm(tau: Type): Term = tau match {
@@ -167,7 +171,8 @@ object Atlas extends Syntax.Lambda {
         Var(0) ->
           App(App(Plus, Var(1)), App(Negate, Var(0))))))
     // m₁ ⊝ m₀ = zip _⊝_  m₁ m₀
-    case Map(k, v) => App(Zip(k, v, v), Abs("_", diffTerm(v)))
+    case Map(k, v) =>
+      App(Zip(k, v, v, deltaType(v)), Abs("_", diffTerm(v)))
   }
 
   def applyTerm(tau: Type): Term = tau match {
@@ -182,7 +187,7 @@ object Atlas extends Syntax.Lambda {
 
     // apply Δm m = zip apply Δm m
     case Map(k, v) =>
-      App(Zip(k, deltaType(v), v), Abs("_", applyTerm(v)))
+      App(Zip(k, deltaType(v), v, v), Abs("_", applyTerm(v)))
   }
 
   def neutralTerm(tau: Type): Term = tau match {
@@ -286,7 +291,7 @@ object Atlas extends Syntax.Lambda {
     }
 
     // λ f Δf m1 Δm1 m2 Δm2 → zip4 Δf m1 Δm1 m2 Δm2
-    case Zip(k, v1, v2) => {
+    case Zip(k, v1, v2, w) => {
       val (df, m1, dm1, m2, dm2) =
         (Var(4), Var(3), Var(2), Var(1), Var(0))
       val dg = Abs("k",
@@ -294,6 +299,7 @@ object Atlas extends Syntax.Lambda {
       Abs("f", Abs("Δf",
         Abs("m₁", Abs("Δm₁", Abs("m₂", Abs("Δm₂",
           zip4(k, v1, deltaType(v1), v2, deltaType(v2),
+            deltaType(w),
             dg, m1, dm1, m2, dm2)))))))
     }
   }

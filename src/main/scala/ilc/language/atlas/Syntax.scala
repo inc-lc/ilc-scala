@@ -63,7 +63,7 @@ object Syntax extends feature.Functions {
 
   // swap argument order
   def flip(t: Term): Term =
-    Abs("x", Abs("y", App(App(t, Var(0)), Var(1))))
+    Abs("x", Abs("y", App(App(t, Var("y")), Var("x"))))
 
   // easy construction of map literals
   def mapLit(keyType: Type,
@@ -103,22 +103,20 @@ object Syntax extends feature.Functions {
   }
 
   def pairTerm(sType: Type, tType: Type): Term =
-    Abs("x", Abs("y", pair(sType, tType, Var(1), Var(0))))
+    Abs("x", Abs("y", pair(sType, tType, Var("x"), Var("y"))))
 
   def uncurry(type1: Type, type2: Type, f: Term, p: Term): Term = {
     val Map(t1, t2) = pairType(type1, type2)
     val Map(t3, t4) = t2
-    val f6 = weaken(_ + 6, f)
-    val f3 = weaken(_ + 3, f)
-    val xOut = Var(2)
-    val (x, y, yt) = (weaken(_ + 3, xOut), Var(2), Var(1))
+    val List(x, y, yt, dontcare) =
+      uniqueNames(f, "x", "y", "yt", "_")
     App(App(App(Fold(t1, t2),
-      Abs("x", Abs("yt", Abs("_",
+      Abs(x, Abs(yt, Abs(dontcare,
         App(App(App(Fold(t3, t4),
-          Abs("y", Abs("tt", Abs("_",
-            App(App(f6, x), y))))),
-          App(App(f3, xOut), neutralTerm(type2))),
-          yt))))),
+          Abs(y, Abs(dontcare, Abs(dontcare,
+            App(App(f, Var(x)), Var(y)))))),
+          App(App(f, Var(x)), neutralTerm(type2))),
+          Var(yt)))))),
       App(App(f, neutralTerm(type1)), neutralTerm(type2))),
       p)
   }
@@ -145,16 +143,13 @@ object Syntax extends feature.Functions {
     //           fw key val1 val2 val3 val4)
     //         p34)
     //       p12
-    val fw  = weaken(_ + 7, f)
-    val key = weaken(_ + 4, Var(2))
-    val p12 = Var(1)
-    val p34 = weaken(_ + 2, Var(0))
-    val (val1, val2, val3, val4) = (Var(3), Var(2), Var(1), Var(0))
+    val List(key, p12, p34, val1, val2, val3, val4) =
+      uniqueNames(f, "k", "p₁₂", "p₃₄", "v₁", "v₂", "v₃", "v₄").map(Var)
     val g =
-      Abs("key", Abs("p12", Abs("p34", uncurry(v1, v2,
-        Abs("val1", Abs("val2", uncurry(v3, v4,
-          Abs("val3", Abs("val4", App(App(App(App(App
-            (fw, key), val1), val2), val3), val4))),
+      Abs(key.name, Abs(p12.name, Abs(p34.name, uncurry(v1, v2,
+        Abs(val1.name, Abs(val2.name, uncurry(v3, v4,
+          Abs(val3.name, Abs(val4.name, App(App(App(App(App
+            (f, key), val1), val2), val3), val4))),
           p34))),
         p12))))
     zip(k, pairType(v1, v2), pairType(v3, v4), resultType,
@@ -168,9 +163,9 @@ object Syntax extends feature.Functions {
     case Bool => Xor
     // n₁ ⊝ n₀ = (n₀, n₁ - n₀) // old -> summand
     case Number => Abs("n₁", Abs("n₀",
-      mapLit(Number, Number,
-        Var(0) ->
-          App(App(Plus, Var(1)), App(Negate, Var(0))))))
+        mapLit(Number, Number,
+          Var("n₀") ->
+            App(App(Plus, Var("n₁")), App(Negate, Var("n₀"))))))
     // m₁ ⊝ m₀ = zip _⊝_  m₁ m₀
     case Map(k, v) =>
       App(Zip(k, v, v, deltaType(v)), Abs("_", diffTerm(v)))
@@ -183,8 +178,8 @@ object Syntax extends feature.Functions {
     // apply Δn n = n + lookup n Δn
     // replace by new value... if old one is correct
     case Number => Abs("Δn", Abs("n",
-      App(App(Plus, Var(0)),
-        App(App(Lookup(Number, Number), Var(0)), Var(1)))))
+      App(App(Plus, Var("n")),
+        App(App(Lookup(Number, Number), Var("n")), Var("Δn")))))
 
     // apply Δm m = zip apply Δm m
     case Map(k, v) =>
@@ -199,8 +194,8 @@ object Syntax extends feature.Functions {
     else
       Abs("Δf", Abs("f", Abs("x",
         App(App(applyBaseFun(types.tail: _*),
-          App(App(Var(2), Var(0)), nilTerm(types.head))),
-          App(Var(1), Var(0))))))
+          App(App(Var("Δf"), Var("x")), nilTerm(types.head))),
+          App(Var("f"), Var("x"))))))
 
   def neutralTerm(tau: Type): Term = tau match {
     case Bool => False
@@ -240,24 +235,24 @@ object Syntax extends feature.Functions {
 
     // λx. λΔx. λy. λΔy. Xor Δx Δy
     case Xor => Abs("x", Abs("Δx", Abs("y", Abs("Δy",
-                    App(App(Xor, Var(2)), Var(0))))))
+                    App(App(Xor, Var("Δx")), Var("Δy"))))))
 
     // λx. λΔx. λy. λΔy. Map(x + y -> lookup x Δx + lookup y Δy)
     case Plus => Abs("x", Abs("Δx", Abs("y", Abs("Δy",
                    mapLit(Number, Number,
-                          App(App(Plus, Var(3)), Var(1)) ->
+                          App(App(Plus, Var("x")), Var("y")) ->
                           App(App(Plus,
                             App(App(Lookup(Number, Number),
-                              Var(3)), Var(2))),
+                              Var("x")), Var("Δx"))),
                             App(App(Lookup(Number, Number),
-                              Var(1)), Var(0))))))))
+                              Var("y")), Var("Δy"))))))))
 
     // λx. λΔx. Map(x -> - lookup x Δx)
     case Negate => Abs("x", Abs("Δx", mapLit(Number, Number,
-                     App(Negate, Var(1)) ->
+                     App(Negate, Var("x")) ->
                      App(Negate,
                        App(App(Lookup(Number, Number),
-                         Var(1)), Var(0))))))
+                         Var("x")), Var("Δx"))))))
 
     // λ k Δk v Δv m Δm →
     //   let
@@ -267,12 +262,12 @@ object Syntax extends feature.Functions {
     //       (update k (diff (apply Δm[k] m[k]), v) Δm)
     case Update(k, v) => {
       val update: Term = Update(k, deltaType(v))
-      val (key, dKey, value, dValue, map, dMap) =
-        (Var(5), Var(4), Var(3), Var(2), Var(1), Var(0))
+      val List(key, dKey, value, dValue, map, dMap) =
+        List("k", "Δk", "v", "Δv", "m", "Δm").map(Var)
       val newKey: Term = App(App(applyTerm(k), dKey  ), key  )
       val newVal: Term = App(App(applyTerm(v), dValue), value)
-      //   5         4        3         2        1         0
-      Abs("k", Abs("Δk", Abs("v", Abs("Δv", Abs("m", Abs("Δm",
+      Abs(key.name, Abs(dKey.name, Abs(value.name, Abs(dValue.name,
+       Abs(map.name, Abs(dMap.name,
         App(App(App(update, newKey),
           App(App(diffTerm(v), newVal),
             App(App(Lookup(k, v), newKey),
@@ -291,10 +286,10 @@ object Syntax extends feature.Functions {
     //               (lookup (apply Δk k) m))
     //        (lookup k m)
     case Lookup(k, v) => {
-      val (key, dKey, map, dMap) =
-        (Var(3), Var(2), Var(1), Var(0))
+      val List(key, dKey, map, dMap) =
+        List("k", "Δk", "m", "Δm").map(Var)
       val newKey = App(App(applyTerm(k), dKey), key)
-      Abs("k", Abs("Δk", Abs("m", Abs("Δm",
+      Abs(key.name, Abs(dKey.name, Abs(map.name, Abs(dMap.name,
         App(App(diffTerm(v),
           App(App(applyTerm(v),
             App(App(Lookup(k, deltaType(v)), newKey), dMap)),
@@ -314,9 +309,10 @@ object Syntax extends feature.Functions {
     //     (zip f m₁ m₂)
     //
     case Zip(k, v1, v2, w) => {
-      val (f, df, m1, dm1, m2, dm2) =
-        (Var(5), Var(4), Var(3), Var(2), Var(1), Var(0))
-      Abs("f", Abs("Δf", Abs("m₁", Abs("Δm₁", Abs("m₂", Abs("Δm₂",
+      val List(f, df, m1, dm1, m2, dm2) =
+        List("f", "Δf", "m₁", "Δm₁", "m₂", "Δm₂").map(Var)
+      Abs(f.name, Abs(df.name, Abs(m1.name, Abs(dm1.name,
+      Abs(m2.name, Abs(dm2.name,
         App(App(diffTerm(Map(k, w)),
           zip(k, v1, v2, w,
               App(App(applyBaseFun(k, v1, v2, w), df), f),

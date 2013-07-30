@@ -9,7 +9,7 @@ import org.scalatest.FunSuite
 import org.scalatest.exceptions.TestFailedException
 import ilc.language.atlas.Syntax._
 import ilc.language.atlas.Evaluation._
- 
+
 class DerivationSuite extends FunSuite {
 
   // SHORTHANDS
@@ -33,13 +33,13 @@ class DerivationSuite extends FunSuite {
   // USABLE TERM CONSTRUCTORS
 
   // λf. λx. f x
-  val appFun = Abs("f", Abs("x", App(Var(1), Var(0))))
+  val appFun = Abs("f", Abs("x", App(Var("f"), Var("x"))))
 
   // λ_. t
-  def constFun(t: Term) = Abs("_", weaken(_ + 1, t))
+  def constFun(t: Term) = Abs(uniqueName(t, "_"), t)
 
   // λx. x
-  val idFun = Abs("x", Var(0))
+  val idFun = Abs("x", Var("x"))
 
   def sum(t: Term): Term =
     fold(Number, Number, constFun(Plus), 0, t)
@@ -104,17 +104,6 @@ class DerivationSuite extends FunSuite {
     truthTable(app(idFun), "01")
   }
 
-  // TESTING WEAKENING
-
-  test("weakening closed terms has no effect") {
-    def weak(t: Term) = weaken(i => i * i, t)
-    assert(weak(pairTerm(Bool, Bool)) === pairTerm(Bool, Bool))
-    assert(weak(diffTerm(Map(Bool, Number))) ===
-           diffTerm(Map(Bool, Number)))
-    assert(weak(applyTerm(Map(Bool, Number))) ===
-           applyTerm(Map(Bool, Number)))
-  }
-
   // TESTING ENCODINGS
 
   test("pair encoding preserves information") {
@@ -127,8 +116,8 @@ class DerivationSuite extends FunSuite {
            (App(App(Lookup(Number, Bool), 2), oddityMap1234), primeMap10),
            (negMap1234, App(App(Lookup(Number, Bool), 4), primeMap10)),
            (negMap1256, primeMap10))
-    val fst = Abs("x", Abs("y", Var(1)))
-    val snd = Abs("x", Abs("y", Var(0)))
+    val fst = Abs("x", Abs("y", Var("x")))
+    val snd = Abs("x", Abs("y", Var("y")))
     def mkProj(proj: Term): (Type, Type, Term, Term) => Any =
       (sType, tType, s, t) =>
         eval(uncurry(sType, tType, proj, pair(sType, tType, s, t)))
@@ -146,8 +135,8 @@ class DerivationSuite extends FunSuite {
   test("zip4 traverses the union of all maps") {
     val plus4 = Abs("k", Abs("a", Abs("b", Abs("c", Abs("d",
       App(App(Plus,
-        App(App(Plus, Var(3)), Var(2))),
-        App(App(Plus, Var(1)), Var(0))))))))
+        App(App(Plus, Var("a")), Var("b"))),
+        App(App(Plus, Var("c")), Var("d"))))))))
     def ezmap(i: Int, j: Int) =
       mapLit(Number, Number, i -> j)
     def t = zip4(Number, Number, Number, Number, Number, Number,
@@ -344,7 +333,8 @@ class DerivationSuite extends FunSuite {
     // λx. zip (λ_. λy. λz. x + y + z)
     val t = Abs("x", App(Zip(n, n, n, n),
       Abs("_", Abs("y", Abs("z",
-      App(App(Plus, App(App(Plus, Var(3)), Var(1))), Var(0)))))))
+        App(App(Plus, App(App(Plus,
+          Var("x")), Var("y"))), Var("z")))))))
     assertCorrect(m, t,
       List((n, 100, 1000),
            (m, negMap1234, negMap1256),
@@ -360,7 +350,7 @@ class DerivationSuite extends FunSuite {
   }
 
   test("the derivative of the constant function does not react") {
-    truthTable(App(Abs("y", constFun(Var(0))), False), "00")
+    truthTable(App(Abs("y", constFun(Var("y"))), False), "00")
   }
 
   test("the derivative of [λf. λx. f x] computes [Δf x Δx]") {

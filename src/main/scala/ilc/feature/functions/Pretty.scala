@@ -34,7 +34,7 @@ trait Pretty extends Syntax {
      *   the term to print
      */
     def apply(t : Term) : String =
-      apply(t, outermostPriority, List())
+      apply(t, outermostPriority)
 
     /**
      * Print a term to human-readable syntax.
@@ -43,45 +43,24 @@ trait Pretty extends Syntax {
      *   the term to print
      * @param priority
      *   the priority of the context this term is printed in
-     * @param names
-     *   the names of bound variables
      */
-    def apply(t : Term, priority : Priority, names : List[String]) : String = t match {
+    def apply(t : Term, priority : Priority) : String = t match {
       case Const(constant) =>
         constant.toString
 
-      case Var(index) =>
-        names.lift(index) getOrElse ("#" + index)
+      case Var(name) =>
+        name
 
       case App(operator, operand) =>
         template(priorityOfApp, priority, "%s %s",
-                 apply(operator, priorityOfApp + 1, names),
-                 apply(operand, priorityOfApp, names))
+                 apply(operator, priorityOfApp + 1),
+                 apply(operand, priorityOfApp))
 
       case Abs(name, body) => {
-        val unique = uniqueName(name, names)
         template(priorityOfAbs, priority, "λ%s. %s",
-                 unique,
-                 apply(body, priorityOfAbs + 1, unique :: names))
+                 name,
+                 apply(body, priorityOfAbs + 1))
       }
-    }
-
-    // variable disambiguation
-
-    val subscript = "₀₁₂₃₄₅₆₇₈₉".toCharArray
-
-    def toSubscript(s: String): String = {
-      s.map({ (char: Char) =>
-        if (char.isDigit) subscript(char - '0') else char
-      }).mkString
-    }
-
-    def uniqueName(x: String, nameStack : List[String]) = {
-      val freq = nameStack.count(_.matches("^" ++ x ++ "[₀-₉]*$"))
-      if (freq == 0)
-        x
-      else
-        x ++ toSubscript(freq.toString)
     }
 
     // parentheses handling

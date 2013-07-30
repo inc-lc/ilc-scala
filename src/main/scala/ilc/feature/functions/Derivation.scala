@@ -4,7 +4,7 @@ package feature.functions
 /**
  * Symbolic derivation for first-class functions.
  */
-trait Derivation extends Syntax {
+trait Derivation extends Syntax with FV {
   // SUBCLASS OBLIGATIONS
 
   def deriveConst(c: Constant): Term
@@ -18,10 +18,22 @@ trait Derivation extends Syntax {
   // Syntax.Derive.Canon-Popl14
 
   def derive(t: Term): Term = t match {
-    case Const(c)  => deriveConst(c)
-    case Var(i)    => Var(2 * i)
-    case Abs(x, t) => Abs(x, Abs(delta(x), derive(t)))
-    case App(s, t) =>
-      App(App(derive(s), weaken(_ * 2 + 1, t)), derive(t))
+    case Const(constant) =>
+      deriveConst(constant)
+
+    case Var(name) =>
+      Var(delta(name))
+
+    case App(operator, operand) =>
+      App(App(derive(operator), operand), derive(operand))
+
+    case Abs(x, body) => {
+      val dx = delta(x)
+      if (FV(t) contains dx)
+        sys.error("naming scheme violation " ++
+          "when deriving:\n  " ++ t.toString)
+      else
+        Abs(x, Abs(dx, derive(body)))
+    }
   }
 }

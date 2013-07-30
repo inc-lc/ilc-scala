@@ -7,7 +7,7 @@ import org.scalatest.matchers.ShouldMatchers
 class PrettySuite extends FunSuite with ShouldMatchers {
   import feature.Functions._
 
-  val id = Abs("x", Var(0))
+  val id = Abs("x", Var("x"))
 
   test("The identity function prints as λx. x") {
     pretty(id) should be ("λx. x")
@@ -18,6 +18,7 @@ class PrettySuite extends FunSuite with ShouldMatchers {
   }
 
   test("Variables are disambiguated with indices.") {
-    pretty(Abs("x", Abs("x", Abs("x", Abs("x", Var(2)))))) should be ("λx. λx₁. λx₂. λx₃. x₁")
+    val List(x1, x2, x3) = uniqueNames(Set("x"), "x", "x", "x")
+    pretty(Abs("x", Abs(x1, Abs(x2, Abs(x3, Var(x1)))))) should be ("λx. λx₁. λx₂. λx₃. x₁")
   }
 }

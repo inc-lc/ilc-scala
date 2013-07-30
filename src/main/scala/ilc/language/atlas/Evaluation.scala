@@ -11,25 +11,27 @@ import collection.immutable
 
 object Evaluation {
 
+  type Env = immutable.Map[String, Any]
+
   private type AnyMap = immutable.Map[Any, Any]
 
   def eval(t: Term): Any = try {
-    evalWithEnv(t, Nil)
+    evalWithEnv(t, immutable.Map.empty)
   } catch { case err: java.lang.IllegalArgumentException =>
     throw new java.lang.
       IllegalArgumentException(err.getMessage() ++
         "\n in the term\n    " ++ t.toString)
   }
 
-  def evalWithEnv(t: Term, env: List[Any]): Any = try {
+  def evalWithEnv(t: Term, env: Env): Any = try {
     t match {
       case Abs(x, t) =>
-        (arg: Any) => evalWithEnv(t, arg :: env)
+        (arg: Any) => evalWithEnv(t, env.updated(x, arg))
       case App(s, t) =>
         evalWithEnv(s, env).
           asInstanceOf[Any => Any](evalWithEnv(t, env))
-      case Var(i) =>
-        env(i) // Index out of bound error = free var
+      case Var(name) =>
+        env(name) // NoSuchElementException = free var
       case Const(c) => evalConst(c)
     }
   } catch { case err: java.lang.ClassCastException =>

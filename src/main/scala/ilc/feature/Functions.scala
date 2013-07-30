@@ -8,6 +8,7 @@ trait Functions
   extends functions.Syntax
   with functions.Pretty
   with functions.Derivation
+  with functions.UniqueNames
 
 object Functions extends Functions {
   type Constant = Nothing

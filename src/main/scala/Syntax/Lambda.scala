@@ -22,9 +22,9 @@ trait Lambda {
     override def toString = (new Pretty)(this)
   }
 
-  case class Var(i: Int) extends Term
-  case class App(s: Term, t: Term) extends Term
-  case class Abs(x: String, t: Term) extends Term
+  case class Var(index: Int) extends Term
+  case class App(operator: Term, operand: Term) extends Term
+  case class Abs(name: String, body: Term) extends Term
   // The first argument of abstraction serves as documentation
   // alone. Variables are de-Bruijn indices.
 
@@ -33,6 +33,16 @@ trait Lambda {
   // implicit conversion to stop writing `Const`
   implicit def liftConstant(c: Constant): Term = Const(c)
 
+  // WEAKENING
+
+  def weaken(adjustIndex: Int => Int, t: Term): Term = t match {
+    case c: Const => c
+    case Var(i: Int) => Var(adjustIndex(i))
+    case App(s1, s2) =>
+      new App(weaken(adjustIndex, s1), weaken(adjustIndex, s2))
+    case Abs(x, s) => new Abs(x,
+      weaken(i => if (i <= 0) i else 1 + adjustIndex(i - 1), s))
+  }
 
   // DERIVATION
 
@@ -48,62 +58,6 @@ trait Lambda {
     case Abs(x, t) => Abs(x, Abs(delta(x), derive(t)))
     case App(s, t) =>
       App(App(derive(s), weaken(_ * 2 + 1, t)), derive(t))
-  }
-
-  // VISITOR/FOLDING
-
-  trait Visitor[T] {
-
-    def Const(c: Constant): T
-    def Var(i: Int): T
-    def App(me: App, s: T, t: T): T
-    def Abs(me: Abs, x: String, t: T): T
-
-    // folding
-
-    def apply(t: Term): T = t match {
-      case Const(c)     => Const(c)
-      case Var(i)       => Var(i)
-      case me@App(s, t) => App(me, this(s), this(t))
-      case me@Abs(x, t) => { bind(x) ; unbind(me, this(t)) }
-    }
-
-    // variable name resolution
-
-    def resolveName(i: Int) =
-      if (i < nameStack.length)
-        nameStack(i)
-      else {
-        "Var(" ++ i.toString ++ ")"
-      }
-
-    // stack of names: private to Visitor
-
-    protected[this] def bind(x: String) { pushName(x) }
-    protected[this] def unbind(me: Abs, t: T): T = { Abs(me, popName(), t) }
-
-    protected[this] var nameStack = List.empty[String]
-
-    protected[this] def pushName(x: String) {
-      nameStack = x :: nameStack
-    }
-
-    protected[this] def popName(): String = {
-      val topName = nameStack.head
-      nameStack = nameStack.tail
-      topName
-    }
-  }
-
-  // WEAKENING
-
-  def weaken(adjustIndex: Int => Int, t: Term): Term = t match {
-    case c: Const => c
-    case Var(i: Int) => Var(adjustIndex(i))
-    case App(s1, s2) =>
-      new App(weaken(adjustIndex, s1), weaken(adjustIndex, s2))
-    case Abs(x, s) => new Abs(x,
-      weaken(i => if (i <= 0) i else 1 + adjustIndex(i - 1), s))
   }
 
   // PRETTY PRINTING
@@ -124,18 +78,65 @@ trait Lambda {
   // it depends on Visitor, which depends on Term, which depends
   // on Pretty.
 
-  class Pretty extends Visitor[String] {
+  class Pretty {
+    /**
+     * Pretty print an expression according to a template.
+     *
+     * @param inner
+     *   priority of the language construct to be printed
+     * @param outer
+     *   priority of the context to be printed in
+     * @param format
+     *   format string, use @code{%s} as placeholder
+     * @param args
+     *   arguments to be put into the placeholders
+     */
+    def template(inner : Priority, outer : Priority, format : String, args : String*) = {
+      val text = format.format(args : _*)
+      if (inner < outer)
+        text
+       else
+         "(" + text + ")"
+    }
 
-    def Const(c: Constant) = c.toString
+    /**
+     * Print a closed term to human-readable syntax.
+     *
+     * @param t
+     *   the term to print
+     */
+    def apply(t : Term) : String =
+      apply(t, outermostPriority, List())
 
-    def Var(i: Int) = resolveName(i)
+    /**
+     * Print a term to human-readable syntax.
+     *
+     * @param t
+     *   the term to print
+     * @param priority
+     *   the priority of the context this term is printed in
+     * @param names
+     *   the names of bound variables
+     */
+    def apply(t : Term, priority : Priority, names : List[String]) : String = t match {
+      case Const(constant) =>
+        constant.toString
 
-    def App(me: App, s: String, t: String) =
-      parenthesizeWisely(me, s, LeftChild) ++ " " ++
-        parenthesizeWisely(me, t, RightChild)
+      case Var(index) =>
+        names.lift(index) getOrElse ("#" + index)
 
-    def Abs(me: Abs, x: String, t: String) =
-      "λ" ++ x ++ ". " ++ parenthesizeWisely(me, t)
+      case App(operator, operand) =>
+        template(priorityOfApp, priority, "%s %s",
+                 apply(operator, priorityOfApp + 1, names),
+                 apply(operand, priorityOfApp, names))
+
+      case Abs(name, body) => {
+        val unique = uniqueName(name, names)
+        template(priorityOfAbs, priority, "λ%s. %s",
+                 unique,
+                 apply(body, priorityOfAbs + 1, unique :: names))
+      }
+    }
 
     // variable disambiguation
 
@@ -147,12 +148,12 @@ trait Lambda {
       }).mkString
     }
 
-    override def pushName(x: String) {
+    def uniqueName(x: String, nameStack : List[String]) = {
       val freq = nameStack.count(_.matches("^" ++ x ++ "[₀-₉]*$"))
-      super.pushName(if (freq == 0)
-                       x
-                     else
-                       x ++ toSubscript(freq.toString))
+      if (freq == 0)
+        x
+      else
+        x ++ toSubscript(freq.toString)
     }
 
     // parentheses handling
@@ -163,38 +164,33 @@ trait Lambda {
     // - variables are not parenthesized
     // - all other subterms are parenthesized
 
-    sealed trait Laterality
-    case object LeftChild  extends Laterality
-    case object RightChild extends Laterality
+    /**
+     * The priority of an operator or language construct, for
+     * deciding whether to add parentheses when pretty printing.
+     *
+     * Smaller numbers mean stronger binding. For example, the
+     * priority of multiplication should be a number less than
+     * the priority of addition.
+     */
+    type Priority = Int
 
-    def shouldParenthesize(me: Term, child: Laterality): Boolean = {
-      me match {
-        case Abs(x, t) => false
-        case App(s, t) => shouldParenthesizeApp(child, s, t)
-        case _ =>
-          sys error "Constants and variables should not have subterms"
-      }
-    }
+    /**
+     * Priority of application.
+     */
+    val priorityOfApp : Priority = 1
 
-    def shouldParenthesizeApp(child: Laterality,
-                              s: Term,
-                              t: Term): Boolean = {
-      (if (child == LeftChild) s else t) match {
-          case Const(c)  => false
-          case Var(i)    => false
-          case App(s, t) => !(child == LeftChild)
-          case Abs(x, t) => true
-      }
-    }
+    /**
+     * Priority of abstraction.
+     */
+    val priorityOfAbs : Priority = 2
 
-    def parenthesizeWisely(me: Term,
-                           subterm: String,
-                           child: Laterality = RightChild): String = {
-      if (shouldParenthesize(me, child))
-        "(" ++ subterm ++ ")"
-      else
-        subterm
-    }
+    /**
+     * Priority of the outermost context.
+     *
+     * This priority is used when a term occurs in a context
+     * that is not a term itself.
+     */
+    val outermostPriority : Priority = 3
   }
 
 }

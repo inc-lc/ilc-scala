@@ -6,10 +6,10 @@ package Evaluation
 
 import Language.Atlas._
 
-object Atlas {
+import collection.immutable
 
-  private type map = collection.immutable.Map[Any, Any]
-  private val map = collection.immutable.Map
+object Atlas {
+  private type AnyMap = immutable.Map[Any, Any]
 
   def eval(t: Term): Any = try {
     evalWithEnv(t, Nil)
@@ -45,31 +45,31 @@ object Atlas {
     case Num(i) => i
     case Plus => (x: Int) => (y: Int) => x + y
     case Negate => (x: Int) => - x
-    case _: Empty => map.empty[Any, Any]
+    case _: Empty => immutable.Map.empty[Any, Any]
     case _: Update =>
-      (k: Any) => (v: Any) => (m: map) =>
+      (k: Any) => (v: Any) => (m: AnyMap) =>
         if (isNeutral(v))
           m - k
         else
           m.updated(k, v)
     case Lookup(keyType, valType) =>
-      (k: Any) => (m: map) =>
+      (k: Any) => (m: AnyMap) =>
         if (m.contains(k))
           m(k)
         else
           eval(neutralTerm(valType))
     case Zip(keyType, valType1, valType2, resultType) =>
-      (f: Any => Any => Any => Any) => (m1: map) => (m2: map) => {
+      (f: Any => Any => Any => Any) => (m1: AnyMap) => (m2: AnyMap) => {
         val m1WithDefault = m1.withDefaultValue(neutral(valType1))
         val m2WithDefault = m2.withDefaultValue(neutral(valType2))
         val keySet = m1.keySet ++ m2.keySet
-        val output: map = keySet.map({ key =>
+        val output: AnyMap = keySet.map({ key =>
           key -> f(key)(m1WithDefault(key))(m2WithDefault(key))
         })(collection.breakOut)
         output.filter(p => ! isNeutral(p._2))
       }
     case Fold(keyType, valType) =>
-      (f: Any => Any => Any => Any) => (z: Any) => (m: map) =>
+      (f: Any => Any => Any => Any) => (z: Any) => (m: AnyMap) =>
         m.foldRight(z)((p, b) => f(p._1)(p._2)(b))
   }
 
@@ -78,7 +78,7 @@ object Atlas {
   private def isNeutral(value: Any): Boolean = value match {
     case 0 => true
     case false => true
-    case m: map => m.isEmpty
+    case m: AnyMap => m.isEmpty
     case _ => false
   }
 }

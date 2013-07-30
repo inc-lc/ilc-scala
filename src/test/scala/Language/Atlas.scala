@@ -8,6 +8,8 @@
 // reasonable language descriptor in the branch scala-mixin
 // soon, when tests here will have to be ported as well.
 
+package Language
+
 import org.scalatest.FunSuite
 import org.scalatest.exceptions.TestFailedException
 import Language.Atlas._

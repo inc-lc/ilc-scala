@@ -43,4 +43,10 @@ trait UniqueNames extends Syntax with FV {
 
   def uniqueNames(t: Term, defaults: String*): List[String] =
     uniqueNames(FV(t), defaults: _*)
+
+  def uniqueVars(toAvoid: Set[String], defaults: String*): List[Var] =
+    uniqueNames(toAvoid, defaults: _*) map Var
+
+  def uniqueVars(t: Term, defaults: String*): List[Var] =
+    uniqueNames(t, defaults: _*) map Var
 }

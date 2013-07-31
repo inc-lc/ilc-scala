@@ -18,27 +18,27 @@ class DerivationSuite extends FunSuite {
   val emptyMap = immutable.Map.empty[Any, Any]
 
   def lookup(key: Term, m: Term) =
-    eval(App(App(Lookup(Number, Number), key), m))
+    eval(Lookup(Number, Number)(key)(m))
 
   def foldNumMap(f: Term, z: Term, m: Term): Any =
     eval(fold(Number, Number, f, z, m))
 
   def diff(tau: Type, s: Term, t: Term): Term =
-    App(App(diffTerm(tau), s), t)
+    diffTerm(tau)(s)(t)
 
   def apply(tau: Type, dt: Term, t: Term): Term =
-    App(App(applyTerm(tau), dt), t)
+    applyTerm(tau)(dt)(t)
 
   // USABLE TERM CONSTRUCTORS
 
   // λf. λx. f x
-  val appFun = Abs("f", Abs("x", App(Var("f"), Var("x"))))
+  val appFun = "f" ->: "x" ->: Var("f")("x")
 
   // λ_. t
-  def constFun(t: Term) = Abs(uniqueName(t, "_"), t)
+  def constFun(t: Term) = uniqueName(t, "_") ->: t
 
   // λx. x
-  val idFun = Abs("x", Var("x"))
+  val idFun = "x" ->: "x"
 
   def sum(t: Term): Term =
     fold(Number, Number, constFun(Plus), 0, t)
@@ -68,7 +68,7 @@ class DerivationSuite extends FunSuite {
   val typesAndTerms = List.apply[(Type, Term)](
     Bool -> True,
     Bool -> False,
-    Bool -> App(App(Lookup(Number, Bool), 2), oddityMap1234),
+    Bool -> Lookup(Number, Bool)(2)(oddityMap1234),
     Number -> 1984,
     Number -> sum(negMap1256),
     Map(Number, Number) -> negMap1234,
@@ -97,10 +97,9 @@ class DerivationSuite extends FunSuite {
   }
 
   test("Haskell's ($) is " ++ appFun.toString) {
-    def app(t: Term) = App(appFun, t)
-    truthTable(app(constFun(False)), "00")
-    truthTable(app(constFun(True)), "11")
-    truthTable(app(idFun), "01")
+    truthTable(appFun(constFun(False)), "00")
+    truthTable(appFun(constFun(True)), "11")
+    truthTable(appFun(idFun), "01")
   }
 
   // TESTING ENCODINGS
@@ -112,11 +111,11 @@ class DerivationSuite extends FunSuite {
            (Map(Number, Number), Map(Number, Bool)))
     val termList: List[(Term, Term)] =
       List((0, False),
-           (App(App(Lookup(Number, Bool), 2), oddityMap1234), primeMap10),
-           (negMap1234, App(App(Lookup(Number, Bool), 4), primeMap10)),
+           (Lookup(Number, Bool)(2)(oddityMap1234), primeMap10),
+           (negMap1234, Lookup(Number, Bool)(4)(primeMap10)),
            (negMap1256, primeMap10))
-    val fst = Abs("x", Abs("y", Var("x")))
-    val snd = Abs("x", Abs("y", Var("y")))
+    val fst = "x" ->: "y" ->: "x"
+    val snd = "x" ->: "y" ->: "y"
     def mkProj(proj: Term): (Type, Type, Term, Term) => Any =
       (sType, tType, s, t) =>
         eval(uncurry(sType, tType, proj, pair(sType, tType, s, t)))
@@ -132,10 +131,8 @@ class DerivationSuite extends FunSuite {
   }
 
   test("zip4 traverses the union of all maps") {
-    val plus4 = Abs("k", Abs("a", Abs("b", Abs("c", Abs("d",
-      App(App(Plus,
-        App(App(Plus, Var("a")), Var("b"))),
-        App(App(Plus, Var("c")), Var("d"))))))))
+    val plus4 = Lambda("k", "a", "b", "c", "d") ->:
+      Plus("a", "b", "c", "d")
     def ezmap(i: Int, j: Int) =
       mapLit(Number, Number, i -> j)
     def t = zip4(Number, Number, Number, Number, Number, Number,
@@ -160,7 +157,7 @@ class DerivationSuite extends FunSuite {
 
   test("adding two numbers yields their sum") {
     intsAndInts.foreach { p =>
-      assert(eval(App(App(Plus, p._1), p._2)) === p._1 + p._2)
+      assert(eval(Plus(p._1, p._2)) === p._1 + p._2)
     }
   }
 
@@ -330,10 +327,8 @@ class DerivationSuite extends FunSuite {
     val m = Map(Number, Number)
     val n = Number
     // λx. zip (λ_. λy. λz. x + y + z)
-    val t = Abs("x", App(Zip(n, n, n, n),
-      Abs("_", Abs("y", Abs("z",
-        App(App(Plus, App(App(Plus,
-          Var("x")), Var("y"))), Var("z")))))))
+    val t = "x" ->:
+      Zip(n, n, n, n)(Lambda("_", "y", "z") ->: Plus("x", "y", "z"))
     assertCorrect(m, t,
       List((n, 100, 1000),
            (m, negMap1234, negMap1256),
@@ -349,11 +344,11 @@ class DerivationSuite extends FunSuite {
   }
 
   test("the derivative of the constant function does not react") {
-    truthTable(App(Abs("y", constFun(Var("y"))), False), "00")
+    truthTable(("y" ->: constFun("y"))(False), "00")
   }
 
   test("the derivative of [λf. λx. f x] computes [Δf x Δx]") {
-    truthTable(derive(App(appFun, App(Xor, True))), "0101")
+    truthTable(derive(appFun(Xor(True))), "0101")
   }
 
   // TRUTH-TABLE-BASED TESTING TOOLS FOR BOOLEANS
@@ -476,7 +471,7 @@ class DerivationSuite extends FunSuite {
       case Nil => dt
       case (tau, z, zNew) :: theRest => {
         val dz = diff(tau, zNew, z)
-        App(App(assembleChange(dt, theRest), z), dz)
+        assembleChange(dt, theRest)(z)(dz)
       }
     }
 
@@ -490,7 +485,7 @@ class DerivationSuite extends FunSuite {
       reversedInput match {
         case Nil => t
         case triple :: theRest =>
-          App(assemble(t, theRest), chooser(triple))
+          assemble(t, theRest)(chooser(triple))
       }
     assemble
   }

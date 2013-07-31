@@ -15,7 +15,12 @@ class DerivationSuite extends FunSuite {
 
   // SHORTHANDS
 
-  val emptyMap = immutable.Map.empty[Any, Any]
+  // TODO: remove me after the type system is removed
+  def neutral(dontcare: Type): Value = Value.Neutral
+
+  val emptyMap =
+    immutable.Map.empty[Value, Value].
+      withDefaultValue(Value.Neutral)
 
   def lookup(key: Term, m: Term) =
     eval(Lookup(Number, Number)(key)(m))
@@ -157,12 +162,12 @@ class DerivationSuite extends FunSuite {
 
   test("adding two numbers yields their sum") {
     intsAndInts.foreach { p =>
-      assert(eval(Plus(p._1, p._2)) === p._1 + p._2)
+      assert(eval(Plus(p._1, p._2)).toInt === p._1 + p._2)
     }
   }
 
   test("Empty is empty map") {
-    // assertMap(t: Term, assoc: (Any, Any)*)
+    // assertMap(t: Term, assoc: (Value, Value)*)
     // when no other argument is given,
     // assertMap(t) tests if t evaluates to the empty map.
     assertMap(Empty(Bool, Bool))
@@ -172,11 +177,11 @@ class DerivationSuite extends FunSuite {
   }
 
   test("neutral elements are false, 0, emptyMap") {
-    assert(neutral(Bool) === false)
-    assert(neutral(Number) === 0)
-    assert(neutral(Map(Number, Bool)) === emptyMap)
+    assert(neutral(Bool).toBool === false)
+    assert(neutral(Number).toInt === 0)
+    assert(neutral(Map(Number, Bool)).toMap === emptyMap)
     assert(neutral(Map(Map(Bool, Map(Bool, Bool)),
-                       Map(Map(Bool, Bool), Bool))) === emptyMap)
+      Map(Map(Bool, Bool), Bool))).toMap === emptyMap)
   }
 
   test("updating with nonexistent key is insertion") {
@@ -198,7 +203,7 @@ class DerivationSuite extends FunSuite {
 
   test("looking up an existing key returns the associated value") {
     Range.inclusive(1, 4) foreach { i =>
-      assert(lookup(i, negMap1234) === -i)
+      assert(lookup(i, negMap1234).toInt === -i)
     }
   }
 
@@ -216,14 +221,14 @@ class DerivationSuite extends FunSuite {
   }
 
   test("folding with Plus over a map yields the sum of its values") {
-    assert(eval(sum(negMap1234)) === -10)
-    assert(eval(sum(negMap1256)) === -14)
+    assert(eval(sum(negMap1234)).toInt === -10)
+    assert(eval(sum(negMap1256)).toInt === -14)
   }
 
   // TESTING DIFF, APPLY, NIL
 
   test("nil-terms denote nil changes") {
-    def applyNil(tau: Type, t: Term): Any =
+    def applyNil(tau: Type, t: Term): Value =
       eval(apply(tau, nilTerm(tau), t))
 
     typesAndTerms.foreach { p =>
@@ -380,19 +385,19 @@ class DerivationSuite extends FunSuite {
     }
   }
 
-  def truthTableVal(v: Any, spec: String) {
+  def truthTableVal(v: Value, spec: String) {
       val results = (spec.replaceAll("""(?m)\s+""", "") map {
         (x: Char) => if (x == '0') false else true
       }).toList
       testTruthTable(v, results)
   }
 
-  def testTruthTable(f: Any, spec: List[Boolean]) {
+  def testTruthTable(f: Value, spec: List[Boolean]) {
     val size = spec.size
     size match {
       case 0 => sys error "wrong truth table specification"
       case 1 => try {
-        assert(f === spec.head)
+        assert(f.toBool === spec.head)
       } catch {
         case err: TestFailedException =>
           val msg = " didn't map to " ++ (if (spec.head) "1" else "0")
@@ -401,14 +406,14 @@ class DerivationSuite extends FunSuite {
       }
       case _ => {
         try {
-          testTruthTable(f.asInstanceOf[Any => Any](false),
+          testTruthTable(f(false),
                          spec.slice(0, size / 2))
         } catch {
           case err: TestFailedException =>
             throw nextErr(err, false, err.getMessage())
         }
         try {
-          testTruthTable(f.asInstanceOf[Any => Any](true),
+          testTruthTable(f(true),
                          spec.slice(size / 2, size))
         } catch {
           case err: TestFailedException =>
@@ -429,11 +434,11 @@ class DerivationSuite extends FunSuite {
 
   // ASSOC-LIST-BASED TESTING TOOLS FOR MAPS
 
-  def assertMap(t: Term, assoc: (Any, Any)*) {
-    assertMapVal(eval(t), assoc: _*)
+  def assertMap(t: Term, assoc: (Value, Value)*) {
+    assertMapVal(eval(t).toMap, assoc: _*)
   }
 
-  def assertMapVal(t: Any, assoc: (Any, Any)*) {
+  def assertMapVal(t: ValueMap, assoc: (Value, Value)*) {
     assert(t === immutable.Map(assoc: _*))
   }
 

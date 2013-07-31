@@ -61,4 +61,7 @@ trait Syntax {
 
   // implicit conversion to stop writing `Const`
   implicit def liftConstant(c: Constant): Term = Const(c)
+
+  // implicit conversion to stop writing `Var`
+  implicit def liftVariable(name: String): Term = Var(name)
 }

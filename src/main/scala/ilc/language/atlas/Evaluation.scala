@@ -89,11 +89,12 @@ extends functions.Evaluation { self: language.atlas.Syntax =>
 
       override def toString = "Map(" ++ toMap.toString ++ ")"
       override def hashCode = toMap.hashCode
-      override def equals(that: Any) =
-        if (that.isInstanceOf[NonemptyMap])
-          this.toMap == that.asInstanceOf[NonemptyMap].toMap
-        else
+      override def equals(that: Any) = that match {
+        case thatMap: NonemptyMap =>
+          this.toMap == thatMap.toMap
+        case _ =>
           false
+      }
 
       // sanity check
       if (toMap.isEmpty)

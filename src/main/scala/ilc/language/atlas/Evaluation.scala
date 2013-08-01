@@ -148,6 +148,57 @@ extends functions.Evaluation { self: language.atlas.Syntax =>
         case _ => None
       }
     }
+
+    // helper functions of evalConst
+    // or: object functions lifted to the meta level
+
+    def xor(x: Boolean, y: Boolean): Boolean =
+      (x && ! y) || (! x && y)
+
+    def zip(f: Value, m1: Value, m2: Value): Value = {
+      val (map1, map2) = (m1.toMap, m2.toMap)
+      val keySet: Set[Value] = map1.keySet ++ map2.keySet
+      // grossResult is defined so as to specify the type
+      // of the result of keySet.map. otherwise the inferred
+      // return value of the anonymous function is not ValueMap
+      // and has no implicit conversion to Value.
+      val grossResult: ValueMap = keySet.map({
+        key => key -> f(key)(map1(key))(map2(key))
+      })(collection.breakOut)
+      grossResult filter {
+        p => ! p._2.isNeutral
+      }
+    }
+
+    def diff(u: Value, v: Value): Value = (u, v) match {
+      case (Bool(x), Bool(y)) =>
+        xor(x, y)
+      case (Num(n1), Num(n2)) =>
+        ValueMap(n2 -> (n1 - n2))
+      case (Map(m1), Map(m2)) =>
+        zip((_: Value) => (v1: Value) => (v2: Value) => diff(v1, v2),
+            m1, m2)
+      case (Function(f), Function(g)) =>
+        (x: Value) => (dx: Value) => diff(f(apply(dx, x)), g(x))
+    }
+
+    def apply(dv: Value, v: Value): Value =  (dv, v) match {
+      case (Bool(dx), Bool(x)) =>
+        xor(x, dx)
+      case (Neutral, Num(n)) => n
+      case (NonNilNumericChange(base, summand), Num(n)) =>
+        if (base == n)
+          n + summand
+        else
+          sys.error("trying to apply invalid change (" ++
+            base.toString ++ " -> (+) " ++ summand.toString ++
+            ") to " ++ v.toString)
+      case (Map(dm), Map(m)) =>
+        zip((_: Value) => (dv: Value) => (v: Value) => apply(dv, v),
+            dm, m)
+      case (Function(df), Function(f)) =>
+        (x: Value) => apply(df(x)(diff(x, x)),  f(x))
+    }
   }
 
   def evalConst(c: Constant): Value = c match {
@@ -158,8 +209,7 @@ extends functions.Evaluation { self: language.atlas.Syntax =>
       false
 
     case Xor =>
-      (x: Value) => (y: Value) =>
-        (x.toBool && ! y.toBool) || (! x.toBool && y.toBool)
+      (x: Value) => (y: Value) => Value.xor(x.toBool, y.toBool)
 
     case Num(i) =>
       i
@@ -188,20 +238,8 @@ extends functions.Evaluation { self: language.atlas.Syntax =>
       (key: Value) => (map: Value) => map.toMap(key)
 
     case _: Zip =>
-      (f: Value) => (m1: Value) => (m2: Value) => {
-        val (map1, map2) = (m1.toMap, m2.toMap)
-        val keySet: Set[Value] = map1.keySet ++ map2.keySet
-        // grossResult is defined so as to specify the type
-        // of the result of keySet.map. otherwise the inferred
-        // return value of the anonymous function is not ValueMap
-        // and has no implicit conversion to Value.
-        val grossResult: ValueMap = keySet.map({
-          key => key -> f(key)(map1(key))(map2(key))
-        })(collection.breakOut)
-        grossResult filter {
-          p => ! p._2.isNeutral
-        }
-      }
+      (f: Value) => (m1: Value) => (m2: Value) =>
+        Value.zip(f, m1, m2)
 
     case _: Fold =>
       (f: Value) => (z: Value) => (map: Value) =>

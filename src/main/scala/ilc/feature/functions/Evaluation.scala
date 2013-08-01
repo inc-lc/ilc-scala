@@ -71,4 +71,3 @@ trait Evaluation { self: Syntax =>
     (implicit impS: S => Value, impT: T => Value): (Value, Value) =
       (impS(p._1), impT(p._2))
 }
-

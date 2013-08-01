@@ -197,7 +197,13 @@ extends functions.Evaluation { self: language.atlas.Syntax =>
         zip((_: Value) => (dv: Value) => (v: Value) => apply(dv, v),
             dm, m)
       case (Function(df), Function(f)) =>
-        (x: Value) => apply(df(x)(diff(x, x)),  f(x))
+        (x: Value) => {
+          val nilChange = x match {
+            case _: AtlasValue => Neutral
+            case _ => diff(x, x)
+          }
+          apply(df(x)(nilChange),  f(x))
+        }
     }
   }
 

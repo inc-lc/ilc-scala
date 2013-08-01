@@ -174,16 +174,7 @@ trait Syntax extends feature.Functions {
 
   def applyTerm(tau: Type): Term = Apply
 
-  def applyBaseFun(types: Type*): Term =
-    if (types.length < 1)
-      sys error "too few types"
-    else if (types.length == 1)
-      applyTerm(types.head)
-    else
-      Lambda("Δf", "f", "x") ->:
-        applyBaseFun(types.tail: _*)(
-          Var("Δf")("x")(nilTerm(types.head)))(
-          Var("f")("x"))
+  def applyBaseFun(types: Type*): Term = Apply
 
   def neutralTerm(tau: Type): Term = tau match {
     case Bool => False

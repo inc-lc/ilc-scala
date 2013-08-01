@@ -202,6 +202,12 @@ extends functions.Evaluation { self: language.atlas.Syntax =>
   }
 
   def evalConst(c: Constant): Value = c match {
+    case Diff =>
+      (u: Value) => (v: Value) => Value.diff(u, v)
+
+    case Apply =>
+      (dv: Value) => (v: Value) => Value.apply(dv, v)
+
     case True =>
       true
 

@@ -13,6 +13,8 @@ trait Evaluation
 extends functions.Evaluation { self: language.atlas.Syntax =>
 
   type ValueMap = immutable.Map[Value, Value]
+  def ValueMap(assoc: (Value, Value)*): ValueMap =
+    immutable.Map.apply[Value, Value](assoc: _*)
 
   // SPECIALIZE VALUE TO ATLAS
 

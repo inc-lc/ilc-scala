@@ -6,14 +6,13 @@ package ilc
 package language.atlas
 
 import scala.language.implicitConversions
-import Syntax._
 
 import java.lang.IllegalArgumentException
 import javax.management.modelmbean.InvalidTargetObjectTypeException
 
 import collection.immutable
 
-object Evaluation {
+trait Evaluation { self: Syntax =>
 
   type Env = immutable.Map[String, Value]
 

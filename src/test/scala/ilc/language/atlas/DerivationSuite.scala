@@ -8,8 +8,7 @@ package language.atlas
 import collection.immutable
 import org.scalatest.FunSuite
 import org.scalatest.exceptions.TestFailedException
-import ilc.language.atlas.Syntax._
-import ilc.language.atlas.Evaluation._
+import ilc.language.Atlas._
 
 class DerivationSuite extends FunSuite {
 

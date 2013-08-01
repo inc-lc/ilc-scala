@@ -10,7 +10,7 @@ package language.atlas
 
 import scala.language.implicitConversions
 
-object Syntax extends feature.Functions {
+trait Syntax extends feature.Functions {
 
   sealed trait Type
 

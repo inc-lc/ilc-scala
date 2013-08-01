@@ -6,39 +6,43 @@ package ilc
 package language.atlas
 
 import scala.language.implicitConversions
+import scala.collection.immutable
+import ilc.feature.functions
 
-import java.lang.IllegalArgumentException
-import javax.management.modelmbean.InvalidTargetObjectTypeException
-
-import collection.immutable
-
-trait Evaluation { self: Syntax =>
-
-  type Env = immutable.Map[String, Value]
+trait Evaluation
+extends functions.Evaluation { self: language.atlas.Syntax =>
 
   type ValueMap = immutable.Map[Value, Value]
 
-  // VALUE
+  // SPECIALIZE VALUE TO ATLAS
 
-  sealed trait Value {
+  // boilerplate for adding methods to Value trait
+  implicit def toAtlas(value: Value): AtlasValue = value match {
+    case av: AtlasValue => av
+    case _ => AtlasValue.default
+  }
+
+  class AtlasValue extends Value {
     def toBool: Boolean = die("toBool")
     def toInt: Int = die("toInt")
     def toMap: ValueMap = die("toMap")
-    def apply(argument: Value): Value = die("apply") // "toFunction"
-
     def isNeutral: Boolean = die("isNeutral")
-
-    def die(from: String): Nothing =
-      throw new
-        InvalidTargetObjectTypeException(this.getClass.getName ++
-          "." ++ from)
   }
 
-  // wrapping values in a module to avoid name space pollution
-  object Value {
+  object AtlasValue {
+    val default = new AtlasValue
+  }
+
+  implicit def liftNum(i: Int): Value = Value.Num(i)
+  implicit def liftBool(b: Boolean): Value = Value.Bool(b)
+  implicit def liftMap(m: ValueMap): Value = Value.Map(m)
+
+  // boilerplate for extending value declarations
+  override val Value = AtlasValueDeclarations
+  object AtlasValueDeclarations extends ValueDeclarations {
 
     // the unique neutral element in the dynamic type system
-    case object Neutral extends Value {
+    case object Neutral extends AtlasValue {
       override def toBool = false
       override def toInt = 0
       override def isNeutral = true
@@ -52,7 +56,7 @@ trait Evaluation { self: Syntax =>
         immutable.Map.empty[Value, Value].withDefaultValue(this)
     }
 
-    case object True extends Value {
+    case object True extends AtlasValue {
       override def toBool = true
       override def isNeutral = toBool == false
     }
@@ -61,7 +65,7 @@ trait Evaluation { self: Syntax =>
       def apply(b: Boolean): Value = if (b) True else Neutral
     }
 
-    case class Nonzero(override val toInt: Int) extends Value {
+    case class Nonzero(override val toInt: Int) extends AtlasValue {
       override def isNeutral = false
 
       override def toString = "Num(" ++ toInt.toString ++ ")"
@@ -79,7 +83,7 @@ trait Evaluation { self: Syntax =>
           Neutral
     }
 
-    class NonemptyMap(_m: ValueMap) extends Value {
+    class NonemptyMap(_m: ValueMap) extends AtlasValue {
       override val toMap = _m.withDefaultValue(Neutral)
       override def isNeutral = false
 
@@ -104,50 +108,6 @@ trait Evaluation { self: Syntax =>
           new NonemptyMap(m)
       }
     }
-
-    case class Function(operator: Value => Value) extends Value {
-      override def apply(operand: Value): Value = operator(operand)
-    }
-
-    implicit def liftNum(i: Int): Value = Num(i)
-    implicit def liftBool(b: Boolean): Value = Bool(b)
-    implicit def liftMap(m: ValueMap): Value = Map(m)
-
-    implicit def liftFunction[T <% Value](f: Value => T): Value =
-      Function(x => f(x))
-      // `f` is written pointfully so that implicit conversion
-      // on the return value of `f` may kick in to make the
-      // whole expression well-typed
-
-  implicit def liftPair[S, T]
-    (p: (S, T))
-    (implicit impS: S => Value, impT: T => Value): (Value, Value) =
-      (impS(p._1), impT(p._2))
-  }
-
-  def eval(t: Term): Value = try {
-    evalWithEnv(t, immutable.Map.empty)
-  } catch { case err: IllegalArgumentException =>
-    throw new java.lang.
-      IllegalArgumentException(err.getMessage() ++
-        "\n in the term\n    " ++ t.toString)
-  }
-
-  def evalWithEnv(t: Term, env: Env): Value = try {
-    t match {
-      case Abs(x, t) =>
-        (arg: Value) => evalWithEnv(t, env.updated(x, arg))
-      case App(s, t) =>
-        evalWithEnv(s, env)(evalWithEnv(t, env))
-      case Var(name) =>
-        env(name) // NoSuchElementException = free var
-      case Const(c) =>
-        evalConst(c)
-    }
-  } catch { case err: InvalidTargetObjectTypeException =>
-    throw new
-      IllegalArgumentException(err.getMessage() ++
-        " when evaluating:\n    " ++ t.toString)
   }
 
   def evalConst(c: Constant): Value = c match {
@@ -159,8 +119,7 @@ trait Evaluation { self: Syntax =>
 
     case Xor =>
       (x: Value) => (y: Value) =>
-        Value.liftBool((x.toBool && ! y.toBool) ||
-                       (! x.toBool && y.toBool))
+        (x.toBool && ! y.toBool) || (! x.toBool && y.toBool)
 
     case Num(i) =>
       i

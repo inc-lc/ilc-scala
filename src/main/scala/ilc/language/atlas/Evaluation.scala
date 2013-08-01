@@ -64,7 +64,14 @@ extends functions.Evaluation { self: language.atlas.Syntax =>
     }
 
     object Bool {
-      def apply(b: Boolean): Value = if (b) True else Neutral
+      def apply(b: Boolean): Value =
+        if (b) True else Neutral
+
+      def unapply(v: Value): Option[Boolean] = v match {
+        case Neutral => Some(Neutral.toBool)
+        case True => Some(True.toBool)
+        case _ => None
+      }
     }
 
     case class Nonzero(override val toInt: Int) extends AtlasValue {
@@ -83,6 +90,22 @@ extends functions.Evaluation { self: language.atlas.Syntax =>
           new Nonzero(i)
         else
           Neutral
+
+      def unapply(v: Value): Option[Int] = v match {
+        case Neutral => Some(Neutral.toInt)
+        case nonzero: Nonzero => Some(nonzero.toInt)
+        case _ => None
+      }
+    }
+
+    object NonNilNumericChange {
+      def unapply(v: Value): Option[(Int, Int)] = v match {
+        case NonemptyMap(m) if (m.size == 1) => m.head match {
+          case (Num(base), Num(summand)) => Some(base -> summand)
+          case _ => None
+        }
+        case _ => None
+      }
     }
 
     class NonemptyMap(_m: ValueMap) extends AtlasValue {
@@ -103,12 +126,26 @@ extends functions.Evaluation { self: language.atlas.Syntax =>
         sys error "empty nonempty-map detected"
     }
 
+    object NonemptyMap {
+      def unapply(v: Value): Option[ValueMap] = v match {
+        case m: NonemptyMap => Some(m.toMap)
+        case _ => None
+      }
+    }
+
     object Map {
       def apply(m: ValueMap): Value = {
-        if (m.isEmpty)
+        val theEffectiveMap = m filter { p => ! p._2.isNeutral }
+        if (theEffectiveMap.isEmpty)
           Neutral
         else
-          new NonemptyMap(m)
+          new NonemptyMap(theEffectiveMap)
+      }
+
+      def unapply(v: Value): Option[ValueMap] = v match {
+        case Neutral => Some(Neutral.toMap)
+        case nonempty: NonemptyMap => Some(nonempty.toMap)
+        case _ => None
       }
     }
   }

@@ -35,6 +35,12 @@ trait Syntax extends feature.Functions {
         apply(apply(lhs, rhs), others.head, others.tail: _*)
   }
 
+  // Diff and Apply are primitives that cannot be derived.
+  // They are type-indexed terms in Agda, but here, without
+  // types, they have to be primitives.
+  case object Diff  extends Constant
+  case object Apply extends Constant
+
   case object True  extends Constant
   case object False extends Constant
   case object Xor   extends Constant
@@ -164,30 +170,9 @@ trait Syntax extends feature.Functions {
       zipPair(k, v3, v4, pairType(v3, v4), m3, m4))
   }
 
-  def diffTerm(tau: Type): Term = tau match {
-    // b₁ ⊝ b₀ = b₁ xor b₀
-    case Bool => Xor
-    // n₁ ⊝ n₀ = (n₀, n₁ - n₀) // old -> summand
-    case Number => Lambda("n₁", "n₀") ->:
-        mapLit(Number, Number, Var("n₀") -> Plus("n₁", Negate("n₀")))
-    // m₁ ⊝ m₀ = zip _⊝_  m₁ m₀
-    case Map(k, v) =>
-      Zip(k, v, v, deltaType(v))("_" ->: diffTerm(v))
-  }
+  def diffTerm(tau: Type): Term = Diff
 
-  def applyTerm(tau: Type): Term = tau match {
-    // apply Δb b = Δb xor b
-    case Bool => Xor
-
-    // apply Δn n = n + lookup n Δn
-    // replace by new value... if old one is correct
-    case Number => Lambda("Δn", "n") ->:
-      Plus("n", Lookup(Number, Number)("n")("Δn"))
-
-    // apply Δm m = zip apply Δm m
-    case Map(k, v) =>
-      Zip(k, deltaType(v), v, v)("_" ->: applyTerm(v))
-  }
+  def applyTerm(tau: Type): Term = Apply
 
   def applyBaseFun(types: Type*): Term =
     if (types.length < 1)
@@ -230,6 +215,8 @@ trait Syntax extends feature.Functions {
   }
 
   def deriveConst(c: Constant): Term = c match {
+    // underivables
+    case Diff | Apply => sys.error("cannot derive " ++ c.toString)
 
     // Constants
     case True  => False

@@ -60,7 +60,7 @@ extends functions.Evaluation { self: language.atlas.Syntax =>
 
     case object True extends AtlasValue {
       override def toBool = true
-      override def isNeutral = toBool == false
+      override def isNeutral = false
     }
 
     object Bool {

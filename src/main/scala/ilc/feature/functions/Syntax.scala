@@ -64,4 +64,9 @@ trait Syntax {
 
   // implicit conversion to stop writing `Var`
   implicit def liftVariable(name: String): Term = Var(name)
+
+  implicit def liftTermPair[S, T]
+    (p: (S, T))
+    (implicit impS: S => Term, impT: T => Term): (Term, Term) =
+      (impS(p._1), impT(p._2))
 }

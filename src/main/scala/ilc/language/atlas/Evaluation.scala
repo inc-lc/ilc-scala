@@ -233,10 +233,10 @@ extends functions.Evaluation { self: language.atlas.Syntax =>
       (x: Value) => - x.toInt
 
     // TODO: make the following cases independent of type params.
-    case _: Empty =>
+    case Empty =>
       Value.Neutral
 
-    case _: Update =>
+    case Update =>
       (key: Value) => (value: Value) => (map: Value) =>
         if (value.isNeutral)
           map.toMap - key
@@ -246,14 +246,14 @@ extends functions.Evaluation { self: language.atlas.Syntax =>
     // Lookup and Zip are evaluated correctly only if all
     // ValueMaps at runtime as Value.Neutral as default value.
 
-    case _: Lookup =>
+    case Lookup =>
       (key: Value) => (map: Value) => map.toMap(key)
 
-    case _: Zip =>
+    case Zip =>
       (f: Value) => (m1: Value) => (m2: Value) =>
         Value.zip(f, m1, m2)
 
-    case _: Fold =>
+    case Fold =>
       (f: Value) => (z: Value) => (map: Value) =>
         map.toMap.foldRight(z)((p, b) => f(p._1)(p._2)(b))
   }

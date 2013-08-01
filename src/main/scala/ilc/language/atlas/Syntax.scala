@@ -12,18 +12,6 @@ import scala.language.implicitConversions
 
 trait Syntax extends feature.Functions {
 
-  sealed trait Type
-
-  case object Bool extends Type
-  case object Number extends Type
-  case class Map(k: Type, v: Type) extends Type
-
-  def deltaType(iota: Type): Type = iota match {
-    case Bool => Bool
-    case Number => Map(Number, Number) // old -> summand
-    case Map(k, v) => Map(k, deltaType(v))
-  }
-
   sealed trait Constant
 
   trait NestingBinaryOperator { self: Constant =>
@@ -49,11 +37,11 @@ trait Syntax extends feature.Functions {
   case object Plus extends Constant with NestingBinaryOperator
   case object Negate extends Constant
 
-  case class Empty(k: Type, v: Type)  extends Constant
-  case class Update(k: Type, v: Type) extends Constant
-  case class Lookup(k: Type, v: Type) extends Constant
-  case class Zip(k: Type, u: Type, v: Type, w: Type) extends Constant
-  case class Fold(k: Type, v: Type) extends Constant
+  case object Empty  extends Constant
+  case object Update extends Constant
+  case object Lookup extends Constant
+  case object Zip    extends Constant
+  case object Fold   extends Constant
 
   // syntactic sugars for constants and terms via implict conversion
   implicit def intToConstant(i: Int): Constant = Num(i)
@@ -63,90 +51,59 @@ trait Syntax extends feature.Functions {
     (implicit impS: S => Term, impT: T => Term): (Term, Term) =
       (impS(p._1), impT(p._2))
 
-  // shorthand term constructors
-  def zip(keyType: Type, valType1: Type, valType2: Type,
-          resultType: Type,
-          f: Term, map1: Term, map2: Term): Term =
-    Zip(keyType, valType1, valType2, resultType)(f)(map1)(map2)
-
-  def fold(keyType: Type, valType: Type,
-           f: Term, z: Term, m: Term): Term =
-    Fold(keyType, valType)(f)(z)(m)
-
-  // swap argument order
-  def flip(t: Term): Term =
-    "x" ->: "y" ->: t("y")("x")
-
   // easy construction of map literals
-  def mapLit(keyType: Type,
-             valType: Type,
-             assoc: (Term, Term)*): Term =
-    updatesFrom(keyType, valType, Empty(keyType, valType), assoc: _*)
+  def mapLit(assoc: (Term, Term)*): Term =
+    updatesFrom(Empty, assoc: _*)
 
-  def fromList(keyType: Type,
-               valType: Type,
-               base: Term,
-               assoc: List[(Term, Term)]): Term =
+  def fromList(base: Term, assoc: List[(Term, Term)]): Term =
     assoc match {
       case Nil => base
       case (k, v) :: assoc =>
-        Update(keyType, valType)(k)(v)(
-          fromList(keyType, valType, base, assoc))
+        Update(k)(v)(fromList(base, assoc))
     }
 
   // shorthand for chain updates
-  def updatesFrom(keyType: Type,
-                  valType: Type,
-                  base: Term,
-                  assoc: (Term, Term)*): Term =
-    fromList(keyType, valType, base, assoc.toList)
+  def updatesFrom(base: Term, assoc: (Term, Term)*): Term =
+    fromList(base, assoc.toList)
 
   // pairs encoded as maps
   // A × B = Map[A, Map[B, Bool]]
   // a , b = mapLit(a -> mapLit(b -> True))
 
-  def pairType(type1: Type, type2: Type): Type =
-    Map(type1, Map(type2, Bool))
+  def pair(s: Term, t: Term): Term =
+    mapLit(s -> mapLit(t -> True))
 
-  def pair(sType: Type, tType: Type, s: Term, t: Term): Term = {
-    val Map(t1, t2) = pairType(sType, tType)
-    val Map(t3, t4) = t2
-    mapLit(t1, t2, s -> mapLit(t3, t4, t -> True))
-  }
+  val pairTerm: Term =
+    Lambda("x", "y") ->: pair("x", "y")
 
-  def pairTerm(sType: Type, tType: Type): Term =
-    Lambda("x", "y") ->: pair(sType, tType, "x", "y")
-
-  def uncurry(type1: Type, type2: Type, f: Term, p: Term): Term = {
-    val Map(t1, t2) = pairType(type1, type2)
-    val Map(t3, t4) = t2
+  def uncurry(f: Term, p: Term): Term = {
     val List(x, y, yt, dontcare) =
       uniqueNames(f, "x", "y", "yt", "_")
-    Fold(t1, t2)(
+    Fold(
       Lambda(x, yt, dontcare) ->:
-        Fold(t3, t4)(
+        Fold(
           Lambda(y, dontcare, dontcare) ->: f(x)(y))(
-          f(x)(neutralTerm(type2)))(
+          f(x)(Empty))(
           yt))(
-      f(neutralTerm(type1))(neutralTerm(type2)))(
+      f(Empty)(Empty))(
       p)
+      // you may wonder at the occurrences of Empty here
+      // and may ask, why is the empty map given to the
+      // function f as an argument, where f could well
+      // be expecting integers?
+      //
+      // the answer is: we need a syntax term that
+      // denotes the neutral element in the dynamic type
+      // system. Right now, we have no dedicated symbol
+      // for the neutral element; False, Num(0) and Empty
+      // will all evaluate to Value.Neutral, and Empty
+      // seems to be the least confusion of the lot.
   }
 
-  def zipPair(keyType: Type,
-              valType1: Type,
-              valType2: Type,
-              resultType: Type,
-              map1: Term,
-              map2: Term): Term =
-    zip(keyType, valType1, valType2, resultType,
-        // pair-term needn't be weakened because it's closed
-        // relevant test: "weakening closed terms has no effect"
-        Abs("_", pairTerm(valType1, valType2)),
-        map1, map2)
+  def zipPair(map1: Term, map2: Term): Term =
+    Zip("_" ->: pairTerm)(map1)(map2)
 
-  def zip4(k: Type, v1: Type, v2: Type, v3: Type, v4: Type,
-           resultType: Type,
-           f: Term, // k → v1 → v2 → v3 → v4 → b
+  def zip4(f: Term, // k → v1 → v2 → v3 → v4 → b
            m1: Term, m2: Term, m3: Term, m4: Term): Term = {
     // g = λ key p12 p34 →
     //       uncurry
@@ -158,51 +115,13 @@ trait Syntax extends feature.Functions {
     val List(key, p12, p34, val1, val2, val3, val4) =
       uniqueVars(f, "k", "p₁₂", "p₃₄", "v₁", "v₂", "v₃", "v₄")
     val g = Lambda(key, p12, p34) ->:
-      uncurry(v1, v2,
+      uncurry(
         Lambda(val1, val2) ->:
-          uncurry(v3, v4,
+          uncurry(
             Lambda(val3, val4) ->: f(key)(val1)(val2)(val3)(val4),
             p34),
         p12)
-    zip(k, pairType(v1, v2), pairType(v3, v4), resultType,
-      g,
-      zipPair(k, v1, v2, pairType(v1, v2), m1, m2),
-      zipPair(k, v3, v4, pairType(v3, v4), m3, m4))
-  }
-
-  def diffTerm(tau: Type): Term = Diff
-
-  def applyTerm(tau: Type): Term = Apply
-
-  def applyBaseFun(types: Type*): Term = Apply
-
-  def neutralTerm(tau: Type): Term = tau match {
-    case Bool => False
-    case Number => 0
-    case Map(k, v) => Empty(k, v)
-  }
-
-  def nilTerm(tau: Type): Term = neutralTerm(deltaType(tau))
-
-  def insert(keyType: Type,
-             valType: Type,
-             key: Term,
-             value: Term,
-             deltaMap: Term): Term = {
-    Update(keyType, deltaType(valType))(
-      key)(
-      diffTerm(valType)(value)(neutralTerm(valType)))(
-      deltaMap)
-  }
-
-  def delete(keyType: Type,
-             valType: Type,
-             key: Term,
-             value: Term,
-             deltaMap: Term): Term = {
-    Update(keyType, deltaType(valType))(key)(
-      diffTerm(valType)(neutralTerm(valType))(value))(
-      deltaMap)
+    Zip(g)(zipPair(m1, m2))(zipPair(m3, m4))
   }
 
   def deriveConst(c: Constant): Term = c match {
@@ -212,24 +131,24 @@ trait Syntax extends feature.Functions {
     // Constants
     case True  => False
     case False => False
-    case Num(n) => Empty(Number, Number)
-    case Empty(k, v) => Empty(k, deltaType(v))
+    case Num(n) => Empty
+    case Empty => Empty
 
     // λx. λΔx. λy. λΔy. Xor Δx Δy
     case Xor => Lambda("x", "Δx", "y", "Δy") ->: Xor("Δx")("Δy")
 
     // λx. λΔx. λy. λΔy. Map(x + y -> lookup x Δx + lookup y Δy)
     case Plus => Lambda("x", "Δx", "y", "Δy") ->:
-      mapLit(Number, Number,
+      mapLit(
         Plus("x", "y") ->
-          Plus(Lookup(Number, Number)("x")("Δx"),
-               Lookup(Number, Number)("y")("Δy")))
+          Plus(Lookup("x")("Δx"),
+               Lookup("y")("Δy")))
 
     // λx. λΔx. Map(x -> - lookup x Δx)
     case Negate => Lambda("x", "Δx") ->:
-      mapLit(Number, Number,
+      mapLit(
         Negate("x") ->
-          Negate(Lookup(Number, Number)("x")("Δx")))
+          Negate(Lookup("x")("Δx")))
 
     // λ k Δk v Δv m Δm →
     //   let
@@ -237,19 +156,18 @@ trait Syntax extends feature.Functions {
     //   in
     //     update k' (diff (apply Δv v) (lookup k' (update k v m)))
     //       (update k (diff (apply Δm[k] m[k]) v) Δm)
-    case Update(k, v) => {
-      val update: Term = Update(k, deltaType(v))
-      val newKey: Term = applyTerm(k)("Δk")("k")
-      val newVal: Term = applyTerm(v)("Δv")("v")
+    case Update => {
+      val newKey: Term = Apply("Δk")("k")
+      val newVal: Term = Apply("Δv")("v")
       Lambda("k", "Δk", "v", "Δv", "m", "Δm") ->:
-        update(newKey)(
-          diffTerm(v)(newVal)(
-            Lookup(k, v)(newKey)(Update(k, v)("k")("v")("m"))))(
-        update("k")(
-          diffTerm(v)(
-            applyTerm(v)(
-              Lookup(k, deltaType(v))("k")("Δm"))(
-              Lookup(k, v)("k")("m")))(
+        Update(newKey)(
+          Diff(newVal)(
+            Lookup(newKey)(Update("k")("v")("m"))))(
+        Update("k")(
+          Diff(
+            Apply(
+              Lookup("k")("Δm"))(
+              Lookup("k")("m")))(
             "v"))(
           "Δm"))
     }
@@ -258,14 +176,14 @@ trait Syntax extends feature.Functions {
     //   diff (apply (lookup (apply Δk k) Δm)
     //               (lookup (apply Δk k) m))
     //        (lookup k m)
-    case Lookup(k, v) => {
-      val newKey = applyTerm(k)("Δk")("k")
+    case Lookup => {
+      val newKey = Apply("Δk")("k")
       Lambda("k", "Δk", "m", "Δm") ->:
-        diffTerm(v)(
-          applyTerm(v)(
-            Lookup(k, deltaType(v))(newKey)("Δm"))(
-            Lookup(k, v)(newKey)("m")))(
-          Lookup(k, v)("k")("m"))
+        Diff(
+          Apply(
+            Lookup(newKey)("Δm"))(
+            Lookup(newKey)("m")))(
+          Lookup("k")("m"))
     }
 
     // This would be nice, but it can't handle deletion from both
@@ -279,14 +197,13 @@ trait Syntax extends feature.Functions {
     //     (zip (apply Δf f) (apply Δm₁ m₁) (apply Δm₂ m₂))
     //     (zip f m₁ m₂)
     //
-    case Zip(k, v1, v2, w) => {
+    case Zip => {
       Lambda("f", "Δf", "m₁", "Δm₁", "m₂", "Δm₂") ->:
-        diffTerm(Map(k, w))(
-          zip(k, v1, v2, w,
-              applyBaseFun(k, v1, v2, w)("Δf")("f"),
-              applyTerm(Map(k, v1))("Δm₁")("m₁"),
-              applyTerm(Map(k, v2))("Δm₂")("m₂")))(
-          zip(k, v1, v2, w, "f", "m₁", "m₂"))
+        Diff(
+          Zip(Apply("Δf")("f"))(
+              Apply("Δm₁")("m₁"))(
+              Apply("Δm₂")("m₂")))(
+          Zip("f")("m₁")("m₂"))
     }
   }
 }

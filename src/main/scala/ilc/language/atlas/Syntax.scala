@@ -48,7 +48,7 @@ trait Syntax extends feature.Functions {
   implicit def intToTerm(i: Int): Term = Const(intToConstant(i))
 
   // easy construction of map literals
-  def mapLit(assoc: (Term, Term)*): Term =
+  def Map(assoc: (Term, Term)*): Term =
     updatesFrom(Empty, assoc: _*)
 
   def fromList(base: Term, assoc: List[(Term, Term)]): Term =
@@ -64,10 +64,9 @@ trait Syntax extends feature.Functions {
 
   // pairs encoded as maps
   // A × B = Map[A, Map[B, Bool]]
-  // a , b = mapLit(a -> mapLit(b -> True))
+  // a , b = Map(a -> Map(b -> True))
 
-  def pair(s: Term, t: Term): Term =
-    mapLit(s -> mapLit(t -> True))
+  def pair(s: Term, t: Term): Term = Map(s -> Map(t -> True))
 
   val pairTerm: Term =
     Lambda("x", "y") ->: pair("x", "y")
@@ -135,15 +134,13 @@ trait Syntax extends feature.Functions {
 
     // λx. λΔx. λy. λΔy. Map(x + y -> lookup x Δx + lookup y Δy)
     case Plus => Lambda("x", "Δx", "y", "Δy") ->:
-      mapLit(
-        Plus("x", "y") ->
+      Map(Plus("x", "y") ->
           Plus(Lookup("x")("Δx"),
                Lookup("y")("Δy")))
 
     // λx. λΔx. Map(x -> - lookup x Δx)
     case Negate => Lambda("x", "Δx") ->:
-      mapLit(
-        Negate("x") ->
+      Map(Negate("x") ->
           Negate(Lookup("x")("Δx")))
 
     // λ k Δk v Δv m Δm →

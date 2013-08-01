@@ -30,9 +30,7 @@ trait Syntax extends feature.Functions {
   case object False extends Constant
   case object Xor   extends Constant
 
-  case class Num(n: Int) extends Constant {
-    override def toString = n.toString
-  }
+  case class Num(n: Int) extends Constant
   case object Plus extends Constant {
     // easy way to build up nested addition
     def apply(lhs: Term, rhs: Term, others: Term*): Term =

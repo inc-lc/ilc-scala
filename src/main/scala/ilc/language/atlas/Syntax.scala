@@ -2,7 +2,7 @@
  * A description of the calculus Atlas
  *
  * Agda original:
- * https://github.com/ps-mr/ilc/blob/9aafd0c2835ff027b57e44ed2930f4f57147e0de/agda/Syntax/Language/Atlas.agda
+ * https://github.com/ps-mr/ilc/blob/master/agda/Syntax/Language/Atlas.agda
  */
 
 package ilc

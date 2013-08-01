@@ -46,7 +46,7 @@ trait Syntax extends feature.Functions {
   // syntactic sugars for constants and terms via implict conversion
   implicit def intToConstant(i: Int): Constant = Num(i)
   implicit def intToTerm(i: Int): Term = Const(intToConstant(i))
-  implicit def liftPair[S, T]
+  implicit def liftTermPair[S, T]
     (p: (S, T))
     (implicit impS: S => Term, impT: T => Term): (Term, Term) =
       (impS(p._1), impT(p._2))

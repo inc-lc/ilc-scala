@@ -26,7 +26,7 @@ trait Syntax extends feature.Functions {
 
   sealed trait Constant
 
-  trait NestingBinaryOperator extends Constant {
+  trait NestingBinaryOperator { self: Constant =>
     // easy way to build up nested addition
     def apply(lhs: Term, rhs: Term, others: Term*): Term =
       if (others.isEmpty)
@@ -40,7 +40,7 @@ trait Syntax extends feature.Functions {
   case object Xor   extends Constant
 
   case class Num(n: Int) extends Constant
-  case object Plus extends NestingBinaryOperator
+  case object Plus extends Constant with NestingBinaryOperator
   case object Negate extends Constant
 
   case class Empty(k: Type, v: Type)  extends Constant

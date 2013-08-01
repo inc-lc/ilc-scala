@@ -26,19 +26,21 @@ trait Syntax extends feature.Functions {
 
   sealed trait Constant
 
+  trait NestingBinaryOperator extends Constant {
+    // easy way to build up nested addition
+    def apply(lhs: Term, rhs: Term, others: Term*): Term =
+      if (others.isEmpty)
+        Const(this)(lhs)(rhs)
+      else
+        apply(apply(lhs, rhs), others.head, others.tail: _*)
+  }
+
   case object True  extends Constant
   case object False extends Constant
   case object Xor   extends Constant
 
   case class Num(n: Int) extends Constant
-  case object Plus extends Constant {
-    // easy way to build up nested addition
-    def apply(lhs: Term, rhs: Term, others: Term*): Term =
-      if (others.isEmpty)
-        Const(Plus)(lhs)(rhs)
-      else
-        Plus(Plus(lhs, rhs), others.head, others.tail: _*)
-  }
+  case object Plus extends NestingBinaryOperator
   case object Negate extends Constant
 
   case class Empty(k: Type, v: Type)  extends Constant

@@ -29,7 +29,7 @@ trait Attribution extends Context { self: Syntax =>
       mutable.Map.empty
   }
 
-  abstract class SyntheticAttribute[T](root: Term)
+  abstract class SynthesizedAttribute[T](root: Term)
   extends Attribute[T](root) {
 
     // ensures: attributes of all subterms are available in body.

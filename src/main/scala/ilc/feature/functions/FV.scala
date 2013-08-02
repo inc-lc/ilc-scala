@@ -10,7 +10,7 @@ trait FV extends Attribution { self: Syntax =>
   def FV(t: Term): Set[String] = FV_attr(t)(Subterm.refl(t))
 
   case class FV_attr(root: Term)
-  extends SyntheticAttribute[Set[String]](root) {
+  extends SynthesizedAttribute[Set[String]](root) {
     def synthesize(s: Subterm): Set[String] = s.term match {
       case Const(_) =>
         Set.empty

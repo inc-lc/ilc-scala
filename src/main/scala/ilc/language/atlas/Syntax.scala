@@ -190,7 +190,7 @@ trait Syntax extends feature.Functions {
     //     (zip (apply Δf f) (apply Δm₁ m₁) (apply Δm₂ m₂))
     //     (zip f m₁ m₂)
     //
-    // which is extensionally equal to
+    // which is definitionally equal to
     //
     //   diff zip zip
     //

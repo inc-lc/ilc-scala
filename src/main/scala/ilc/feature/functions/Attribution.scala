@@ -25,6 +25,9 @@ trait Attribution extends Context { self: Syntax =>
       store.update(s, value)
     }
 
+    def isDefined(s: Subterm): Boolean =
+      store.contains(s)
+
     private[this] var store: mutable.Map[Subterm, T] =
       mutable.Map.empty
   }
@@ -32,12 +35,14 @@ trait Attribution extends Context { self: Syntax =>
   abstract class SynthesizedAttribute[T](root: Term)
   extends Attribute[T](root) {
 
-    // ensures: attributes of all subterms are available in body.
     def synthesize(s: Subterm): T
 
     init(Subterm.refl(root))
     private[this] def init(s: Subterm): Unit = {
       s.eachChild(init)
+      // checks that the attribute is defined for all
+      // children after initialization
+      assert(s.children.map(isDefined).fold(true)(_ && _))
       update(s, synthesize(s))
     }
   }

@@ -189,5 +189,10 @@ trait Syntax extends feature.Functions {
     //   diff zip zip
     //
     case Zip => Diff(Zip)(Zip)
+
+    // similarly, the derivative of Fold in
+    // 9aafd0c2835ff027b57e44ed2930f4f57147e0de
+    // can't handle deletions. we recompute again.
+    case Fold => Diff(Fold)(Fold)
   }
 }

@@ -13,7 +13,7 @@ trait Attribution extends Context { self: Syntax =>
   abstract class Attribute[T](root: Term) {
 
     def apply(s: Subterm): T = {
-      assert(root == s.root)
+      require(root == s.root)
       store(s)
     }
 
@@ -21,7 +21,7 @@ trait Attribution extends Context { self: Syntax =>
     protected def lookup(s: Subterm): T = apply(s)
 
     def update(s: Subterm, value: T) {
-      assert(root == s.root)
+      require(root == s.root)
       store.update(s, value)
     }
 

@@ -7,7 +7,9 @@ package feature.functions
  *         | operator Context
  *         | λ x . Context
  *
- * Implemented in Zipper-style reported by
+ * Implemented in Zipper-style reported by Huet, except contexts
+ * are represented top-down and not bottom-up, for easier
+ * understanding and slower evaluation.
  *
  * Gérard Huet.
  * The Zipper.

@@ -234,6 +234,25 @@ class DerivationSuite extends FunSuite with Subjects with Tools {
     // insertion, deletion and update.
   }
 
+  test("the derivative of Fold is correct") {
+    // constant f z
+    assertCorrect(Fold(constFun(Plus))(0),
+      List(negMap1234 -> negMap1256))
+    // constant f
+    assertCorrect(Fold(constFun(Plus)),
+      List(0 -> 100, negMap1234 -> negMap1256))
+    // changing everything
+    assertCorrect(Fold,
+      List(constFun(Plus) ->
+             (Lambda("_", "x", "y") ->: Plus(2000, "x", "y")),
+           0 -> 100,
+           negMap1234 -> negMap1256))
+    // maps as values/keys
+    assertCorrect(Fold(constFun(Zip(constFun(Plus))))(0),
+      List(Map(Empty -> negMap1234, primeMap10 -> negMap1234) ->
+             Map(Empty -> negMap1256, oddityMap1234 -> negMap1256)))
+  }
+
   // TESTING DERIVATIVES OF ABSTRACTION AND APPLICATION
 
   test("the derivative of identity is snd") {

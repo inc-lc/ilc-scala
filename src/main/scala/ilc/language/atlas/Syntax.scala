@@ -190,13 +190,10 @@ trait Syntax extends feature.Functions {
     //     (zip (apply Δf f) (apply Δm₁ m₁) (apply Δm₂ m₂))
     //     (zip f m₁ m₂)
     //
-    case Zip => {
-      Lambda("f", "Δf", "m₁", "Δm₁", "m₂", "Δm₂") ->:
-        Diff(
-          Zip(Apply("Δf")("f"))(
-              Apply("Δm₁")("m₁"))(
-              Apply("Δm₂")("m₂")))(
-          Zip("f")("m₁")("m₂"))
-    }
+    // which is extensionally equal to
+    //
+    //   diff zip zip
+    //
+    case Zip => Diff(Zip)(Zip)
   }
 }

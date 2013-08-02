@@ -17,7 +17,7 @@ trait FV extends Attribution { self: Syntax =>
       case Var(name) =>
         Set(name)
       case App(_, _) | Abs(_, _) =>
-        s.down.map(lookup).fold(Set.empty)(_ ++ _)
+        s.children.map(lookup).fold(Set.empty)(_ ++ _)
     }
   }
 }

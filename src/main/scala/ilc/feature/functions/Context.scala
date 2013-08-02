@@ -91,12 +91,12 @@ trait Context { self: Syntax =>
 
     def root = context(term)
 
-    def up: Subterm = {
+    def parent: Subterm = {
       val (ancestors, parent) = context.splitBot
       Subterm(parent(term), ancestors)
     }
 
-    def down: List[Subterm] = term match {
+    def children: List[Subterm] = term match {
       case App(s, t) =>
         List(Subterm(s, context(Context.App1(Hole, t))),
              Subterm(t, context(Context.App2(s, Hole))))
@@ -107,7 +107,7 @@ trait Context { self: Syntax =>
     }
 
     def eachChild[U](f: Subterm => U): Unit =
-      down.foreach(f)
+      children.foreach(f)
   }
 
   object Subterm {

@@ -47,6 +47,11 @@ trait Syntax extends feature.Functions {
   implicit def intToConstant(i: Int): Constant = Num(i)
   implicit def intToTerm(i: Int): Term = Const(intToConstant(i))
 
+  // neutralTerm/nilTerm denotes the neutral element/nil change
+  // of all base-type terms
+  val neutralTerm = Empty
+  val nilTerm = Empty
+
   // easy construction of map literals
   def Map(assoc: (Term, Term)*): Term =
     updatesFrom(Empty, assoc: _*)
@@ -78,21 +83,10 @@ trait Syntax extends feature.Functions {
       Lambda(x, yt, dontcare) ->:
         Fold(
           Lambda(y, dontcare, dontcare) ->: f(x)(y))(
-          f(x)(Empty))(
+          f(x)(neutralTerm))(
           yt))(
-      f(Empty)(Empty))(
+      f(neutralTerm)(neutralTerm))(
       p)
-      // you may wonder at the occurrences of Empty here
-      // and may ask, why is the empty map given to the
-      // function f as an argument, where f could well
-      // be expecting integers?
-      //
-      // the answer is: we need a syntax term that
-      // denotes the neutral element in the dynamic type
-      // system. Right now, we have no dedicated symbol
-      // for the neutral element; False, Num(0) and Empty
-      // will all evaluate to Value.Neutral, and Empty
-      // seems to be the least confusion of the lot.
   }
 
   def zipPair(map1: Term, map2: Term): Term =

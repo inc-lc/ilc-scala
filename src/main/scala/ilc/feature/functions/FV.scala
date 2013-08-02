@@ -21,4 +21,3 @@ trait FV extends Attribution { self: Syntax =>
     }
   }
 }
-

@@ -2,7 +2,7 @@ package ilc
 package feature.functions
 
 /**
- * Free variables
+ * Free variables: an synthesized attribute
  */
 
 trait FV extends Attribution { self: Syntax =>

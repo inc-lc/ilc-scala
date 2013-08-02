@@ -10,6 +10,7 @@ extends functions.Syntax
    with functions.Derivation
    with functions.UniqueNames
    with functions.Evaluation
+   with functions.Attribution
 
 object Functions extends Functions {
   type Constant = Nothing

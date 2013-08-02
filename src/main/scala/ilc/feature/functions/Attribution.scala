@@ -46,4 +46,23 @@ trait Attribution extends Context { self: Syntax =>
       update(s, synthesize(s))
     }
   }
+
+  abstract class InheritedAttribute[T](root: Term)
+  extends Attribute[T](root) {
+
+    val rootAttr: T
+    def inherit(s: Subterm, parentAttr: T, childNumber: Int): T
+
+    update(Subterm.refl(root), rootAttr)
+    init(Subterm.refl(root))
+    
+    private[this] def init(s: Subterm): Unit = {
+      assert(isDefined(s))
+      val s_attr = lookup(s)
+      s.children.zipWithIndex.foreach {
+        case (child, childNumber) =>
+          update(child, inherit(child, s_attr, childNumber))
+      }
+    }
+  }
 }

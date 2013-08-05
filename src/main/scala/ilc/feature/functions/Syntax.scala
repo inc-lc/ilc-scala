@@ -7,6 +7,8 @@ package feature.functions
  */
 
 import scala.language.implicitConversions
+import scala.collection.GenTraversable
+import ilc.util.UnionType._
 
 trait Syntax {
 
@@ -23,34 +25,31 @@ trait Syntax {
     // easy way to build up nested abstractions
     def ->:(name: String): Abs = Abs(name, this)
     def ->:(variable: Var): Abs = variable.name ->: this
-    def ->:(parameterList: ParameterList): Term = parameterList match {
-      case EmptyParameterList =>
+    def ->:(parameterList: GenTraversable[String]): Term =
+      if (parameterList.isEmpty)
         this
-      case NameBinding(name, otherBindings) =>
-        name ->: otherBindings ->: this
-    }
+      else
+        parameterList.head ->: parameterList.tail ->: this
   }
 
-  // helpers to syntactic sugar of abstraction
-  // basically a list of strings. unfortunately List[String]
-  // is a sealed class and can't be inherited.
-  sealed trait ParameterList
-  case object EmptyParameterList extends ParameterList
-  case class NameBinding(name: String,
-                         otherBindings: ParameterList)
-  extends ParameterList
   object Lambda {
-    // unsafe argument type signature Any* is needed to work around
-    // scala's runtime type erasure
-    def apply(stuff: Any*): ParameterList =
-      if (stuff.isEmpty)
-        EmptyParameterList
-      else
-        NameBinding(stuff.head match {
-                      case name: String  => name
-                      case variable: Var => variable.name
-                    },
-                    apply(stuff.tail: _*))
+
+    // Usage:
+    //
+    // Lambda("x", "y", "z") ->: Plus("x", "y", "z")
+    //
+    // -OR-
+    //
+    // val (x, y, z) = uniqueVars(namesToAvoid, "x", "y", "z")
+    // Lambda(x, y, z) ->: Plus(x, y, z)
+
+    def apply[Name: Or[String, Var]#Type](names: Name*): GenTraversable[String] =
+      names map {
+        _ match {
+          case name: String => name
+          case variable: Var => variable.name
+        }
+      }
   }
 
   case class Var(name: String) extends Term

@@ -13,8 +13,8 @@ extends Attribution
   extends InheritedAttribute[Boolean](root) {
     val rootAttr = ???
     def inherit(s: Subterm,
-                parentAttr: Boolean,
-                childNumber: Int) = ???
+                childNumber: Int,
+                parentAttr: Boolean) = ???
   } // TODO: revamp interface.
 
   type VolatilityEnv = Map[String, Boolean]
@@ -30,8 +30,8 @@ extends Attribution
     }
 
     def inherit(s: Subterm,
-                parentAttr: (VolatilityEnv, Liability),
-                childNumber: Int) = {
+                childNumber: Int,
+                parentAttr: (VolatilityEnv, Liability)) = {
       //val (_, // TODO FIXME!!!
       ???
     }

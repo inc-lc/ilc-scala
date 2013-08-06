@@ -16,6 +16,9 @@ trait Attribution extends Context { self: Syntax =>
     def update(s: Subterm, value: T): Unit
 
     def apply(s: Subterm): T = lookup(s)
+
+    val rootTerm = root
+    val rootSubterm = Subterm.refl(root)
   }
 
   /**
@@ -35,10 +38,12 @@ trait Attribution extends Context { self: Syntax =>
     def update(s: Subterm, value: T): Unit = update(s.term, value)
     def update(t: Term, value: T): Unit = store.update(t, value)
 
+    def apply(t: Term): T = lookup(t)
+
     private[this] var store: mutable.Map[Term, T] =
       mutable.Map.empty
 
-    init(Subterm.refl(root))
+    init(rootSubterm)
     private[this] def init(s: Subterm): Unit = {
       s.eachChild(init)
       update(s,
@@ -78,7 +83,7 @@ trait Attribution extends Context { self: Syntax =>
     private[this] var store: mutable.Map[Subterm, T] =
       mutable.Map.empty
 
-    update(Subterm.refl(root), rootAttr)
+    update(rootSubterm, rootAttr)
     init(Subterm.refl(root))
     
     private[this] def init(s: Subterm): Unit = {

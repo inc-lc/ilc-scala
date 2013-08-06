@@ -5,9 +5,12 @@ package feature.functions
  * Free variables: an synthesized attribute
  */
 
+import scala.language.implicitConversions
+
 trait FV extends Attribution { self: Syntax =>
 
-  def FV(t: Term): Set[String] = FV_attr(t)(Subterm.refl(t))
+  implicit def attr_to_result(fv: FV_attr): Set[String] =
+    fv(fv.rootTerm)
 
   case class FV_attr(root: Term)
   extends SynthesizedAttribute[Set[String]](root) {

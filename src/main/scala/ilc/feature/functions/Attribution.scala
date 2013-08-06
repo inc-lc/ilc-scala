@@ -75,7 +75,7 @@ trait Attribution extends Context { self: Syntax =>
      * @param parentAttr
      *   the attribute value of the parent of {@code s}
      */
-    def inherit(s: Subterm, childNumber: Int, parentAttr: T): T
+    def inherit(parent: Subterm, parentAttr: T): List[T]
 
     def lookup(s: Subterm): T = store(s)
     def update(s: Subterm, value: T): Unit = store.update(s, value)
@@ -87,11 +87,7 @@ trait Attribution extends Context { self: Syntax =>
     init(Subterm.refl(root))
     
     private[this] def init(s: Subterm): Unit = {
-      val s_attr = lookup(s)
-      s.children.zipWithIndex.foreach {
-        case (child, childNumber) =>
-          update(child, inherit(child, childNumber, s_attr))
-      }
+      (s.children, inherit(s, lookup(s))).zipped.foreach(update)
     }
   }
 }

@@ -6,57 +6,64 @@ package feature.functions
  * https://github.com/ps-mr/ilc/blob/master/stability.md
  */
 
-trait Volatility
+trait Stability
 extends Attribution
    with FV { self: Syntax =>
 
-  case class Volatility_attr(root: Term)
+  case class Stability_attr(root: Term)
   extends InheritedAttribute[Boolean](root) {
-    val rootAttr = ???
-    def inherit(s: Subterm,
-                childNumber: Int,
-                parentAttr: Boolean) = ???
-  } // TODO: revamp interface.
+    val rootAttr = oracle.isStable(rootSubterm)
 
-  type VolatilityEnv = Map[String, Boolean]
+    def inherit(parent: Subterm,
+                parentAttr: Boolean) = {
+      parent.children.map(oracle.isStable)
+    }
 
-  case class VolatilityEnv_attr(root: Term)
-  extends InheritedAttribute[(VolatilityEnv, Liability)](root) {
-    // better safe than sorry:
-    // assume all free variables to be volatile at root level
-    // and assume nothing about future arguments
+    val oracle = VarArgStability_attr(root)
+  }
+
+  type VarStability = Map[String, Boolean]
+  type ArgStability = List[Boolean]
+
+  // pattern-matching helper object
+  // assume future arguments to be unstable when nothing is known
+  // about them.
+  object ArgStability {
+    def unapply(arg: ArgStability): Option[(Boolean, ArgStability)] =
+      arg match {
+        case firstArgIsStable :: theRest =>
+          Some(firstArgIsStable -> theRest)
+        case Nil =>
+          Some(false -> Nil)
+      }
+  }
+
+  case class VarArgStability_attr(root: Term)
+  extends InheritedAttribute[(VarStability, ArgStability)](root) {
     val rootAttr = {
-      val emptyEnv: VolatilityEnv = Map.empty
-      (emptyEnv.withDefaultValue(true), NoInfo)
+      val emptyEnv: VarStability = Map.empty
+      (emptyEnv.withDefaultValue(false), Nil)
     }
 
-    def inherit(s: Subterm,
-                childNumber: Int,
-                parentAttr: (VolatilityEnv, Liability)) = {
-      //val (_, // TODO FIXME!!!
-      ???
+    def inherit(parent: Subterm,
+                parentAttr: (VarStability, ArgStability)) = {
+      val (env, arg) = parentAttr
+      (parent.term, arg) match {
+        case (Abs(x, _), ArgStability(firstArg, otherArgs)) =>
+          List(env.updated(x, firstArg) -> otherArgs)
+        case (App(t0, t1), _) =>
+          List(env -> (isStable(t1, env) :: arg),
+               env -> Nil)
+      }
     }
 
-    // cai 02.08.13
-    // I'm not sure how to make `isNil` parametric.
-    // the attributes it relies on is uncertain.
-    def isNil(s: Subterm, env: VolatilityEnv): Boolean =
-      ! isVolatile(s, env)
+    def isStable(s: Subterm): Boolean =
+      isStable(s.term, lookup(s)._1)
 
-    def isVolatile(s: Subterm, env: VolatilityEnv): Boolean =
-      FV.apply(s).map(env).fold(false)(_ || _)
+    protected def isStable(t: Term, env: VarStability): Boolean =
+      FV(t).map(env).fold(true)(_ && _)
 
     // free variables of all subterms
     val FV = FV_attr(root)
   }
-
-  // data structure to record whether arguments are liable to change
-  sealed trait Liability
-  case object NoInfo extends Liability
-  case class Yes(towardOthers: Liability) extends Liability
-  case class No(towardOthers: Liability) extends Liability
-}
-
-object Volatility {
-  //implicit def isNil(
 }

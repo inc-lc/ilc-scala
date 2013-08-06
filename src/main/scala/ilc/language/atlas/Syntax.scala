@@ -10,7 +10,9 @@ package language.atlas
 
 import scala.language.implicitConversions
 
-trait Syntax extends feature.Functions {
+trait Syntax
+extends feature.Functions
+   with feature.DiffAndApply {
 
   sealed trait Constant
 
@@ -28,6 +30,8 @@ trait Syntax extends feature.Functions {
   // types, they have to be primitives.
   case object Diff  extends Constant
   case object Apply extends Constant
+  val diffTerm = Const(Diff)
+  val applyTerm = Const(Apply)
 
   case object True  extends Constant
   case object False extends Constant

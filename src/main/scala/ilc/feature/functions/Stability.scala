@@ -2,7 +2,8 @@ package ilc
 package feature.functions
 
 /**
- * Volatility of subterms: an inherited attribute
+ * Stability of subterms
+ * https://github.com/ps-mr/ilc/blob/master/stability.md
  */
 
 trait Volatility

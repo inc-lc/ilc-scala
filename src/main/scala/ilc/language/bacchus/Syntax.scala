@@ -76,6 +76,12 @@ extends feature.Functions
   }
   def uncurryTerm: Term = Lambda("f", "p") ->: uncurry("f", "p")
 
+  // booleans are encoded as sums
+  val tt = Left(Individualist)
+  val ff = Right(Individualist)
+  val ifThenElse = Lambda("cond", "then", "else") ->:
+    Either("_" ->: "then")("_" ->: "else")("cond")
+
   // implicit conversions
   implicit def natToConst(n: Int): Constant = Nat(n)
   implicit def natToTerm(n: Int): Term = Const(natToConst(n))

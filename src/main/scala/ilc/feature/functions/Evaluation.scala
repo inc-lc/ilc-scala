@@ -44,12 +44,16 @@ trait Evaluation { self: Syntax =>
 
   trait Value {
     // "toFunction"
-    def apply(argument: Value): Value = die("apply")
+    def apply(argument: Value): Value = die("apply", argument)
 
-    def die(from: String): Nothing =
+    def die(from: String, arg: Any = ""): Nothing =
       throw new
-        InvalidTargetObjectTypeException(this.getClass.getName ++
-          "." ++ from)
+        InvalidTargetObjectTypeException(this.toString ++
+          "." ++ from ++
+          (if (arg.toString == "")
+            ""
+          else
+            "(" ++ arg.toString ++ ")"))
   }
 
   val Value = new ValueDeclarations

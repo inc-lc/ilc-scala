@@ -78,4 +78,19 @@ extends feature.Functions
   // implicit conversions
   implicit def natToConst(n: Int): Constant = Nat(n)
   implicit def natToTerm(n: Int): Term = Const(natToConst(n))
+
+  // easy construction of map literals (copied from Atlas)
+  def Map(assoc: (Term, Term)*): Term =
+    updatesFrom(Empty, assoc: _*)
+
+  def fromList(base: Term, assoc: List[(Term, Term)]): Term =
+    assoc match {
+      case Nil => base
+      case (k, v) :: assoc =>
+        Update(k)(v)(fromList(base, assoc))
+    }
+
+  // shorthand for chain updates
+  def updatesFrom(base: Term, assoc: (Term, Term)*): Term =
+    fromList(base, assoc.toList)
 }

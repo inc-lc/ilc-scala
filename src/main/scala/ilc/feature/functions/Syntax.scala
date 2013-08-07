@@ -16,6 +16,15 @@ trait Syntax {
 
   type Constant
 
+  // easy way to build up nested addition &co.
+  trait NestingBinaryOperator { self: Constant =>
+    def apply(lhs: Term, rhs: Term, others: Term*): Term =
+      if (others.isEmpty)
+        Const(this)(lhs)(rhs)
+      else
+        apply(apply(lhs, rhs), others.head, others.tail: _*)
+  }
+
   // SYNTAX
 
   sealed abstract trait Term {

@@ -16,15 +16,6 @@ extends feature.Functions
 
   sealed trait Constant
 
-  trait NestingBinaryOperator { self: Constant =>
-    // easy way to build up nested addition
-    def apply(lhs: Term, rhs: Term, others: Term*): Term =
-      if (others.isEmpty)
-        Const(this)(lhs)(rhs)
-      else
-        apply(apply(lhs, rhs), others.head, others.tail: _*)
-  }
-
   // Diff and Apply are primitives that cannot be derived.
   // They are type-indexed terms in Agda, but here, without
   // types, they have to be primitives.

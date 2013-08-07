@@ -100,4 +100,10 @@ extends feature.Functions
   // shorthand for chain updates
   def updatesFrom(base: Term, assoc: (Term, Term)*): Term =
     fromList(base, assoc.toList)
+
+  // mapValues: (a -> b) -> Map k a -> Map k b
+  val mapValues: Term = Lambda("f", "map") ->:
+    Fold(Lambda("key", "value", "accumulator") ->:
+           Update("key")(Var("f")("value"))("accumulator"))(
+         Empty)("map")
 }

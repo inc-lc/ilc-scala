@@ -5,6 +5,9 @@ package language
  * The calculus Atlas in one convenient object
  */
 
+import atlas._
+
 object Atlas
-extends atlas.Syntax
-   with atlas.Evaluation
+extends Syntax
+   with Evaluation
+   with Derivation

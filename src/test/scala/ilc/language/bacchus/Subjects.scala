@@ -14,7 +14,7 @@ object Subjects {
 
   val twiceMap1234 = Map(1 -> 2, 2 -> 4, 3 -> 6, 4 -> 8)
 
-  val twiceMap1256 = Map(1 -> 2, 2 -> 4, 5 -> 10, 6 -> 12)
+  val twiceMap1256 = Map(1 -> 200, 2 -> 4, 5 -> 10, 6 -> 12)
 
   val natsAndNats = {
     val lhs = Array(914, 649, 869, 432, 795, 761, 1, 3, 5)

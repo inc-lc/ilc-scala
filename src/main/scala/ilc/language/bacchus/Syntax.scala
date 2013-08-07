@@ -5,8 +5,8 @@ package language.bacchus
  * Bacchus, the calculus after Atlas
  * - base types = nat, sum, map
  * - all base types have intro/elim forms
- * - all base-type changes can be replacement pairs
- * - replacement pairs beget replacement pairs
+ * - all base-type changes can be replacement values
+ * - replacement values beget replacement values
  *   (ilc/replacement-pair.md §2 approach 1)
  */
 

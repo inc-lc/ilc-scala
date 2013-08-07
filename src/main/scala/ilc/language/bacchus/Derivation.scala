@@ -8,28 +8,25 @@ trait Derivation extends feature.functions.Derivation { self: Syntax =>
   def deriveConst(c: Constant): Term = c match {
     case Diff | Apply => sys.error("cannot derive " ++ c.toString)
 
-    // ΔUnit = Nothing ⊎ Unit × Unit
-    case Individualist => Diff(Individualist)(Individualist)
+    // ΔUnit = Nothing ⊎ Unit
+    case Individualist => Right(Individualist)
 
     // changes to natural numbers are replacement pairs,
     // put in a sum so that the replacement-pair-part of
     // every base-type change is an injection with Right.
     //
-    // ΔNat = Unit ⊎ (Nat × Nat)
-    //         nil    replace
-    case Nat(n) => Left(Individualist)
+    // ΔNat = Nothing ⊎ Nat
+    //                  replace
+    case Nat(n) => Right(n)
 
     case FoldNat => Diff(FoldNat)(FoldNat)
 
-    case Plus => Lambda("x", "Δx", "y", "Δy") ->:
+    case Plus => Lambda("x", "Δx", "y", "Δy") ->: {
+      val irrelevant: Term = Lambda("_", "_") ->: Individualist
       case4("Δx", "Δy",
-        Lambda("_", "_") ->: Left(Individualist),
-        Lambda("_", "yp") ->: mapValues(Const(Plus)("x"))("yp"),
-        Lambda("xp", "_") ->: mapValues(Const(Plus)("y"))("xp"),
-        Lambda("xp", "yp") ->:
-          Right(pair(
-            Plus("x", "y"),
-            Plus(Lookup("x")("xp"), Lookup("y")("yp")))))
+        irrelevant, irrelevant, irrelevant,
+        Lambda("xNew", "yNew") ->: Right(Plus("xNew", "yNew")))
+    }
 
     // Δ (Map κ τ) = Map κ ((Unit ⊎ τ) ⊎ Δτ) ⊎ (Map κ τ × Map κ τ)
     //                      del  ins  modify     replace

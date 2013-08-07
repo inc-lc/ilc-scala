@@ -106,4 +106,16 @@ extends feature.Functions
     Fold(Lambda("key", "value", "accumulator") ->:
            Update("key")(Var("f")("value"))("accumulator"))(
          Empty)("map")
+
+  // shorthands for pattern matching
+
+  def case2(matchAgainst: Term, caseLeft: Term, caseRight: Term): Term =
+    Either(caseLeft)(caseRight)(matchAgainst)
+
+  def case4(sample1: Term, sample2: Term,
+            caseLL: Term, caseLR: Term,
+            caseRL: Term, caseRR: Term): Term =
+    case2(sample2,
+      case2(sample1, caseLL, caseRL),
+      case2(sample1, caseLR, caseRR))
 }

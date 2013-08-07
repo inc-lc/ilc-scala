@@ -123,25 +123,24 @@ extends functions.Evaluation { self: language.bacchus.Syntax =>
     }).keySet
 
     def diff(u: Value, v: Value): Value = (u, v) match {
-      case (Nat(n1), Nat(n2)) =>
-        Right(Map(n1 -> n2))
 
-      case (Map(m1), Map(m2)) =>
-        Right(Map(m1 -> m2))
+      case (v1: BacchusValue, v2: BacchusValue) =>
+        Right(Map(v2 -> v1))
 
       case (Function(f), Function(g)) =>
         (x: Value) => (dx: Value) => diff(f(apply(dx, x)), g(x))
     }
 
     def apply(dv: Value, v: Value): Value = (v, dv) match {
+      // replacement-pair works for base-type values
+      case (v: BacchusValue, Right(Pair(vOld, vNew))) => {
+        require(v == vOld)
+        vNew
+      }
 
       // ΔNat = Unit ⊎ (Nat × Nat)
       //         nil    replace
       case (Nat(n), Left(Individualist)) => n
-      case (Nat(n), Right(Pair(nOld: Nat, nNew: Nat))) => {
-        require(n == nOld)
-        nNew
-      }
 
       // Δ (Map κ τ) = Map κ ((Unit ⊎ τ) ⊎ Δτ) ⊎ (Map κ τ × Map κ τ)
       //                      del  ins  modify     replace
@@ -166,10 +165,6 @@ extends functions.Evaluation { self: language.bacchus.Syntax =>
           }
         }
       }
-      case (Map(m), Right(Pair(mOld: Map, mNew: Map))) => {
-        require(m == mOld)
-        mNew
-      }
 
       // Δ (σ ⊎ τ) = (Δσ ⊎ Δτ) ⊎ ((σ ⊎ τ) ⊎ (σ ⊎ τ))
       //              modify      replace
@@ -177,10 +172,6 @@ extends functions.Evaluation { self: language.bacchus.Syntax =>
         Left(apply(dv, v))
       case (Right(v), Left(Right(dv))) =>
         Right(apply(dv, v))
-      case (s: Sum, Pair(sOld: Sum, sNew: Sum)) => {
-        require(s == sOld)
-        sNew
-      }
 
       case (Function(df), Function(f)) =>
         (x: Value) => apply(df(x)(diff(x, x)),  f(x))

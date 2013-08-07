@@ -8,8 +8,8 @@ trait Derivation extends feature.functions.Derivation { self: Syntax =>
   def deriveConst(c: Constant): Term = c match {
     case Diff | Apply => sys.error("cannot derive " ++ c.toString)
 
-    // ΔUnit = Unit
-    case Individualist => Individualist
+    // ΔUnit = Nothing ⊎ Unit × Unit
+    case Individualist => Diff(Individualist)(Individualist)
 
     // changes to natural numbers are replacement pairs,
     // put in a sum so that the replacement-pair-part of
@@ -17,7 +17,7 @@ trait Derivation extends feature.functions.Derivation { self: Syntax =>
     //
     // ΔNat = Unit ⊎ (Nat × Nat)
     //         nil    replace
-    case Nat(n) => Individualist
+    case Nat(n) => Left(Individualist)
 
     case FoldNat => Diff(FoldNat)(FoldNat)
 

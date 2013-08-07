@@ -165,7 +165,7 @@ extends functions.Evaluation { self: language.bacchus.Syntax =>
       case (Right(v), Left(Right(dv))) =>
         Right(apply(dv, v))
 
-      case (Function(df), Function(f)) =>
+      case (Function(f), Function(df)) =>
         (x: Value) => apply(df(x)(diff(x, x)),  f(x))
     }
   }

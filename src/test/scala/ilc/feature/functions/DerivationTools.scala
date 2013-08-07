@@ -22,11 +22,13 @@ trait DerivationTools { self: FunSuite =>
   //     f x ⊕ derive(f) x (y ⊝ x) == f y
   //
   def assertCorrect(f: Term,
-                    input: List[(Term, Term)]) {
+                    input: List[(Term, Term)],
+                    diff: (Term, Term) => Term =
+                      (x, y) => diffTerm(x)(y)) {
     val reversedInput = input.reverse
     val theOld    = assembleOld(f, reversedInput)
     val theNew    = assembleNew(f, reversedInput)
-    val theChange = assembleChange(derive(f), reversedInput)
+    val theChange = assembleChange(derive(f), reversedInput, diff)
     try {
       assert(eval(applyTerm(theChange)(theOld)) === eval(theNew))
     } catch { case err: TestFailedException =>
@@ -42,12 +44,13 @@ trait DerivationTools { self: FunSuite =>
   }
 
   def assembleChange(dt: Term,
-                     reversedInput: List[(Term, Term)]): Term =
+                     reversedInput: List[(Term, Term)],
+                     diff: (Term, Term) => Term): Term =
     reversedInput match {
       case Nil => dt
       case (z, zNew) :: theRest => {
-        val dz = diffTerm(zNew)(z)
-        assembleChange(dt, theRest)(z)(dz)
+        val dz = diff(zNew, z)
+        assembleChange(dt, theRest, diff)(z)(dz)
       }
     }
 

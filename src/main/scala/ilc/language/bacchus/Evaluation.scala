@@ -194,6 +194,9 @@ extends functions.Evaluation { self: language.bacchus.Syntax =>
     case Apply =>
       (dv: Value) => (v: Value) => Value.apply(dv, v)
 
+    case Individualist =>
+      Value.Individualist
+
     case Nat(n) =>
       n
 

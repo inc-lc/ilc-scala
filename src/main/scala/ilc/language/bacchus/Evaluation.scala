@@ -33,8 +33,8 @@ extends functions.Evaluation { self: language.bacchus.Syntax =>
   implicit def liftMap(m: ValueMap): Value = Value.Map(m)
 
   // boilerplate for extending value declarations
-  override val Value = AtlasValueDeclarations
-  object AtlasValueDeclarations extends ValueDeclarations {
+  override val Value = BacchusValueDeclarations
+  object BacchusValueDeclarations extends ValueDeclarations {
 
     // the inhabitant of unit type has no computation content
     case object Individualist extends BacchusValue

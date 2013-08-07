@@ -212,7 +212,12 @@ extends functions.Evaluation { self: language.bacchus.Syntax =>
         m.toMap.updated(k, v)
 
     case Lookup =>
-      (k: Value) => (m: Value) => m.toMap(k)
+      (k: Value) => (m: Value) => m.toMap.withDefault(
+        k => throw new
+          java.util.NoSuchElementException(
+            "key " ++ k.toString ++
+            " not found in " ++ m.toMap.toString)
+      )(k)
 
     case Fold =>
       (f: Value) => (z: Value) => (map: Value) =>

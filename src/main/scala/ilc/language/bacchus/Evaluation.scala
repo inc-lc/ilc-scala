@@ -231,6 +231,6 @@ extends functions.Evaluation { self: language.bacchus.Syntax =>
 
     case Either =>
       (f: Value) => (g: Value) => (s: Value) =>
-        s.toSum.fold[Value](x => f(x), y => g(y))
+        s.toSum.fold(x => f(x), y => g(y))
   }
 }

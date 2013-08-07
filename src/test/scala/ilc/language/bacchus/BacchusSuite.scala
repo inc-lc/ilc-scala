@@ -69,6 +69,12 @@ extends FunSuite
     assert(eval(sum(twiceMap1256)).toNat === 200 + 4 + 10 + 12)
   }
 
+  test("diff and apply works on functions") {
+    val f = Const(Plus)(25)
+    val g = Const(Plus)(100)
+    assert(eval(Apply(Diff(g)(f))(f)(Nat(20))).toNat === 120)
+  }
+
   test("[s ⊕ (t ⊝ s) == t] holds for sums, numbers and maps") {
     def applyDiff(s: Term, t: Term): Value = eval(Apply(Diff(t)(s))(s))
     List.apply[(Term, Term)](
@@ -120,10 +126,40 @@ extends FunSuite
     assert(eval(FoldNat(0)(Const(Plus)(10))(100)).toNat === 1000)
   }
 
+  test("the derivative of constants are nil changes of themselves") {
+    def assertNil(t: Term): Unit =
+      assert(eval(Apply(derive(t))(t)) === eval(t))
+    List.apply[Term](
+      Individualist, Nat(5), Empty, Left(Empty), Right(Individualist)
+    ).foreach(assertNil)
+  }
+
   test("the derivative of Plus is correct") {
     (natsAndNats, natsAndNats.reverse).zipped.foreach { (p1, p2) =>
       val ((x, xNew), (yNew, y)) = (p1, p2)
       assertCorrectTwice(Plus, List((x, xNew), (y, yNew)))
     }
+  }
+
+  test("the derivative of FoldNat is correct") {
+    assertCorrectTwice(FoldNat, List(
+      5 -> 1997,
+      Const(Plus)(25) -> Const(Plus)(100),
+      40 -> 5))
+  }
+
+  test("the derivative of Fold is correct") {
+    // constant f z
+    assertCorrectTwice(Fold(constFun(Plus))(0),
+      List(twiceMap1234 -> twiceMap1256))
+    // constant f
+    assertCorrectTwice(Fold(constFun(Plus)),
+      List(0 -> 100, twiceMap1234 -> twiceMap1256))
+    // changing everything
+    assertCorrectTwice(Fold,
+      List(constFun(Plus) ->
+             (Lambda("_", "x", "y") ->: Plus(2000, "x", "y")),
+           0 -> 100,
+           twiceMap1234 -> twiceMap1256))
   }
 }

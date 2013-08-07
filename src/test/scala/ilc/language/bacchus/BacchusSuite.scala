@@ -123,12 +123,7 @@ extends FunSuite
   test("the derivative of Plus is correct") {
     (natsAndNats, natsAndNats.reverse).zipped.foreach { (p1, p2) =>
       val ((x, xNew), (yNew, y)) = (p1, p2)
-      assertCorrect(Plus, List((x, xNew), (y, yNew)))
+      assertCorrectTwice(Plus, List((x, xNew), (y, yNew)))
     }
   }
-
-  // For derivatives, you want to test beyond replacement pairs.
-  // have something that computes fine-grained change on
-  // values and have something else that converts it back to a
-  // term.
 }

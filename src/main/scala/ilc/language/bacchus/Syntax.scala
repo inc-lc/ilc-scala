@@ -38,6 +38,7 @@ extends feature.Functions
   //
   case class Nat(n: Int) extends Constant { require(n >= 0) }
   case object FoldNat extends Constant
+  case object Plus extends Constant with NestingBinaryOperator
 
   // intro/elim forms of maps (of base-type values)
   //

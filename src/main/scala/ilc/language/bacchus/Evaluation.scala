@@ -210,6 +210,9 @@ extends functions.Evaluation { self: language.bacchus.Syntax =>
         loop(n.toNat)
       }
 
+    case Plus =>
+      (x: Value) => (y: Value) => x.toNat + y.toNat
+
     case Empty =>
       ValueMap()
 

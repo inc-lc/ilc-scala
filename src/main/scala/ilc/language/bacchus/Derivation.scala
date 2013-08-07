@@ -21,6 +21,16 @@ trait Derivation extends feature.functions.Derivation { self: Syntax =>
 
     case FoldNat => Diff(FoldNat)(FoldNat)
 
+    case Plus => Lambda("x", "Δx", "y", "Δy") ->:
+      case4("Δx", "Δy",
+        Lambda("_", "_") ->: Left(Individualist),
+        Lambda("_", "yp") ->: mapValues(Const(Plus)("x"))("yp"),
+        Lambda("xp", "_") ->: mapValues(Const(Plus)("y"))("xp"),
+        Lambda("xp", "yp") ->:
+          Right(pair(
+            Plus("x", "y"),
+            Plus(Lookup("x")("xp"), Lookup("y")("yp")))))
+
     // Δ (Map κ τ) = Map κ ((Unit ⊎ τ) ⊎ Δτ) ⊎ (Map κ τ × Map κ τ)
     //                      del  ins  modify     replace
     case Empty => Left(Empty)

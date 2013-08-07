@@ -65,8 +65,8 @@ extends FunSuite
   }
 
   test("folding with Plus over a map yields the sum of its values") {
-    assert(eval(sum(twiceMap1234)).toNat === 20)
-    assert(eval(sum(twiceMap1256)).toNat === 28)
+    assert(eval(sum(twiceMap1234)).toNat === 2 + 4 + 6 + 8)
+    assert(eval(sum(twiceMap1256)).toNat === 200 + 4 + 10 + 12)
   }
 
   test("[s ⊕ (t ⊝ s) == t] holds for sums, numbers and maps") {

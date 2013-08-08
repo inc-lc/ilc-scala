@@ -10,18 +10,6 @@ trait Stability
 extends Attribution
    with FV { self: Syntax =>
 
-  case class Stability_attr(root: Term)
-  extends InheritedAttribute[Boolean](root) {
-    val rootAttr = oracle.isStable(rootSubterm)
-
-    def inherit(parent: Subterm,
-                parentAttr: Boolean) = {
-      parent.children.map(oracle.isStable)
-    }
-
-    val oracle = VarArgStability_attr(root)
-  }
-
   type VarStability = Map[String, Boolean]
   type ArgStability = List[Boolean]
 
@@ -38,7 +26,7 @@ extends Attribution
       }
   }
 
-  case class VarArgStability_attr(root: Term)
+  case class Stability_attr(root: Term)
   extends InheritedAttribute[(VarStability, ArgStability)](root) {
     val rootAttr = {
       val emptyEnv: VarStability = Map.empty

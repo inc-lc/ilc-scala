@@ -96,7 +96,7 @@ trait Context { self: Syntax =>
       Subterm(parent(term), ancestors)
     }
 
-    def children: List[Subterm] = term match {
+    val children: List[Subterm] = term match {
       case App(s, t) =>
         List(Subterm(s, context(Context.App1(Hole, t))),
              Subterm(t, context(Context.App2(s, Hole))))

@@ -83,8 +83,8 @@ trait Attribution extends Context { self: Syntax =>
       mutable.Map.empty
 
     update(rootSubterm, rootAttr)
-    init(Subterm.refl(root))
-    
+    init(rootSubterm)
+
     private[this] def init(s: Subterm): Unit = {
       (s.children, inherit(s, lookup(s))).zipped.foreach(update)
     }

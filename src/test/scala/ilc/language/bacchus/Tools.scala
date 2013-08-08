@@ -31,6 +31,12 @@ extends DerivationTools { self: FunSuite =>
     assert(t === immutable.Map(assoc: _*))
   }
 
+  // TEST OPTIMIZED DERIVATION
+  def assertCorrectPlus(f: Term, input: List[(Term, Term)]) {
+    assertCorrect(f, input, defaultDiff, derivePlus)
+    assertCorrect(f, input, fineGrainedDiff, derivePlus)
+  }
+
   // DERIVATION TEST WITH FINE-GRAINED CHANGES
   def assertCorrectTwice(f: Term, input: List[(Term, Term)]) {
     assertCorrect(f, input)

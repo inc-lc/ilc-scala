@@ -12,4 +12,5 @@ object Bacchus
 extends Syntax
    with Evaluation
    with Derivation
+   with DerivationPlus
    with functions.Pretty

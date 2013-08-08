@@ -48,16 +48,13 @@ extends Attribution
   }
 
   case class Stability_attr(root: Term)
-  extends InheritedAttribute[(VarStability, ArgStability)](root) {
+  extends
+    InheritedAttribute[(VarStability, ArgStability)](root,
+      Map.empty[String, Boolean].withDefaultValue(false) -> Nil) {
 
     // factory method to make easier-to-use attributes
     def split: (SubtermStability, ArgumentStability) =
       (SubtermStability(this), ArgumentStability(this))
-
-    val rootAttr = {
-      val emptyEnv: VarStability = Map.empty
-      (emptyEnv.withDefaultValue(false), Nil)
-    }
 
     def inherit(parent: Subterm,
                 parentAttr: (VarStability, ArgStability)) = {
@@ -78,6 +75,10 @@ extends Attribution
       FV(t).map(env).fold(true)(_ && _)
 
     // free variables of all subterms
-    val FV = FV_attr(root)
+    var FV: FV_attr = null // not executed
+
+    def initFields() {
+      FV = FV_attr(root)
+    }
   }
 }

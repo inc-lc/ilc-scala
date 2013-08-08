@@ -58,10 +58,8 @@ trait Attribution extends Context { self: Syntax =>
    * to write inherited attributes. It is not enforced that
    * every subclass has to be an inherited attribute.
    */
-  abstract class InheritedAttribute[T](root: Term)
+  abstract class InheritedAttribute[T](root: Term, rootAttr: T)
   extends Attribute[T](root) {
-
-    val rootAttr: T
 
     /**
      * Specification of an inherited attribute

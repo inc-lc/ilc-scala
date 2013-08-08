@@ -85,8 +85,17 @@ trait Attribution extends Context { self: Syntax =>
     update(rootSubterm, rootAttr)
     init(rootSubterm)
 
+    // unfortunately, the `inherit` method will be called
+    // before the val-members of a subclass are initialized.
+    // we have to make a virtual method to ensure that.
+
+    def initFields(): Unit
+
     private[this] def init(s: Subterm): Unit = {
-      (s.children, inherit(s, lookup(s))).zipped.foreach(update)
+      initFields()
+      if (s.children.size > 0)
+        (s.children, inherit(s, lookup(s))).zipped.foreach(update)
+      s.children.foreach(init)
     }
   }
 }

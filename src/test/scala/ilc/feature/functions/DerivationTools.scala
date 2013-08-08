@@ -16,6 +16,9 @@ trait DerivationTools { self: FunSuite =>
                        with feature.DiffAndApply
   import calculus._
 
+  val defaultDiff: (Term, Term) => Term = (x, y) => diffTerm(x)(y)
+  val defaultDerive: Term => Term = calculus.derive
+
   // assert the correctness of the derivative of t
   // according to
   //
@@ -24,11 +27,12 @@ trait DerivationTools { self: FunSuite =>
   def assertCorrect(f: Term,
                     input: List[(Term, Term)],
                     diff: (Term, Term) => Term =
-                      (x, y) => diffTerm(x)(y)) {
+                      (x, y) => diffTerm(x)(y),
+                    transform: Term => Term = calculus.derive) {
     val reversedInput = input.reverse
     val theOld    = assembleOld(f, reversedInput)
     val theNew    = assembleNew(f, reversedInput)
-    val theChange = assembleChange(derive(f), reversedInput, diff)
+    val theChange = assembleChange(transform(f), reversedInput, diff)
     try {
       assert(eval(applyTerm(theChange)(theOld)) === eval(theNew))
     } catch { case err: TestFailedException =>

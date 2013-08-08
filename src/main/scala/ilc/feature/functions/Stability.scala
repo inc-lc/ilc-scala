@@ -32,18 +32,18 @@ extends Attribution
   }
 
   case class ArgumentStability(attr: Stability_attr)
-  extends ReadOnlyAttribute[Int => Array[Boolean]] {
+  extends ReadOnlyAttribute[Int => Boolean] {
 
-    def apply(s: Subterm, arity: Int): Array[Boolean] =
-      lookup(s)(arity)
+    def apply(s: Subterm, whichArgument: Int): Boolean =
+      lookup(s)(whichArgument)
 
-    def lookup(s: Subterm): Int => Array[Boolean] = n => {
-      val argStability: Array[Boolean] = attr(s)._2.toArray
-      val returnValue: Array[Boolean] = Range(0, n).map(
-        i => i < argStability.length && argStability(i)
-      )(scala.collection.breakOut)
-      assert(returnValue.size == n)
-      returnValue
+    def lookup(s: Subterm): Int => Boolean = n => {
+      def seek(i: Int, list: List[Boolean]): Boolean = list match {
+        case Nil => false
+        case bool :: _ if (i == 0) => bool
+        case _ :: rest if (i >  0) => seek(i - 1, rest)
+      }
+      seek(n, attr(s)._2)
     }
   }
 

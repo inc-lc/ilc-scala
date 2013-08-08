@@ -10,13 +10,14 @@ import scala.collection.mutable
 
 trait Attribution extends Context { self: Syntax =>
 
-  abstract class Attribute[T](root: Term) {
-
+  trait ReadOnlyAttribute[T] {
     def lookup(s: Subterm): T
-    def update(s: Subterm, value: T): Unit
-
     def apply(s: Subterm): T = lookup(s)
+  }
 
+  abstract class Attribute[T](root: Term)
+  extends ReadOnlyAttribute[T] {
+    def update(s: Subterm, value: T): Unit
     val rootTerm = root
     val rootSubterm = Subterm.refl(root)
   }

@@ -43,6 +43,39 @@ extends language.bacchus.Derivation
 
       case Subterm.Var(x) => delta(x)
 
+      // ΔUnit = Nothing ⊎ Unit
+      case Subterm.Const(Individualist) =>
+        Right(Individualist)
+
+      // changes to natural numbers are replacement pairs,
+      // put in a sum so that the replacement-pair-part of
+      // every base-type change is an injection with Right.
+      //
+      // ΔNat = Nothing ⊎ Nat
+      //                  replace
+      case Subterm.Const(Nat(n)) =>
+        Right(n)
+
+      case Subterm.Const(Plus) => {
+        val irrelevant: Term = Lambda("_", "_") ->: Individualist
+        Lambda("x", "Δx", "y", "Δy") ->:
+          case4("Δx", "Δy",
+            irrelevant, irrelevant, irrelevant,
+            Lambda("xNew", "yNew") ->: Right(Plus("xNew", "yNew")))
+      }
+
+      // Δ (Map κ τ) = Map κ ((Unit ⊎ τ) ⊎ Δτ) ⊎ (Map κ τ × Map κ τ)
+      //                      del  ins  modify     replace
+      case Subterm.Const(Empty) =>
+        Left(Empty)
+
+      // Δ (σ ⊎ τ) = (Δσ ⊎ Δτ) ⊎ ((σ ⊎ τ) ⊎ (σ ⊎ τ))
+      //              modify      replace
+      case Subterm.Const(Left) =>
+        Lambda("x", "Δx") ->: Left(Left("Δx"))
+      case Subterm.Const(Right) =>
+        Lambda("x", "Δx") ->: Left(Right("Δx"))
+
       // for constants we don't care about
       case Subterm.Const(c) => deriveConst(c)
     }

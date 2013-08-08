@@ -24,15 +24,15 @@ trait DerivationPlus
 extends language.bacchus.Derivation
    with Stability { self: Syntax =>
   def derivePlus(t: Term): Term = {
-    val (isStable, argStability) = Stability_attr(t).split
+    val (stable, stableArg) = Stability_attr(t).split
     val FV = FV_attr(t)
 
     def recurse(s: Subterm): Term = s match {
 
-      case Subterm.App(operator, operand) =>
+      case Subterm.app(operator, operand) =>
         recurse(operator)(operand.term)(recurse(operand))
 
-      case Subterm.Abs(x, body) => {
+      case Subterm.abs(x, body) => {
         val dx = delta(x)
         if (FV_attr(t) contains dx)
           sys.error("naming scheme violation " ++
@@ -41,10 +41,10 @@ extends language.bacchus.Derivation
           Lambda(x, dx) ->: recurse(body)
       }
 
-      case Subterm.Var(x) => delta(x)
+      case Subterm.variable(x) => delta(x)
 
       // ΔUnit = Nothing ⊎ Unit
-      case Subterm.Const(Individualist) =>
+      case Subterm.const(Individualist) =>
         Right(Individualist)
 
       // changes to natural numbers are replacement pairs,
@@ -53,10 +53,10 @@ extends language.bacchus.Derivation
       //
       // ΔNat = Nothing ⊎ Nat
       //                  replace
-      case Subterm.Const(Nat(n)) =>
+      case Subterm.const(Nat(n)) =>
         Right(n)
 
-      case Subterm.Const(Plus) => {
+      case Subterm.const(Plus) => {
         val irrelevant: Term = Lambda("_", "_") ->: Individualist
         Lambda("x", "Δx", "y", "Δy") ->:
           case4("Δx", "Δy",
@@ -66,18 +66,18 @@ extends language.bacchus.Derivation
 
       // Δ (Map κ τ) = Map κ ((Unit ⊎ τ) ⊎ Δτ) ⊎ Map κ τ
       //                      del  ins  modify  replace
-      case Subterm.Const(Empty) =>
+      case Subterm.const(Empty) =>
         Left(Empty)
 
       // Δ (σ ⊎ τ) = (Δσ ⊎ Δτ) ⊎ (σ ⊎ τ)
       //              modify     replace
-      case Subterm.Const(Left) =>
+      case Subterm.const(Left) =>
         Lambda("x", "Δx") ->: Left(Left("Δx"))
-      case Subterm.Const(Right) =>
+      case Subterm.const(Right) =>
         Lambda("x", "Δx") ->: Left(Right("Δx"))
 
       // for constants we don't care about
-      case Subterm.Const(c) => deriveConst(c)
+      case Subterm.const(c) => deriveConst(c)
     }
 
     recurse(Subterm.refl(t))

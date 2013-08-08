@@ -115,8 +115,14 @@ trait Context { self: Syntax =>
     def refl(s: Term) = Subterm(s, Context.Hole)
 
     // pattern-matching aids
+    // if those objects were upper-case,
+    // there would be name clashes.
+    //
+    // consider putting syntactic constructors in a Syntax
+    // object so that other components of a calculus may
+    // make use of the same names (App, Abs, Var, Const).
 
-    object App {
+    object app {
       def unapply(s: Subterm): Option[(Subterm, Subterm)] =
         s.term match {
           case _: App => Some(s.children.head -> s.children.last)
@@ -124,7 +130,7 @@ trait Context { self: Syntax =>
         }
     }
 
-    object Abs {
+    object abs {
       def unapply(s: Subterm): Option[(String, Subterm)] =
         s.term match {
           case Abs(name, _) => Some(name -> s.children.head)
@@ -132,14 +138,14 @@ trait Context { self: Syntax =>
         }
     }
 
-    object Var {
+    object variable {
       def unapply(s: Subterm): Option[String] = s.term match {
         case Var(name) => Some(name)
         case _ => None
       }
     }
 
-    object Const {
+    object const {
       def unapply(s: Subterm): Option[Constant] = s.term match {
         case Const(c) => Some(c)
         case _ => None

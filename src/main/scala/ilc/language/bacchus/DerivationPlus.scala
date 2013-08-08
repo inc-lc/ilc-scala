@@ -64,6 +64,33 @@ extends language.bacchus.Derivation
             Lambda("xNew", "yNew") ->: Right(Plus("xNew", "yNew")))
       }
 
+      // foldNat : r → (r → r) → Nat → r
+      // the case where the number of iterations stay constant
+      //
+      // We call Δf and f n-times each. This is a situation
+      // where caching intermediate results are helpful.
+      //
+      // The computation proceeds thus:
+      // x₀ = z		Δx₀ = Δz
+      // x₁ = f x₀	Δx₁ = Δf x₀ Δx₀
+      // x₂ = f x₁	Δx₂ = Δf x₁ Δx₁
+      // ...
+      // until we manage to compute the change after the nth
+      // iteration.
+      //
+      case Subterm.const(FoldNat) if stableArg(s, 2) => {
+        val proj2: Term =
+          "duo" ->: uncurry(Lambda("x", "y") ->: "y", "duo")
+        Lambda("z", "Δz", "f", "Δf", "n", "Δn") ->:
+          proj2(FoldNat(
+            pair("z", "Δz"))(
+            "duo" ->: uncurry(
+              Lambda("x", "Δx") ->:
+                pair(Var("f")("x"), Var("Δf")("x")("Δx")),
+              "duo"))(
+            "n"))
+      }
+
       // Δ (Map κ τ) = Map κ ((Unit ⊎ τ) ⊎ Δτ) ⊎ Map κ τ
       //                      del  ins  modify  replace
       case Subterm.const(Empty) =>

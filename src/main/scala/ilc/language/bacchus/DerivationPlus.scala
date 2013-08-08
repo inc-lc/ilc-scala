@@ -64,13 +64,13 @@ extends language.bacchus.Derivation
             Lambda("xNew", "yNew") ->: Right(Plus("xNew", "yNew")))
       }
 
-      // Δ (Map κ τ) = Map κ ((Unit ⊎ τ) ⊎ Δτ) ⊎ (Map κ τ × Map κ τ)
-      //                      del  ins  modify     replace
+      // Δ (Map κ τ) = Map κ ((Unit ⊎ τ) ⊎ Δτ) ⊎ Map κ τ
+      //                      del  ins  modify  replace
       case Subterm.Const(Empty) =>
         Left(Empty)
 
-      // Δ (σ ⊎ τ) = (Δσ ⊎ Δτ) ⊎ ((σ ⊎ τ) ⊎ (σ ⊎ τ))
-      //              modify      replace
+      // Δ (σ ⊎ τ) = (Δσ ⊎ Δτ) ⊎ (σ ⊎ τ)
+      //              modify     replace
       case Subterm.Const(Left) =>
         Lambda("x", "Δx") ->: Left(Left("Δx"))
       case Subterm.Const(Right) =>

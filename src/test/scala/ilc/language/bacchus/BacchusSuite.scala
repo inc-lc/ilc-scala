@@ -127,8 +127,10 @@ extends FunSuite
   }
 
   test("the derivative of constants are nil changes of themselves") {
-    def assertNil(t: Term): Unit =
+    def assertNil(t: Term): Unit = {
       assert(eval(Apply(derive(t))(t)) === eval(t))
+      assert(eval(Apply(derivePlus(t))(t)) === eval(t))
+    }
     List.apply[Term](
       Individualist, Nat(5), Empty, Left(Empty), Right(Individualist)
     ).foreach(assertNil)
@@ -137,15 +139,29 @@ extends FunSuite
   test("the derivative of Plus is correct") {
     (natsAndNats, natsAndNats.reverse).zipped.foreach { (p1, p2) =>
       val ((x, xNew), (yNew, y)) = (p1, p2)
-      assertCorrectTwice(Plus, List((x, xNew), (y, yNew)))
+      val args: List[(Term, Term)] = List((x, xNew), (y, yNew))
+      assertCorrectTwice(Plus, args)
+      assertCorrectPlus(Plus, args)
     }
   }
 
   test("the derivative of FoldNat is correct") {
-    assertCorrectTwice(FoldNat, List(
+    val args2: List[(Term, Term)] = List(
       5 -> 1997,
-      Const(Plus)(25) -> Const(Plus)(100),
-      40 -> 5))
+      Const(Plus)(25) -> Const(Plus)(100))
+    val args3: List[(Term, Term)] = args2 ++
+      List.apply[(Term, Term)](40 -> 5)
+
+    assertCorrectTwice(FoldNat, args3)
+    // optimized foldNat should not be triggered,
+    // because the number of iteration changes
+    assertCorrectPlus(FoldNat, args3)
+
+    val foldNatWithFixedIterations: Term =
+      Lambda("z", "f") ->: FoldNat("z")("f")(25)
+
+    assertCorrectTwice(foldNatWithFixedIterations, args2)
+    assertCorrectPlus(foldNatWithFixedIterations, args2)
   }
 
   test("the derivative of Fold is correct") {

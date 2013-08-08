@@ -26,8 +26,34 @@ extends Attribution
       }
   }
 
+  case class SubtermStability(attr: Stability_attr)
+  extends ReadOnlyAttribute[Boolean] {
+    def lookup(s: Subterm): Boolean = attr.isStable(s)
+  }
+
+  case class ArgumentStability(attr: Stability_attr)
+  extends ReadOnlyAttribute[Int => Array[Boolean]] {
+
+    def apply(s: Subterm, arity: Int): Array[Boolean] =
+      lookup(s)(arity)
+
+    def lookup(s: Subterm): Int => Array[Boolean] = n => {
+      val argStability: Array[Boolean] = attr(s)._2.toArray
+      val returnValue: Array[Boolean] = Range(0, n).map(
+        i => i < argStability.length && argStability(i)
+      )(scala.collection.breakOut)
+      assert(returnValue.size == n)
+      returnValue
+    }
+  }
+
   case class Stability_attr(root: Term)
   extends InheritedAttribute[(VarStability, ArgStability)](root) {
+
+    // factory method to make easier-to-use attributes
+    def split: (SubtermStability, ArgumentStability) =
+      (SubtermStability(this), ArgumentStability(this))
+
     val rootAttr = {
       val emptyEnv: VarStability = Map.empty
       (emptyEnv.withDefaultValue(false), Nil)

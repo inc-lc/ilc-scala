@@ -125,7 +125,7 @@ trait Context { self: Syntax =>
     object app {
       def unapply(s: Subterm): Option[(Subterm, Subterm)] =
         s.term match {
-          case _: App => Some(s.children.head -> s.children.last)
+          case _: App => Some((s.children.head, s.children.last))
           case _ => None
         }
     }
@@ -133,7 +133,7 @@ trait Context { self: Syntax =>
     object abs {
       def unapply(s: Subterm): Option[(String, Subterm)] =
         s.term match {
-          case Abs(name, _) => Some(name -> s.children.head)
+          case Abs(name, _) => Some((name, s.children.head))
           case _ => None
         }
     }

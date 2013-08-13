@@ -24,11 +24,15 @@ trait DerivationPlus
 extends language.bacchus.Derivation
    with Stability { self: Syntax =>
   def derivePlus(t: Term): Term = {
+    //XXX Consider replacing the above line with:
+    //override def derive(t: Term): Term = {
+    //But then, how do we get access to the old derive, which is used in tests?
+
     val (stable, stableArg) = Stability_attr(t).split
     val FV = FV_attr(t)
 
+    //XXX Cai suggests this duplicates (in part) feature.functions.Derivation; but the superclass could use Subterm already anyway.
     def recurse(s: Subterm): Term = s match {
-
       case SubtermApp(operator, operand) =>
         recurse(operator)(operand.term)(recurse(operand))
 

@@ -30,7 +30,7 @@ extends feature.Functions
 
   // the inhabitant of the unit type
   // also used as placeholder
-  case object Individualist extends Constant
+  case object UnitValue extends Constant
 
   // intro/elim forms of nats
   //
@@ -72,13 +72,13 @@ extends feature.Functions
   def pairTerm: Term = Lambda("x", "y") ->: pair("x", "y")
   def uncurry(f: Term, p: Term): Term = {
     val List(x, y, dontcare) = uniqueVars(f, "x", "y", "_")
-    Fold(Lambda(x, y, dontcare) ->: f(x)(y))(Individualist)(p)
+    Fold(Lambda(x, y, dontcare) ->: f(x)(y))(UnitValue)(p)
   }
   def uncurryTerm: Term = Lambda("f", "p") ->: uncurry("f", "p")
 
   // booleans are encoded as sums
-  val tt = Left(Individualist)
-  val ff = Right(Individualist)
+  val tt = Left(UnitValue)
+  val ff = Right(UnitValue)
   val ifThenElse = Lambda("cond", "then", "else") ->:
     Either("_" ->: "then")("_" ->: "else")("cond")
 

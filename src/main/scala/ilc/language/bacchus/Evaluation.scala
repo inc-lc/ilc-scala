@@ -37,7 +37,7 @@ extends functions.Evaluation { self: language.bacchus.Syntax =>
   object BacchusValueDeclarations extends ValueDeclarations {
 
     // the inhabitant of unit type has no computation content
-    case object Individualist extends BacchusValue
+    case object UnitValue extends BacchusValue
 
     case class Nat(override val toNat: Int) extends BacchusValue {
       require(toNat >= 0)
@@ -84,7 +84,7 @@ extends functions.Evaluation { self: language.bacchus.Syntax =>
     object Delete {
       def unapply(keyVal: (Value, Value)): Option[Value] =
         keyVal._2 match {
-          case Left(Left(Individualist)) => Some(keyVal._1)
+          case Left(Left(UnitValue)) => Some(keyVal._1)
           case _ => None
         }
     }
@@ -177,8 +177,8 @@ extends functions.Evaluation { self: language.bacchus.Syntax =>
     case Apply =>
       (dv: Value) => (v: Value) => Value.apply(dv, v)
 
-    case Individualist =>
-      Value.Individualist
+    case UnitValue =>
+      Value.UnitValue
 
     case Nat(n) =>
       n

@@ -15,8 +15,6 @@ import scala.language.implicitConversions
 trait Syntax
 extends feature.Functions
    with feature.DiffAndApply {
-  sealed trait Constant
-
   // type-indexed terms that has to be simulated in scala
   // cannot be derived
   //

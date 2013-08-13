@@ -16,7 +16,7 @@ trait Syntax {
   // Subclass obligations start //
   ////////////////////////////////
 
-  type Constant
+  trait Constant
 
   //////////////////////////////
   // Subclass obligations end //

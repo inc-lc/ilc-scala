@@ -14,8 +14,6 @@ trait Syntax
 extends feature.Functions
    with feature.DiffAndApply {
 
-  sealed trait Constant
-
   // Diff and Apply are primitives that cannot be derived.
   // They are type-indexed terms in Agda, but here, without
   // types, they have to be primitives.

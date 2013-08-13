@@ -13,8 +13,6 @@ extends functions.Syntax
    with functions.Attribution
 
 object Functions extends Functions {
-  type Constant = Nothing
-
   def deriveConst(constant: Constant) = ???
   def evalConst(constant: Constant) = ???
 }

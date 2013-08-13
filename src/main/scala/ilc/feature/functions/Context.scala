@@ -113,43 +113,36 @@ trait Context { self: Syntax =>
   object Subterm {
     // s is the subterm of s itself
     def refl(s: Term) = Subterm(s, Context.Hole)
+  }
 
-    // pattern-matching aids
-    // if those objects were upper-case,
-    // there would be name clashes.
-    //
-    // consider putting syntactic constructors in a Syntax
-    // object so that other components of a calculus may
-    // make use of the same names (App, Abs, Var, Const).
+  // pattern-matching aids
+  object SubtermApp {
+    def unapply(s: Subterm): Option[(Subterm, Subterm)] =
+      s.term match {
+        case _: App => Some((s.children.head, s.children.last))
+        case _ => None
+      }
+  }
 
-    object app {
-      def unapply(s: Subterm): Option[(Subterm, Subterm)] =
-        s.term match {
-          case _: App => Some((s.children.head, s.children.last))
-          case _ => None
-        }
-    }
+  object SubtermAbs {
+    def unapply(s: Subterm): Option[(String, Subterm)] =
+      s.term match {
+        case Abs(name, _) => Some((name, s.children.head))
+        case _ => None
+      }
+  }
 
-    object abs {
-      def unapply(s: Subterm): Option[(String, Subterm)] =
-        s.term match {
-          case Abs(name, _) => Some((name, s.children.head))
-          case _ => None
-        }
-    }
-
-    object variable {
-      def unapply(s: Subterm): Option[String] = s.term match {
+  object SubtermVar {
+    def unapply(s: Subterm): Option[String] = s.term match {
         case Var(name) => Some(name)
         case _ => None
       }
-    }
+  }
 
-    object const {
-      def unapply(s: Subterm): Option[Constant] = s.term match {
+  object SubtermConst {
+    def unapply(s: Subterm): Option[Constant] = s.term match {
         case Const(c) => Some(c)
         case _ => None
       }
-    }
   }
 }

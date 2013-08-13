@@ -29,10 +29,10 @@ extends language.bacchus.Derivation
 
     def recurse(s: Subterm): Term = s match {
 
-      case Subterm.app(operator, operand) =>
+      case SubtermApp(operator, operand) =>
         recurse(operator)(operand.term)(recurse(operand))
 
-      case Subterm.abs(x, body) => {
+      case SubtermAbs(x, body) => {
         val dx = delta(x)
         if (FV_attr(t) contains dx)
           sys.error("naming scheme violation " ++
@@ -41,10 +41,10 @@ extends language.bacchus.Derivation
           Lambda(x, dx) ->: recurse(body)
       }
 
-      case Subterm.variable(x) => delta(x)
+      case SubtermVar(x) => delta(x)
 
       // ΔUnit = Nothing ⊎ Unit
-      case Subterm.const(UnitValue) =>
+      case SubtermConst(UnitValue) =>
         Right(UnitValue)
 
       // changes to natural numbers are replacement values,
@@ -53,10 +53,10 @@ extends language.bacchus.Derivation
       //
       // ΔNat = Nothing ⊎ Nat
       //                  replace
-      case Subterm.const(Nat(n)) =>
+      case SubtermConst(Nat(n)) =>
         Right(n)
 
-      case Subterm.const(Plus) => {
+      case SubtermConst(Plus) => {
         val irrelevant: Term = Lambda("_", "_") ->: UnitValue
         Lambda("x", "Δx", "y", "Δy") ->:
           case4("Δx", "Δy",
@@ -78,7 +78,7 @@ extends language.bacchus.Derivation
       // until we manage to compute the change after the nth
       // iteration.
       //
-      case Subterm.const(FoldNat) if stableArg(s, 2) => {
+      case SubtermConst(FoldNat) if stableArg(s, 2) => {
         val proj2: Term =
           "duo" ->: uncurry(Lambda("x", "y") ->: "y", "duo")
         Lambda("z", "Δz", "f", "Δf", "n", "Δn") ->:
@@ -93,18 +93,18 @@ extends language.bacchus.Derivation
 
       // Δ (Map κ τ) = Map κ ((Unit ⊎ τ) ⊎ Δτ) ⊎ Map κ τ
       //                      del  ins  modify  replace
-      case Subterm.const(EmptyMap) =>
+      case SubtermConst(EmptyMap) =>
         Left(EmptyMap)
 
       // Δ (σ ⊎ τ) = (Δσ ⊎ Δτ) ⊎ (σ ⊎ τ)
       //              modify     replace
-      case Subterm.const(Left) =>
+      case SubtermConst(Left) =>
         Lambda("x", "Δx") ->: Left(Left("Δx"))
-      case Subterm.const(Right) =>
+      case SubtermConst(Right) =>
         Lambda("x", "Δx") ->: Left(Right("Δx"))
 
       // for constants we don't care about
-      case Subterm.const(c) => deriveConst(c)
+      case SubtermConst(c) => deriveConst(c)
     }
 
     recurse(Subterm.refl(t))

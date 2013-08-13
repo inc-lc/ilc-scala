@@ -47,7 +47,7 @@ extends feature.Functions
   //   lookup : k → Map k v → v
   //   fold : (k → a → b → b) → b → Map k a → b
   //
-  case object Empty extends Constant
+  case object EmptyMap extends Constant
   case object Update extends Constant
   case object Lookup extends Constant
   case object Fold extends Constant
@@ -68,7 +68,7 @@ extends feature.Functions
   //
   //   uncurry : (a → b → c) → a × b → c
   //
-  def pair(s: Term, t: Term): Term = Update(s)(t)(Empty)
+  def pair(s: Term, t: Term): Term = Update(s)(t)(EmptyMap)
   def pairTerm: Term = Lambda("x", "y") ->: pair("x", "y")
   def uncurry(f: Term, p: Term): Term = {
     val List(x, y, dontcare) = uniqueVars(f, "x", "y", "_")
@@ -88,7 +88,7 @@ extends feature.Functions
 
   // easy construction of map literals (copied from Atlas)
   def Map(assoc: (Term, Term)*): Term =
-    updatesFrom(Empty, assoc: _*)
+    updatesFrom(EmptyMap, assoc: _*)
 
   def fromList(base: Term, assoc: List[(Term, Term)]): Term =
     assoc match {
@@ -105,7 +105,7 @@ extends feature.Functions
   val mapValues: Term = Lambda("f", "map") ->:
     Fold(Lambda("key", "value", "accumulator") ->:
            Update("key")(Var("f")("value"))("accumulator"))(
-         Empty)("map")
+         EmptyMap)("map")
 
   // shorthands for pattern matching
 

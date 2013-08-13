@@ -93,8 +93,8 @@ extends language.bacchus.Derivation
 
       // Δ (Map κ τ) = Map κ ((Unit ⊎ τ) ⊎ Δτ) ⊎ Map κ τ
       //                      del  ins  modify  replace
-      case Subterm.const(Empty) =>
-        Left(Empty)
+      case Subterm.const(EmptyMap) =>
+        Left(EmptyMap)
 
       // Δ (σ ⊎ τ) = (Δσ ⊎ Δτ) ⊎ (σ ⊎ τ)
       //              modify     replace

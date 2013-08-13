@@ -47,7 +47,7 @@ extends language.bacchus.Derivation
       case Subterm.const(Individualist) =>
         Right(Individualist)
 
-      // changes to natural numbers are replacement pairs,
+      // changes to natural numbers are replacement values,
       // put in a sum so that the replacement-pair-part of
       // every base-type change is an injection with Right.
       //

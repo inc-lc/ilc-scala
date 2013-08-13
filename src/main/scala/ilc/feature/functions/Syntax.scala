@@ -33,7 +33,7 @@ trait Syntax {
 
   // SYNTAX
 
-  sealed abstract trait Term {
+  abstract trait Term {
     // easy way to build up nested applications
     def apply(t: Term): App = App(this, t)
 

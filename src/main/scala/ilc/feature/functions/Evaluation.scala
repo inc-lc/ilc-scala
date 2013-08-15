@@ -45,15 +45,6 @@ trait Evaluation { self: Syntax =>
   trait Value {
     // "toFunction"
     def apply(argument: Value): Value = die("apply", argument)
-
-    def die(from: String, arg: Any = ""): Nothing =
-      throw new
-        InvalidTargetObjectTypeException(this.toString ++
-          "." ++ from ++
-          (if (arg.toString == "")
-            ""
-          else
-            "(" ++ arg.toString ++ ")"))
   }
 
   val Value = new ValueDeclarations
@@ -74,4 +65,13 @@ trait Evaluation { self: Syntax =>
     (p: (S, T))
     (implicit impS: S => Value, impT: T => Value): (Value, Value) =
       (impS(p._1), impT(p._2))
+
+  def die(from: String, arg: Any = ""): Nothing =
+    throw new
+      InvalidTargetObjectTypeException(this.toString ++
+        "." ++ from ++
+        (if (arg.toString == "")
+          ""
+        else
+          "(" ++ arg.toString ++ ")"))
 }

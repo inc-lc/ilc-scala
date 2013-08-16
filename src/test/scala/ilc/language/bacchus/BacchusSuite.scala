@@ -23,7 +23,7 @@ extends FunSuite
       List((0, UnitValue),
            (Lookup(2)(twiceMap1234), primeMap10),
            (twiceMap1234, Lookup(4)(primeMap10)),
-           (twiceMap1256, Empty))
+           (twiceMap1256, EmptyMap))
     val fst = "x" ->: "y" ->: "x"
     val snd = "x" ->: "y" ->: "y"
     def mkProj(proj: Term): (Term, Term) => Value =
@@ -45,8 +45,8 @@ extends FunSuite
     }
   }
 
-  test("Empty is empty map") {
-    assertMap(Empty, Nil: _*)
+  test("EmptyMap is empty map") {
+    assertMap(EmptyMap, Nil: _*)
   }
 
   test("updating with nonexistent key is insertion") {
@@ -91,7 +91,7 @@ extends FunSuite
            Map(99 -> 217) -> Map(2012 -> tt)),
        Map(twiceMap1234 -> primeMap10,
            twiceMap1256 -> primeMap10,
-           Empty -> primeMap10))
+           EmptyMap -> primeMap10))
     ).foreach { duo =>
       assert(applyDiff(duo._1, duo._2) === eval(duo._2))
     }
@@ -132,7 +132,7 @@ extends FunSuite
       assert(eval(Apply(derivePlus(t))(t)) === eval(t))
     }
     List.apply[Term](
-      UnitValue, Nat(5), Empty, Left(Empty), Right(UnitValue)
+      UnitValue, Nat(5), EmptyMap, Left(EmptyMap), Right(UnitValue)
     ).foreach(assertNil)
   }
 

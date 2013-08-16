@@ -80,7 +80,7 @@ extends DerivationTools { self: FunSuite =>
   }
 
   def reify(x: BacchusValue): Term = x match {
-    case Value.UnitValue => UnitValue
+    case Value.UnitValue => UnitTerm
     case Value.Nat(n) => Nat(n)
     case Value.Map(m) => Map(m.map({case (key, value) =>
       reify(key) -> reify(value)}).toList: _*)

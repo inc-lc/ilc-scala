@@ -177,7 +177,7 @@ extends functions.Evaluation { self: language.bacchus.Syntax =>
     case Apply =>
       (dv: Value) => (v: Value) => Value.apply(dv, v)
 
-    case UnitValue =>
+    case UnitTerm =>
       Value.UnitValue
 
     case Nat(n) =>

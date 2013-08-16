@@ -48,8 +48,8 @@ extends language.bacchus.Derivation
       case SubtermVar(x) => delta(x)
 
       // ΔUnit = Nothing ⊎ Unit
-      case SubtermConst(UnitValue) =>
-        Right(UnitValue)
+      case SubtermConst(UnitTerm) =>
+        Right(UnitTerm)
 
       // changes to natural numbers are replacement values,
       // put in a sum so that the replacement-pair-part of
@@ -61,7 +61,7 @@ extends language.bacchus.Derivation
         Right(n)
 
       case SubtermConst(Plus) => {
-        val irrelevant: Term = Lambda("_", "_") ->: UnitValue
+        val irrelevant: Term = Lambda("_", "_") ->: UnitTerm
         Lambda("x", "Δx", "y", "Δy") ->:
           case4("Δx", "Δy",
             irrelevant, irrelevant, irrelevant,

@@ -20,7 +20,7 @@ extends FunSuite
   // TODO: remove code duplication
   test("pair encoding preserves information") {
     val termList: List[(Term, Term)] =
-      List((0, UnitValue),
+      List((0, UnitTerm),
            (Lookup(2)(twiceMap1234), primeMap10),
            (twiceMap1234, Lookup(4)(primeMap10)),
            (twiceMap1256, EmptyMap))
@@ -132,7 +132,7 @@ extends FunSuite
       assert(eval(Apply(derivePlus(t))(t)) === eval(t))
     }
     List.apply[Term](
-      UnitValue, Nat(5), EmptyMap, Left(EmptyMap), Right(UnitValue)
+      UnitTerm, Nat(5), EmptyMap, Left(EmptyMap), Right(UnitTerm)
     ).foreach(assertNil)
   }
 

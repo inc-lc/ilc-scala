@@ -67,7 +67,7 @@ extends DerivationTools { self: FunSuite =>
         toInsert.map {
           case (key, value) => key -> Value.Left(Value.Right(value))
         } ++ toDelete.map {
-          key => key -> Value.Left(Value.Left(Value.Individualist))
+          key => key -> Value.Left(Value.Left(Value.UnitValue))
         } ++ toUpdate.map {
           key => key -> Value.Right(bacchusDiff(m1(key), m2(key)))
         })
@@ -80,7 +80,7 @@ extends DerivationTools { self: FunSuite =>
   }
 
   def reify(x: BacchusValue): Term = x match {
-    case Value.Individualist => Individualist
+    case Value.UnitValue => UnitValue
     case Value.Nat(n) => Nat(n)
     case Value.Map(m) => Map(m.map({case (key, value) =>
       reify(key) -> reify(value)}).toList: _*)

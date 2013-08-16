@@ -8,7 +8,6 @@ package feature.functions
 
 import scala.language.implicitConversions
 import scala.collection.immutable
-import java.lang.IllegalArgumentException
 import javax.management.modelmbean.InvalidTargetObjectTypeException
 
 trait Evaluation { self: Syntax =>
@@ -20,7 +19,7 @@ trait Evaluation { self: Syntax =>
   def eval(t: Term): Value = try {
     evalWithEnv(t, immutable.Map.empty)
   } catch { case err: IllegalArgumentException =>
-    throw new java.lang.
+    throw new
       IllegalArgumentException(err.getMessage() ++
         "\n in the term\n    " ++ t.toString)
   }

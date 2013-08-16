@@ -18,13 +18,13 @@ trait Evaluation { self: Syntax =>
 
   def eval(t: Term): Value = try {
     evalWithEnv(t, immutable.Map.empty)
-  } catch { case err: IllegalArgumentException =>
+  } catch { case err: InvalidTargetObjectTypeException =>
     throw new
       IllegalArgumentException(err.getMessage() ++
         "\n in the term\n    " ++ t.toString)
   }
 
-  def evalWithEnv(t: Term, env: Env): Value = try {
+  def evalWithEnv(t: Term, env: Env): Value =
     t match {
       case Abs(x, t) =>
         (arg: Value) => evalWithEnv(t, env.updated(x, arg))
@@ -35,11 +35,6 @@ trait Evaluation { self: Syntax =>
       case Const(c) =>
         evalConst(c)
     }
-  } catch { case err: InvalidTargetObjectTypeException =>
-    throw new
-      IllegalArgumentException(err.getMessage() ++
-        " when evaluating:\n    " ++ t.toString)
-  }
 
   trait Value {
     // "toFunction"

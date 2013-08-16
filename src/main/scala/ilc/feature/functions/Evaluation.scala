@@ -14,7 +14,7 @@ trait Evaluation { self: Syntax =>
   // Subclass obligations start //
   ////////////////////////////////
 
-  def evalConst(c: Constant): Value
+  def evalConst(c: Constant): Value = { die("Unknown constant!") }
 
   //////////////////////////////
   // Subclass obligations end //

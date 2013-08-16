@@ -207,7 +207,7 @@ extends functions.Evaluation { self: language.atlas.Syntax =>
     }
   }
 
-  def evalConst(c: Constant): Value = c match {
+  override def evalConst(c: Constant): Value = c match {
     case Diff =>
       (u: Value) => (v: Value) => Value.diff(u, v)
 
@@ -256,5 +256,8 @@ extends functions.Evaluation { self: language.atlas.Syntax =>
     case Fold =>
       (f: Value) => (z: Value) => (map: Value) =>
         map.toMap.foldRight(z)((p, b) => f(p._1)(p._2)(b))
+
+    case _ =>
+      super.evalConst(c)
   }
 }

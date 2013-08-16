@@ -170,7 +170,7 @@ extends functions.Evaluation { self: language.bacchus.Syntax =>
     }
   }
 
-  def evalConst(c: Constant): Value = c match {
+  override def evalConst(c: Constant): Value = c match {
     case Diff =>
       (u: Value) => (v: Value) => Value.diff(u, v)
 
@@ -224,5 +224,8 @@ extends functions.Evaluation { self: language.bacchus.Syntax =>
     case Either =>
       (f: Value) => (g: Value) => (s: Value) =>
         s.toSum.fold(x => f(x), y => g(y))
+
+    case _ =>
+      super.evalConst(c)
   }
 }

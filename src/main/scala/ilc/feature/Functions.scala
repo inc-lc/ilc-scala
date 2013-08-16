@@ -14,5 +14,4 @@ extends functions.Syntax
 
 object Functions extends Functions {
   def deriveConst(constant: Constant) = ???
-  def evalConst(constant: Constant) = ???
 }

@@ -65,8 +65,8 @@ trait Syntax extends base.Syntax {
   implicit def liftVariable(name: String): Term = Var(name)
 
   //Chain implicit conversions.
-  implicit def constToTermOps(c: Constant): TermOps = c
-  implicit def stringToTermOps(name: String): TermOps = name
+  implicit def constToTermOps(c: Constant): TermOps = TermOps(c)
+  implicit def stringToTermOps(name: String): TermOps = TermOps(name)
 
   implicit def liftTermPair[S, T]
     (p: (S, T))

@@ -1,38 +1,17 @@
 package ilc
-package feature.functions
+package feature
+package functions
 
 /**
  * Evaluating untyped lambda calculus
  * extensible by constants and primitives
  */
 
-import scala.language.implicitConversions
 import scala.collection.immutable
+import scala.language.implicitConversions
 
-trait Evaluation { self: Syntax =>
-  ////////////////////////////////
-  // Subclass obligations start //
-  ////////////////////////////////
-
-  def evalConst(c: Constant): Value = { die("Unknown constant!") }
-
-  //////////////////////////////
-  // Subclass obligations end //
-  //////////////////////////////
-
-  type Env = immutable.Map[String, Value]
-
-  class InvalidTargetObjectTypeException(message: String) extends Exception(message)
-
-  def eval(t: Term): Value = try {
-    evalWithEnv(t, immutable.Map.empty)
-  } catch { case err: InvalidTargetObjectTypeException =>
-    throw new
-      IllegalArgumentException(err.getMessage() ++
-        "\n in the term\n    " ++ t.toString)
-  }
-
-  def evalWithEnv(t: Term, env: Env): Value =
+trait Evaluation extends base.Evaluation with Syntax {
+  override def evalWithEnv(t: Term, env: Env): Value =
     t match {
       case Abs(x, t) =>
         (arg: Value) => evalWithEnv(t, env.updated(x, arg))
@@ -40,14 +19,9 @@ trait Evaluation { self: Syntax =>
         evalWithEnv(s, env)(evalWithEnv(t, env))
       case Var(name) =>
         env(name) // NoSuchElementException = free var
-      case Const(c) =>
-        evalConst(c)
+      case _ =>
+        super.evalWithEnv(t, env)
     }
-
-  trait Value {
-    // "toFunction"
-    def apply(argument: Value): Value = die("apply", argument)
-  }
 
   val Value = new ValueDeclarations
 
@@ -67,13 +41,4 @@ trait Evaluation { self: Syntax =>
     (p: (S, T))
     (implicit impS: S => Value, impT: T => Value): (Value, Value) =
       (impS(p._1), impT(p._2))
-
-  def die(from: String, arg: Any = ""): Nothing =
-    throw new
-      InvalidTargetObjectTypeException(this.toString ++
-        "." ++ from ++
-        (if (arg.toString == "")
-          ""
-        else
-          "(" ++ arg.toString ++ ")"))
 }

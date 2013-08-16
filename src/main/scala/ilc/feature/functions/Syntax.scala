@@ -1,6 +1,6 @@
 package ilc
-/* XXX This is not really a feature, more like the base calculus. */
-package feature.functions
+package feature
+package functions
 
 /**
  * Untyped lambda calculi with abstraction and application
@@ -11,17 +11,7 @@ import scala.language.implicitConversions
 import scala.collection.GenTraversable
 import ilc.util.UnionType._
 
-trait Syntax {
-  ////////////////////////////////
-  // Subclass obligations start //
-  ////////////////////////////////
-
-  trait Constant
-
-  //////////////////////////////
-  // Subclass obligations end //
-  //////////////////////////////
-
+trait Syntax extends base.Syntax {
   // easy way to build up nested addition &co.
   trait NestingBinaryOperator { self: Constant =>
     def apply(lhs: Term, rhs: Term, others: Term*): Term =
@@ -33,18 +23,18 @@ trait Syntax {
 
   // SYNTAX
 
-  abstract trait Term {
+  implicit class TermOps(t0: Term) {
     // easy way to build up nested applications
-    def apply(t: Term): App = App(this, t)
+    def apply(t: Term): App = App(t0, t)
 
     // easy way to build up nested abstractions
-    def ->:(name: String): Abs = Abs(name, this)
-    def ->:(variable: Var): Abs = variable.name ->: this
+    def ->:(name: String): Abs = Abs(name, t0)
+    def ->:(variable: Var): Abs = variable.name ->: t0
     def ->:(parameterList: GenTraversable[String]): Term =
       if (parameterList.isEmpty)
-        this
+        t0
       else
-        parameterList.head ->: parameterList.tail ->: this
+        parameterList.head ->: parameterList.tail ->: t0
   }
 
   object Lambda {
@@ -71,13 +61,12 @@ trait Syntax {
   case class App(operator: Term, operand: Term) extends Term
   case class Abs(name: String, body: Term) extends Term
 
-  case class Const(c: Constant) extends Term
-
-  // implicit conversion to stop writing `Const`
-  implicit def liftConstant(c: Constant): Term = Const(c)
-
   // implicit conversion to stop writing `Var`
   implicit def liftVariable(name: String): Term = Var(name)
+
+  //Chain implicit conversions.
+  implicit def constToTermOps(c: Constant): TermOps = c
+  implicit def stringToTermOps(name: String): TermOps = name
 
   implicit def liftTermPair[S, T]
     (p: (S, T))

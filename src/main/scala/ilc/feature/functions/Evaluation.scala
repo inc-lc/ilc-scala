@@ -11,8 +11,15 @@ import scala.collection.immutable
 import javax.management.modelmbean.InvalidTargetObjectTypeException
 
 trait Evaluation { self: Syntax =>
+  ////////////////////////////////
+  // Subclass obligations start //
+  ////////////////////////////////
 
   def evalConst(c: Constant): Value
+
+  //////////////////////////////
+  // Subclass obligations end //
+  //////////////////////////////
 
   type Env = immutable.Map[String, Value]
 

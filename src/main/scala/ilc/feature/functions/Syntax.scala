@@ -1,4 +1,5 @@
 package ilc
+/* XXX This is not really a feature, more like the base calculus. */
 package feature.functions
 
 /**
@@ -11,10 +12,15 @@ import scala.collection.GenTraversable
 import ilc.util.UnionType._
 
 trait Syntax {
-
-  // SUBCLASS OBLIGATIONS
+  ////////////////////////////////
+  // Subclass obligations start //
+  ////////////////////////////////
 
   type Constant
+
+  //////////////////////////////
+  // Subclass obligations end //
+  //////////////////////////////
 
   // easy way to build up nested addition &co.
   trait NestingBinaryOperator { self: Constant =>

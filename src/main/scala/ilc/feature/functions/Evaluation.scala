@@ -8,7 +8,6 @@ package feature.functions
 
 import scala.language.implicitConversions
 import scala.collection.immutable
-import javax.management.modelmbean.InvalidTargetObjectTypeException
 
 trait Evaluation { self: Syntax =>
   ////////////////////////////////
@@ -22,6 +21,8 @@ trait Evaluation { self: Syntax =>
   //////////////////////////////
 
   type Env = immutable.Map[String, Value]
+
+  class InvalidTargetObjectTypeException(message: String) extends Exception(message)
 
   def eval(t: Term): Value = try {
     evalWithEnv(t, immutable.Map.empty)

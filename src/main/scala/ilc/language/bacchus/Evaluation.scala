@@ -17,16 +17,31 @@ extends functions.Evaluation { self: language.bacchus.Syntax =>
   def ValueMap(assoc: (Value, Value)*): ValueMap =
     immutable.Map.apply[Value, Value](assoc: _*)
 
-  // boilerplate for adding methods to Value trait
   implicit def toBacchus(value: Value): BacchusValue = value match {
     case bv: BacchusValue => bv
     case _ => new BacchusValue
   }
 
-  class BacchusValue extends Value {
-    def toNat: Int = die("toNat")
-    def toMap: ValueMap = die("toMap")
-    def toSum: ValueSum = die("toSum")
+  class BacchusValue extends Value
+
+  //instead of adding methods to Value (which requires family polymorphism),
+  //just add extensions methods via enrich-my-library (aka pimp-my-library).
+  implicit class BacchusOps(value: Value) {
+    def toNat: Int =
+      value match {
+        case Value.Nat(n) => n
+        case _ => die("toNat")
+      }
+    def toMap: ValueMap =
+      value match {
+        case Value.Map(m) => m
+        case _ => die("toMap")
+      }
+    def toSum: ValueSum =
+      value match {
+        case Value.Sum(s) => s
+        case _ => die("toSum")
+      }
   }
 
   implicit def liftNat(n: Int): Value = Value.Nat(n)
@@ -39,18 +54,18 @@ extends functions.Evaluation { self: language.bacchus.Syntax =>
     // the inhabitant of unit type has no computation content
     case object UnitValue extends BacchusValue
 
-    case class Nat(override val toNat: Int) extends BacchusValue {
+    case class Nat(toNat: Int) extends BacchusValue {
       require(toNat >= 0)
     }
 
-    case class Map(override val toMap: ValueMap) extends BacchusValue
+    case class Map(toMap: ValueMap) extends BacchusValue
 
     object Map {
       def apply(assoc: (Value, Value)*): Map =
         Map(immutable.Map(assoc: _*))
     }
 
-    case class Sum(override val toSum: ValueSum) extends BacchusValue
+    case class Sum(toSum: ValueSum) extends BacchusValue
 
     object Left {
       def apply(v: Value): Sum = Sum(scala.Left(v))

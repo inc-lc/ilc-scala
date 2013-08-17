@@ -19,7 +19,6 @@ extends functions.Evaluation { self: language.bacchus.Syntax =>
 
   implicit def toBacchus(value: Value): BacchusValue = value match {
     case bv: BacchusValue => bv
-    case _ => new BacchusValue
   }
 
   class BacchusValue extends Value

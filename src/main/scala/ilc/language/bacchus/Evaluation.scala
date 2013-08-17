@@ -137,16 +137,16 @@ extends functions.Evaluation { self: language.bacchus.Syntax =>
     }).keySet
 
     def diff(u: Value, v: Value): Value = (u, v) match {
-      case (vNew: BacchusValue, vOld: BacchusValue) =>
-        Right(vNew)
-
       case (Function(f), Function(g)) =>
         (x: Value) => (dx: Value) => diff(f(apply(dx, x)), g(x))
+
+      case (vNew, vOld) =>
+        Right(vNew)
     }
 
     def apply(dv: Value, v: Value): Value = (v, dv) match {
       // replacement-values always work for base-type values
-      case (v: BacchusValue, Right(vNew)) => vNew
+      case (v, Right(vNew)) => vNew
 
       // Δ (Map κ τ) = Map κ ((Unit ⊎ τ) ⊎ Δτ) ⊎ Map κ τ
       //                      del  ins  modify  replace

@@ -51,8 +51,8 @@ extends DerivationTools { self: FunSuite =>
         Diff(x)(y)
     }
 
-  def bacchusDiff(x: BacchusValue,
-                  y: BacchusValue): BacchusValue = (x, y) match {
+  def bacchusDiff(x: Value,
+                  y: Value): Value = (x, y) match {
     case (Value.Left(lx), Value.Left(ly)) =>
       Value.Left(Value.Left(bacchusDiff(lx, ly)))
     case (Value.Right(lx), Value.Right(ly)) =>
@@ -72,6 +72,15 @@ extends DerivationTools { self: FunSuite =>
           key => key -> Value.Right(bacchusDiff(m1(key), m2(key)))
         })
     }
+    case (Value.Function(f1), Value.Function(f2)) =>
+      // XXX The right code should be this, but it's untested, so let's just
+      // fail instead.
+      //
+      // This is not commented out so that it gets maintained,
+      // since it's most probably the code we want anyway.
+      Value.Function(x => Value.Function(dx => bacchusDiff(f1(x)(dx), f2(x)(dx))))
+      // Fail instead:
+      ???
     case _ => Value.diff(x, y) match {
       case bv: BacchusValue => bv
       case _ => sys.error("the difference between " ++
@@ -79,12 +88,17 @@ extends DerivationTools { self: FunSuite =>
     }
   }
 
-  def reify(x: BacchusValue): Term = x match {
+  def reify(x: Value): Term = x match {
     case Value.UnitValue => UnitTerm
     case Value.Nat(n) => Nat(n)
     case Value.Map(m) => Map(m.map({case (key, value) =>
       reify(key) -> reify(value)}).toList: _*)
     case Value.Left(x) => Left(reify(x))
     case Value.Right(y) => Right(reify(y))
+
+    case Value.Function(f) =>
+      ???
+      // XXX We're using no environment here, and we can't.
+      //Lambda("x") ->: reify(f(eval("x")))
   }
 }

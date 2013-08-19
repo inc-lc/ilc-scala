@@ -54,7 +54,7 @@ trait DerivationTools { self: FunSuite =>
       case Nil => dt
       case (z, zNew) :: theRest => {
         val dz = diff(zNew, z)
-        assembleChange(dt, theRest, diff)(z)(dz)
+        App(App(assembleChange(dt, theRest, diff), z), dz)
       }
     }
 
@@ -69,7 +69,7 @@ trait DerivationTools { self: FunSuite =>
       reversedInput match {
         case Nil => t
         case duo :: theRest =>
-          assemble(t, theRest)(chooser(duo))
+          App(assemble(t, theRest), chooser(duo))
       }
     assemble
   }

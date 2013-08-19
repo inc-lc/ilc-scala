@@ -16,8 +16,6 @@ extends functions.Evaluation with naturals.Evaluation with sum.Evaluation { self
   def ValueMap(assoc: (Value, Value)*): ValueMap =
     immutable.Map.apply[Value, Value](assoc: _*)
 
-  //instead of adding methods to Value (which requires family polymorphism),
-  //just add extensions methods via enrich-my-library (aka pimp-my-library).
   implicit class MapOps(value: Value) {
     def toMap: ValueMap =
       value match {

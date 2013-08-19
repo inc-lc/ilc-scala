@@ -50,27 +50,19 @@ trait DerivationTools { self: FunSuite =>
   def assembleChange(dt: Term,
                      reversedInput: List[(Term, Term)],
                      diff: (Term, Term) => Term): Term =
-    reversedInput match {
-      case Nil => dt
-      case (z, zNew) :: theRest => {
+    (reversedInput foldRight dt) {
+      case ((z, zNew), currDt) =>
         val dz = diff(zNew, z)
-        App(App(assembleChange(dt, theRest, diff), z), dz)
-      }
+        App(App(currDt, z), dz)
     }
-
 
   val assembleOld = assembleAccordingTo(_._1)
   val assembleNew = assembleAccordingTo(_._2)
 
   def assembleAccordingTo(chooser: ((Term, Term)) => Term):
-        (Term, List[(Term, Term)]) => Term = {
-    def assemble(t: Term,
-                 reversedInput: List[(Term, Term)]): Term =
-      reversedInput match {
-        case Nil => t
-        case duo :: theRest =>
-          App(assemble(t, theRest), chooser(duo))
-      }
-    assemble
-  }
+        (Term, List[(Term, Term)]) => Term =
+    (t, reversedInput) => (reversedInput map chooser foldRight t) {
+      (duo, currTerm) =>
+        App(currTerm, duo)
+    }
 }

@@ -50,22 +50,14 @@ extends functions.Evaluation { self: language.bacchus.Syntax =>
 
   // boilerplate for extending value declarations
   override val Value = BacchusValueDeclarations
-  object BacchusValueDeclarations extends ValueDeclarations {
 
-    // the inhabitant of unit type has no computation content
-    case object UnitValue extends BacchusValue
-
-    case class Nat(toNat: Int) extends BacchusValue {
+  trait NatValues {
+    case class Nat(toNat: Int) extends Value {
       require(toNat >= 0)
     }
+  }
 
-    case class Map(toMap: ValueMap) extends BacchusValue
-
-    object Map {
-      def apply(assoc: (Value, Value)*): Map =
-        Map(immutable.Map(assoc: _*))
-    }
-
+  trait SumValues {
     case class Sum(toSum: ValueSum) extends BacchusValue
 
     object Left {
@@ -83,17 +75,26 @@ extends functions.Evaluation { self: language.bacchus.Syntax =>
         case _ => None
       }
     }
+  }
 
-    // helper to match against replacement pairs
-    object Pair {
-      def unapply(p: Map): Option[(Value, Value)] = {
-        val encodedPair = p.toMap
-        if (encodedPair.size == 1)
-          Some(encodedPair.head)
-        else
-          None
-      }
+  trait UnitValues {
+    // the inhabitant of unit type has no computation content
+    case object UnitValue extends BacchusValue
+  }
+
+  // Basic Map values
+  trait MapValues {
+    case class Map(toMap: ValueMap) extends BacchusValue
+
+    object Map {
+      def apply(assoc: (Value, Value)*): Map =
+        Map(immutable.Map(assoc: _*))
     }
+  }
+
+  // The internal structure of Map values is defined in terms of other language features, so it's separate from MapValues.
+  trait MapValuesEncoding {
+    this: MapValues with SumValues with UnitValues =>
 
     // helpers to match against map operations
 
@@ -137,6 +138,19 @@ extends functions.Evaluation { self: language.bacchus.Syntax =>
       case Modify(_, _) => true
       case _ => false
     }).keySet
+  }
+
+  object BacchusValueDeclarations extends ValueDeclarations with UnitValues with NatValues with SumValues with MapValues with MapValuesEncoding {
+    // helper to match against replacement pairs
+    object Pair {
+      def unapply(p: Map): Option[(Value, Value)] = {
+        val encodedPair = p.toMap
+        if (encodedPair.size == 1)
+          Some(encodedPair.head)
+        else
+          None
+      }
+    }
 
     def diff(u: Value, v: Value): Value = (u, v) match {
       case (Function(f), Function(g)) =>

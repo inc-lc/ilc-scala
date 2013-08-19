@@ -17,8 +17,6 @@ extends functions.Evaluation with naturals.Evaluation { self: language.bacchus.S
   def ValueMap(assoc: (Value, Value)*): ValueMap =
     immutable.Map.apply[Value, Value](assoc: _*)
 
-  type BacchusValue = Value
-
   //instead of adding methods to Value (which requires family polymorphism),
   //just add extensions methods via enrich-my-library (aka pimp-my-library).
   implicit class MapOps(value: Value) {
@@ -43,7 +41,7 @@ extends functions.Evaluation with naturals.Evaluation { self: language.bacchus.S
   override val Value = BacchusValueDeclarations
 
   trait SumValues {
-    case class Sum(toSum: ValueSum) extends BacchusValue
+    case class Sum(toSum: ValueSum) extends Value
 
     object Left {
       def apply(v: Value): Sum = Sum(scala.Left(v))
@@ -64,12 +62,12 @@ extends functions.Evaluation with naturals.Evaluation { self: language.bacchus.S
 
   trait UnitValues {
     // the inhabitant of unit type has no computation content
-    case object UnitValue extends BacchusValue
+    case object UnitValue extends Value
   }
 
   // Basic Map values
   trait MapValues {
-    case class Map(toMap: ValueMap) extends BacchusValue
+    case class Map(toMap: ValueMap) extends Value
 
     object Map {
       def apply(assoc: (Value, Value)*): Map =

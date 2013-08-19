@@ -15,4 +15,5 @@ extends functions.Syntax
 
 object Functions extends Functions {
   def deriveConst(constant: Constant) = ???
+  val Value = new FunValues {}
 }

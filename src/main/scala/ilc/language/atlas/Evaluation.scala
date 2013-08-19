@@ -41,7 +41,7 @@ extends functions.Evaluation { self: language.atlas.Syntax =>
 
   // boilerplate for extending value declarations
   override val Value = AtlasValueDeclarations
-  object AtlasValueDeclarations extends ValueDeclarations {
+  object AtlasValueDeclarations extends FunValues {
 
     // the unique neutral element in the dynamic type system
     case object Neutral extends AtlasValue {

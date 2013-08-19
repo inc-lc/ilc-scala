@@ -62,7 +62,7 @@ extends functions.Evaluation with naturals.Evaluation with sum.Evaluation with m
     }).keySet
   }
 
-  object BacchusValueDeclarations extends ValueDeclarations with UnitValues with NatValues with SumValues with MapValues with MapValuesEncoding {
+  object BacchusValueDeclarations extends FunValues with UnitValues with NatValues with SumValues with MapValues with MapValuesEncoding {
     // helper to match against replacement pairs
     object Pair {
       def unapply(p: Map): Option[(Value, Value)] = {

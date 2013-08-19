@@ -23,9 +23,9 @@ trait Evaluation extends base.Evaluation with Syntax {
         super.evalWithEnv(t, env)
     }
 
-  val Value = new ValueDeclarations
+  val Value: FunValues
 
-  class ValueDeclarations {
+  trait FunValues {
     case class Function(operator: Value => Value) extends Value {
       override def apply(operand: Value): Value = operator(operand)
     }

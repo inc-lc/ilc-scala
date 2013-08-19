@@ -129,25 +129,6 @@ extends functions.Evaluation with naturals.Evaluation with sums.Evaluation with 
     case Apply =>
       (dv: Value) => (v: Value) => Value.apply(dv, v)
 
-    case EmptyMap =>
-      ValueMap()
-
-    case Update =>
-      (k: Value) => (v: Value) => (m: Value) =>
-        m.toMap.updated(k, v)
-
-    case Lookup =>
-      (k: Value) => (m: Value) => m.toMap.withDefault(
-        k => throw new
-          java.util.NoSuchElementException(
-            "key " ++ k.toString ++
-            " not found in " ++ m.toMap.toString)
-      )(k)
-
-    case Fold =>
-      (f: Value) => (z: Value) => (map: Value) =>
-        map.toMap.foldRight(z)((p, b) => f(p._1)(p._2)(b))
-
     case _ =>
       super.evalConst(c)
   }

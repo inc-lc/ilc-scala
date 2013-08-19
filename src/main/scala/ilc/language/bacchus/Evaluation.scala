@@ -10,9 +10,8 @@ import scala.collection.immutable
 import ilc.feature._
 
 trait Evaluation
-extends functions.Evaluation with naturals.Evaluation { self: language.bacchus.Syntax =>
+extends functions.Evaluation with naturals.Evaluation with sum.Evaluation { self: language.bacchus.Syntax =>
 
-  type ValueSum = Either[Value, Value]
   type ValueMap = immutable.Map[Value, Value]
   def ValueMap(assoc: (Value, Value)*): ValueMap =
     immutable.Map.apply[Value, Value](assoc: _*)
@@ -27,38 +26,10 @@ extends functions.Evaluation with naturals.Evaluation { self: language.bacchus.S
       }
   }
 
-  implicit class SumOps(value: Value) {
-    def toSum: ValueSum =
-      value match {
-        case Value.Sum(s) => s
-        case _ => die("toSum")
-      }
-  }
-
   implicit def liftMap(m: ValueMap): Value = Value.Map(m)
 
   // boilerplate for extending value declarations
   override val Value = BacchusValueDeclarations
-
-  trait SumValues {
-    case class Sum(toSum: ValueSum) extends Value
-
-    object Left {
-      def apply(v: Value): Sum = Sum(scala.Left(v))
-      def unapply(s: Sum): Option[Value] = s.toSum match {
-        case scala.Left(v) => Some(v)
-        case _ => None
-      }
-    }
-
-    object Right {
-      def apply(v: Value): Sum = Sum(scala.Right(v))
-      def unapply(s: Sum): Option[Value] = s.toSum match {
-        case scala.Right(v) => Some(v)
-        case _ => None
-      }
-    }
-  }
 
   trait UnitValues {
     // the inhabitant of unit type has no computation content

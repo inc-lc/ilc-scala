@@ -45,10 +45,12 @@ extends DerivationTools { self: FunSuite =>
 
   def fineGrainedDiff(x: Term, y: Term): Term =
     (eval(x), eval(y)) match {
-      case (vx: BacchusValue, vy: BacchusValue) =>
-        reify(bacchusDiff(vx, vy))
-      case _ =>
+      case (_: Value.Function, _) =>
         Diff(x)(y)
+      case (_, _: Value.Function) =>
+        Diff(x)(y)
+      case (vx, vy) =>
+        reify(bacchusDiff(vx, vy))
     }
 
   def bacchusDiff(x: Value,

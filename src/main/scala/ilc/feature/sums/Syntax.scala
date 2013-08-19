@@ -1,6 +1,6 @@
 package ilc
 package feature
-package sum
+package sums
 
 trait Syntax extends base.Syntax {
   // intro/elim forms of sum types

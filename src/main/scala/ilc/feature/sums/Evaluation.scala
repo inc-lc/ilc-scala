@@ -1,5 +1,5 @@
 package ilc
-package feature.sum
+package feature.sums
 
 import scala.language.implicitConversions
 

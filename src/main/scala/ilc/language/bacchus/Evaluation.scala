@@ -10,7 +10,7 @@ import scala.collection.immutable
 import ilc.feature._
 
 trait Evaluation
-extends functions.Evaluation with naturals.Evaluation with sum.Evaluation with maps.Evaluation with unit.Evaluation { self: language.bacchus.Syntax =>
+extends functions.Evaluation with naturals.Evaluation with sums.Evaluation with maps.Evaluation with unit.Evaluation { self: language.bacchus.Syntax =>
   // boilerplate for extending value declarations
   override val Value = BacchusValueDeclarations
 

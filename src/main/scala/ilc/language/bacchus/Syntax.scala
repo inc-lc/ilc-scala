@@ -15,7 +15,7 @@ import feature._
 
 trait Syntax
 extends feature.Functions
-   with feature.DiffAndApply with naturals.Syntax with unit.Syntax with sum.Syntax with sum.SyntaxSugar with maps.Syntax with maps.SyntaxSugar {
+   with feature.DiffAndApply with naturals.Syntax with unit.Syntax with sums.Syntax with sums.SyntaxSugar with maps.Syntax with maps.SyntaxSugar {
   // type-indexed terms that has to be simulated in scala
   // cannot be derived
   //

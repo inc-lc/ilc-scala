@@ -148,16 +148,6 @@ extends functions.Evaluation with naturals.Evaluation with sum.Evaluation with m
       (f: Value) => (z: Value) => (map: Value) =>
         map.toMap.foldRight(z)((p, b) => f(p._1)(p._2)(b))
 
-    case Left =>
-      (x: Value) => Value.Left(x)
-
-    case Right =>
-      (y: Value) => Value.Right(y)
-
-    case Either =>
-      (f: Value) => (g: Value) => (s: Value) =>
-        s.toSum.fold(x => f(x), y => g(y))
-
     case _ =>
       super.evalConst(c)
   }

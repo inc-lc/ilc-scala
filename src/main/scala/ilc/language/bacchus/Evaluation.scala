@@ -21,17 +21,23 @@ extends functions.Evaluation { self: language.bacchus.Syntax =>
 
   //instead of adding methods to Value (which requires family polymorphism),
   //just add extensions methods via enrich-my-library (aka pimp-my-library).
-  implicit class BacchusOps(value: Value) {
+  implicit class NatOps(value: Value) {
     def toNat: Int =
       value match {
         case Value.Nat(n) => n
         case _ => die("toNat")
       }
+  }
+
+  implicit class MapOps(value: Value) {
     def toMap: ValueMap =
       value match {
         case Value.Map(m) => m
         case _ => die("toMap")
       }
+  }
+
+  implicit class SumOps(value: Value) {
     def toSum: ValueSum =
       value match {
         case Value.Sum(s) => s

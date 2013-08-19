@@ -15,18 +15,7 @@ import feature._
 
 trait Syntax
 extends feature.Functions
-   with feature.DiffAndApply with naturals.Syntax with unit.Syntax with sums.Syntax with sums.SyntaxSugar with maps.Syntax with maps.SyntaxSugar {
-  // type-indexed terms that has to be simulated in scala
-  // cannot be derived
-  //
-  // diff : τ → τ → Δτ
-  // apply : Δτ → τ → τ
-  //
-  case object Diff extends Constant
-  case object Apply extends Constant
-  val diffTerm = Const(Diff)
-  val applyTerm = Const(Apply)
-
+   with feature.changePrimitives.Syntax with naturals.Syntax with unit.Syntax with sums.Syntax with sums.SyntaxSugar with maps.Syntax with maps.SyntaxSugar {
   // product types are encoded in terms of maps.
   // it is probably useful to have them later on,
   // for the exclusion of ill-formed products and

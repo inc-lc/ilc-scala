@@ -12,16 +12,7 @@ import scala.language.implicitConversions
 
 trait Syntax
 extends feature.Functions
-   with feature.DiffAndApply {
-
-  // Diff and Apply are primitives that cannot be derived.
-  // They are type-indexed terms in Agda, but here, without
-  // types, they have to be primitives.
-  case object Diff  extends Constant
-  case object Apply extends Constant
-  val diffTerm = Const(Diff)
-  val applyTerm = Const(Apply)
-
+    with feature.changePrimitives.Syntax {
   case object True  extends Constant
   case object False extends Constant
   case object Xor   extends Constant

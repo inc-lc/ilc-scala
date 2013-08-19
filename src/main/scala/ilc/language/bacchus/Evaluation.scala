@@ -129,9 +129,6 @@ extends functions.Evaluation with naturals.Evaluation with sum.Evaluation with m
     case Apply =>
       (dv: Value) => (v: Value) => Value.apply(dv, v)
 
-    case UnitTerm =>
-      Value.UnitValue
-
     case Nat(n) =>
       n
 

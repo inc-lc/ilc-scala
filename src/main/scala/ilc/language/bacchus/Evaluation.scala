@@ -17,10 +17,7 @@ extends functions.Evaluation { self: language.bacchus.Syntax =>
   def ValueMap(assoc: (Value, Value)*): ValueMap =
     immutable.Map.apply[Value, Value](assoc: _*)
 
-  // This trait tags Bacchus values to make them more easily recognizable in
-  // pattern matches. However, this should be removed to ease #103 - and the
-  // only non-Bacchus value is Function anyway, so the removal should be easy.
-  trait BacchusValue extends Value
+  type BacchusValue = Value
 
   //instead of adding methods to Value (which requires family polymorphism),
   //just add extensions methods via enrich-my-library (aka pimp-my-library).

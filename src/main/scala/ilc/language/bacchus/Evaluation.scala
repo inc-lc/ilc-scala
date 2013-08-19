@@ -7,10 +7,10 @@ package language.bacchus
 
 import scala.language.implicitConversions
 import scala.collection.immutable
-import ilc.feature.functions
+import ilc.feature._
 
 trait Evaluation
-extends functions.Evaluation { self: language.bacchus.Syntax =>
+extends functions.Evaluation with naturals.Evaluation { self: language.bacchus.Syntax =>
 
   type ValueSum = Either[Value, Value]
   type ValueMap = immutable.Map[Value, Value]
@@ -21,14 +21,6 @@ extends functions.Evaluation { self: language.bacchus.Syntax =>
 
   //instead of adding methods to Value (which requires family polymorphism),
   //just add extensions methods via enrich-my-library (aka pimp-my-library).
-  implicit class NatOps(value: Value) {
-    def toNat: Int =
-      value match {
-        case Value.Nat(n) => n
-        case _ => die("toNat")
-      }
-  }
-
   implicit class MapOps(value: Value) {
     def toMap: ValueMap =
       value match {
@@ -45,17 +37,10 @@ extends functions.Evaluation { self: language.bacchus.Syntax =>
       }
   }
 
-  implicit def liftNat(n: Int): Value = Value.Nat(n)
   implicit def liftMap(m: ValueMap): Value = Value.Map(m)
 
   // boilerplate for extending value declarations
   override val Value = BacchusValueDeclarations
-
-  trait NatValues {
-    case class Nat(toNat: Int) extends Value {
-      require(toNat >= 0)
-    }
-  }
 
   trait SumValues {
     case class Sum(toSum: ValueSum) extends BacchusValue

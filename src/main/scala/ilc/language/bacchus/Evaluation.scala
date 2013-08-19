@@ -129,22 +129,6 @@ extends functions.Evaluation with naturals.Evaluation with sum.Evaluation with m
     case Apply =>
       (dv: Value) => (v: Value) => Value.apply(dv, v)
 
-    case Nat(n) =>
-      n
-
-    case FoldNat =>
-      (z: Value) => (f: Value) => (n: Value) => {
-        def loop(i: Int): Value =
-          if (i == 0)
-            z
-          else
-            f(loop(i - 1))
-        loop(n.toNat)
-      }
-
-    case Plus =>
-      (x: Value) => (y: Value) => x.toNat + y.toNat
-
     case EmptyMap =>
       ValueMap()
 

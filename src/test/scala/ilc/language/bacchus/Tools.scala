@@ -83,11 +83,7 @@ extends DerivationTools { self: FunSuite =>
       Value.Function(x => Value.Function(dx => bacchusDiff(f1(x)(dx), f2(x)(dx))))
       // Fail instead:
       ???
-    case _ => Value.diff(x, y) match {
-      case bv: BacchusValue => bv
-      case _ => sys.error("the difference between " ++
-        "two Bacchus-values is not a Bacchus-value?!")
-    }
+    case _ => Value.diff(x, y)
   }
 
   def reify(x: Value): Term = x match {

@@ -7,10 +7,10 @@ package language.atlas
 
 import scala.language.implicitConversions
 import scala.collection.immutable
-import ilc.feature.functions
+import ilc.feature._
 
 trait Evaluation
-extends functions.Evaluation { self: language.atlas.Syntax =>
+extends functions.Evaluation with changePrimitives.Evaluation { self: language.atlas.Syntax =>
 
   type ValueMap = immutable.Map[Value, Value]
   def ValueMap(assoc: (Value, Value)*): ValueMap =
@@ -41,7 +41,7 @@ extends functions.Evaluation { self: language.atlas.Syntax =>
 
   // boilerplate for extending value declarations
   override val Value = AtlasValueDeclarations
-  object AtlasValueDeclarations extends FunValues {
+  object AtlasValueDeclarations extends FunValues with ChangePrimitiveValues {
 
     // the unique neutral element in the dynamic type system
     case object Neutral extends AtlasValue {

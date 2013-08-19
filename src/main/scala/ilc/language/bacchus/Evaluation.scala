@@ -10,7 +10,7 @@ import scala.collection.immutable
 import ilc.feature._
 
 trait Evaluation
-extends functions.Evaluation with naturals.Evaluation with sums.Evaluation with maps.Evaluation with unit.Evaluation { self: language.bacchus.Syntax =>
+extends functions.Evaluation with naturals.Evaluation with sums.Evaluation with maps.Evaluation with unit.Evaluation with changePrimitives.Evaluation { self: language.bacchus.Syntax =>
   // boilerplate for extending value declarations
   override val Value = BacchusValueDeclarations
 
@@ -62,7 +62,7 @@ extends functions.Evaluation with naturals.Evaluation with sums.Evaluation with 
     }).keySet
   }
 
-  object BacchusValueDeclarations extends FunValues with UnitValues with NatValues with SumValues with MapValues with MapValuesEncoding {
+  object BacchusValueDeclarations extends FunValues with ChangePrimitiveValues with UnitValues with NatValues with SumValues with MapValues with MapValuesEncoding {
     // helper to match against replacement pairs
     object Pair {
       def unapply(p: Map): Option[(Value, Value)] = {

@@ -10,39 +10,9 @@ import scala.collection.immutable
 import ilc.feature._
 
 trait Evaluation
-extends functions.Evaluation with naturals.Evaluation with sum.Evaluation { self: language.bacchus.Syntax =>
-
-  type ValueMap = immutable.Map[Value, Value]
-  def ValueMap(assoc: (Value, Value)*): ValueMap =
-    immutable.Map.apply[Value, Value](assoc: _*)
-
-  implicit class MapOps(value: Value) {
-    def toMap: ValueMap =
-      value match {
-        case Value.Map(m) => m
-        case _ => die("toMap")
-      }
-  }
-
-  implicit def liftMap(m: ValueMap): Value = Value.Map(m)
-
+extends functions.Evaluation with naturals.Evaluation with sum.Evaluation with maps.Evaluation with unit.Evaluation { self: language.bacchus.Syntax =>
   // boilerplate for extending value declarations
   override val Value = BacchusValueDeclarations
-
-  trait UnitValues {
-    // the inhabitant of unit type has no computation content
-    case object UnitValue extends Value
-  }
-
-  // Basic Map values
-  trait MapValues {
-    case class Map(toMap: ValueMap) extends Value
-
-    object Map {
-      def apply(assoc: (Value, Value)*): Map =
-        Map(immutable.Map(assoc: _*))
-    }
-  }
 
   // The internal structure of Map values is defined in terms of other language features, so it's separate from MapValues.
   trait MapValuesEncoding {

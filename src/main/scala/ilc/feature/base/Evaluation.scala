@@ -56,11 +56,12 @@ trait Evaluation extends Syntax {
 
   type Env = immutable.Map[String, Value]
 
-  def eval(t: Term): Value = try {
-    wrapEval(t, immutable.Map.empty)
-  } catch { case UnexpectedTypeException(info: OuterTypeExceptionInfo, cause) =>
-    throw UnexpectedTypeException(info.copy(term = Some(t)), cause)
-  }
+  def eval(t: Term): Value =
+    try {
+      wrapEval(t, immutable.Map.empty)
+    } catch { case UnexpectedTypeException(info: OuterTypeExceptionInfo, cause) =>
+        throw UnexpectedTypeException(info.copy(term = Some(t)), cause)
+    }
 
   def die(value: Any, from: String, arg: Any = ""): Nothing =
     throw UnexpectedTypeException(

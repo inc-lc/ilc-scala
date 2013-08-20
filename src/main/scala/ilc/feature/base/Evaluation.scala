@@ -25,6 +25,9 @@ trait Evaluation extends Syntax {
 
   type Env = immutable.Map[String, Value]
 
+  /** Evaluate a Term, returning a Value or throwing an exception (for instance,
+    * an UnexpectedTypeException).
+    */
   def eval(t: Term): Value =
     try {
       wrapEval(t, immutable.Map.empty)

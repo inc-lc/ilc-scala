@@ -14,9 +14,9 @@ trait Evaluation extends base.Evaluation with Syntax {
   override def coreEval(t: Term, env: Env): Value =
     t match {
       case Abs(x, t) =>
-        (arg: Value) => coreEval(t, env.updated(x, arg))
+        (arg: Value) => wrapEval(t, env.updated(x, arg))
       case App(s, t) =>
-        coreEval(s, env)(coreEval(t, env))
+        wrapEval(s, env)(wrapEval(t, env))
       case Var(name) =>
         env(name) // NoSuchElementException = free var
       case _ =>

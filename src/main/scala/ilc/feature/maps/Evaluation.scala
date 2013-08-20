@@ -13,7 +13,7 @@ trait EvaluationBase extends feature.base.Evaluation {
     def toMap: ValueMap =
       value match {
         case Value.Map(m) => m
-        case _ => die("toMap")
+        case _ => die(value, "toMap")
       }
   }
 

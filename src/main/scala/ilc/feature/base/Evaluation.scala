@@ -4,11 +4,12 @@ package feature.base
 import scala.collection.immutable
 
 trait Evaluation extends Syntax {
+  evalTrait =>
   ////////////////////////////////
   // Subclass obligations start //
   ////////////////////////////////
 
-  def evalConst(c: Constant): Value = { die("evalConst") }
+  def evalConst(c: Constant): Value = { die(c, "evalConst") }
 
   def evalWithEnv(t: Term, env: Env): Value =
     t match {
@@ -23,6 +24,8 @@ trait Evaluation extends Syntax {
   trait Value {
     // "toFunction"
     def apply(argument: Value): Value = die("apply", argument)
+    def die(from: String, arg: Any = ""): Nothing =
+        evalTrait.die(this, from, arg)
   }
 
   type Env = immutable.Map[String, Value]
@@ -38,9 +41,9 @@ trait Evaluation extends Syntax {
   }
 
 
-  def die(from: String, arg: Any = ""): Nothing =
+  def die(value: Any, from: String, arg: Any = ""): Nothing =
     throw new
-      InvalidTargetObjectTypeException(this.toString ++
+      InnerUnexpectedTypeException(value.toString ++
         "." ++ from ++
         (if (arg.toString == "")
           ""

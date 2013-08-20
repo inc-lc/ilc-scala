@@ -17,7 +17,7 @@ trait EvaluationBase extends feature.base.Evaluation {
     def toSum: ValueSum =
       value match {
         case Value.Sum(s) => s
-        case _ => die("toSum")
+        case _ => die(value, "toSum")
       }
   }
 

@@ -11,16 +11,16 @@ import scala.collection.immutable
 import scala.language.implicitConversions
 
 trait Evaluation extends base.Evaluation with Syntax {
-  override def evalWithEnv(t: Term, env: Env): Value =
+  override def coreEval(t: Term, env: Env): Value =
     t match {
       case Abs(x, t) =>
-        (arg: Value) => evalWithEnv(t, env.updated(x, arg))
+        (arg: Value) => coreEval(t, env.updated(x, arg))
       case App(s, t) =>
-        evalWithEnv(s, env)(evalWithEnv(t, env))
+        coreEval(s, env)(coreEval(t, env))
       case Var(name) =>
         env(name) // NoSuchElementException = free var
       case _ =>
-        super.evalWithEnv(t, env)
+        super.coreEval(t, env)
     }
 
   val Value: FunValues

@@ -11,7 +11,8 @@ trait Evaluation extends Syntax {
 
   def evalConst(c: Constant): Value = { die(c, "evalConst") }
 
-  def evalWithEnv(t: Term, env: Env): Value =
+  //Core of the evaluation function, to be extended by subclasses.
+  def coreEval(t: Term, env: Env): Value =
     t match {
       case Const(c) =>
         evalConst(c)
@@ -33,7 +34,7 @@ trait Evaluation extends Syntax {
   class InvalidTargetObjectTypeException(message: String) extends Exception(message)
 
   def eval(t: Term): Value = try {
-    evalWithEnv(t, immutable.Map.empty)
+    coreEval(t, immutable.Map.empty)
   } catch { case err: InvalidTargetObjectTypeException =>
     throw new
       IllegalArgumentException(err.getMessage() ++

@@ -26,7 +26,7 @@ trait Evaluation extends Syntax {
     // "toFunction"
     def apply(argument: Value): Value = die("apply", argument)
     def die(from: String, arg: Any = ""): Nothing =
-        evalTrait.die(this, from, arg)
+      evalTrait.die(this, from, arg)
   }
 
   type Env = immutable.Map[String, Value]

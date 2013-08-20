@@ -20,7 +20,7 @@ trait EvaluationBase extends feature.base.Evaluation {
     def toNat: Int =
       value match {
         case Value.Nat(n) => n
-        case _ => die(value, "toNat")
+        case _ => value die "toNat"
       }
   }
 }

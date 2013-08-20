@@ -8,7 +8,7 @@ trait Evaluation extends Syntax {
   // Subclass obligations start //
   ////////////////////////////////
 
-  def evalConst(c: Constant): Value = { die("Unknown constant!") }
+  def evalConst(c: Constant): Value = { die("evalConst") }
 
   def evalWithEnv(t: Term, env: Env): Value =
     t match {

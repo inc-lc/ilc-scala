@@ -6,6 +6,8 @@ package language.bacchus
  */
 
 import org.scalatest.FunSuite
+import org.scalatest.matchers.ShouldMatchers
+
 import ilc.language.Bacchus._
 import ilc.language.bacchus.Subjects._
 
@@ -177,5 +179,40 @@ extends FunSuite
              (Lambda("_", "x", "y") ->: Plus(2000, "x", "y")),
            0 -> 100,
            twiceMap1234 -> twiceMap1256))
+  }
+}
+
+// XXX: This test is for functionality of base, and only needs functions and
+// integers for the actual terms, but doesn't belong to tests for either
+// feature.functions or feature.integers. Where should I put this?
+
+class EvalSuite extends FunSuite with ShouldMatchers {
+  val t1 = Nat(1)(idFun)
+  val subt2 = Nat(1)(idFun)
+  val t2 = (Lambda("x") ->: subt2)(1)
+
+  def evalGivesDynamicTypeError(t: Term): UnexpectedTypeException =
+    //Note: Scalatest's 'should produce' also returns the exception!
+    evaluating { eval(t) } should produce [UnexpectedTypeException]
+
+  test("Type errors cause exceptions") {
+    evalGivesDynamicTypeError(t1)
+  }
+
+  def getErrorInfo(ute: UnexpectedTypeException): OuterTypeExceptionInfo =
+    // it would be nice to have a more compact way to write that, say:
+    // evaluating {ute.data} should have type[OuterTypeExceptionInfo]
+    ute.data match {
+      case otei: OuterTypeExceptionInfo => otei
+      case _   : InnerTypeExceptionInfo => fail()
+    }
+
+  test("Exceptions for type errors report the offending subterm") {
+    val thrown1 = getErrorInfo(evalGivesDynamicTypeError(t1))
+    thrown1.term should be (Some(t1))
+    thrown1.subterm should be (t1)
+    val thrown2 = getErrorInfo(evalGivesDynamicTypeError(t2))
+    thrown2.term should be (Some(t2))
+    thrown2.subterm should be (subt2)
   }
 }

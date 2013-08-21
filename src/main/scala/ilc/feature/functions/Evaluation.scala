@@ -26,9 +26,7 @@ trait Evaluation extends base.Evaluation with Syntax {
   val Value: FunValues
 
   trait FunValues {
-    case class Function(operator: Value => Value) extends Value {
-      override def apply(operand: Value): Value = operator(operand)
-    }
+    case class Function(operator: Value => Value) extends Value
   }
 
   implicit def liftFunction[T <% Value](f: Value => T): Value =
@@ -41,4 +39,13 @@ trait Evaluation extends base.Evaluation with Syntax {
     (p: (S, T))
     (implicit impS: S => Value, impT: T => Value): (Value, Value) =
       (impS(p._1), impT(p._2))
+
+  implicit class FunOps(value: Value) {
+    // "toFunction"
+    def apply(arg: Value): Value =
+      value match {
+        case Value.Function(f) => f(arg)
+        case _ => value die("apply", arg)
+      }
+  }
 }

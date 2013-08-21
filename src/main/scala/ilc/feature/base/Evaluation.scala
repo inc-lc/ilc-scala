@@ -60,8 +60,6 @@ trait Evaluation extends Syntax {
   }
 
   trait Value {
-    // "toFunction"
-    def apply(argument: Value): Value = die("apply", argument)
     def die(from: String, arg: Any = ""): Nothing =
       evalTrait.die(this, from, arg)
   }

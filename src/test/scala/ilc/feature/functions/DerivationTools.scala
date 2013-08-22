@@ -13,10 +13,11 @@ trait DerivationTools { self: FunSuite =>
 
   val calculus: Syntax with Derivation
                        with Evaluation
-                       with feature.DiffAndApply
+                       with feature.changePrimitives.Syntax
+                       with feature.changePrimitives.Evaluation
   import calculus._
 
-  val defaultDiff: (Term, Term) => Term = (x, y) => diffTerm(x)(y)
+  val defaultDiff: (Term, Term) => Term = (x, y) => Diff(x)(y)
   val defaultDerive: Term => Term = calculus.derive
 
   // assert the correctness of the derivative of t
@@ -27,14 +28,14 @@ trait DerivationTools { self: FunSuite =>
   def assertCorrect(f: Term,
                     input: List[(Term, Term)],
                     diff: (Term, Term) => Term =
-                      (x, y) => diffTerm(x)(y),
+                      (x, y) => Diff(x)(y),
                     transform: Term => Term = calculus.derive) {
     val reversedInput = input.reverse
     val theOld    = assembleOld(f, reversedInput)
     val theNew    = assembleNew(f, reversedInput)
     val theChange = assembleChange(transform(f), reversedInput, diff)
     try {
-      assert(eval(applyTerm(theChange)(theOld)) === eval(theNew))
+      assert(eval(Apply(theChange)(theOld)) === eval(theNew))
     } catch { case err: TestFailedException =>
       val msg = "wrong derivative:" ++
         "\n     old = " ++ eval(theOld).toString ++

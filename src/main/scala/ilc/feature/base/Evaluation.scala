@@ -4,6 +4,10 @@ package feature.base
 import scala.collection.immutable
 
 trait Evaluation extends Syntax {
+  // The identifier `evalTrait` is bound to `this` of trait
+  // `Evaluation`, to be used in inner classes.
+  // Reference:
+  // http://stackoverflow.com/a/4980886
   evalTrait =>
   ////////////////////////////////
   // Subclass obligations start //

@@ -2,7 +2,7 @@ package ilc
 package feature
 package changePrimitives
 
-trait Syntax extends base.Syntax with feature.DiffAndApply {
+trait Syntax extends base.Syntax {
   // Diff and Apply are primitives that cannot be derived.
   // They are type-indexed terms in Agda, but here, without
   // types, they have to be primitives.
@@ -16,7 +16,4 @@ trait Syntax extends base.Syntax with feature.DiffAndApply {
   //
   case object Diff  extends Constant
   case object Apply extends Constant
-
-  override val diffTerm = Const(Diff)
-  override val applyTerm = Const(Apply)
 }

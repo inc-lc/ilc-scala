@@ -8,7 +8,7 @@ package language.atlas
 import org.scalatest.FunSuite
 import ilc.language.Atlas._
 
-class DerivationSuite extends FunSuite with Subjects with Tools {
+class AtlasSuite extends FunSuite with Subjects with Tools {
 
   // TESTING ABSTRACTION AND APPLICATION
 

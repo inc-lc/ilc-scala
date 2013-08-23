@@ -74,14 +74,6 @@ extends Attribution
     protected def isStable(t: Term, env: VarStability): Boolean =
       FV(t).map(env).fold(true)(_ && _)
 
-    // free variables of all subterms
-    private[this] var _FV: FV_attr = FV
-    def FV: FV_attr =
-      if (null == _FV) {
-        _FV = FV_attr(root)
-        _FV
-      }
-      else
-        _FV
+     lazy val FV = FV_attr(root)
   }
 }

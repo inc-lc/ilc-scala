@@ -12,6 +12,7 @@ extends functions.Syntax
    with functions.Pretty
    with functions.UniqueNames
    with functions.Attribution
+   with functions.Stability
 
 object Functions extends Functions {
   def deriveConst(constant: Constant) = ???

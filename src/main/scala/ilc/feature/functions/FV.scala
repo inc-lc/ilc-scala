@@ -19,6 +19,8 @@ trait FV extends Attribution { self: Syntax =>
       s.term match {
         case Var(name) =>
           Set(name)
+        case Abs(name, body) =>
+          childAttr.head - name
         case _ =>
           childAttr.fold(Set.empty)(_ ++ _)
       }

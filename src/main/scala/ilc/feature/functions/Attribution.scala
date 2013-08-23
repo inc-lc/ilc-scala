@@ -88,7 +88,7 @@ trait Attribution extends Context { self: Syntax =>
     private[this] def init(s: Subterm): Unit = {
       if (s.children.size > 0)
         (s.children, inherit(s, lookup(s))).zipped.foreach(update)
-      s.children.foreach(init)
+      s.eachChild(init)
     }
   }
 }

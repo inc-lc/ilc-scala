@@ -75,10 +75,13 @@ extends Attribution
       FV(t).map(env).fold(true)(_ && _)
 
     // free variables of all subterms
-    var FV: FV_attr = null // not executed
-
-    def initFields() {
-      FV = FV_attr(root)
-    }
+    private[this] var _FV: FV_attr = FV
+    def FV: FV_attr =
+      if (null == _FV) {
+        _FV = FV_attr(root)
+        _FV
+      }
+      else
+        _FV
   }
 }

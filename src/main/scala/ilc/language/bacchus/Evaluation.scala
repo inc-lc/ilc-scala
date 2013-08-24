@@ -78,6 +78,7 @@ extends functions.Evaluation with naturals.Evaluation with sums.Evaluation with 
       case (Function(f), Function(g)) =>
         (x: Value) => (dx: Value) => diff(f(apply(dx, x)), g(x))
 
+        //Don't we want to produce, sometimes, more precise changes?
       case (vNew, vOld) =>
         Right(vNew)
     }

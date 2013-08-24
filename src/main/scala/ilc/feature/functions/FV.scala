@@ -9,10 +9,10 @@ import scala.language.implicitConversions
 
 trait FV extends Attribution { self: Syntax =>
 
-  implicit def attr_to_result(fv: FV_attr): Set[String] =
+  implicit def attr_to_result(fv: FreeVarsAttr): Set[String] =
     fv(fv.rootTerm)
 
-  case class FV_attr(root: Term)
+  case class FreeVarsAttr(root: Term)
   extends SynthesizedAttribute[Set[String]](root) {
     def synthesize(s: Subterm,
                    childAttr: List[Set[String]]): Set[String] =

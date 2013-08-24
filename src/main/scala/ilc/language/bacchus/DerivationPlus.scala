@@ -28,8 +28,8 @@ extends language.bacchus.Derivation
     //override def derive(t: Term): Term = {
     //But then, how do we get access to the old derive, which is used in tests?
 
-    val (stable, stableArg) = Stability_attr(t).split
-    val FV = FV_attr(t)
+    val (stable, stableArg) = StabilityAttr(t).split
+    val FV = FreeVarsAttr(t)
 
     //XXX Cai suggests this duplicates (in part) feature.functions.Derivation; but the superclass could use Subterm already anyway.
     def recurse(s: Subterm): Term = s match {
@@ -38,7 +38,7 @@ extends language.bacchus.Derivation
 
       case SubtermAbs(x, body) => {
         val dx = delta(x)
-        if (FV_attr(t) contains dx)
+        if (FreeVarsAttr(t) contains dx)
           sys.error("naming scheme violation " ++
             "when deriving:\n  " ++ t.toString)
         else

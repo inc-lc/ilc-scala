@@ -29,7 +29,7 @@ trait Derivation extends Syntax with FV {
 
     case Abs(x, body) => {
       val dx = delta(x)
-      if (FV_attr(t) contains dx)
+      if (FreeVarsAttr(t) contains dx)
         sys.error("naming scheme violation " ++
           "when deriving:\n  " ++ t.toString)
       else

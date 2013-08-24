@@ -29,7 +29,7 @@ trait UniqueNames extends Syntax with FV {
   }
 
   def uniqueName(t: Term, default: String): String =
-    uniqueName(FV_attr(t), default)
+    uniqueName(FreeVarsAttr(t), default)
 
   def uniqueNames(toAvoid: Set[String],
                   defaults: String*): List[String] =
@@ -42,7 +42,7 @@ trait UniqueNames extends Syntax with FV {
     }
 
   def uniqueNames(t: Term, defaults: String*): List[String] =
-    uniqueNames(FV_attr(t), defaults: _*)
+    uniqueNames(FreeVarsAttr(t), defaults: _*)
 
   def uniqueVars(toAvoid: Set[String], defaults: String*): List[Var] =
     uniqueNames(toAvoid, defaults: _*) map Var

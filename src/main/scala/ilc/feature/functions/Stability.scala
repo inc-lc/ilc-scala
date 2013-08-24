@@ -26,12 +26,12 @@ extends Attribution
       }
   }
 
-  case class SubtermStability(attr: Stability_attr)
+  case class SubtermStability(attr: StabilityAttr)
   extends ReadOnlyAttribute[Boolean] {
     def lookup(s: Subterm): Boolean = attr.isStable(s)
   }
 
-  case class ArgumentStability(attr: Stability_attr)
+  case class ArgumentStability(attr: StabilityAttr)
   extends ReadOnlyAttribute[Int => Boolean] {
 
     def apply(s: Subterm, whichArgument: Int): Boolean =
@@ -47,7 +47,7 @@ extends Attribution
     }
   }
 
-  case class Stability_attr(root: Term)
+  case class StabilityAttr(root: Term)
   extends
     InheritedAttribute[(VarStability, ArgStability)](root,
       Map.empty[String, Boolean].withDefaultValue(false) -> Nil) {
@@ -74,6 +74,6 @@ extends Attribution
     protected def isStable(t: Term, env: VarStability): Boolean =
       FV(t).map(env).fold(true)(_ && _)
 
-     lazy val FV = FV_attr(root)
+     lazy val FV = FreeVarsAttr(root)
   }
 }

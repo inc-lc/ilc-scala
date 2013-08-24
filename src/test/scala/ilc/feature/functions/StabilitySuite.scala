@@ -11,7 +11,7 @@ class StabilitySuite extends FunSuite {
     Subterm refl (x ->: x(x))(x ->: x(x))
   }
 
-  val (stable, stableArg) = Stability_attr(omega.term).split
+  val (stable, stableArg) = StabilityAttr(omega.term).split
 
   test("omega's bound variables are stable, stable, unstable, unstable") {
     val vars = omega.children.

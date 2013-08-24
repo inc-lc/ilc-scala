@@ -74,6 +74,6 @@ extends Attribution
     protected def isStable(t: Term, env: VarStability): Boolean =
       FV(t).map(env).fold(true)(_ && _)
 
-     lazy val FV = FreeVarsAttr(root)
+    lazy val FV = FreeVarsAttr(root)
   }
 }

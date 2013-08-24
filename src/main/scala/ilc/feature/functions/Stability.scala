@@ -74,6 +74,10 @@ extends Attribution
     protected def isStable(t: Term, env: VarStability): Boolean =
       FV(t).map(env).fold(true)(_ && _)
 
+    // This must be lazy, because it's used in inherit which is used by the
+    // superclass constructor. Hence, without lazy, we'd get a
+    // NullPointerException. In Java, you'd have to avoid that design, but in
+    // Scala lazy is a solution.
     lazy val FV = FreeVarsAttr(root)
   }
 }

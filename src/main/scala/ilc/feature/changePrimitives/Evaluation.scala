@@ -9,9 +9,9 @@ trait Evaluation extends feature.functions.Evaluation {
 
   trait ChangePrimitiveValues {
     def diff(u: Value, v: Value): Value =
-      diffMatchError(u, v)
+      throw new DiffError(u, v)
     def apply(dv: Value, v: Value): Value =
-      applyMatchError(dv, v)
+      throw new ApplyError(dv, v)
   }
 
   override def evalConst(c: Constant): Value = c match {
@@ -25,11 +25,11 @@ trait Evaluation extends feature.functions.Evaluation {
       super.evalConst(c)
   }
 
-  private def diffMatchError(u: Value, v: Value): Nothing =
-    throw new MatchError("diff(" ++
-      u.toString ++ ", " ++ v.toString ++ ")")
+  class DiffError(u: Value, v: Value)
+  extends Exception("Unable to compute:\ndiff(" ++
+    u.toString ++ ", " ++ v.toString ++ ")")
 
-  private def applyMatchError(dv: Value, v: Value): Nothing =
-    throw new MatchError("apply(" ++
-      dv.toString ++ ", " ++ v.toString ++ ")")
+  class ApplyError(dv: Value, v: Value)
+  extends Exception("Unable to compute:\napply(" ++
+    dv.toString ++ ", " ++ v.toString ++ ")")
 }

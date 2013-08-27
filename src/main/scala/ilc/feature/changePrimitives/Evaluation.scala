@@ -8,8 +8,10 @@ trait Evaluation extends feature.functions.Evaluation {
   val Value: ChangePrimitiveValues with FunValues
 
   trait ChangePrimitiveValues {
-    def diff(u: Value, v: Value): Value
-    def apply(dv: Value, v: Value): Value
+    def diff(u: Value, v: Value): Value =
+      throw new DiffError(u, v)
+    def apply(dv: Value, v: Value): Value =
+      throw new ApplyError(dv, v)
   }
 
   override def evalConst(c: Constant): Value = c match {
@@ -22,4 +24,12 @@ trait Evaluation extends feature.functions.Evaluation {
     case _ =>
       super.evalConst(c)
   }
+
+  class DiffError(u: Value, v: Value)
+  extends Exception("Unable to compute:\ndiff(" ++
+    u.toString ++ ", " ++ v.toString ++ ")")
+
+  class ApplyError(dv: Value, v: Value)
+  extends Exception("Unable to compute:\napply(" ++
+    dv.toString ++ ", " ++ v.toString ++ ")")
 }

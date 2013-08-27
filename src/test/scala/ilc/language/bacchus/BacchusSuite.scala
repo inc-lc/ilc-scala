@@ -105,6 +105,12 @@ extends FunSuite
     }
   }
 
+  test("NilChange has no effect when applied") {
+    assert(eval(Apply(NilChange)(5)).toNat === 5)
+    assert(eval(Apply(NilChange)(twiceMap1234)).toMap ===
+           eval(twiceMap1234).toMap)
+  }
+
   test("pattern matching behaves as expected") {
     assert(eval(case2(Left(5), idFun, constFun(6))).toNat === 5)
     assert(eval(case2(Right(6), constFun(5), idFun)).toNat === 6)

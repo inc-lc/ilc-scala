@@ -170,7 +170,7 @@ extends functions.Evaluation with changePrimitives.Evaluation { self: language.a
       }
     }
 
-    def diff(u: Value, v: Value): Value = (u, v) match {
+    override def diff(u: Value, v: Value): Value = (u, v) match {
       case (Bool(x), Bool(y)) =>
         xor(x, y)
       case (Num(n1), Num(n2)) =>
@@ -180,9 +180,10 @@ extends functions.Evaluation with changePrimitives.Evaluation { self: language.a
             m1, m2)
       case (Function(f), Function(g)) =>
         (x: Value) => (dx: Value) => diff(f(apply(dx, x)), g(x))
+      case _ => super.diff(u, v)
     }
 
-    def apply(dv: Value, v: Value): Value =  (dv, v) match {
+    override def apply(dv: Value, v: Value): Value =  (dv, v) match {
       case (Bool(dx), Bool(x)) =>
         xor(x, dx)
       case (Neutral, Num(n)) => n
@@ -204,6 +205,7 @@ extends functions.Evaluation with changePrimitives.Evaluation { self: language.a
           }
           apply(df(x)(nilChange),  f(x))
         }
+      case _ => super.apply(dv, v)
     }
   }
 

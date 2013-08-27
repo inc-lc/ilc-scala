@@ -65,7 +65,7 @@ extends functions.Evaluation with naturals.Evaluation with sums.Evaluation with 
   }
 
   object BacchusValueDeclarations extends FunValues with ChangePrimitiveValues with UnitValues with NatValues with SumValues with MapValues with MapValuesEncoding
-     with NilChangeValues
+      with MaybeValues with NilChangeValues
   {
     // helper to match against replacement pairs
     object Pair {

@@ -4,9 +4,8 @@ package feature.maps
 import scala.language.implicitConversions
 import scala.collection.immutable
 
-trait EvaluationBase extends feature.base.Evaluation
-   with feature.maybe.SumUnitEncoded
-{
+// Map evaluation - what only depends on base.Evaluation
+trait EvaluationBase extends feature.base.Evaluation {
   type ValueMap = immutable.Map[Value, Value]
   def ValueMap(assoc: (Value, Value)*): ValueMap =
     immutable.Map.apply[Value, Value](assoc: _*)
@@ -22,7 +21,7 @@ trait EvaluationBase extends feature.base.Evaluation
   implicit def liftMap(m: ValueMap): Value = Value.Map(m)
 
   // Basic Map values
-  trait MapValues extends MaybeValues {
+  trait MapValues {
     case class Map(toMap: ValueMap) extends Value
 
     object Map {
@@ -30,6 +29,11 @@ trait EvaluationBase extends feature.base.Evaluation
         Map(immutable.Map(assoc: _*))
     }
   }
+  val Value: MapValues
+}
+
+trait Evaluation extends EvaluationBase with feature.maybe.SumUnitEncoded {
+  this: Syntax =>
 
   // the object `Value` needs deep mixin composition.
   //
@@ -41,10 +45,6 @@ trait EvaluationBase extends feature.base.Evaluation
   // declarations without doing deep mixin composition?
 
   val Value: MapValues with MaybeValues
-}
-
-trait Evaluation extends EvaluationBase {
-  this: Syntax =>
 
   override def evalConst(c: Constant): Value = c match {
     case EmptyMap =>

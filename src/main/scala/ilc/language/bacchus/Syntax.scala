@@ -15,7 +15,9 @@ import feature._
 
 trait Syntax
 extends feature.Functions
-   with feature.changePrimitives.Syntax with naturals.Syntax with unit.Syntax with sums.Syntax with sums.SyntaxSugar with maps.Syntax with maps.SyntaxSugar {
+   with feature.changePrimitives.Syntax with naturals.Syntax with unit.Syntax with sums.Syntax with sums.SyntaxSugar with maps.Syntax with maps.SyntaxSugar
+   with nilChange.Syntax
+{
   // product types are encoded in terms of maps.
   // it is probably useful to have them later on,
   // for the exclusion of ill-formed products and

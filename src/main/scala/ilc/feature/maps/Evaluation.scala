@@ -3,7 +3,6 @@ package feature.maps
 
 import scala.language.implicitConversions
 import scala.collection.immutable
-import feature._
 
 trait EvaluationBase extends feature.base.Evaluation
    with feature.maybe.SumUnitEncoded

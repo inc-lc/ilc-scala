@@ -66,6 +66,12 @@ extends FunSuite
     }
   }
 
+  test("looking up a nonexistent key returns Nothing") {
+    Range.inclusive(5, 8) foreach { i =>
+      assert(eval(Lookup(i)(twiceMap1234)) === Value.Nothing())
+    }
+  }
+
   test("folding with Plus over a map yields the sum of its values") {
     assert(eval(sum(twiceMap1234)).toNat === 2 + 4 + 6 + 8)
     assert(eval(sum(twiceMap1256)).toNat === 200 + 4 + 10 + 12)

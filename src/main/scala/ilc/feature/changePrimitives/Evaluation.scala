@@ -8,8 +8,8 @@ trait Evaluation extends feature.functions.Evaluation {
   val Value: ChangePrimitiveValues with FunValues
 
   trait ChangePrimitiveValues {
-    def diff(u: Value, v: Value): Value
-    def apply(dv: Value, v: Value): Value
+    def diff(u: Value, v: Value): Value = ???
+    def apply(dv: Value, v: Value): Value = ???
   }
 
   override def evalConst(c: Constant): Value = c match {

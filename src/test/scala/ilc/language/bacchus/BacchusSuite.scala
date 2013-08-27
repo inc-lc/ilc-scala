@@ -68,7 +68,7 @@ extends FunSuite
 
   test("looking up a nonexistent key returns Nothing") {
     Range.inclusive(5, 8) foreach { i =>
-      assert(eval(Lookup(i)(twiceMap1234)) === Value.Nothing())
+      assert(eval(Lookup(i)(twiceMap1234)) === Value.Nope())
     }
   }
 

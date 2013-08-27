@@ -18,7 +18,7 @@ extends unit.Evaluation
      with UnitValues
      with SumValues
   {
-    object Nothing {
+    object Nope {
       def apply(): Value = Value.Left(Value.UnitValue)
 
       def unapply(value: Value): Option[Unit] = value match {
@@ -44,7 +44,7 @@ extends unit.Evaluation
   // helper function to lower Scala's maybe monad to object level
   def lowerMaybe(maybe: Option[Value]): Value = {
     maybe match {
-      case None => Value.Nothing()
+      case None => Value.Nope()
       case Some(value) => Value.Just(value)
     }
   }
@@ -52,7 +52,7 @@ extends unit.Evaluation
   // helper function to lift an object level Maybe to meta level
   def liftMaybe(maybe: Value): Option[Value] = {
     maybe match {
-      case Value.Nothing() => None
+      case Value.Nope() => None
       case Value.Just(value) => Some(value)
     }
   }

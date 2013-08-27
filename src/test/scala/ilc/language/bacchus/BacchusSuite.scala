@@ -62,7 +62,7 @@ extends FunSuite
 
   test("looking up an existing key returns the associated value") {
     Range.inclusive(1, 4) foreach { i =>
-      assert(eval(Lookup(i)(twiceMap1234)).toNat === 2 * i)
+      assert(eval(Lookup(i)(twiceMap1234)) === Value.Just(2 * i))
     }
   }
 

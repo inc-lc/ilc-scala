@@ -59,7 +59,7 @@ trait Attribution extends Context { self: Syntax =>
    * every subclass has to be an inherited attribute.
    */
   abstract class InheritedAttribute[T](root: Term, rootAttr: T)
-  extends Attribute[T](root) {
+  extends CachedAttribute[T](root) {
 
     /**
      * Specification of an inherited attribute
@@ -76,12 +76,6 @@ trait Attribution extends Context { self: Syntax =>
      */
     def inherit(parent: Subterm, parentAttr: T): List[T]
 
-    def lookup(s: Subterm): T = store(s)
-    def update(s: Subterm, value: T): Unit = store.update(s, value)
-
-    private[this] var store: mutable.Map[Subterm, T] =
-      mutable.Map.empty
-
     update(rootSubterm, rootAttr)
     init(rootSubterm)
 
@@ -90,5 +84,20 @@ trait Attribution extends Context { self: Syntax =>
         (s.children, inherit(s, lookup(s))).zipped.foreach(update)
       s.eachChild(init)
     }
+  }
+
+  /**
+   * CachedAttribute provides a store so that attributes are
+   * computed only once. Subclasses must manage the traversal
+   * order and call `update` in the correct order, though.
+   */
+  abstract class CachedAttribute[T](root: Term)
+  extends Attribute[T](root)
+  {
+    def lookup(s: Subterm): T = store(s)
+    def update(s: Subterm, value: T): Unit = store.update(s, value)
+
+    private[this] var store: mutable.Map[Subterm, T] =
+      mutable.Map.empty
   }
 }

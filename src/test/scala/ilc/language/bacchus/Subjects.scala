@@ -31,4 +31,31 @@ object Subjects {
     Fold(constFun(Plus))(0)(t)
 
   def constFun(t: Term) = uniqueName(t, "_") ->: t
+
+  // each element of `variousKeys` is a tuple
+  // (oldKey, newKey, oldMap, newMap) such that the key-pairs
+  // exhaust all possibilities of existence in the maps
+  // old : a key of the old map (4)
+  // new : a key of the new map (5)
+  // both: a key of both maps (1)
+  // none: a key of no map (9)
+  val variousKeys: List[((Term, Term), (Term, Term))] =
+    List.apply[(Term, Term)](
+      (4, 4), // old -> old
+      (4, 5), // old -> new
+      (4, 1), // old -> both
+      (4, 9), // old -> none
+      (5, 4), (5, 5), (5, 1), (5, 9), // new  -> _
+      (1, 4), (1, 5), (1, 1), (1, 9), // both -> _
+      (9, 4), (9, 5), (9, 1), (9, 9)  // none -> _
+    ).map(keyPair => (keyPair, (twiceMap1234, twiceMap1256)))
+
+  // various possibilities for keys in a changing map
+  val oldMap = twiceMap1234
+  val newMap = twiceMap1256
+  val keyInOld = Nat(4)
+  val keyInNew = Nat(5)
+  val keyInBoth = Nat(1)
+  val keyInNone = Nat(9)
+  val keyCases = List(keyInOld, keyInNew, keyInBoth, keyInNone)
 }

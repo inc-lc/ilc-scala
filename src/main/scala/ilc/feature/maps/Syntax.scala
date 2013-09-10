@@ -7,11 +7,13 @@ trait Syntax extends base.Syntax {
   //
   //   empty : Map k v
   //   update : k → v → Map k v → Map k v
+  //   delete : k → Map k v → Map k v
   //   lookup : k → Map k v → Maybe v
   //   fold : (k → a → b → b) → b → Map k a → b
   //
   case object EmptyMap extends Constant
   case object Update extends Constant
+  case object Delete extends Constant
   case object Lookup extends Constant
   case object Fold extends Constant
 }

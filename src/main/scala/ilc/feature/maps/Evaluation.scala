@@ -54,6 +54,10 @@ trait Evaluation extends EvaluationBase with feature.maybe.SumUnitEncoded {
       (k: Value) => (v: Value) => (m: Value) =>
         m.toMap.updated(k, v)
 
+    case Delete =>
+      (k: Value) => (m: Value) =>
+        m.toMap - k
+
     case Lookup =>
       (k: Value) => (m: Value) => lowerMaybe(m.toMap.get(k))
 

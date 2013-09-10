@@ -32,6 +32,31 @@ object Subjects {
 
   def constFun(t: Term) = uniqueName(t, "_") ->: t
 
+  // typed code
+  def constT(argType: Type, t: Term) = {
+    val dontcare = uniqueName(t, "_")
+    TypedAbs(dontcare, argType, t)
+  }
+  def constN(t: Term) = constT(NatType, t)
+
+  val foldNatN = TypedFoldNat(NatType)
+  val plus3 =
+    TypedAbs("x", NatType,
+      TypedAbs("y", NatType,
+        TypedAbs("z", NatType, Plus("x", "y", "z"))))
+
+  val leftNN = TypedLeft(NatType, NatType)
+  val rightNN = TypedRight(NatType, NatType)
+  val eitherNNN = TypedEither(NatType, NatType, NatType)
+
+  val emptyNN = TypedEmptyMap(NatType, NatType)
+  val updateNN = TypedUpdate(NatType, NatType)
+  val lookupNN = TypedLookup(NatType, NatType)
+  val foldNNN = TypedFold(NatType, NatType, NatType)
+
+  val typed1234 = updateNN(1)(2)(updateNN(2)(4)(
+    updateNN(3)(6)(updateNN(4)(8)(emptyNN))))
+
   // each element of `variousKeys` is a tuple
   // (oldKey, newKey, oldMap, newMap) such that the key-pairs
   // exhaust all possibilities of existence in the maps

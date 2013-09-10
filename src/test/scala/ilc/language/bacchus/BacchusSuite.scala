@@ -60,6 +60,11 @@ extends FunSuite
               1 -> 2, 2 -> 99, 3 -> 75, 4 -> 8)
   }
 
+  test("keys can be deleted") {
+    assertMap(Delete(3)(Delete(5)(Delete(1)(twiceMap1234))),
+              2 -> 4, 4 -> 8)
+  }
+
   test("looking up an existing key returns the associated value") {
     Range.inclusive(1, 4) foreach { i =>
       assert(eval(Lookup(i)(twiceMap1234)) === Value.Just(2 * i))

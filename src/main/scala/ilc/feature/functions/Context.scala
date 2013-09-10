@@ -102,7 +102,7 @@ trait Context { self: Syntax =>
              Subterm(t, context(Context.App2(s, Hole))))
       case Abs(name, body) =>
         List(Subterm(body, context(Context.Abs(name, Hole))))
-      case Const(_) | Var(_) =>
+      case _ =>
         Nil
     }
 

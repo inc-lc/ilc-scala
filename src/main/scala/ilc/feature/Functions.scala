@@ -5,9 +5,11 @@ package feature
  * First-class functions.
  */
 trait Functions
-extends functions.Syntax
+extends functions.TypedSyntax
+   with functions.Typing
    with functions.Evaluation
    with functions.Derivation
+   with functions.ToScala
    /* Calculus/feature-independent infrastructure below this line. */
    with functions.Pretty
    with functions.UniqueNames

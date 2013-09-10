@@ -159,8 +159,7 @@ extends FunSuite
     (natsAndNats, natsAndNats.reverse).zipped.foreach { (p1, p2) =>
       val ((x, xNew), (yNew, y)) = (p1, p2)
       val args: List[(Term, Term)] = List((x, xNew), (y, yNew))
-      assertCorrectTwice(Plus, args)
-      assertCorrectPlus(Plus, args)
+      assertCorrectAll(Plus, args)
     }
   }
 
@@ -171,27 +170,70 @@ extends FunSuite
     val args3: List[(Term, Term)] = args2 ++
       List.apply[(Term, Term)](40 -> 5)
 
-    assertCorrectTwice(FoldNat, args3)
     // optimized foldNat should not be triggered,
     // because the number of iteration changes
-    assertCorrectPlus(FoldNat, args3)
+    assertCorrectAll(FoldNat, args3)
 
     val foldNatWithFixedIterations: Term =
       Lambda("z", "f") ->: FoldNat("z")("f")(25)
 
-    assertCorrectTwice(foldNatWithFixedIterations, args2)
-    assertCorrectPlus(foldNatWithFixedIterations, args2)
+    assertCorrectAll(foldNatWithFixedIterations, args2)
+  }
+
+  test("the derivative of Update is correct") {
+    // stable keys and values
+    keyCases foreach {
+      key => {
+        assertCorrectAll(Update(key)(18),
+          List((twiceMap1234, twiceMap1234)))
+        assertCorrectAll(Update(key)(18),
+          List((twiceMap1234, twiceMap1256)))
+      }
+    }
+
+    // stable keys
+    keyCases foreach {
+      key => assertCorrectAll(Update(key),
+               List((10, 18), (twiceMap1234, twiceMap1256)))
+    }
+
+    // changing everything
+    for {
+      oldKey <- keyCases
+      newKey <- keyCases
+    } {
+      assertCorrectAll(Update,
+        List((oldKey, newKey), (10, 18), (oldMap, newMap)))
+    }
+  }
+
+  test("the derivative of Delete is correct") {
+    // stable key & map
+    assertCorrectAll(Delete(4)(twiceMap1234), Nil)
+    assertCorrectAll(Delete(5)(twiceMap1234), Nil)
+    // stable key
+    List(1, 3, 5, 7).foreach { i =>
+      assertCorrectAll(Delete(i),
+        List((twiceMap1234, twiceMap1256)))
+    }
+    // changing everything
+    assertCorrectAll(Delete,
+      List((5, 5), (twiceMap1234, twiceMap1234)))
+    assertCorrectAll(Delete,
+      List((5, 5), (twiceMap1234, twiceMap1256)))
+    assertCorrectAll(Delete,
+      List((5, 7), (twiceMap1234, twiceMap1256)))
   }
 
   test("the derivative of Fold is correct") {
     // constant f z
-    assertCorrectTwice(Fold(constFun(Plus))(0),
+    assertCorrectAll(Fold(constFun(Plus))(0),
       List(twiceMap1234 -> twiceMap1256))
     // constant f
-    assertCorrectTwice(Fold(constFun(Plus)),
+    assertCorrectAll(Fold(constFun(Plus)),
       List(0 -> 100, twiceMap1234 -> twiceMap1256))
     // changing everything
-    assertCorrectTwice(Fold,
+    assertCorrectAll(Fold,
       List(constFun(Plus) ->
              (Lambda("_", "x", "y") ->: Plus(2000, "x", "y")),
            0 -> 100,
@@ -203,7 +245,7 @@ extends FunSuite
 // integers for the actual terms, but doesn't belong to tests for either
 // feature.functions or feature.integers. Where should I put this?
 
-class EvalSuite extends FunSuite with ShouldMatchers {
+class BacchusEvalSuite extends FunSuite with ShouldMatchers {
   val t1 = Nat(1)(idFun)
   val subt2 = Nat(1)(idFun)
   val t2 = (Lambda("x") ->: subt2)(1)

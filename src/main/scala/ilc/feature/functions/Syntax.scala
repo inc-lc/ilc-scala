@@ -23,14 +23,29 @@ trait Syntax extends base.Syntax {
 
   // SYNTAX
 
+  // begin: syntactic sugar for term constructors
+
+  trait Parameter {
+    def attachBody(body: Term): Abs
+  }
+
+  implicit class StringParameter(s0: String) extends Parameter {
+    def attachBody(body: Term): Abs = Abs(s0, body)
+  }
+
+  implicit class VarParameter(x0: Var) extends Parameter {
+    def attachBody(body: Term): Abs = Abs(x0.name, body)
+  }
+
   implicit class TermOps(t0: Term) {
     // easy way to build up nested applications
     def apply(t: Term): App = App(t0, t)
 
     // easy way to build up nested abstractions
-    def ->:(name: String): Abs = Abs(name, t0)
-    def ->:(variable: Var): Abs = variable.name ->: t0
-    def ->:(parameterList: GenTraversable[String]): Term =
+    def ->:(parameter: Parameter): Abs =
+      parameter attachBody t0
+
+    def ->:(parameterList: GenTraversable[Parameter]): Term =
       if (parameterList.isEmpty)
         t0
       else
@@ -48,14 +63,12 @@ trait Syntax extends base.Syntax {
     // val (x, y, z) = uniqueVars(namesToAvoid, "x", "y", "z")
     // Lambda(x, y, z) ->: Plus(x, y, z)
 
-    def apply[Name: Or[String, Var]#Type](names: Name*): GenTraversable[String] =
-      names map {
-        _ match {
-          case name: String => name
-          case variable: Var => variable.name
-        }
-      }
+    def apply[T](parameters: T*)
+      (implicit view: T => Parameter): GenTraversable[Parameter] =
+      parameters map view
   }
+
+  // end: syntatic sugar for term constructors
 
   case class Var(name: String) extends Term
   case class App(operator: Term, operand: Term) extends Term
@@ -66,7 +79,7 @@ trait Syntax extends base.Syntax {
 
   //Chain implicit conversions.
   implicit def constToTermOps(c: Constant): TermOps = TermOps(c)
-  implicit def stringToTermOps(name: String): TermOps = TermOps(name)
+  implicit def stringToTermOps(s: String): TermOps = TermOps(s)
 
   implicit def liftTermPair[S, T]
     (p: (S, T))

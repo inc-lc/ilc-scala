@@ -131,6 +131,14 @@ extends functions.Evaluation with naturals.Evaluation with sums.Evaluation with 
     }
   }
 
+  override def coreEval(t: Term, env: Env): Value = t match {
+    case TypedConst(c, cType) =>
+      evalConst(c)
+
+    case _ =>
+      super.coreEval(t, env)
+  }
+
   override def evalConst(c: Constant): Value = c match {
     case _ =>
       super.evalConst(c)

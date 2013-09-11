@@ -2,21 +2,7 @@ package ilc
 package feature.functions
 
 trait UniqueNames extends Syntax with FV {
-
-  object uniqueName extends ((Set[String], String) => String) {
-
-    def apply(toAvoid: Set[String], default: String): String =
-      if (! toAvoid.contains(default))
-        default
-      else {
-        var i = 0
-        def name = default ++ toSubscript(i)
-        do i += 1
-        while(toAvoid.contains(name))
-        name
-      }
-
-
+  object UniqueNameDefs {
     def toSubscript(i: Int): String = toSubscript(i.toString)
 
     def toSubscript(s: String): String = {
@@ -26,6 +12,19 @@ trait UniqueNames extends Syntax with FV {
     }
 
     val subscript = "₀₁₂₃₄₅₆₇₈₉".toCharArray
+  }
+  import UniqueNameDefs._
+
+  def uniqueName(toAvoid: Set[String], default: String): String = {
+    if (! toAvoid.contains(default))
+      default
+    else {
+      var i = 0
+      def name = default ++ toSubscript(i)
+      do i += 1
+      while(toAvoid.contains(name))
+      name
+    }
   }
 
   def uniqueName(t: Term, default: String): String =

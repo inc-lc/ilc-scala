@@ -3,8 +3,10 @@ scalaVersion := "2.10.2"
 scalacOptions := Seq("-deprecation", "-feature", "-Xlint")
 
 //Link to the Scala standard library. See http://stackoverflow.com/a/18747266/53974.
-//For Scaladoc, requires SBT 0.13. However, automatic mapping does not work for the standard library.
+//For Scaladoc, requires SBT 0.13.
 //autoAPIMappings := true
+// However, this might not work for the standard library due to stale caches.
+// To fix, remove ~/.ivy2/cache/org.scala-lang/scala-library/ivy-2.10.2.xml
 
 //Add a manual mapping for the standard library,
 //0.13 syntax:

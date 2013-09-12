@@ -36,7 +36,11 @@ object BuildUnit extends Build {
 
   val scalaMeterFramework = new TestFramework("org.scalameter.ScalaMeterFramework")
 
-  private val scalaMeterSettings = Seq(
+  //XXX The type annotation is needed with SBT 0.12 to workaround a compiler
+  //crash, probably due to the Scala compiler. This cannot be reproduced with
+  //SBT 0.13, probably because Scala 2.10 does not suffer from this compiler
+  //crash; hence, remove it when switching to 0.13.
+  private val scalaMeterSettings: Seq[Setting[_]] = Seq(
       testFrameworks += scalaMeterFramework
     )
 

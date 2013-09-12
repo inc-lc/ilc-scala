@@ -10,7 +10,7 @@ import scala.collection.immutable
 import ilc.feature._
 
 trait Evaluation
-extends functions.Evaluation with naturals.Evaluation with sums.Evaluation with maps.Evaluation with unit.Evaluation with changePrimitives.Evaluation
+extends functions.Evaluation with naturals.Evaluation with sums.Evaluation with maps.Evaluation with unit.Evaluation with changePrimitives.Evaluation with base.TypedEvaluation
   with nilChange.Evaluation
 { self: language.bacchus.Syntax =>
   // boilerplate for extending value declarations
@@ -132,9 +132,6 @@ extends functions.Evaluation with naturals.Evaluation with sums.Evaluation with 
   }
 
   override def coreEval(t: Term, env: Env): Value = t match {
-    case TypedConst(c, cType) =>
-      evalConst(c)
-
     case _ =>
       super.coreEval(t, env)
   }

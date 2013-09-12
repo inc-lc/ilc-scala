@@ -93,7 +93,7 @@ object BuildUnit extends Build {
 
     def start(base: String): Seq[String] = {
       val acc = new Accumulogger
-      run(acc, base) match {
+      run(generatorMainClass, classpath, Seq(base), acc) match {
         case Some(error) =>
           sys.error("found some error: " ++ error)
 
@@ -102,9 +102,6 @@ object BuildUnit extends Build {
       }
       acc.lines
     }
-
-    def run(log: Logger, args: String*): Option[String] =
-      run(generatorMainClass, classpath, args, log)
 
     override def run(mainClass: String, classpath: Seq[File],
       options: Seq[String], log: Logger): Option[String] =

@@ -8,8 +8,9 @@ trait Typing {
   trait Type
 
   // ->: constructs term-level abstractions
-  // =>: constructs function types
 
+  /** Function type constructor as a case class.
+    */
   case class =>: (argumentType: Type, resultType: Type) extends Type {
     override def toString: String = argumentType match {
       case _ =>: _ => s"($argumentType) => $resultType"
@@ -17,8 +18,10 @@ trait Typing {
     }
   }
 
-  // Cf.
-  // https://github.com/scala/scala/blob/v2.10.0/src/library/scala/collection/immutable/List.scala#L104
+  /** Function-type constructor as a convenient infix method, right-associative as usual.
+    */
+  // The argument order is correct because in Scala right-associative operators
+  // are invoked on their right-hand side (see SLS 6.2.3).
   implicit class FunctionTypeOps(resultType: Type) {
     def =>: (argumentType: Type): Type =
       new typingTrait.=>:(argumentType, resultType)

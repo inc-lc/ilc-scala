@@ -27,8 +27,22 @@ trait Typing {
       new typingTrait.=>:(argumentType, resultType)
   }
 
+  //Subclass obligation:
+  type Context
+  def emptyContext: Context
+
+  //Subclass obligations {{{
   def typeOf(c: Constant): Type = throw new UntypableError(c)
-  def typeOf(t: Term): Type = throw new UntypableError(t)
+
+  /** Compute type of a term in a given typing context.
+    */
+  def typeOf(t: Term, initialContext: Context): Type = throw new UntypableError(t)
+  //}}}
+
+  /** Compute type of a closed term.
+    */
+  final def typeOf(t: Term): Type =
+    typeOf(t, emptyContext)
 }
 
 class UntypableError(x: Any)

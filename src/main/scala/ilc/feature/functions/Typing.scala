@@ -8,17 +8,10 @@ extends base.Typing
   typingTrait: TypedSyntax =>
 
   type Context = Map[Var, Type]
-  def emptyContext: Context = Map.empty[Var, Type]
 
-  // the typeOf method is an obligation imposed by base.Typing
-  // to ensure that functions.Typing can type (closed) terms
-  // introduced by feature.functions. In practice, it is always
-  // better to use TypingAttr instead.
+  override def emptyContext: Context = Map.empty[Var, Type]
 
-  override def typeOf(t: Term): Type =
-    typeOf(t, emptyContext)
-
-  def typeOf(t: Term, initialContext: Context): Type = {
+  override def typeOf(t: Term, initialContext: Context): Type = {
     val attr = TypingAttr(t, initialContext)
     attr lookup (attr.rootSubterm)
   }

@@ -18,6 +18,4 @@ resolvers += "Sonatype OSS Snapshots" at
 // ScalaMeter
 libraryDependencies += "com.github.axel22" %% "scalameter" % "0.3"
 
-testFrameworks += new TestFramework("org.scalameter.ScalaMeterFramework")
-
 logBuffered := false

@@ -33,7 +33,14 @@ object BuildUnit extends Build {
               workingDirectory = Some(base))))
         }
     )
-  private val extraSettings = generationSettings
+
+  val scalaMeterFramework = new TestFramework("org.scalameter.ScalaMeterFramework")
+
+  private val scalaMeterSettings = Seq(
+      testFrameworks += scalaMeterFramework
+    )
+
+  private val extraSettings = generationSettings ++ scalaMeterSettings
 
   // dummy project with default settings + extraSettings.
   // This has the same effect as putting extraSettings in build.sbt.

@@ -24,6 +24,7 @@ extends base.Typing
     attr(attr.rootSubterm)
   }
 
+  // Warning: not extensible code. This does not compose with extensions of Term.
   case class TypingAttr(root: Term, initialContext: Context = emptyContext)
   extends CachedAttribute[Type](root)
   {

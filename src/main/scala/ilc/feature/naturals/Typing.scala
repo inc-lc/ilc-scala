@@ -14,14 +14,8 @@ trait Typing extends base.Typing {
     case Plus =>
       NatType =>: NatType
 
-    // the type of FoldNat are left intentionally
-    // unspecified. because constants are polymorphic, and
-    // we don't have a polymorphic type system yet.
-    //
-    // the plan is to have a term constructor
-    // TypedConstant(c: Constant, tau: Type)
-    // that specifies the type of a constant at use site.
-
+    // FoldNat is polymorphic, hence it must be handled through TypedConst.
+    // XXX However, this handling seems to be not done in typeOf. Is this code dead?
     case _ =>
       super.typeOf(c)
   }

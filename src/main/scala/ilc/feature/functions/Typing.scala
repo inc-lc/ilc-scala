@@ -4,8 +4,7 @@ package functions
 
 trait Typing
 extends base.Typing
-   with Attribution
-{
+    with Attribution {
   typingTrait: TypedSyntax =>
 
   type Context = Map[Var, Type]
@@ -26,8 +25,7 @@ extends base.Typing
 
   // Warning: not extensible code. This does not compose with extensions of Term.
   case class TypingAttr(root: Term, initialContext: Context = emptyContext)
-  extends CachedAttribute[Type](root)
-  {
+  extends CachedAttribute[Type](root) {
     val context = ContextAttr(root, initialContext)
 
     def init(s: Subterm): Unit = {
@@ -72,8 +70,7 @@ extends base.Typing
   }
 
   case class ContextAttr(root: Term, initialContext: Context = emptyContext)
-  extends InheritedAttribute[Context](root, initialContext)
-  {
+  extends InheritedAttribute[Context](root, initialContext) {
     def inherit(parent: Subterm, parentAttr: Context) = parent.term match {
       case TypedAbs(name, argumentType, body) =>
         List(parentAttr.updated(Var(name), argumentType))

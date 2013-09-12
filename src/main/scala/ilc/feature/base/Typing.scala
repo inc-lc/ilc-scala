@@ -11,7 +11,7 @@ trait Typing {
 
   /** Function type constructor as a case class.
     */
-  case class =>: (argumentType: Type, resultType: Type) extends Type {
+  case class =>:(argumentType: Type, resultType: Type) extends Type {
     override def toString: String = argumentType match {
       case _ =>: _ => s"($argumentType) => $resultType"
       case _ => s"$argumentType => $resultType"
@@ -23,7 +23,7 @@ trait Typing {
   // The argument order is correct because in Scala right-associative operators
   // are invoked on their right-hand side (see SLS 6.2.3).
   implicit class FunctionTypeOps(resultType: Type) {
-    def =>: (argumentType: Type): Type =
+    def =>:(argumentType: Type): Type =
       new typingTrait.=>:(argumentType, resultType)
   }
 

@@ -88,9 +88,6 @@ object BuildUnit extends Build {
     config: ForkScalaRun)
   extends sbt.ScalaRun
   {
-    // delete me, wenn es geht.
-    val options: Seq[String] = Nil
-
     def start(base: String): Seq[String] = {
       val acc = new Accumulogger
       run(generatorMainClass, classpath, Seq(base), acc) match {

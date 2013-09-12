@@ -12,7 +12,7 @@ trait Attribution extends Context { self: Syntax =>
 
   trait ReadOnlyAttribute[T] {
     def lookup(s: Subterm): T
-    def apply(s: Subterm): T = lookup(s)
+    final def apply(s: Subterm): T = lookup(s)
   }
 
   abstract class Attribute[T](root: Term)

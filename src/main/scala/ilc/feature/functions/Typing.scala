@@ -20,7 +20,7 @@ extends base.Typing
 
   def typeOf(t: Term, initialContext: Context): Type = {
     val attr = TypingAttr(t, initialContext)
-    attr(attr.rootSubterm)
+    attr lookup (attr.rootSubterm)
   }
 
   // Warning: not extensible code. This does not compose with extensions of Term.

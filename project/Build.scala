@@ -3,12 +3,55 @@ import Keys._
 import sbt.Defaults._
 
 object BuildUnit extends Build {
-  // dummy project with default settings
-  // as if this file does not exist
+  private val generationSettings = Seq(
+      // code to generate examples at stage `test`
+      // usage described in ./src/main/scala/Examples.scala
+      sourceGenerators in Test <+=
+        (sourceManaged in Test,
+          fullClasspath in Compile,
+          thisProject in Compile,
+          taskTemporaryDirectory in Compile,
+          scalaInstance in Compile,
+          baseDirectory in Compile,
+          javaOptions in Compile,
+          outputStrategy in Compile,
+          javaHome in Compile,
+          connectInput in Compile
+            in Compile) map {
+          (genSrcDir, lib,
+            tp, tmp, si, base, options, strategy, javaHomeDir, connectIn
+          ) =>
+          generateExamples(genSrcDir, new ExamplesRunner(
+            tp.id,
+            lib.files,
+            ForkOptions(
+              scalaJars = si.jars,
+              javaHome = javaHomeDir,
+              connectInput = connectIn,
+              outputStrategy = strategy,
+              runJVMOptions = options,
+              workingDirectory = Some(base))))
+        }
+    )
+
+  val scalaMeterFramework = new TestFramework("org.scalameter.ScalaMeterFramework")
+
+  //XXX The type annotation is needed with SBT 0.12 to workaround a compiler
+  //crash, probably due to the Scala compiler. This cannot be reproduced with
+  //SBT 0.13, probably because Scala 2.10 does not suffer from this compiler
+  //crash; hence, remove it when switching to 0.13.
+  private val scalaMeterSettings: Seq[Setting[_]] = Seq(
+      testFrameworks += scalaMeterFramework
+    )
+
+  private val extraSettings = generationSettings ++ scalaMeterSettings
+
+  // dummy project with default settings + extraSettings.
+  // This has the same effect as putting extraSettings in build.sbt.
   lazy val ilcProject = Project (
     "ilc",
     file("."),
-    settings = defaultSettings
+    settings = defaultSettings ++ extraSettings
   )
 
   // Generate .class files from ilc.Examples during test:compile

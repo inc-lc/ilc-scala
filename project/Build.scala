@@ -3,6 +3,8 @@ import Keys._
 import sbt.Defaults._
 
 object BuildUnit extends Build {
+  private val generatorMainClass = "ilc.Examples"
+
   private val generationSettings = Seq(
       // code to generate examples at stage `test`
       // usage described in ./src/main/scala/Examples.scala
@@ -24,6 +26,7 @@ object BuildUnit extends Build {
           generateExamples(genSrcDir, new ExamplesRunner(
             tp.id,
             lib.files,
+            generatorMainClass,
             ForkOptions(
               scalaJars = si.jars,
               javaHome = javaHomeDir,
@@ -81,17 +84,13 @@ object BuildUnit extends Build {
   class ExamplesRunner(
     subproject: String,
     classpath: Seq[File],
+    generatorMainClass: String,
     config: ForkScalaRun)
   extends sbt.ScalaRun
   {
-    val myMainClass: String = "ilc.Examples"
-
-    // delete me, wenn es geht.
-    val options: Seq[String] = Nil
-
     def start(base: String): Seq[String] = {
       val acc = new Accumulogger
-      run(acc, base) match {
+      run(generatorMainClass, classpath, Seq(base), acc) match {
         case Some(error) =>
           sys.error("found some error: " ++ error)
 
@@ -101,10 +100,7 @@ object BuildUnit extends Build {
       acc.lines
     }
 
-    def run(log: Logger, args: String*): Option[String] =
-      run(myMainClass, classpath, args, log)
-
-    def run(mainClass: String, classpath: Seq[File],
+    override def run(mainClass: String, classpath: Seq[File],
       options: Seq[String], log: Logger): Option[String] =
     {
       val javaOptions = classpathOption(classpath) :::

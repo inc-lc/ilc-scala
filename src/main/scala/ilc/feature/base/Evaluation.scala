@@ -4,30 +4,15 @@ package feature.base
 import scala.collection.immutable
 
 trait Evaluation extends Syntax {
-  // The identifier `evalTrait` is bound to `this` of trait
-  // `Evaluation`, to be used in inner classes.
-  // Reference:
-  // http://stackoverflow.com/a/4980886
-  evalTrait =>
-  ////////////////////////////////
-  // Subclass obligations start //
-  ////////////////////////////////
-
-  def evalConst(c: Constant): Value = { die(c, "evalConst") }
+  type Env = immutable.Map[Name, Value]
 
   //Core of the evaluation function, to be extended by subclasses.
   //Recursive calls should be done only through wrapEval.
   def coreEval(t: Term, env: Env): Value =
     t match {
-      case Const(c) =>
-        evalConst(c)
+      case variable: Variable => env(variable.getName)
+      case _ => sys error s"cannot evaluate $t"
     }
-
-  //////////////////////////////
-  // Subclass obligations end //
-  //////////////////////////////
-
-  type Env = immutable.Map[String, Value]
 
   /** Evaluate a Term, returning a Value or throwing an exception (for instance,
     * an UnexpectedTypeException).

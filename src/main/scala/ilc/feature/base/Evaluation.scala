@@ -50,15 +50,12 @@ trait Evaluation extends Syntax {
 
   trait Value {
     def die(from: String, arg: Any = ""): Nothing =
-      evalTrait.die(this, from, arg)
-  }
-
-  def die(value: Any, from: String, arg: Any = ""): Nothing =
     throw UnexpectedTypeException(
-      InnerTypeExceptionInfo(value.toString ++
+      InnerTypeExceptionInfo(this.toString ++
         "." ++ from ++
         (if (arg.toString == "")
           ""
         else
           "(" ++ arg.toString ++ ")")))
+  }
 }

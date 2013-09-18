@@ -2,8 +2,9 @@ package ilc
 package feature
 package unit
 
-trait Syntax extends base.Syntax {
+trait Syntax extends base.Syntax with Types {
   // the inhabitant of the unit type
-  // also used as placeholder
-  case object UnitTerm extends Constant
+  case object UnitTerm extends Term {
+    override def getType: Type = UnitType
+  }
 }

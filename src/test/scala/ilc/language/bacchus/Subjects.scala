@@ -1,34 +1,48 @@
 package ilc
-package language.bacchus
+package language
+package bacchus
 
-import language.Bacchus._
-
-// TODO: think about how to share test subjects across calculi.
-// put some subjects in feature.functions maybe?
-
-object Subjects {
-  val primeMap10 = Map(1 -> ff, 2 -> tt, 3 -> tt, 4 -> ff, 5 -> tt,
-                       6 -> ff, 7 -> tt, 8 -> ff, 9 -> ff, 10 -> ff)
-
-  val oddityMap1234 = Map(1 -> tt, 2 -> ff, 3 -> tt, 4 -> ff)
-
-  val twiceMap1234 = Map(1 -> 2, 2 -> 4, 3 -> 6, 4 -> 8)
-
-  val twiceMap1256 = Map(1 -> 200, 2 -> 4, 5 -> 10, 6 -> 12)
-
-  val natsAndNats = {
-    val lhs = Array(914, 649, 869, 432, 795, 761, 1, 3, 5)
-    val rhs = Array(904, 772, 178, 470, 484, 889, 2, 4, 6)
-    (lhs, rhs).zipped.toList
+trait Subjects
+extends bacchus.Syntax {
+  // shorthand for types
+  val ℕ = NatType
+  implicit class MapTypeOps(sigma: Type) {
+    def ↦ (tau: Type): Type = MapType(sigma, tau)
   }
 
-  val idFun = "x" ->: "x"
+  // shorthand for changing terms
+  case class ChangingTerms(oldTerm: Term, newTerm: Term)
+  implicit class ChangingTermsInfixConstructor[T <% Term](oldTerm: T) {
+    def ↦ (newTerm: Term) = ChangingTerms(oldTerm, newTerm)
+  }
 
-  val fst = Lambda("x", "y") ->: "x"
-  val snd = Lambda("x", "y") ->: "y"
+  val powerOfTwo = FoldNat ! 1 ! lambda(ℕ) {x => Plus ! x ! x}
 
-  def sum(t: Term): Term =
-    Fold(constFun(Plus))(0)(t)
+  val getSize: Term =
+    Fold ! (lambda(ℕ, ℕ) { case Seq(_, _) => Plus ! 1 }) ! 0
 
-  def constFun(t: Term) = uniqueName(t, "_") ->: t
+  val enumerate: Term = lambda(ℕ) { n =>
+    FoldNat ! EmptyMap(ℕ, ℕ) !
+      lambda(ℕ ↦ ℕ) { theMap =>
+        lambda {m => Update ! m ! m ! theMap} ! (getSize ! theMap)
+      } ! (Plus ! n ! 1)
+  }
+
+  val sum: Term =
+    Fold ! lambda(ℕ, ℕ) { case Seq(k, v) => Plus ! v } ! 0
+
+  val natPairs = {
+    val lhs = Array(914, 649, 869, 432, 795, 761, 1, 3, 5, 7, 0)
+    val rhs = Array(904, 772, 178, 470, 484, 889, 2, 4, 6, 7, 0)
+      (lhs, rhs).zipped.toList
+  }
+
+  // various possibilities for keys in a changing map
+  val oldMap = mapLiteral(1 -> 2, 2 -> 4, 3 -> 6, 4 -> 8)
+  val newMap = mapLiteral(1 -> 200, 2 -> 4, 5 -> 10, 6 -> 12)
+  val keyInOld = Nat(4)
+  val keyInNew = Nat(5)
+  val keyInBoth = Nat(1)
+  val keyInNone = Nat(9)
+  val keyCases = List(keyInOld, keyInNew, keyInBoth, keyInNone)
 }

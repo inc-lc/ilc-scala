@@ -8,59 +8,49 @@ import scala.language.implicitConversions
 //Hence, currently all of evalConst requires functions anyway - we could have
 //even more granularity, but this seems already too much.
 
-trait EvaluationBase extends feature.base.Evaluation {
-  this: Syntax =>
-
+trait EvaluationBase extends feature.base.Evaluation with Syntax {
   type ValueSum = Either[Value, Value]
 
   implicit class SumOps(value: Value) {
     def toSum: ValueSum =
       value match {
-        case Value.Sum(s) => s
+        case SumValue(s) => s
         case _ => value die "toSum"
       }
   }
 
-  trait SumValues {
-    case class Sum(toSum: ValueSum) extends Value
+  case class SumValue(toSum: ValueSum) extends Value
 
-    object Left {
-      def apply(v: Value): Sum = Sum(scala.Left(v))
-      def unapply(s: Sum): Option[Value] = s.toSum match {
-        case scala.Left(v) => Some(v)
-        case _ => None
-      }
-    }
-
-    object Right {
-      def apply(v: Value): Sum = Sum(scala.Right(v))
-      def unapply(s: Sum): Option[Value] = s.toSum match {
-        case scala.Right(v) => Some(v)
-        case _ => None
-      }
+  object Inj1Value {
+    def apply(v: Value): SumValue = SumValue(Left(v))
+    def unapply(s: SumValue): Option[Value] = s.toSum match {
+      case Left(v) => Some(v)
+      case _ => None
     }
   }
 
-  val Value: SumValues
+  object Inj2Value {
+    def apply(v: Value): SumValue = SumValue(Right(v))
+    def unapply(s: SumValue): Option[Value] = s.toSum match {
+      case Right(v) => Some(v)
+      case _ => None
+    }
+  }
 }
 
 trait Evaluation extends feature.functions.Evaluation with EvaluationBase {
-  this: Syntax =>
+  override def coreEval(t: Term, env: Env): Value = t match {
+    case Inj1(_, _) =>
+      (x: Value) => Inj1Value(x)
 
-  override val Value: SumValues with FunValues
+    case Inj2(_, _) =>
+      (y: Value) => Inj2Value(y)
 
-  override def evalConst(c: Constant): Value = c match {
-    case Left =>
-      (x: Value) => Value.Left(x)
-
-    case Right =>
-      (y: Value) => Value.Right(y)
-
-    case Either =>
+    case Either(_, _, _) =>
       (f: Value) => (g: Value) => (s: Value) =>
         s.toSum.fold(x => f(x), y => g(y))
 
     case _ =>
-      super.evalConst(c)
+      super.coreEval(t, env)
   }
 }

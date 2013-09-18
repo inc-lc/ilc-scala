@@ -1,39 +1,74 @@
 package ilc
-package feature.functions
+package feature
+package functions
 
 /**
  * Symbolic derivation for first-class functions.
  */
-trait Derivation extends Syntax with FV {
-  // SUBCLASS OBLIGATIONS
+trait Derivation
+extends base.Derivation
+   with Syntax {
+  def lambdaDelta(t: Term)
+    (derivativeBody: Seq[Name] => TermBuilder): TermBuilder =
+  {
+    val argumentTypesOfDerivative: List[Type] =
+      getArgumentTypes(t.getType) flatMap { theType =>
+        List(theType, deltaType(theType))
+      }
+    lambda(argumentTypesOfDerivative)(derivativeBody)
+  }
 
-  def deriveConst(c: Constant): Term
+  override def deltaType(tau: Type): Type = tau match {
+    case domain =>: range =>
+      domain =>: deltaType(domain) =>: deltaType(range)
 
-  // DERIVATION
+    case _ =>
+      super.deltaType(tau)
+  }
 
-  // String transformation
-  def delta(x: String): String = "Δ" ++ x
+  override def updateTerm(tau: Type): Term = tau match {
+    case functionType@(domain =>: range) =>
+      lambda(
+        Var("df", deltaType(functionType)),
+        Var("f", functionType),
+        Var("x", domain)
+      ) {
+        case Seq(df, f, x) =>
+          updateTerm(range) !
+            (df ! x ! (diffTerm(domain) ! x ! x)) !
+            (f ! x)
+      }
 
-  // Derivation follows Agda module
-  // Syntax.Derive.Canon-Popl14
+    case _ =>
+      super.updateTerm(tau)
+  }
 
-  def derive(t: Term): Term = t match {
-    case Const(constant) =>
-      deriveConst(constant)
+  override def diffTerm(tau: Type): Term = tau match {
+    case functionType@(domain =>: range) =>
+      lambda(
+        Var("g", functionType),
+        Var("f", functionType),
+        Var("x", domain),
+        Var("dx", deltaType(domain))
+      ) {
+        case Seq(g, f, x, dx) =>
+          diffTerm(range) !
+            (g ! (updateTerm(domain) ! dx ! x)) !
+            (f ! x)
+      }
 
-    case Var(name) =>
-      Var(delta(name))
+    case _ =>
+      super.diffTerm(tau)
+  }
+
+  override def derive(t: Term): Term = t match {
+    case Abs(x, body) =>
+      lambdaTerm(x, DVar(x)) { derive(body) }
 
     case App(operator, operand) =>
-      App(App(derive(operator), operand), derive(operand))
+      derive(operator) ! operand ! derive(operand)
 
-    case Abs(x, body) => {
-      val dx = delta(x)
-      if (FreeVarsAttr(t) contains dx)
-        sys.error("naming scheme violation " ++
-          "when deriving:\n  " ++ t.toString)
-      else
-        Abs(x, Abs(dx, derive(body)))
-    }
+    case _ =>
+      super.derive(t)
   }
 }

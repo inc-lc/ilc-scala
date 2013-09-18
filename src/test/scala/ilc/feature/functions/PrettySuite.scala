@@ -1,24 +1,38 @@
 package ilc
-package feature.functions
+package feature
+package functions
 
 import org.scalatest.FunSuite
 import org.scalatest.matchers.ShouldMatchers
 
-class PrettySuite extends FunSuite with ShouldMatchers {
-  import feature.Functions._
+class PrettySuite
+extends FunSuite
+   with ShouldMatchers
+   with Pretty
+{
+  case object Bot extends Type
 
-  val id = Abs("x", Var("x"))
+  val id = lambda("x") { x => x }
+  val id3 = id ! id%(Bot =>: Bot) ! id%Bot
 
-  test("The identity function prints as λx. x") {
-    pretty(id) should be ("λx. x")
+  test("The identity function prints λx. x") {
+    val printout = pretty(id%Bot)
+    printout should be ("λx. x")
+    info(printout)
   }
 
   test("Left-associative application print without extra parentheses") {
-    pretty(App(App(id, id), id)) should be ("(λx. x) (λx. x) (λx. x)")
+    val printout = pretty(id3)
+    printout should be ("(λx. x) (λx. x) (λx. x)")
+    info(printout)
   }
 
   test("Variables are disambiguated with indices.") {
-    val List(x1, x2, x3) = uniqueNames(Set("x"), "x", "x", "x")
-    pretty(Abs("x", Abs(x1, Abs(x2, Abs(x3, Var(x1)))))) should be ("λx. λx₁. λx₂. λx₃. x₁")
+    val shadowed = lambda("x", "x", "x", "x") {
+      case Seq(x, x1, x2, x3) => x1
+    }
+    val printout = pretty(shadowed%(Bot, Bot, Bot, Bot))
+    val expected = "λx. λx_1. λx_2. λx_3. x_1"
+    printout should be (expected)
   }
 }

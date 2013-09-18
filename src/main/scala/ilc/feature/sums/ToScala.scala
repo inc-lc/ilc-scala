@@ -2,24 +2,24 @@ package ilc
 package feature
 package sums
 
-trait ToScala extends base.ToScala with TypedSyntax {
+trait ToScala extends base.ToScala with Syntax {
   private[this] def sumType(a: Type, b: Type): String =
     toScala(SumType(a, b))
 
   override def toScala(t: Term): String = t match {
-    case TypedEither(aType, bType, cType) => {
+    case Either(aType, bType, cType) => {
       val List(a, b, c) = List(aType, bType, cType) map toScala
       val either_a_b = sumType(aType, bType)
       val body = s"s.fold[$c](f, g)"
       s"((f: $a => $c) => (g: $b => $c) => (s: $either_a_b) => $body)"
     }
 
-    case TypedLeft(aType, bType) => {
+    case Inj1(aType, bType) => {
       val (a, b) = (toScala(aType), toScala(bType))
       s"((x: $a) => Left.apply[$a, $b](x))"
     }
 
-    case TypedRight(aType, bType) => {
+    case Inj2(aType, bType) => {
       val (a, b) = (toScala(aType), toScala(bType))
       s"((y: $b) => Right.apply[$a, $b](y))"
     }

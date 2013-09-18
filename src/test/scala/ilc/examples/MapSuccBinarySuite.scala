@@ -2,6 +2,7 @@ package ilc
 package examples
 
 import org.scalatest.FunSuite
+/*
 import MapSuccBinary._
 
 class MapSuccBinarySuite
@@ -28,4 +29,4 @@ extends FunSuite
       Left(Map(2 -> Left(Left(())))),
       Left(Map(n -> Left(Left(())))))
   }
-}
+}*/

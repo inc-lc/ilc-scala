@@ -13,8 +13,8 @@ extends FunSuite
   }
 
   test("can evaluate ilc constructs") {
-    assert(evalScala("""ilc.feature.Functions.Var("hello")""") ===
-      ilc.feature.Functions.Var("hello"))
+    assert(evalScala("""ilc.Examples.scalaMeterDummyCode""") ===
+      ilc.Examples.scalaMeterDummyCode)
   }
 
   test("can evaluate Scala lambdas") {

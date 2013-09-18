@@ -76,6 +76,27 @@ extends Syntax
     loop(keyValuePair +: otherPairs)
   }
 
+  // mapWithKey : (k → a → b) → Map k a → Map k b
+  val mapWithKey: PolymorphicTerm = new PolymorphicTerm {
+    def specialize(argumentTypes: Type*): Term =
+      argumentTypes.head match {
+        case fType@(k =>: a =>: b) => {
+          lambda(fType) { f =>
+            Fold !
+              lambda(k, a, MapType(k, b)) { case Seq(key, value, wipMap) =>
+                Update ! key ! (f ! key ! value) ! wipMap
+              } !
+              EmptyMap(k, b)
+          }
+        }
+
+        case _ =>
+          typeErrorNotTheSame("mapping over a map",
+            "function of type k =>: a =>: b",
+            argumentTypes.head)
+      }
+  }
+
   val mapMinus: PolymorphicTerm = new PolymorphicTerm {
     def specialize(argumentTypes: Type*): Term = argumentTypes match {
       case Seq(MapType(keyType, valueType), MapType(keyType2, valueType2))

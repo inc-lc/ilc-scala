@@ -3,6 +3,7 @@ package examples
 
 import scala.collection.breakOut
 import org.scalameter.api._
+/*
 import ilc.examples.MapSuccBinary._
 
 object MapSuccBenchmark
@@ -91,4 +92,4 @@ extends PerformanceTest.Quickbenchmark
       }
     }
   }
-}
+}*/

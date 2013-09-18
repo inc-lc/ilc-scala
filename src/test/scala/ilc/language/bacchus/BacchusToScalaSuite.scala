@@ -7,14 +7,14 @@ package language.bacchus
 
 import org.scalatest.FunSuite
 import ilc.util.EvalScala
-import ilc.language.Bacchus._
-import ilc.language.bacchus.Subjects._
 
 class BacchusToScalaSuite
 extends FunSuite
-   with Tools
+   with Syntax
+   with Subjects
    with EvalScala
 {
+/*
   // access point to the Map data structure
   val mapColl = scala.collection.immutable.Map
   // encoding Maybe monad by Either in the domain of Scala objects
@@ -59,4 +59,5 @@ extends FunSuite
     assert(run(eitherNNN(decuple)(icosuple)(leftNN(5))) === 50)
     assert(run(eitherNNN(decuple)(icosuple)(rightNN(5))) === 100)
   }
+ */
 }

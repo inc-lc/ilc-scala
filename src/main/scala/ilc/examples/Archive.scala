@@ -9,9 +9,7 @@ trait Archive {
   def get(exampleWithName: String): Example =
     archive(exampleWithName)
 
-  abstract class Example {
-    val calculus: feature.base.ToScala
-    import calculus._
+  abstract class Example extends feature.base.ToScala {
     def program: Term
     def derivative: Term
 

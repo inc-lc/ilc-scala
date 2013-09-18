@@ -36,7 +36,7 @@ trait Names {
   // Literal names ends with a lower-case letter.
   case class LiteralName(literal: String) extends Name {
     override def toString =
-      if (literal matches """.*\p{Alpha}\z""")
+      if (literal matches """.*[a-z]\z""")
         literal
       else
         literal + "lit"

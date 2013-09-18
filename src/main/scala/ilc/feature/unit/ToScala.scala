@@ -2,13 +2,13 @@ package ilc
 package feature
 package unit
 
-trait ToScala extends base.ToScala with Syntax with Typing {
-  override def toScala(c: Constant): String = c match {
+trait ToScala extends base.ToScala with Syntax {
+  override def toScala(t: Term): String = t match {
     case UnitTerm =>
       "()"
 
     case _ =>
-      super.toScala(c)
+      super.toScala(t)
   }
 
   override def toScala(tau: Type): String = tau match {

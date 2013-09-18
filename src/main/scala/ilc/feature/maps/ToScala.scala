@@ -2,32 +2,31 @@ package ilc
 package feature
 package maps
 
-trait ToScala extends base.ToScala with TypedSyntax {
+trait ToScala extends base.ToScala with Syntax {
   private[this] def mapTypes(k: Type, v: Type): (String, String, String) = {
     val (kType, vType) = (toScala(k), toScala(v))
     ("Map[%s, %s]".format(kType, vType), kType, vType)
   }
 
   override def toScala(t: Term): String = t match {
-    case TypedEmptyMap(k, v) => {
+    case EmptyMap(k, v) => {
       val (_, kType, vType) = mapTypes(k, v)
       "Map.empty[%s, %s]".format(kType, vType)
     }
 
-    case TypedUpdate(k, v) => {
+    case Update(k, v) => {
       val (mType, kType, vType) = mapTypes(k, v)
       s"((k: $kType) => (v: $vType) => (m: $mType) => m.updated(k, v))"
     }
 
-    case TypedLookup(k, v) => {
+    case Lookup(k, v) => {
       val (mType, kType, vType) = mapTypes(k, v)
-      // Maybe monad is encoded as a sum in feature.maps.
-      val maybe = s"Either[Unit, $vType]"
-      val body = s"m.get(k).fold[$maybe](Left(()))((v: $vType) => Right(v))"
+      val maybe = toScala(MaybeType(v))
+      val body = s"m.get(k)"
       s"((k: $kType) => (m: $mType) => $body)"
     }
 
-    case TypedFold(k, a, b) => {
+    case Fold(k, a, b) => {
       val (mType, kType, aType) = mapTypes(k, a)
       val bType = toScala(b)
       val fType = s"$kType => $aType => $bType => $bType"

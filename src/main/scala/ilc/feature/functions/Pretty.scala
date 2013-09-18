@@ -45,22 +45,23 @@ trait Pretty extends Syntax {
      *   the priority of the context this term is printed in
      */
     def apply(t : Term, priority : Priority) : String = t match {
-      case Const(constant) =>
-        constant.toString
-
-      case Var(name) =>
-        name
+      case variable: Variable =>
+        variable.getName.toString
 
       case App(operator, operand) =>
         template(priorityOfApp, priority, "%s %s",
                  apply(operator, priorityOfApp + 1),
                  apply(operand, priorityOfApp))
 
-      case Abs(name, body) => {
+      case Abs(variable, body) =>
         template(priorityOfAbs, priority, "λ%s. %s",
-                 name,
+                 variable.getName.toString,
                  apply(body, priorityOfAbs + 1))
-      }
+
+      // other operations would throw "unknown term" error here.
+      // the pretty printer defaults to calling `toString`.
+      case _ =>
+        t.toString
     }
 
     // parentheses handling

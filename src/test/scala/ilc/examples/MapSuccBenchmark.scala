@@ -10,9 +10,9 @@ object MapSuccBenchmark
 extends PerformanceTest.Quickbenchmark
 {
   // collection sizes
-  val base = 10000
-  val last = 50000
-  val step = 10000
+  val base = 1000
+  val last = 5000
+  val step = 1000
   val sizes: Gen[Int] = Gen.range("n")(base, last, step)
 
   // consider leaving out the output.

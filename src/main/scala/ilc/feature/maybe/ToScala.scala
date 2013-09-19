@@ -18,7 +18,7 @@ trait ToScala extends base.ToScala with Syntax {
 
     case Just(contentType) => {
       val tau = toScala(contentType)
-      s"((x: $tau) => Just(x))"
+      s"((x: $tau) => Some(x))"
     }
 
     case _ =>

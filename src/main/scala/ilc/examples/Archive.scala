@@ -9,19 +9,27 @@ trait Archive {
   def get(exampleWithName: String): Example =
     archive(exampleWithName)
 
-  abstract class Example extends feature.base.ToScala {
+  abstract class Example
+  extends feature.base.ToScala
+     with feature.base.Derivation
+  {
     def program: Term
-    def derivative: Term
+    def derivative: Term = derive(program)
 
     def toSource(name: String): Source = {
       val objectName = name ++ "Binary"
       val programCode = toScala(program)
       val derivativeCode = toScala(derivative)
+      val inputType =>: outputType = program.getType
+      val updateInputCode = toScala(updateTerm(inputType))
+      val updateOutputCode = toScala(updateTerm(outputType))
       Source(objectName, s"""
         package ilc.examples
         object $objectName {
-          val program = $programCode
-          val derivative = $derivativeCode
+          val program      = $programCode
+          val derivative   = $derivativeCode
+          val updateInput  = $updateInputCode
+          val updateOutput = $updateOutputCode
         }
       """)
     }

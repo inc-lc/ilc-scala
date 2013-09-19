@@ -12,7 +12,8 @@ trait ToScala extends base.ToScala with Syntax {
     }
 
     case Nope(contentType) => {
-      "None"
+      val maybeType = toScala(t.getType)
+      s"(None: $maybeType)"
     }
 
     case Just(contentType) => {

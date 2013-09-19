@@ -18,6 +18,7 @@ trait Syntax extends base.Syntax with Types {
   case class Nat(n: Int) extends Term {
     require(n >= 0)
     override def getType: Type = NatType
+    override def toString = n.toString
   }
 
   case object Plus extends Term {

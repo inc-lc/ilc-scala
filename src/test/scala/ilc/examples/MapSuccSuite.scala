@@ -6,44 +6,29 @@ package examples
  */
 
 import org.scalatest.FunSuite
-import ilc.language.bacchus
 
 class MapSuccSuite
 extends FunSuite
    with MapSucc
-   with bacchus.Subjects
 {
-/*
-  val ex = new MapSuccExample
-  import ex._
-  import ex.calculus._
+  import ilc.language.bacchus._
 
-  test("succ increments naturals") {
-    Range(0, 20) foreach { i =>
-      assert(eval(succ(i)).toNat === i + 1)
-    }
-  }
+  val example = new MapSuccExample
+      with Subjects with Evaluation with FineGrainedDifference
 
-  test("dsucc increments replacement naturals") {
-    ((1 to 20), (100 to 120)).zipped foreach { (i, j) =>
-      assert(eval(dsucc(i)(Right(j))).toSum ===
-        scala.Right(Value.Nat(j + 1)))
-    }
-  }
+  import example._
 
   test("program increments map values") {
-    assert(eval(program(twiceMap1234)).toMap ===
-      ValueMap(1 -> 3, 2 -> 5, 3 -> 7, 4 -> 9))
+    assert(eval(program ! oldMap) ===
+      MapValue(1 -> 3, 2 -> 5, 3 -> 7, 4 -> 9))
   }
 
   test("the derivative of the program is correct") {
-    val oldMap = eval(twiceMap1234)
-    val newMap = eval(twiceMap1256)
-    val refinement = bacchusDiff(newMap, oldMap)
-    val replacement = Value.diff(newMap, oldMap)
-    val f = eval(program)
-    val df = eval(derivative)
-    assert(Value.apply(df(oldMap)(replacement), f(oldMap)) === f(newMap))
-    assert(Value.apply(df(oldMap)(refinement), f(oldMap)) === f(newMap))
-  }*/
+    val refinement = derivative ! oldMap ! fineGrainedDiff(newMap, oldMap)
+    val replacement = derivative ! oldMap ! mkMapReplacement(newMap)
+    val oldOutput = program ! oldMap
+    val newOutputValue = eval(program ! newMap)
+    assert(eval(ChangeUpdate ! refinement  ! oldOutput) === newOutputValue)
+    assert(eval(ChangeUpdate ! replacement ! oldOutput) === newOutputValue)
+  }
 }

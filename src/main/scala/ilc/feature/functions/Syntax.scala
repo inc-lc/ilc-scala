@@ -290,7 +290,7 @@ trait Syntax extends base.Syntax {
     def ! (t1: TermBuilder): TermBuilder =
       appBuilder(t0, t1)
 
-    def compose(t1: TermBuilder): TermBuilder =
+    def composeWith(t1: TermBuilder): TermBuilder =
       context => {
         val t1Term = t1(context).toTerm
         val (domain, intermediateType) = t1Term.getType match {

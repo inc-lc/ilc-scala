@@ -10,17 +10,10 @@ import ilc.util.EvalScala
 
 class BacchusToScalaSuite
 extends FunSuite
-   with Syntax
+   with ToScala
    with Subjects
    with EvalScala
 {
-/*
-  // access point to the Map data structure
-  val mapColl = scala.collection.immutable.Map
-  // encoding Maybe monad by Either in the domain of Scala objects
-  def just[T](x: T): Either[Unit, T] = scala.Right(x)
-  val nope: Either[Unit, Nothing] = scala.Left(())
-
   def run(t: Term): Any = {
     val code = toScala(t)
     try { evalScala(code) } catch {
@@ -39,25 +32,24 @@ extends FunSuite
     }
   }
 
-  test("UnitTerm, Nat, Abs, App") {
-    val code = TypedAbs("_", UnitType, Nat(1997))(UnitTerm)
+  test("Nat, Abs, App") {
+    val code = lambda(ℕ) { x => 1997 } ! 42
     assert(run(code) === 1997)
   }
 
-  test("EmptyMap, Update, Lookup, Fold, Plus") {
-    assert(run(typed1234) === mapColl(1 -> 2, 2 -> 4, 3 -> 6, 4 -> 8))
-    assert(run(lookupNN(3)(typed1234)) === just(6))
-    assert(run(lookupNN(9)(typed1234)) === nope)
-    assert(run(foldNNN(plus3)(2000)(typed1234)) === 2030)
+  test("EmptyMap, Update, Lookup, Delete, Fold, Plus") {
+    assert(run(oldMap) === Map(1 -> 2, 2 -> 4, 3 -> 6, 4 -> 8))
+    assert(run(Lookup ! 3 ! oldMap) === Some(6))
+    assert(run(Lookup ! 9 ! oldMap) === None)
+    assert(run(Delete ! 1 ! oldMap) === Map(2 -> 4, 3 -> 6, 4 -> 8))
+    assert(run(sum ! oldMap) === 20)
   }
 
-  test("Left, Right, Either, FoldNat") {
-    def times(m: Term, n: Term) =
-      foldNatN(0)(TypedAbs("y", NatType, Plus("y", m)))(n)
-    val decuple = TypedAbs("x", NatType, times("x", 10))
-    val icosuple = TypedAbs("x", NatType, times("x", 20))
-    assert(run(eitherNNN(decuple)(icosuple)(leftNN(5))) === 50)
-    assert(run(eitherNNN(decuple)(icosuple)(rightNN(5))) === 100)
+  test("Inj1, Inj2, Either, FoldNat") {
+    def times: Term = lambda(ℕ, ℕ) { case Seq(m, n) =>
+      FoldNat ! 0 ! lambda(ℕ) { Plus ! _ ! m } ! n
+    }
+    assert(run(Either ! (times ! 10) ! (times ! 20) ! (Inj1(ℕ) ! 4)) === 40)
+    assert(run(Either ! (times ! 10) ! (times ! 20) ! (Inj2(ℕ) ! 4)) === 80)
   }
- */
 }

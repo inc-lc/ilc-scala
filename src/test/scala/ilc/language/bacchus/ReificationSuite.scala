@@ -10,7 +10,10 @@ extends FunSuite
    with Syntax // for mapLiteral
    with Subjects // for type shorthands
    with Evaluation
-   with Reification
+   with naturals.Reification
+   with maps.Reification
+   with maybe.Reification
+   with sums.Reification
 {
   test("can reify natural numbers") {
     val n: Value = 42

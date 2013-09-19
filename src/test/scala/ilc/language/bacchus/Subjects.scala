@@ -3,17 +3,11 @@ package language
 package bacchus
 
 trait Subjects
-extends bacchus.Syntax {
+extends bacchus.Syntax with ChangingTerms {
   // shorthand for types
   val ℕ = NatType
   implicit class MapTypeOps(sigma: Type) {
     def ↦ (tau: Type): Type = MapType(sigma, tau)
-  }
-
-  // shorthand for changing terms
-  case class ChangingTerms(oldTerm: Term, newTerm: Term)
-  implicit class ChangingTermsInfixConstructor[T <% Term](oldTerm: T) {
-    def ↦ (newTerm: Term) = ChangingTerms(oldTerm, newTerm)
   }
 
   val powerOfTwo = FoldNat ! 1 ! lambda(ℕ) {x => Plus ! x ! x}

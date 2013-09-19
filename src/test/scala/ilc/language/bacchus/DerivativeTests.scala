@@ -2,9 +2,7 @@ package ilc
 package language
 package bacchus
 
-import org.scalatest.FunSuite
 import ilc.feature._
-
 
 /** Tests for all kinds of derivations
   *
@@ -23,36 +21,10 @@ import ilc.feature._
   */
 
 trait DerivativeTests
-extends FunSuite
+extends CorrectnessAssertion
    with Subjects
    with Evaluation
-   with FineGrainedDifference
 {
-  this: ilc.feature.base.Derivation =>
-  def assembleTerm(operator: Term, operands: Seq[Term]): Term =
-    if (operands.isEmpty)
-      operator
-    else
-      assembleTerm((operator ! operands.head), operands.tail)
-
-  def assertCorrect(t: Term, args: ChangingTerms*) {
-    val oldTerm = assembleTerm(t, args.map(_.oldTerm))
-
-    val newOutput = eval(assembleTerm(t, args.map(_.newTerm)))
-
-    val replacement = assembleTerm(derive(t), args flatMap { terms =>
-      List(terms.oldTerm, (Diff ! terms.newTerm ! terms.oldTerm).toTerm)
-    })
-
-    val surgery = assembleTerm(derive(t), args flatMap { terms =>
-      List(terms.oldTerm, fineGrainedDiff(terms.newTerm, terms.oldTerm))
-    })
-
-    List(replacement, surgery) foreach { changeTerm =>
-      assert(eval(ChangeUpdate ! changeTerm ! oldTerm) === newOutput)
-    }
-  }
-
   test("diff and apply works on functions") {
     val f = Plus ! 25
     val g = Plus ! 100

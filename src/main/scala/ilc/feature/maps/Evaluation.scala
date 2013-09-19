@@ -9,11 +9,9 @@ trait EvaluationBase extends feature.base.Evaluation with Syntax {
   // ValueMap is a map between values.
   // MapValue is the result of evaluating an expression of MapType.
 
-  type ValueMap = immutable.Map[Value, Value]
+  private[this] type ValueMap = immutable.Map[Value, Value]
 
   case class MapValue(toMap: ValueMap) extends Value
-
-  implicit def liftMapValue(m: ValueMap): Value = MapValue(m)
 
   object MapValue {
     def apply[K <% Value, V <% Value](assoc: (K, V)*): MapValue = {
@@ -28,9 +26,6 @@ trait EvaluationBase extends feature.base.Evaluation with Syntax {
     }
   }
 
-  def ValueMap(assoc: (Value, Value)*): ValueMap =
-    immutable.Map.apply[Value, Value](assoc: _*)
-
   implicit class MapOps(value: Value) {
     def toMap: ValueMap =
       value match {
@@ -43,11 +38,11 @@ trait EvaluationBase extends feature.base.Evaluation with Syntax {
 trait Evaluation extends EvaluationBase with feature.maybe.Evaluation {
   override def coreEval(t: Term, env: Env): Value = t match {
     case EmptyMap(_, _) =>
-      ValueMap()
+      MapValue()
 
     case Update(_, _) =>
       (k: Value) => (v: Value) => (m: Value) =>
-        m.toMap.updated(k, v)
+        MapValue(m.toMap.updated(k, v))
 
     case Lookup(_, _) =>
       (k: Value) => (m: Value) => MaybeValue(m.toMap.get(k))

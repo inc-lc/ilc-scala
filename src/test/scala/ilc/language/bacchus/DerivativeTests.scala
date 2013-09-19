@@ -41,7 +41,7 @@ extends FunSuite
         val toUpdate = (m1.keySet & m2.keySet) filter {
           key => m1(key) != m2(key)
         }
-        SumValue(Left(
+        SumValue(Left(MapValue(
           toInsert.map {
             case (key, value) =>
               key -> SumValue(Left(MaybeValue(Some(value))))
@@ -52,7 +52,7 @@ extends FunSuite
             key =>
               key -> SumValue(Right(valueDiff(m1(key), m2(key))))
           }
-        ))
+        )))
       }
     }
 

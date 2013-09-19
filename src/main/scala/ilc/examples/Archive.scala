@@ -23,13 +23,22 @@ trait Archive {
       val inputType =>: outputType = program.getType
       val updateInputCode = toScala(updateTerm(inputType))
       val updateOutputCode = toScala(updateTerm(outputType))
+      val inputTypeCode = toScala(inputType)
+      val outputTypeCode = toScala(outputType)
+      val deltaInputTypeCode = toScala(deltaType(inputType))
+      val deltaOutputTypeCode = toScala(deltaType(outputType))
       Source(objectName, s"""
         package ilc.examples
-        object $objectName {
-          val program      = $programCode
-          val derivative   = $derivativeCode
-          val updateInput  = $updateInputCode
-          val updateOutput = $updateOutputCode
+        object $objectName extends ExampleBinary {
+          override val program = $programCode
+          override val derivative = $derivativeCode
+          override val updateInput = $updateInputCode
+          override val updateOutput = $updateOutputCode
+
+          type InputType = $inputTypeCode
+          type OutputType = $outputTypeCode
+          type DeltaInputType = $deltaInputTypeCode
+          type DeltaOutputType = $deltaOutputTypeCode
         }
       """)
     }

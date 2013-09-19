@@ -26,6 +26,11 @@ trait ToScala extends base.ToScala with Syntax {
       s"((k: $kType) => (m: $mType) => $body)"
     }
 
+    case Delete(k, v) => {
+      val (mType, kType, vType) = mapTypes(k, v)
+      s"((k: $kType) => (m: $mType) => m - k)"
+    }
+
     case Fold(k, a, b) => {
       val (mType, kType, aType) = mapTypes(k, a)
       val bType = toScala(b)

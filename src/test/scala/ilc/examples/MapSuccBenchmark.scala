@@ -3,12 +3,11 @@ package examples
 
 import scala.collection.breakOut
 import org.scalameter.api._
-/*
+
 import ilc.examples.MapSuccBinary._
 
 object MapSuccBenchmark
 extends PerformanceTest.Quickbenchmark
-   with MapSuccTypes
 {
   // collection sizes
   val base = 10000
@@ -28,21 +27,24 @@ extends PerformanceTest.Quickbenchmark
     "remove n"
   )
 
+  type Data = InputType // which is equal to OutputType
+  type Change = DeltaInputType // which is equal to DeltaOutputType
+
   def lookupChange(n: Int, description: String): Change = description match {
     case "no change" =>
       Left(Map.empty)
 
     case "replace 1 by n + 1" =>
-      Left(Map(1 -> Right(Right(n + 1))))
+      Left(Map(1 -> Right(n + 1)))
 
     case "add n + 2" =>
-      Left(Map(n + 2 -> Left(Right(n + 2))))
+      Left(Map(n + 2 -> Left(Some(n + 2))))
 
     case "remove 2" =>
-      Left(Map(2 -> Left(Left(()))))
+      Left(Map(2 -> Left(None)))
 
     case "remove n" =>
-      Left(Map(n -> Left(Left(()))))
+      Left(Map(n -> Left(None)))
   }
 
   case class Datapack(
@@ -57,7 +59,7 @@ extends PerformanceTest.Quickbenchmark
   } yield {
     val oldInput = inputOfSize(n)
     val change = lookupChange(n, description)
-    val newInput = applyChange(change, oldInput)
+    val newInput = updateInput(change)(oldInput)
     Datapack(oldInput, newInput, change, program(oldInput))
   }
 
@@ -71,7 +73,7 @@ extends PerformanceTest.Quickbenchmark
       case Datapack(oldInput, newInput, change, oldOutput) => {
         // we compute the result change with the derivative,
         // then apply it to the old value.
-        applyChange(derivative(oldInput)(change), oldOutput)
+        updateOutput(derivative(oldInput)(change))(oldOutput)
       }
     }
   }
@@ -80,7 +82,7 @@ extends PerformanceTest.Quickbenchmark
   "ilc.examples.MapSuccBinary (derivative, replacement change)" in {
     using(inputsOutputsChanges) in {
       case Datapack(oldInput, newInput, change, oldOutput) => {
-        applyChange(derivative(oldInput)(Right(newInput)), oldOutput)
+        updateOutput(derivative(oldInput)(Right(newInput)))(oldOutput)
       }
     }
   }
@@ -92,4 +94,4 @@ extends PerformanceTest.Quickbenchmark
       }
     }
   }
-}*/
+}

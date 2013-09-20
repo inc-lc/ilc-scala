@@ -6,10 +6,10 @@ import org.scalatest.FunSuite
 
 class DeltaMapSuite
 extends FunSuite
-   with ReplacementValues
+   with ReplacementValuesDerivation
    with SyntaxSugar
    with Evaluation
-   with naturals.ReplacementValues
+   with naturals.ReplacementValuesDerivation
    with naturals.Evaluation
    with sums.Evaluation
    with functions.Pretty // for debugging

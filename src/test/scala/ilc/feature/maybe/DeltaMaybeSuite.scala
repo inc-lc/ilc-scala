@@ -6,9 +6,9 @@ import org.scalatest.FunSuite
 
 class DeltaMaybeSuite
 extends FunSuite
-   with ReplacementValues
+   with ReplacementValuesDerivation
    with Evaluation
-   with naturals.ReplacementValues
+   with naturals.ReplacementValuesDerivation
    with naturals.Evaluation
    with sums.Evaluation
 {

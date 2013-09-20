@@ -3,7 +3,7 @@ package feature
 package maybe
 
 /** Δ(Maybe a) = Δa ⊎ Maybe a */
-trait ReplacementValues
+trait ReplacementValuesDerivation
 extends base.Derivation
    with Syntax
    with sums.Syntax

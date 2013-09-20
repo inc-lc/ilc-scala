@@ -6,7 +6,7 @@ import feature._
 
 trait BasicDerivation
 extends functions.Derivation
-   with maps.ReplacementValues
-   with maybe.ReplacementValues
-   with naturals.ReplacementValues
-   with sums.ReplacementValues
+   with maps.ReplacementValuesDerivation
+   with maybe.ReplacementValuesDerivation
+   with naturals.ReplacementValuesDerivation
+   with sums.ReplacementValuesDerivation

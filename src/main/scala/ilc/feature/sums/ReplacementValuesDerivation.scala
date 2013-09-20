@@ -3,7 +3,7 @@ package feature
 package sums
 
 /** Δ(a ⊎ b) = (Δa ⊎ Δb) ⊎ (a ⊎ b) */
-trait ReplacementValues
+trait ReplacementValuesDerivation
 extends base.Derivation
    with Syntax
    with SyntaxSugar

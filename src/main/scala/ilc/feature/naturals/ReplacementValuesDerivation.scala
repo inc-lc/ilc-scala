@@ -5,7 +5,7 @@ package naturals
 /** ΔNat = Nat
   * (The change to a natural number is a replacement value)
   */
-trait ReplacementValues
+trait ReplacementValuesDerivation
 extends base.Derivation
    with Syntax
    with functions.Derivation // for syntactic sugar

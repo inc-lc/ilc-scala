@@ -11,7 +11,7 @@ package maps
   * }}}
   */
 
-trait ReplacementValues
+trait ReplacementValuesDerivation
 extends base.Derivation
    with Syntax
    with functions.Syntax

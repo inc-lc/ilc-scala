@@ -2,48 +2,14 @@ package ilc
 package examples
 
 import scala.collection.breakOut
-import org.scalameter.api._
+import org.scalameter.api.Gen
 
-import ilc.examples.MapSuccBinary._
-
-object MapSuccBenchmark
-extends PerformanceTest.Quickbenchmark
+object MapSuccBenchmark extends ExampleToBenchmark
 {
+  val example = ilc.examples.MapSuccBinary
+  import example._
+
   def replacementChange(newInput: Data): Change = Right(newInput)
-
-  performance of
-  "ilc.examples.MapSuccBinary (derivative, surgical change)" in {
-    using(inputsOutputsChanges) in {
-      case Datapack(oldInput, newInput, change, oldOutput) => {
-        // we compute the result change with the derivative,
-        // then apply it to the old value.
-        updateOutput(derivative(oldInput)(change))(oldOutput)
-      }
-    }
-  }
-
-  performance of
-  "ilc.examples.MapSuccBinary (derivative, replacement change)" in {
-    using(inputsOutputsChanges) in {
-      case Datapack(oldInput, newInput, change, oldOutput) => {
-        updateOutput(derivative(oldInput)(replacementChange(newInput)))(oldOutput)
-      }
-    }
-  }
-
-  performance of "ilc.examples.MapSuccBinary (recomputation)" in {
-    using(inputsOutputsChanges) in {
-      case Datapack(oldInput, newInput, change, oldOutput) => {
-        program(newInput)
-      }
-    }
-  }
-
-  // collection sizes
-  lazy val base = 1000
-  lazy val last = 5000
-  lazy val step = 1000
-  lazy val sizes: Gen[Int] = Gen.range("n")(base, last, step)
 
   // consider leaving out the output.
   def inputOfSize(n: Int): Data =
@@ -56,9 +22,6 @@ extends PerformanceTest.Quickbenchmark
     "remove 2",
     "remove n"
   )
-
-  type Data = InputType // which is equal to OutputType
-  type Change = DeltaInputType // which is equal to DeltaOutputType
 
   def lookupChange(n: Int, description: String): Change = description match {
     case "no change" =>
@@ -75,21 +38,5 @@ extends PerformanceTest.Quickbenchmark
 
     case "remove n" =>
       Left(Map(n -> Left(None)))
-  }
-
-  case class Datapack(
-    oldInput: Data,
-    newInput: Data,
-    change: Change,
-    oldOutput: Data)
-
-  lazy val inputsOutputsChanges: Gen[Datapack] = for {
-    n <- sizes
-    description <- changeDescriptions
-  } yield {
-    val oldInput = inputOfSize(n)
-    val change = lookupChange(n, description)
-    val newInput = updateInput(change)(oldInput)
-    Datapack(oldInput, newInput, change, program(oldInput))
   }
 }

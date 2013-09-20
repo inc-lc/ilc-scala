@@ -16,11 +16,9 @@ trait EvaluationBase extends feature.base.Evaluation with Syntax {
   object MapValue {
     def apply[K <% Value, V <% Value](assoc: (K, V)*): MapValue = {
       val assocValues: Seq[(Value, Value)] = assoc map {
-        case (key, value) => {
-          val keyValue: Value = key
-          val valValue: Value = value
-          (keyValue, valValue)
-        }
+        case (key, value) =>
+          //The type ascription invokes implicit conversions.
+          (key: Value, value: Value)
       }
       MapValue(immutable.Map.apply(assocValues: _*))
     }

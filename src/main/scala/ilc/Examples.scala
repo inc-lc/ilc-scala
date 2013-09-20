@@ -12,5 +12,5 @@ import examples._
 
 object Examples
 extends Generator
-   with MapSucc
+    with MapSucc
    // idea for speeding up lookup/update: memoizing algorithms

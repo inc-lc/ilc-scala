@@ -289,9 +289,9 @@ Please do not declare getType as an abstract `val`.
         }
 
         case (theAbstract: Product, theConcrete: Product) => {
-          // test if the type constructor are the same,
-          // exploiting the fact that case-case inheritance is
-          // forbidden
+          // test if the type constructor are instances of the same Scala class.
+          // Since case-case inheritance is forbidden, this is enough to check
+          // that classOf[theConcrete] <: classOf[theAbstract].
           if (! theAbstract.getClass.isInstance(theConcrete))
             typeErrorNotTheSame(s"instantiating ${getConstantName}",
               theAbstract,

@@ -16,16 +16,16 @@ extends Archive
   class MapSuccExample
   extends Example
      with bacchus.Syntax // for syntactic sugars
+     with bacchus.Prelude
      with bacchus.ToScala
      with bacchus.BasicDerivation
   {
-
     def program: Term = mapWithKey ! constSucc
 
     override def derivative: Term = dmap_s1 ! constSucc ! (derive(constSucc))
 
     // constSucc = λ k x → x + 1
-    def constSucc: Term = lambda(ℕ) { keyIgnored => Plus ! 1 }
+    def constSucc: Term = const(ℕ)(succ)
 
     // hand-crafted derivative of map with the first argument stable
     // specialized to the type (ℕ → ℕ → ℕ) → Map ℕ ℕ → Map ℕ ℕ

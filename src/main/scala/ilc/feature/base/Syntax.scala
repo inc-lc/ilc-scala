@@ -289,6 +289,13 @@ Please do not declare getType as an abstract `val`.
         }
 
         case (theAbstract: Product, theConcrete: Product) => {
+          // test if the type constructor are the same,
+          // exploiting the fact that case-case inheritance is
+          // forbidden
+          if (! theAbstract.getClass.isInstance(theConcrete))
+            typeErrorNotTheSame(s"instantiating ${getConstantName}",
+              theAbstract,
+              theConcrete)
           if (theAbstract.productArity != theConcrete.productArity)
             typeErrorNotTheSame(
               s"instantiating the type of $getConstantName",

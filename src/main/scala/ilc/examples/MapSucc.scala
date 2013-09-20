@@ -20,11 +20,12 @@ extends Archive
      with bacchus.BasicDerivation
   {
 
-    def program: Term = mapWithKey ! succ
+    def program: Term = mapWithKey ! constSucc
 
-    override def derivative: Term = dmap_s1 ! succ ! (derive(succ))
+    override def derivative: Term = dmap_s1 ! constSucc ! (derive(constSucc))
 
-    def succ: Term = lambda(ℕ) { keyIgnored => Plus ! 1 }
+    // constSucc = λ k x → x + 1
+    def constSucc: Term = lambda(ℕ) { keyIgnored => Plus ! 1 }
 
     // hand-crafted derivative of map with the first argument stable
     // specialized to the type (ℕ → ℕ → ℕ) → Map ℕ ℕ → Map ℕ ℕ

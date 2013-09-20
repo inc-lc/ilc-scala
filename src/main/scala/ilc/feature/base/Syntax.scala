@@ -310,26 +310,26 @@ Please do not declare getType as an abstract `val`.
         }
 
         case _ => {
-          throw new TypeError(s"""
-Cannot invert type constructor of $getConstantName.
-Two possible scenarios.
-
-1. The abstract type has children, whereas the concrete type
-   is at a leaf. They don't match. There is a type error with
-   the object code.
-
-2. There is a type of higher kind that is not a case class.
-   please make it a case class.
-
-In any case, here are the types.
-
-abstractType =
-  $abstractType
-
-concreteType =
-  $concreteType
-""")
-      }
+          throw new TypeError(
+            s"""|Cannot invert type constructor of $getConstantName.
+                |Two possible scenarios.
+                |
+                |1. The abstract type has children, whereas the concrete type
+                |   is at a leaf. They don't match. There is a type error with
+                |   the object code.
+                |
+                |2. There is a type of higher kind that is not a case class.
+                |   please make it a case class.
+                |
+                |In any case, here are the types.
+                |
+                |abstractType =
+                |  $abstractType
+                |
+                |concreteType =
+                |  $concreteType
+                |""".stripMargin)
+        }
     }
   }
 

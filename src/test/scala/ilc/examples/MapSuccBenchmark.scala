@@ -10,16 +10,16 @@ object MapSuccBenchmark
 extends PerformanceTest.Quickbenchmark
 {
   // collection sizes
-  val base = 1000
-  val last = 5000
-  val step = 1000
-  val sizes: Gen[Int] = Gen.range("n")(base, last, step)
+  lazy val base = 1000
+  lazy val last = 5000
+  lazy val step = 1000
+  lazy val sizes: Gen[Int] = Gen.range("n")(base, last, step)
 
   // consider leaving out the output.
   def inputOfSize(n: Int): Data =
     (1 to n).map(i => (i, i))(breakOut)
 
-  val changeDescriptions: Gen[String] = Gen.enumeration("change")(
+  lazy val changeDescriptions: Gen[String] = Gen.enumeration("change")(
     "no change",
     "replace 1 by n + 1",
     "add n + 2",
@@ -53,7 +53,7 @@ extends PerformanceTest.Quickbenchmark
     change: Change,
     oldOutput: Data)
 
-  val inputsOutputsChanges: Gen[Datapack] = for {
+  lazy val inputsOutputsChanges: Gen[Datapack] = for {
     n <- sizes
     description <- changeDescriptions
   } yield {
@@ -63,10 +63,6 @@ extends PerformanceTest.Quickbenchmark
     Datapack(oldInput, newInput, change, program(oldInput))
   }
 
-  // Real tests has to be at the bottom.
-  // otherwise we get NullPointerException
-  // at org.scalameter.execution.LocalExecutor$$anonfun$run$1.apply
-  //    (LocalExecutor.scala:38)
   performance of
   "ilc.examples.MapSuccBinary (derivative, surgical change)" in {
     using(inputsOutputsChanges) in {

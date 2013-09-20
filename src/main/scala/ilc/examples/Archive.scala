@@ -9,10 +9,17 @@ trait Archive {
   def get(exampleWithName: String): Example =
     archive(exampleWithName)
 
+  /** Base class for implementations of examples.
+    * When actually writing examples,
+    * this must be mixed in with versions of ToScala and Derivation
+    * corresponding to the used language features, and with the appropriate
+    * syntax.
+    */
   abstract class Example
-  extends feature.base.ToScala
-     with feature.base.Derivation
   {
+    this: feature.base.ToScala
+     with feature.base.Derivation =>
+
     def program: Term
     def derivative: Term = derive(program)
 

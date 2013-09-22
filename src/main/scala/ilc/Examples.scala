@@ -15,5 +15,8 @@ extends Generator {
   // the compiled object is "MapSuccBinary"
   // the benchmarking object is "MapSuccBenchmark"
   addExample("MapSucc", new MapSuccExample)
+
+  //Ditto
+  addExample("MapSuccBase", new MapSuccBaseExample)
 }
    // idea for speeding up lookup/update: memoizing algorithms

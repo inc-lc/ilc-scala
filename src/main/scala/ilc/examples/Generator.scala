@@ -25,12 +25,11 @@ extends Archive
     Console.err.println(message)
 
   def exportExamples(base: File) {
-    archive foreach exportExample(base)
-  }
-
-  def exportExample(base: File)(namedExample: (String, Example)) {
-    val (name, example) = namedExample
-    exportSource(base, example.toSource(name))
+    for {
+      (name, example) <- archive
+    } {
+      exportSource(base, name, example)
+    }
   }
 
   // dummy code
@@ -43,12 +42,13 @@ extends Archive
     export(path)
   }
 
-  def exportSource(base: File, source: Source) {
+  def exportSource(base: File, name: String, example: Example) {
+    val source = example.toSource(name)
     import java.io.FileWriter
-    val file = new File(base, source.objectName ++ ".scala")
-    val writer = new FileWriter(file)
+    val outFile = new File(base, source.objectName ++ ".scala")
+    val writer = new FileWriter(outFile)
     writer.write(source.code)
     writer.close
-    export(file.getCanonicalPath)
+    export(outFile.getCanonicalPath)
   }
 }

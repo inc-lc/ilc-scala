@@ -7,9 +7,7 @@ package examples
 
 import org.scalatest.FunSuite
 
-class MapSuccSuite
-extends FunSuite
-{
+class MapSuccSuite extends FunSuite {
   import ilc.language.bacchus._
 
   val example = new MapSuccExample

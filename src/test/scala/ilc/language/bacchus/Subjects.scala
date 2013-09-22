@@ -3,9 +3,8 @@ package language
 package bacchus
 
 trait Subjects
-extends bacchus.Syntax with ChangingTerms {
+extends bacchus.Syntax with bacchus.Prelude with ChangingTerms {
   // shorthand for types
-  val ℕ = NatType
   implicit class MapTypeOps(sigma: Type) {
     def ↦ (tau: Type): Type = MapType(sigma, tau)
   }

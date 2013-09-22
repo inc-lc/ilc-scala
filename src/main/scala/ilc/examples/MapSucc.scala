@@ -65,9 +65,6 @@ extends Archive
           dm
       }
     }
-
-    // alias
-    private[this] val ℕ = NatType
   }
 
   // the compiled object is "MapSuccBinary"

@@ -12,4 +12,7 @@ trait Prelude extends bacchus.Syntax
   //Same as in Haskell's
   def const(t: Type)(k: Term) = lambda(t) (ignored => k)
   def succ: Term = Plus ! 1
+
+  // alias
+  val ℕ = NatType
 }

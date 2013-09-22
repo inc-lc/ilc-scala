@@ -9,7 +9,6 @@ import org.scalatest.FunSuite
 
 class MapSuccSuite
 extends FunSuite
-   with MapSucc
 {
   import ilc.language.bacchus._
 

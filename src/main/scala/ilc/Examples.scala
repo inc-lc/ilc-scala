@@ -11,6 +11,9 @@ package ilc
 import examples._
 
 object Examples
-extends Generator
-    with MapSucc
+extends Generator {
+  // the compiled object is "MapSuccBinary"
+  // the benchmarking object is "MapSuccBenchmark"
+  addExample("MapSucc", new MapSuccExample)
+}
    // idea for speeding up lookup/update: memoizing algorithms

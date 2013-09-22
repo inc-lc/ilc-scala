@@ -3,7 +3,6 @@ package examples
 
 import language.bacchus
 
-trait MapSucc extends MapSuccBase {
   class MapSuccExample extends MapSuccBaseExample {
     override def derivative: Term = dmap_s1 ! constSucc ! (derive(constSucc))
 
@@ -46,8 +45,3 @@ trait MapSucc extends MapSuccBase {
       }
     }
   }
-
-  // the compiled object is "MapSuccBinary"
-  // the benchmarking object is "MapSuccBenchmark"
-  addExample("MapSucc", new MapSuccExample)
-}

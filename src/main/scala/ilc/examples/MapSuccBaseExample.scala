@@ -3,9 +3,6 @@ package examples
 
 import language.bacchus
 
-trait MapSuccBase
-extends Archive
-{
   // Example 3 variant: mapping over the values of a map
   // program = map succ
   // input = Map(1 -> 1, 2 -> 2, 3 -> 3)
@@ -25,4 +22,3 @@ extends Archive
     // constSucc = λ k x → x + 1
     def constSucc: Term = const(ℕ)(succ)
   }
-}

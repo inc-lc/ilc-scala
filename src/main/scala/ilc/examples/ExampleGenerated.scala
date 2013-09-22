@@ -1,5 +1,8 @@
 package ilc.examples
 
+/**
+  * Interface for generated example programs.
+  */
 trait ExampleGenerated {
   type InputType
   type DeltaInputType

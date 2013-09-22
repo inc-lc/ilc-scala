@@ -4,8 +4,8 @@ package ilc
  * Examples generator
  *
  * Interface:
- * 1. args.head is the directory to generate into.
- * 2. for each file that's generated, print one line with it's path.
+ * 1. the first argument is the directory to generate into.
+ * 2. for each file that's generated, print one line with its path.
  */
 
 import examples._

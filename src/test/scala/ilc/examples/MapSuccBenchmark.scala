@@ -9,6 +9,8 @@ import ilc.examples.MapSuccBinary._
 object MapSuccBenchmark
 extends PerformanceTest.Quickbenchmark
 {
+  def replacementChange(newInput: Data): Change = Right(newInput)
+
   performance of
   "ilc.examples.MapSuccBinary (derivative, surgical change)" in {
     using(inputsOutputsChanges) in {
@@ -24,7 +26,7 @@ extends PerformanceTest.Quickbenchmark
   "ilc.examples.MapSuccBinary (derivative, replacement change)" in {
     using(inputsOutputsChanges) in {
       case Datapack(oldInput, newInput, change, oldOutput) => {
-        updateOutput(derivative(oldInput)(Right(newInput)))(oldOutput)
+        updateOutput(derivative(oldInput)(replacementChange(newInput)))(oldOutput)
       }
     }
   }

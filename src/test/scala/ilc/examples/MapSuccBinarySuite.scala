@@ -2,9 +2,9 @@ package ilc
 package examples
 
 import org.scalatest.FunSuite
-import MapSuccBinary._
+import MapSuccGenerated._
 
-class MapSuccBinarySuite
+class MapSuccGeneratedSuite
 extends FunSuite
 {
   val n = 100

@@ -35,7 +35,7 @@ extends Archive
 
   // dummy code
   def exportDummy(base: File) {
-    val path = new File(base, "DummyBinary.scala").getCanonicalPath
+    val path = new File(base, "DummyGenerated.scala").getCanonicalPath
     import java.io.FileWriter
     val file = new FileWriter(path)
     file.write(scalaMeterDummyCode)

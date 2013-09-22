@@ -12,7 +12,7 @@ import examples._
 
 object Examples
 extends Generator {
-  // the compiled object is "MapSuccBinary"
+  // the compiled object is "MapSuccGenerated"
   // the benchmarking object is "MapSuccBenchmark"
   addExample("MapSucc", new MapSuccExample)
 

@@ -10,7 +10,7 @@ trait Archive {
     archive(exampleWithName)
 
   // if name is "CoolExample", then the generated class will
-  // be "CoolExampleBinary"
+  // be "CoolExampleGenerated"
   def addExample(name: String, example: Example) {
     archive.get(name) match {
       case Some(example) =>
@@ -37,7 +37,7 @@ abstract class Example
   def derivative: Term = derive(program)
 
   def toSource(name: String): Source = {
-    val objectName = name ++ "Binary"
+    val objectName = name ++ "Generated"
     val programCode = toScala(program)
     val derivativeCode = toScala(derivative)
     val inputType =>: outputType = program.getType
@@ -49,7 +49,7 @@ abstract class Example
     val deltaOutputTypeCode = toScala(deltaType(outputType))
     Source(objectName, s"""
       package ilc.examples
-      object $objectName extends ExampleBinary {
+      object $objectName extends ExampleGenerated {
         override val program = $programCode
         override val derivative = $derivativeCode
         override val updateInput = $updateInputCode

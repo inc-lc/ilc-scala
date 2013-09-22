@@ -12,7 +12,7 @@ trait Dummy {
        |
        |import org.scalameter.api._
        |
-       |object DummyBinary extends PerformanceTest.Quickbenchmark {
+       |object DummyGenerated extends PerformanceTest.Quickbenchmark {
        |  val sizes: Gen[Int] = Gen.range("size")(3000, 15000, 3000)
        |
        |  val ranges: Gen[Range] = for {

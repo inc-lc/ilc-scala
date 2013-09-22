@@ -4,4 +4,4 @@ package examples
 /**
   * Benchmark generated derivative.
   */
-object MapSuccBaseBenchmark extends MapIntIntBenchmark(MapSuccBaseBinary)
+object MapSuccBaseBenchmark extends MapIntIntBenchmark(MapSuccBaseGenerated)

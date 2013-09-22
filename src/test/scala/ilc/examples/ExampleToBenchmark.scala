@@ -4,13 +4,13 @@ package examples
 import org.scalameter.api._
 
 /**
-  * Create a benchmark from an ExampleBinary, input and changes.
+  * Create a benchmark from an ExampleGenerated, input and changes.
   */
 abstract class ExampleToBenchmark extends PerformanceTest.Quickbenchmark {
   /**
-    * Subclass obligation: ExampleBinary instance containing the generated code.
+    * Subclass obligation: ExampleGenerated instance containing the generated code.
     */
-  val example: ExampleBinary
+  val example: ExampleGenerated
 
   import example._
 

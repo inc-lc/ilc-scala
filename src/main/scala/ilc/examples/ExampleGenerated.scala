@@ -1,6 +1,6 @@
 package ilc.examples
 
-trait ExampleBinary {
+trait ExampleGenerated {
   type InputType
   type DeltaInputType
   type OutputType

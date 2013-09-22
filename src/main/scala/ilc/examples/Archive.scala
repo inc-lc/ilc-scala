@@ -47,20 +47,20 @@ abstract class Example
     val outputTypeCode = toScala(outputType)
     val deltaInputTypeCode = toScala(deltaType(inputType))
     val deltaOutputTypeCode = toScala(deltaType(outputType))
-    Source(objectName, s"""
-      package ilc.examples
-      object $objectName extends ExampleGenerated {
-        override val program = $programCode
-        override val derivative = $derivativeCode
-        override val updateInput = $updateInputCode
-        override val updateOutput = $updateOutputCode
-
-        type InputType = $inputTypeCode
-        type OutputType = $outputTypeCode
-        type DeltaInputType = $deltaInputTypeCode
-        type DeltaOutputType = $deltaOutputTypeCode
-      }
-    """)
+    Source(objectName,
+      s"""|package ilc.examples
+          |object $objectName extends ExampleGenerated {
+          |  override val program = $programCode
+          |  override val derivative = $derivativeCode
+          |  override val updateInput = $updateInputCode
+          |  override val updateOutput = $updateOutputCode
+          |
+          |  type InputType = $inputTypeCode
+          |  type OutputType = $outputTypeCode
+          |  type DeltaInputType = $deltaInputTypeCode
+          |  type DeltaOutputType = $deltaOutputTypeCode
+          |}
+          |""".stripMargin)
   }
 }
 

@@ -55,8 +55,10 @@ abstract class ExampleToBenchmark extends PerformanceTest.Quickbenchmark {
 
   def replacementChange(newInput: Data): Change
 
+  def className: String = example.getClass.getName.stripSuffix("$")
+
   performance of
-  "ilc.examples.MapSuccBinary (derivative, surgical change)" in {
+  s"${className} (derivative, surgical change)" in {
     using(inputsOutputsChanges) in {
       case Datapack(oldInput, newInput, change, oldOutput) => {
         // we compute the result change with the derivative,
@@ -67,7 +69,7 @@ abstract class ExampleToBenchmark extends PerformanceTest.Quickbenchmark {
   }
 
   performance of
-  "ilc.examples.MapSuccBinary (derivative, replacement change)" in {
+  s"${className} (derivative, replacement change)" in {
     using(inputsOutputsChanges) in {
       case Datapack(oldInput, newInput, change, oldOutput) => {
         updateOutput(derivative(oldInput)(replacementChange(newInput)))(oldOutput)
@@ -75,7 +77,7 @@ abstract class ExampleToBenchmark extends PerformanceTest.Quickbenchmark {
     }
   }
 
-  performance of "ilc.examples.MapSuccBinary (recomputation)" in {
+  performance of s"${className} (recomputation)" in {
     using(inputsOutputsChanges) in {
       case Datapack(oldInput, newInput, change, oldOutput) => {
         program(newInput)

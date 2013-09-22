@@ -3,29 +3,9 @@ package examples
 
 import language.bacchus
 
-trait MapSucc
-extends Archive
-{
-  // Example 3 variant: mapping over the values of a map
-  // program = map succ
-  // input = Map(1 -> 1, 2 -> 2, 3 -> 3)
-  // program input = Map(1 -> 2, 2 -> 3, 3 -> 4)
-  //
-  // The names of examples can be used elsewhere to access
-  // a particular example. Rename wisely.
-  class MapSuccExample
-  extends Example
-     with bacchus.Syntax // for syntactic sugars
-     with bacchus.Prelude
-     with bacchus.ToScala
-     with bacchus.BasicDerivation
-  {
-    def program: Term = mapWithKey ! constSucc
-
+trait MapSucc extends MapSuccBase {
+  class MapSuccExample extends MapSuccBaseExample {
     override def derivative: Term = dmap_s1 ! constSucc ! (derive(constSucc))
-
-    // constSucc = λ k x → x + 1
-    def constSucc: Term = const(ℕ)(succ)
 
     // hand-crafted derivative of map with the first argument stable
     // specialized to the type (ℕ → ℕ → ℕ) → Map ℕ ℕ → Map ℕ ℕ

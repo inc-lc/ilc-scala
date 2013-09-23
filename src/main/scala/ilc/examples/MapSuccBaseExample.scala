@@ -19,6 +19,6 @@ extends Example
 {
   def program: Term = mapWithKey ! constSucc
 
-  // constSucc = λ k x → x + 1
-  def constSucc: Term = const(ℕ)(succ)
+  // constSucc = λ k (x: ℕ) → x + 1
+  def constSucc: Term = (const ! succ) % ℕ
 }

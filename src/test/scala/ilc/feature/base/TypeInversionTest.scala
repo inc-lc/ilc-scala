@@ -27,4 +27,15 @@ extends FunSuite
     }
     info(error.getMessage)
   }
+
+  object T3 extends Type { override def toString = "T3" }
+  object OperatorT3 extends ConstantWith1TypeParameter {
+    val typeConstructor = TypeConstructor("r") { r =>
+      T3 =>: r =>: r
+    }
+  }
+
+  test("leaves of an abstract type tree can be non-case objects") {
+    OperatorT3 of (T3 =>: Bot =>: Bot)
+  }
 }

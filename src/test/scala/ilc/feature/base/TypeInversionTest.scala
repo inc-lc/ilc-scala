@@ -6,20 +6,24 @@ import org.scalatest.FunSuite
 
 class TypeInversionTest
 extends FunSuite
-   with Syntax
+   with functions.Syntax // for application
 {
   case object Bot extends Type
   case class T1(inner: Type) extends Type
   case class T2(inner: Type) extends Type
-  object OpT1 extends ConstantWith1TypeParameter {
+  object OperatorT1 extends ConstantWith1TypeParameter {
     val typeConstructor = TypeConstructor("inner") { inner =>
-      T1(inner)
+      T1(inner) =>: inner
     }
+  }
+
+  object OperandT2 extends Term {
+    override def getType: Type = T2(Bot)
   }
 
   test("can distinguish type constructors of the same arity") {
     val error = intercept[TypeError] {
-      OpT1 of T2(Bot)
+      val illTypedTerm = (OperatorT1 ! OperandT2).toTerm
     }
     info(error.getMessage)
   }

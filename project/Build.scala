@@ -3,6 +3,9 @@ import Keys._
 import sbt.Defaults._
 
 object BuildUnit extends Build {
+  //Remove remaining files in target directory.
+  def descendants(p: PathFinder) = p * AllPassFilter ***
+
   private val generatorMainClass = "ilc.Examples"
 
   private val generationSettings = Seq(
@@ -23,7 +26,7 @@ object BuildUnit extends Build {
           (genSrcDir, lib,
             tp, tmp, si, base, options, strategy, javaHomeDir, connectIn
           ) =>
-          generateExamples(genSrcDir, new ExamplesRunner(
+          val genFiles = generateExamples(genSrcDir, new ExamplesRunner(
             tp.id,
             lib.files,
             generatorMainClass,
@@ -34,6 +37,16 @@ object BuildUnit extends Build {
               outputStrategy = strategy,
               runJVMOptions = options,
               workingDirectory = Some(base))))
+
+          //Note: this removes stale generated files, assuming no other
+          //generator targets the same directory.
+          for (staleFile <- (descendants(PathFinder(genSrcDir)) --- PathFinder(genFiles)).get) {
+            console.warn("Removing stale file " + staleFile)
+            console.warn("Look at project/Build.scala if this is not intended")
+            staleFile.delete()
+          }
+
+          genFiles
         }
     )
 

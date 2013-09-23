@@ -211,7 +211,7 @@ trait Syntax extends base.Syntax {
     def specialize(argumentTypes: Type*): Term =
       if (argumentTypes.isEmpty)
         typeErrorNotTheSame(
-          getClass.getSimpleName + ".specialize",
+          s"${getClass.getSimpleName}.specialize invoked on $this",
           "type argument",
           "nothing")
       else
@@ -250,6 +250,9 @@ trait Syntax extends base.Syntax {
       val polymorphicBody = body(name)(variable +: context)
       Abs(variable, polymorphicBody specialize (argumentTypes: _*))
     }
+    def productName = "ContextualAbs"
+    override def toString =
+      s"$productName($name, context = $context, $name => context => ${body(name)(context)}"
   }
 
   /** An abstraction where enough argument types are given
@@ -272,6 +275,7 @@ trait Syntax extends base.Syntax {
       // return `term` if they agree.
       SpecializedTerm(term).specialize(actualArgumentTypes: _*)
     }
+    override def productName = "SpecializedAbs"
   }
 
   // SUGAR

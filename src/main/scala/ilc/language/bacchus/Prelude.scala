@@ -3,7 +3,7 @@ package language
 package bacchus
 
 /**
-  * This term includes generally useful functions for the Bacchus object
+  * This trait includes generally useful functions for the Bacchus object
   * language. When Bacchus abstraction is insufficient, we resort to meta-level
   * abstraction (see for instance const).
   */

@@ -42,13 +42,34 @@ extends Archive
     export(path)
   }
 
+  def rebuildNeeded(base: File, name: String, example: Example, outFile: File) = {
+    val exampleFileName = example.getClass.
+      getName stripSuffix "$" replaceAll ("\\.", java.io.File.separator)
+
+    val fsep = File.separator
+    //XXX hardcodes the Scala version.
+    val exampleOutput = new File(s"target${fsep}scala-2.10${fsep}classes${fsep}${exampleFileName}.class")
+
+    //XXX very simplified dependency checking, does not account for all dependencies.
+    exampleOutput.lastModified > outFile.lastModified
+
+    //Alternative, for robustness. Comment this out for faster rebuilds.
+    true
+  }
+
   def exportSource(base: File, name: String, example: Example) {
-    val source = example.toSource(name)
-    import java.io.FileWriter
-    val outFile = new File(base, source.objectName ++ ".scala")
-    val writer = new FileWriter(outFile)
-    writer.write(source.code)
-    writer.close
+    val outFile = new File(base, Archive.toGenName(name) ++ ".scala")
+
+    if (rebuildNeeded(base, name, example, outFile)) {
+      Console.err.println(s"Generating ${name}")
+      val source = example.toSource(name)
+      import java.io.FileWriter
+      val writer = new FileWriter(outFile)
+      writer.write(source.code)
+      writer.close
+    }
+
+    //Ensure this file is tracked by SBT anyway.
     export(outFile.getCanonicalPath)
   }
 }

@@ -22,6 +22,10 @@ trait Archive {
   }
 }
 
+object Archive {
+  def toGenName(name: String) = name ++ "Generated"
+}
+
 /** Base class for implementations of examples.
   * When actually writing examples,
   * this must be mixed in with versions of ToScala and Derivation
@@ -37,7 +41,7 @@ abstract class Example
   def derivative: Term = derive(program)
 
   def toSource(name: String): Source = {
-    val objectName = name ++ "Generated"
+    val objectName = Archive.toGenName(name)
     val programCode = toScala(program)
     val derivativeCode = toScala(derivative)
     val inputType =>: outputType = program.getType

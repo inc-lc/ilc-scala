@@ -3,7 +3,7 @@ package ilc.examples
 /**
   * Interface for generated example programs.
   */
-trait ExampleGenerated {
+trait ExampleGenerated extends Serializable {
   type InputType
   type DeltaInputType
   type OutputType

@@ -3,7 +3,8 @@ package examples
 
 import org.scalameter.api._
 
-trait BenchData {
+// Serializability is needed for passing instances to separate JVMs for benchmarking.
+trait BenchData extends Serializable {
   /**
     * Subclass obligation: ExampleGenerated instance containing the generated code.
     */
@@ -87,6 +88,9 @@ trait RegressionTesting extends PerformanceTest {
    * also to avoid potential bugs (unless the implementation is completely
    * stateless).
    */
+  //@transient is needed for lazy values which aren't serializable, to avoid
+  //java.io.NotSerializableException.
+  @transient
   override lazy val executor: Executor = buildExecutor
 
   override lazy val reporter: Reporter =
@@ -98,7 +102,7 @@ trait RegressionTesting extends PerformanceTest {
 /**
   * Our benchmarking settings.
   */
-trait BaseBenchmark extends RegressionTesting {
+trait BaseBenchmark extends RegressionTesting with Serializable {
   override def regressionTester = RegressionReporter.Tester.Accepter()
 
   override def reporters =

@@ -18,10 +18,12 @@ trait BenchData {
     * Subclass obligation: inputs given the size.
     */
   def inputOfSize(n: Int): Data
+
   /**
     * Subclass obligation: list of descriptions of changes.
     */
   def changeDescriptions: Gen[String]
+
   /**
     * Subclass obligation: map input size and change description to actual change.
     * (XXX: should use an enum instead of a description for the key).
@@ -55,6 +57,63 @@ trait BenchData {
   def className: String = example.getClass.getName.stripSuffix("$")
 }
 
+import org.scalameter.{reporting, api, execution, Aggregator}
+import org.scalameter.api._
+
+/**
+  * A more customizable version of ScalaMeter's PerformanceTest.Regression.
+  */
+trait RegressionTesting extends PerformanceTest {
+  import Executor.Measurer
+  import reporting._
+
+  def warmer = Executor.Warmer.Default()
+  def aggregator: Aggregator = Aggregator.complete(Aggregator.average)
+  def measurer: Measurer = new Measurer.IgnoringGC with Measurer.PeriodicReinstantiation with Measurer.OutlierElimination with Measurer.RelativeNoise
+  def regressionTester: RegressionReporter.Tester = RegressionReporter.Tester.OverlapIntervals()
+  def historian: RegressionReporter.Historian = RegressionReporter.Historian.ExponentialBackoff()
+  def regressionReporter =
+    new RegressionReporter(regressionTester, historian)
+
+  def buildExecutor: Executor = new execution.SeparateJvmsExecutor(warmer, aggregator, measurer)
+  def reporters: Seq[Reporter]
+
+  /* The methods below are part of the interface to the superclass.
+   *
+   * They and their overrides must be lazy.
+   *
+   * Unlike done by ScalaMeter's implementation, I believe they should be lazy
+   * values, since they are called multiple times, possibly for performance, but
+   * also to avoid potential bugs (unless the implementation is completely
+   * stateless).
+   */
+  override lazy val executor: Executor = buildExecutor
+
+  override lazy val reporter: Reporter =
+    Reporter.Composite(reporters: _*)
+
+  override lazy val persistor: Persistor = new SerializationPersistor
+}
+
+/**
+  * Our benchmarking settings.
+  */
+trait BaseBenchmark extends RegressionTesting {
+  override def regressionTester = RegressionReporter.Tester.Accepter()
+
+  override def reporters =
+    Seq(
+      regressionReporter,           // First, update history
+      LoggingReporter(),
+      DsvReporter(delimiter=';'),   // Then, use the updated history
+      HtmlReporter(true)            // Ditto
+      /*ChartReporter(ChartFactory.XYLine())*/
+    )
+
+  // SeparateJvmsExecutor requires benchmark instances to be Serializable.
+  override def buildExecutor: Executor = new execution.LocalExecutor(warmer, aggregator, measurer)
+}
+
 /**
   * Create a benchmark from an ExampleGenerated, input and changes.
   *
@@ -64,7 +123,7 @@ trait BenchData {
   *
   * This class is marked abstract to prevent ScalaMeter from trying to run it.
   */
-abstract class ExampleToBenchmark(val benchData: BenchData) extends PerformanceTest.Quickbenchmark {
+abstract class ExampleToBenchmark(val benchData: BenchData) extends BaseBenchmark {
   import benchData._
   import example._
 

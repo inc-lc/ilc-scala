@@ -8,12 +8,12 @@ import org.scalameter.api.Gen
   * A template for benchmarking derivatives of generated programs transforming
   * Map[Int, Int] into Map[Int, Int].
   */
-abstract class MapIntIntBenchmark(val example: ExampleGenerated {
+class MapIntIntBenchData(val example: ExampleGenerated {
   type InputType = Map[Int, Int]
   type OutputType = Map[Int, Int]
   type DeltaInputType = Either[Map[Int, Either[Option[Int], Int]], Map[Int, Int]]
   type DeltaOutputType = Either[Map[Int, Either[Option[Int], Int]], Map[Int, Int]]
-}) extends ExampleToBenchmark
+}) extends BenchData
 {
   import example._
 

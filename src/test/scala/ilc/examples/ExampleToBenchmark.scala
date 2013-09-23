@@ -3,10 +3,7 @@ package examples
 
 import org.scalameter.api._
 
-/**
-  * Create a benchmark from an ExampleGenerated, input and changes.
-  */
-abstract class ExampleToBenchmark extends PerformanceTest.Quickbenchmark {
+trait BenchData {
   /**
     * Subclass obligation: ExampleGenerated instance containing the generated code.
     */
@@ -38,12 +35,12 @@ abstract class ExampleToBenchmark extends PerformanceTest.Quickbenchmark {
     oldOutput: OutputType)
 
   // collection sizes
-  lazy val base = 1000
-  lazy val last = 5000
-  lazy val step = 1000
-  lazy val sizes: Gen[Int] = Gen.range("n")(base, last, step)
+  val base = 1000
+  val last = 5000
+  val step = 1000
+  val sizes: Gen[Int] = Gen.range("n")(base, last, step)
 
-  lazy val inputsOutputsChanges: Gen[Datapack] = for {
+  val inputsOutputsChanges: Gen[Datapack] = for {
     n <- sizes
     description <- changeDescriptions
   } yield {
@@ -56,6 +53,20 @@ abstract class ExampleToBenchmark extends PerformanceTest.Quickbenchmark {
   def replacementChange(newInput: Data): Change
 
   def className: String = example.getClass.getName.stripSuffix("$")
+}
+
+/**
+  * Create a benchmark from an ExampleGenerated, input and changes.
+  *
+  * Note: this class inherits (indirectly) from DelayedInit, hence
+  * initialization order is rather different here. Hence, prefer defining
+  * helpers inside BenchData if at all possible.
+  *
+  * This class is marked abstract to prevent ScalaMeter from trying to run it.
+  */
+abstract class ExampleToBenchmark(val benchData: BenchData) extends PerformanceTest.Quickbenchmark {
+  import benchData._
+  import example._
 
   performance of
   s"${className} (derivative, surgical change)" in {

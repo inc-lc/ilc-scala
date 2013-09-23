@@ -103,19 +103,29 @@ trait RegressionTesting extends PerformanceTest {
   * Our benchmarking settings.
   */
 trait BaseBenchmark extends RegressionTesting with Serializable {
+  override def aggregator = QuickAndDirty.choose(Aggregator.min, super.aggregator)
   override def regressionTester = RegressionReporter.Tester.Accepter()
 
-  override def reporters =
+  override def reporters = baseReporters ++ QuickAndDirty.choose(Seq.empty, expensiveReporters)
+
+  def baseReporters =
     Seq(
       regressionReporter,           // First, update history
-      LoggingReporter(),
+      LoggingReporter())
+
+  def expensiveReporters =
+    Seq(
       DsvReporter(delimiter=';'),   // Then, use the updated history
       HtmlReporter(true)            // Ditto
       /*ChartReporter(ChartFactory.XYLine())*/
     )
 
-  // SeparateJvmsExecutor requires benchmark instances to be Serializable.
-  override def buildExecutor: Executor = new execution.LocalExecutor(warmer, aggregator, measurer)
+  override def buildExecutor: Executor = QuickAndDirty.choose(
+      new execution.LocalExecutor(warmer, aggregator, measurer),
+      super.buildExecutor)
+
+  //Don't save QuickAndDirty results.
+  override lazy val persistor = QuickAndDirty.choose(Persistor.None, new SerializationPersistor)
 }
 
 /**

@@ -309,7 +309,11 @@ Please do not declare getType as an abstract `val`.
           }
         }
 
-        case _ => {
+        // a leaf of the type AST matches, do nothing
+        case _ if abstractType == concreteType =>
+            ()
+
+        case _ if abstractType != concreteType => {
           throw new TypeError(
             s"""|Cannot invert type constructor of $getConstantName.
                 |Two possible scenarios.

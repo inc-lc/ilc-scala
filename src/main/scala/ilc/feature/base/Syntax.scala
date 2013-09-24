@@ -466,6 +466,11 @@ Please do not declare getType as an abstract `val`.
       context =>
         SpecializedTerm(t0(context) specialize (typeArguments: _*))
 
+    /** Type ascription */
+    def ofType(expectedType: Type): TermBuilder =
+      context =>
+        SpecializedTerm(t0(context) ofType expectedType)
+
     def toTerm: Term =
       t0(TypingContext.empty).toTerm
   }

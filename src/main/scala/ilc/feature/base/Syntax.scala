@@ -458,7 +458,10 @@ Please do not declare getType as an abstract `val`.
     builder(TypingContext.empty).toTerm
 
   /** Convenient operator to give polymorphic terms arguments */
-  implicit class BaseTermBuilderOps(t0: TermBuilder) {
+  implicit class BaseTermBuilderOps[T <% TermBuilder](t: T) {
+    // activates implicit conversion
+    val t0: TermBuilder = t
+
     def % (typeArguments: Type*): TermBuilder =
       context =>
         SpecializedTerm(t0(context) specialize (typeArguments: _*))

@@ -55,22 +55,4 @@ trait SyntaxSugar extends Syntax with functions.Syntax {
       flatMap(v) ! {
         lambda (Var("x", v)) {
           x => Singleton ! (f ! x) }}}
-
-  /*
-  // Point-free version, two args are due.
-  //   flatMap : (v -> Bag u) -> Bag v -> Bag u
-  val flatMap = FoldGroup !
-    Union ! Negate ! EmptyBag
-
-  //Hey, careful, we have no Hindley-Milner in this world.
-  //Frankly, you can't write this in Scala, either.
-  val compose = lambda("f", "g", "x") { case Seq(f, g, x) => f ! (g ! x) }
-
-  val map = lambda("f") { f => flatMap ! (compose ! Singleton ! f) }
-
-  //Alternative?
-  //def compose(f: Term, g: Term): Term = lambda("x") (x => f ! (g ! x))
-
-  //val map = lambda("f") { f => flatMap ! compose(Singleton, f) }
-   */
 }

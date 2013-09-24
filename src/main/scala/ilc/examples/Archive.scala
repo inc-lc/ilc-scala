@@ -53,6 +53,9 @@ abstract class Example
     val deltaOutputTypeCode = toScala(deltaType(outputType))
     Source(objectName,
       s"""|package ilc.examples
+          |
+          |import ilc.feature.bags.Libraries._ //XXX
+          |
           |object $objectName extends ExampleGenerated {
           |  override val program = $programCode
           |  override val derivative = $derivativeCode

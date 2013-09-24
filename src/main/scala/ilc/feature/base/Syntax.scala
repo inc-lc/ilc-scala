@@ -429,6 +429,8 @@ Please do not declare getType as an abstract `val`.
   extends PolymorphicTerm
   {
     def specialize(typeArguments: Type*): Term = {
+      object Underscore extends Type { override def toString = "_" }
+
       if (argumentTypesMatch(typeArguments, toTerm.getType))
         toTerm
       else {
@@ -436,7 +438,7 @@ Please do not declare getType as an abstract `val`.
         typeErrorNotTheSame(
           toTerm.toString,
           toTerm.getType,
-          (typeArguments map (x => s"($x)") mkString s" $arrow ") + s" $arrow _")
+          (typeArguments.foldRight(Underscore: Type)(_ =>: _)) toString)
       }
     }
   }

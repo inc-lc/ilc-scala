@@ -47,12 +47,37 @@ trait Syntax extends base.Syntax with bags.Types {
 }
 
 trait SyntaxSugar extends Syntax with functions.Syntax {
-  def flatMap(v: Type) = FoldGroup(BagType(v), v) !
+  //Assumes v = u.
+  /*def flatMap(v: Type) = FoldGroup(BagType(v), v) !
     Union(v) ! Negate(v) ! EmptyBag(v)
+   */
 
-  def map(v: Type) =
-    lambda("f") { f =>
-      flatMap(v) ! {
-        lambda (Var("x", v)) {
-          x => Singleton ! (f ! x) }}}
+  //flatMap : (v -> Bag u) -> Bag v -> Bag u
+  val flatMap : PolymorphicTerm =
+    new PolymorphicTerm {
+      def specialize(argumentTypes: Type*): Term =
+        argumentTypes.head match {
+          case fType @ (v =>: BagType(u)) =>
+            FoldGroup(BagType(u), v) !
+              Union(u) ! Negate(u) ! EmptyBag(u)
+        }
+    }
+
+  //% (first type) is enough. XXX explain
+
+  //The first few lines are boilerplate for better type inference:
+  val map : PolymorphicTerm =
+    new PolymorphicTerm {
+      def specialize(argumentTypes: Type*): Term =
+        argumentTypes.head match {
+          case fType @ (v =>: u) =>
+
+            // Actual implementation, after the boilerplate, where all lambdas
+            // are explicitly annotated.
+            lambda(Var("f", fType)) { f =>
+              flatMap ! {
+                lambda (Var("x", v)) {
+                  x => Singleton ! (f ! x) }}}}
+    }
+
 }

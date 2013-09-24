@@ -31,5 +31,5 @@ extends Example
    with bacchus.BasicDerivation
 {
   def program: Term =
-    map(ℕ) ! succ
+    map ! succ
 }

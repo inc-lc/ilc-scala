@@ -172,7 +172,7 @@ Please do not declare getType as an abstract `val`.
     def specialize(argumentTypes: Type*): Term =
       Constant(typeConstructor inferTypeArgumentsFrom argumentTypes)
 
-    def of(expectedType: Type): Term = {
+    override def ofType(expectedType: Type): Term = {
       val typeArguments = typeConstructor.inverse(expectedType)
       val term = apply(typeArguments: _*)
       require(term.getType == expectedType)

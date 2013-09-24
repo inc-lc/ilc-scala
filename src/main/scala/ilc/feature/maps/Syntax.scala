@@ -115,7 +115,7 @@ extends Syntax
                   lambda(valueType) {dontcare => wipMap} !
                   (Lookup ! key ! subtrahend)
             } !
-            (EmptyMap of mapType) !
+            (EmptyMap ofType mapType) !
             minuend
         }
       }

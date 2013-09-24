@@ -36,6 +36,6 @@ extends FunSuite
   }
 
   test("leaves of an abstract type tree can be non-case objects") {
-    OperatorT3 of (T3 =>: Bot =>: Bot)
+    OperatorT3 ofType T3 =>: Bot =>: Bot
   }
 }

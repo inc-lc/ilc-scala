@@ -462,6 +462,8 @@ Please do not declare getType as an abstract `val`.
     // activates implicit conversion
     val t0: TermBuilder = t
 
+    /** Give enough argument type to fully specialize
+      * a polymorphic term builder */
     def % (typeArguments: Type*): TermBuilder =
       context =>
         SpecializedTerm(t0(context) specialize (typeArguments: _*))
@@ -471,6 +473,7 @@ Please do not declare getType as an abstract `val`.
       context =>
         SpecializedTerm(t0(context) ofType expectedType)
 
+    /** Finish building a closed term, starting from the empty context */
     def toTerm: Term =
       t0(TypingContext.empty).toTerm
   }

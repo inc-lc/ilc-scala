@@ -21,7 +21,7 @@ class MapIntIntBenchData(val example: ExampleGenerated {
 
   // consider leaving out the output.
   def inputOfSize(n: Int): Data =
-    (1 to n).map(i => (i, i))(breakOut)
+    (1 to n).map(i => (i -> i))(breakOut)
 
   lazy val changeDescriptions: Gen[String] = Gen.enumeration("change")(
     "no change",

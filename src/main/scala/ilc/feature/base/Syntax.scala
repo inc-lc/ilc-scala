@@ -428,10 +428,10 @@ Please do not declare getType as an abstract `val`.
   case class SpecializedTerm(override val toTerm: Term)
   extends PolymorphicTerm
   {
-    def specialize(typeArguments: Type*): Term = {
+    def specialize(argumentTypes: Type*): Term = {
       object Underscore extends Type { override def toString = "_" }
 
-      if (argumentTypesMatch(typeArguments, toTerm.getType))
+      if (argumentTypesMatch(argumentTypes, toTerm.getType))
         toTerm
       else {
         def arrow = =>:.arrow
@@ -466,9 +466,9 @@ Please do not declare getType as an abstract `val`.
 
     /** Give enough argument type to fully specialize
       * a polymorphic term builder */
-    def % (typeArguments: Type*): TermBuilder =
+    def % (argumentTypes: Type*): TermBuilder =
       context =>
-        SpecializedTerm(t0(context) specialize (typeArguments: _*))
+        SpecializedTerm(t0(context) specialize (argumentTypes: _*))
 
     /** Type ascription */
     def ofType(expectedType: Type): TermBuilder =

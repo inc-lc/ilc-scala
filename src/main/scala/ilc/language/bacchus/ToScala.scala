@@ -6,6 +6,7 @@ import feature._
 
 trait ToScala
 extends functions.ToScala
+   with bags.ToScala
    with maps.ToScala
    with maybe.ToScala
    with naturals.ToScala

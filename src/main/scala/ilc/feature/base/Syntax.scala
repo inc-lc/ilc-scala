@@ -436,7 +436,7 @@ Please do not declare getType as an abstract `val`.
         typeErrorNotTheSame(
           toTerm.toString,
           toTerm.getType,
-          (typeArguments mkString s" $arrow ") + s" $arrow _")
+          (typeArguments map (x => s"($x)") mkString s" $arrow ") + s" $arrow _")
       }
     }
   }

@@ -48,3 +48,55 @@ class MapIntIntBenchData(val example: ExampleGenerated {
       Left(Map(n -> Left(None)))
   }
 }
+
+class BagIntBenchData(val example: ExampleGenerated {
+  type InputType = Map[Int, Int]
+  type OutputType = Map[Int, Int]
+  type DeltaInputType = Map[Int, Int]
+  type DeltaOutputType = Map[Int, Int]
+}) extends BenchData
+{
+  import example._
+
+  //XXX wrong, but this can't be implemented for now.
+  def replacementChange(newInput: Data): Change = newInput
+
+  // consider leaving out the output.
+  def inputOfSize(n: Int): Data =
+    (1 to n).map(i => (i -> 1))(breakOut)
+
+  lazy val changeDescriptions: Gen[String] = Gen.enumeration("change")(
+    "no change",
+    "replace 1 by n + 1",
+    "add n + 2",
+    "remove 2",
+    "remove n"
+  )
+
+  import ilc.feature.bags.Libraries._
+
+  def add(e: Int) =
+    Map(e -> 1)
+
+  def remove(e: Int) =
+    Map(e -> -1)
+  def replace(a: Int, b: Int) =
+    remove(a) ++ add(b)
+
+  def lookupChange(n: Int, description: String): Change = description match {
+    case "no change" =>
+      bagEmpty
+
+    case "replace 1 by n + 1" =>
+      replace(1, n + 1)
+
+    case "add n + 2" =>
+      add(n + 2)
+
+    case "remove 2" =>
+      remove(2)
+
+    case "remove n" =>
+      remove(n)
+  }
+}

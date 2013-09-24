@@ -110,6 +110,10 @@ Please do not declare getType as an abstract `val`.
     /** Specialize a polymorphic term builder according to
       * the types of future arguments
       *
+      * In general, it needs to get *all* argument types,
+      * but this requirement can be relaxed by subtypes (in
+      * particular, for polymorphic constants).
+      *
       * Implementation of this method is the sole obligation
       * of subclasses
       *
@@ -464,8 +468,17 @@ Please do not declare getType as an abstract `val`.
     // activates implicit conversion
     val t0: TermBuilder = t
 
-    /** Give enough argument type to fully specialize
-      * a polymorphic term builder */
+    /**
+      * Specify explicitly the types of arguments to this term.
+      *
+      * Give enough argument type to fully specialize
+      * a polymorphic term builder.
+      * 
+      * In general, it needs to get *all* argument types,
+      * but this requirement is relaxed for polymorphic
+      * constants. See documentation of
+      * `PolymorphicTerm.specialize`.
+      */
     def % (argumentTypes: Type*): TermBuilder =
       context =>
         SpecializedTerm(t0(context) specialize (argumentTypes: _*))

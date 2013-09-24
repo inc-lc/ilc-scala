@@ -118,6 +118,11 @@ Please do not declare getType as an abstract `val`.
       */
     def specialize(argumentTypes: Type*): Term
 
+    /** give the full type of a term */
+    def ofType(expectedType: Type): Term = {
+      specialize(getArgumentTypes(expectedType): _*)
+    }
+
     protected[this]
     def argumentTypesMatch(argTypes: Seq[Type], funType: Type): Boolean =
       getArgumentTypes(funType) startsWith argTypes

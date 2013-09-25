@@ -38,12 +38,12 @@ trait BenchData extends Serializable {
     oldOutput: OutputType)
 
   // collection sizes
-  val base = 1000
-  val last = 5000
-  val step = 1000
-  val sizes: Gen[Int] = Gen.range("n")(base, last, step)
+  def base = 1000
+  def last = 5000
+  def step = 1000
+  def sizes: Gen[Int] = Gen.range("n")(base, last, step)
 
-  val inputsOutputsChanges: Gen[Datapack] = for {
+  lazy val inputsOutputsChanges: Gen[Datapack] = for {
     n <- sizes
     description <- changeDescriptions
   } yield {

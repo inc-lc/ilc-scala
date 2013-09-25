@@ -30,8 +30,6 @@ trait BagLibrary {
   def bagNegate[T](b: Bag[T]): Bag[T] = b mapValues (-_)
 }
 
-object Libraries extends BagLibrary
-
 trait ToScala extends base.ToScala with Syntax {
   private[this] def mapTypes(v: Type): (String, String) = {
     val vType = toScala(v)

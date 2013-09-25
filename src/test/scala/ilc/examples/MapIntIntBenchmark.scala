@@ -73,7 +73,7 @@ class BagIntBenchData(val example: ExampleGenerated {
     "remove n"
   )
 
-  import ilc.feature.bags.Libraries._
+  import ilc.language.bacchus.Libraries
 
   def add(e: Int) =
     Map(e -> 1)
@@ -85,7 +85,7 @@ class BagIntBenchData(val example: ExampleGenerated {
 
   def lookupChange(n: Int, description: String): Change = description match {
     case "no change" =>
-      bagEmpty
+      Libraries.bagEmpty
 
     case "replace 1 by n + 1" =>
       replace(1, n + 1)

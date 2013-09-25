@@ -23,7 +23,8 @@ trait Library {
     (for {
       (t, count) <- bag
       g = f(t)
-      e <- Seq.tabulate(count)(_ => g)
+      (h, posCount) = if (count >= 0) (g, count) else (inv(g), -count)
+      e <- Seq.tabulate(posCount)(_ => h)
     } yield e).fold[G](neutral)(Function.uncurried(op))
   }
 

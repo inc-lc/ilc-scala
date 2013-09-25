@@ -54,7 +54,7 @@ abstract class Example
     Source(objectName,
       s"""|package ilc.examples
           |
-          |import ilc.language.bacchus.Libraries._ //XXX
+          |$imports
           |
           |object $objectName extends ExampleGenerated {
           |  override val program = $programCode

@@ -20,4 +20,16 @@ trait ToScala extends Syntax with functions.Types {
     case _ =>
       sys error s"Unknown type $tau"
   }
+
+  //Subclass obligations:
+
+  /** Imports to include in generated code. By default, the name is determined depending on this.language.
+    */
+  def imports: String = s"import ilc.language.$language.Libraries._"
+
+  /**
+    * Package name for the language. Trait ilc.language.$someName.ToScala should
+    * define this field to "$someName".
+    */
+  def language: String
 }

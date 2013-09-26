@@ -23,6 +23,7 @@ trait Library {
   //
   //XXX: Could be made much faster by using builders (avoiding immutable
   //copies), but this shouldn't be necessary.
+  @inline
   def bagUnionInt(b1: Bag[Int])(b2: Bag[Int]) =
     b1 ++ (for ((el, count) <- b2) yield {
       val newCount =
@@ -42,6 +43,7 @@ trait Library {
     } yield e).fold[G](neutral)(Function.uncurried(op))
   }
 
+  @inline
   def bagFoldGroupInt[G](op: G => G => G)(inv: G => G)(neutral: G)(f: Int => G)(bag: Bag[Int]): G = {
     (for {
       (t, count) <- bag

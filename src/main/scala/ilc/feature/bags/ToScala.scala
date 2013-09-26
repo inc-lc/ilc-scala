@@ -12,14 +12,12 @@ trait ToScala extends base.ToScala with Syntax {
     t match {
       case EmptyBag(v) =>
         val (mType, vType) = mapTypes(v)
-        //s"Map.empty[$mType, Int]"
         s"bagEmpty[$vType]"
       case Singleton(v) =>
         val (mType, vType) = mapTypes(v)
         s"(bagSingleton[$vType] _)"
       case Union(v) =>
         val (mType, vType) = mapTypes(v)
-        //s"((b1: $mType) => (b2: $mType) => bagUnion(b1, b2))"
         s"(bagUnion[$vType] _)"
       case Negate(v) =>
         val (mType, vType) = mapTypes(v)

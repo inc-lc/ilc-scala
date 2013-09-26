@@ -2,6 +2,8 @@ scalaVersion := "2.10.2"
 
 scalacOptions := Seq("-deprecation", "-feature", "-Xlint")
 
+scalacOptions ++= Seq("-optimize")
+
 //Link to the Scala standard library. See http://stackoverflow.com/a/18747266/53974.
 //For Scaladoc, requires SBT 0.13.
 //autoAPIMappings := true

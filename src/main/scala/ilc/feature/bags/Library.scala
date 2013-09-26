@@ -14,19 +14,11 @@ trait Library {
   //XXX: Could be made much faster by using builders (avoiding immutable
   //copies), but this shouldn't be necessary.
   def bagUnion[T](b1: Bag[T])(b2: Bag[T]): Bag[T] =
-    b2 ++ (b1 flatMap {
-      case (el, count) =>
-
-      val newCount =
-        if (b1 contains el)
-          count + b1(el)
-        else
-          count
-      if (newCount == 0)
-        List.empty
-      else
-        List(el -> newCount)
-    })
+    (b1 merged b2) {
+      case ((el1, count1), (el2, count2)) =>
+        assert(el1 == el2)
+        el1 -> (count1 + count2)
+    }
 
   def bagFoldGroup[G, T](op: G => G => G)(inv: G => G)(neutral: G)(f: T => G)(bag: Bag[T]): G = {
     (for {

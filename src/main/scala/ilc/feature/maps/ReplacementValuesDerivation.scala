@@ -36,7 +36,7 @@ extends base.Derivation
   def surgeryValueType(v: Type): Type =
     SumType(MaybeType(v), deltaType(v))
 
-  object MapSurgery extends Enumeration {
+  object MapSurgery {
     sealed trait Change
     case class DELETE(key: Term) extends Change
     case class INSERT(key: Term, value: Term) extends Change

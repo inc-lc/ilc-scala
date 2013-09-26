@@ -49,11 +49,15 @@ class MapIntIntBenchData(val example: ExampleGenerated {
   }
 }
 
+import ilc.language.bacchus.Libraries._
+
+import collection.immutable.HashMap
+
 class BagIntBenchData(val example: ExampleGenerated {
-  type InputType = Map[Int, Int]
-  type OutputType = Map[Int, Int]
-  type DeltaInputType = Map[Int, Int]
-  type DeltaOutputType = Map[Int, Int]
+  type InputType = Bag[Int]
+  type OutputType = Bag[Int]
+  type DeltaInputType = Bag[Int]
+  type DeltaOutputType = Bag[Int]
 }) extends BenchData
 {
   import example._
@@ -73,19 +77,18 @@ class BagIntBenchData(val example: ExampleGenerated {
     "remove n"
   )
 
-  import ilc.language.bacchus.Libraries
-
   def add(e: Int) =
-    Map(e -> 1)
+    bagSingleton(e)
 
   def remove(e: Int) =
-    Map(e -> -1)
+    bagNegate(add(e))
+
   def replace(a: Int, b: Int) =
-    remove(a) ++ add(b)
+    bagUnion(remove(a))(add(b))
 
   def lookupChange(n: Int, description: String): Change = description match {
     case "no change" =>
-      Libraries.bagEmpty
+      bagEmpty
 
     case "replace 1 by n + 1" =>
       replace(1, n + 1)

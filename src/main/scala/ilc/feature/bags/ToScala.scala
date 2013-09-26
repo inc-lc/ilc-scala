@@ -5,7 +5,7 @@ package bags
 trait ToScala extends base.ToScala with Syntax {
   private[this] def mapTypes(v: Type): (String, String) = {
     val vType = toScala(v)
-    ("Map[%s, Int]".format(vType), vType)
+    ("Bag[%s]".format(vType), vType)
   }
 
   override def toScala(t: Term): String =

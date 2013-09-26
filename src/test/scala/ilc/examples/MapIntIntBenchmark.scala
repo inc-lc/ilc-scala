@@ -13,7 +13,7 @@ class MapIntIntBenchData(val example: ExampleGenerated {
   type OutputType = Map[Int, Int]
   type DeltaInputType = Either[Map[Int, Either[Option[Int], Int]], Map[Int, Int]]
   type DeltaOutputType = Either[Map[Int, Either[Option[Int], Int]], Map[Int, Int]]
-}) extends BenchData
+}) extends BenchData with ReplacementChangeData
 {
   import example._
 
@@ -61,9 +61,6 @@ class BagIntBenchData(val example: ExampleGenerated {
 }) extends BenchData
 {
   import example._
-
-  //XXX wrong, but this can't be implemented for now.
-  def replacementChange(newInput: Data): Change = newInput
 
   // consider leaving out the output.
   def inputOfSize(n: Int): Data =

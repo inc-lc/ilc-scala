@@ -5,4 +5,4 @@ package bench
 /**
   * Benchmark generated derivative.
   */
-object MapSuccBaseBenchmark extends ExampleToBenchmark(new MapIntIntBenchData(MapSuccBaseGenerated))
+object MapSuccBaseBenchmark extends ReplacementChangeBenchmark(new MapIntIntBenchData(MapSuccBaseGenerated))

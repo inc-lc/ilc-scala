@@ -53,9 +53,11 @@ trait BenchData extends Serializable {
     Datapack(oldInput, newInput, change, program(oldInput))
   }
 
-  def replacementChange(newInput: Data): Change
-
   def className: String = example.getClass.getName.stripSuffix("$")
+}
+
+trait ReplacementChangeData extends BenchData {
+  def replacementChange(newInput: Data): Change
 }
 
 import org.scalameter.{reporting, api, execution, Aggregator}
@@ -141,16 +143,46 @@ abstract class ExampleToBenchmark(val benchData: BenchData) extends BaseBenchmar
   import benchData._
   import example._
 
-  performance of
-  s"${className} (derivative, surgical change)" in {
-    using(inputsOutputsChanges) in {
-      case Datapack(oldInput, newInput, change, oldOutput) => {
-        // we compute the result change with the derivative,
-        // then apply it to the old value.
-        updateOutput(derivative(oldInput)(change))(oldOutput)
+  def testSurgical() =
+    performance of
+    s"${className} (derivative, surgical change)" in {
+      using(inputsOutputsChanges) in {
+        case Datapack(oldInput, newInput, change, oldOutput) => {
+          // we compute the result change with the derivative,
+          // then apply it to the old value.
+          updateOutput(derivative(oldInput)(change))(oldOutput)
+        }
       }
     }
+
+  def testRecomputation() =
+    performance of s"${className} (recomputation)" in {
+      using(inputsOutputsChanges) in {
+        case Datapack(oldInput, newInput, change, oldOutput) => {
+          program(newInput)
+        }
+      }
+    }
+
+  // We can't just define the test inline, since they would not be inherited by
+  // subclasses, due to https://github.com/axel22/scalameter/issue/32. But that
+  // issue contains a fix, so this should hopefully get better soon.
+  def sharedTests() = {
+    testSurgical()
+    testRecomputation()
   }
+}
+
+abstract class NonReplacementChangeBenchmark(benchData: BenchData) extends ExampleToBenchmark(benchData) {
+  sharedTests()
+}
+
+// This must be a class because one can't define tests in a trait.
+abstract class ReplacementChangeBenchmark(override val benchData: BenchData with ReplacementChangeData) extends ExampleToBenchmark(benchData) {
+  import benchData._
+  import example._
+
+  testSurgical()
 
   performance of
   s"${className} (derivative, replacement change)" in {
@@ -161,11 +193,5 @@ abstract class ExampleToBenchmark(val benchData: BenchData) extends BaseBenchmar
     }
   }
 
-  performance of s"${className} (recomputation)" in {
-    using(inputsOutputsChanges) in {
-      case Datapack(oldInput, newInput, change, oldOutput) => {
-        program(newInput)
-      }
-    }
-  }
+  testRecomputation()
 }

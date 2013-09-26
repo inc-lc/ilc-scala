@@ -19,7 +19,30 @@ trait Library {
       el -> newCount
     })
 
+  //Exact copy, manually specialized to Int.
+  //
+  //XXX: Could be made much faster by using builders (avoiding immutable
+  //copies), but this shouldn't be necessary.
+  def bagUnionInt(b1: Bag[Int])(b2: Bag[Int]) =
+    b1 ++ (for ((el, count) <- b2) yield {
+      val newCount =
+        if (b1 contains el)
+          count + b1(el)
+        else
+          count
+      el -> newCount
+    })
+
   def bagFoldGroup[G, T](op: G => G => G)(inv: G => G)(neutral: G)(f: T => G)(bag: Bag[T]): G = {
+    (for {
+      (t, count) <- bag
+      g = f(t)
+      (h, posCount) = if (count >= 0) (g, count) else (inv(g), -count)
+      e <- Seq.tabulate(posCount)(_ => h)
+    } yield e).fold[G](neutral)(Function.uncurried(op))
+  }
+
+  def bagFoldGroupInt[G](op: G => G => G)(inv: G => G)(neutral: G)(f: Int => G)(bag: Bag[Int]): G = {
     (for {
       (t, count) <- bag
       g = f(t)

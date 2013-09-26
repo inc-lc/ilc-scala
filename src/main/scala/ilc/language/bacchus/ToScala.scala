@@ -11,6 +11,7 @@ extends functions.ToScala
    with maybe.ToScala
    with naturals.ToScala
    with sums.ToScala
+   with equality.ToScala
 {
   def language = "bacchus"
 }

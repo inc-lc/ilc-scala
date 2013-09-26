@@ -11,3 +11,4 @@ extends functions.Pretty
    with maybe.Syntax
    with naturals.Syntax
    with sums.SyntaxSugar
+   with equality.Syntax

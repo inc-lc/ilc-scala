@@ -18,17 +18,13 @@ trait ToScala extends base.ToScala with Syntax {
         s"(bagSingleton[$vType] _)"
       case Union(v) =>
         val (mType, vType) = mapTypes(v)
-        if (vType == "Int")
-          "(bagUnionInt _)"
-        else
-          s"(bagUnion[$vType] _)"
+        s"(bagUnion[$vType] _)"
       case Negate(v) =>
         val (mType, vType) = mapTypes(v)
         s"(bagNegate[$vType] _)"
       case FoldGroup(b, v) =>
         val (mType, vType) = mapTypes(v)
-        //s"(bagFoldGroup[${toScala(b)}, $vType] _)"
-        s"(bagFoldGroupInt[${toScala(b)}] _)"
+        s"(bagFoldGroup[${toScala(b)}, $vType] _)"
       case _ =>
         super.toScala(t)
     }

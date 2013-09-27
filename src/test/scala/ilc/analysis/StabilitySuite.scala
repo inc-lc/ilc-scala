@@ -41,4 +41,8 @@ extends FunSuite
     assert(Range(0, 4).map(i => operand.hasStableArgument(i)) ===
       Seq(false, false, false, false))
   }
+
+  test("free variables are unstable") {
+    assert(Location.ofRoot(Var("x", ℕ)).isStable === false)
+  }
 }

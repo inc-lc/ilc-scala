@@ -16,7 +16,7 @@ extends functions.Context
 
   object Stability {
     def entirelyUnstable: Stability =
-      Stability(Map.empty, unknownArguments)
+      Stability(Map.empty.withDefaultValue(false), unknownArguments)
 
     def unknownArguments: Stream[Boolean] =
       Stream.continually(false)

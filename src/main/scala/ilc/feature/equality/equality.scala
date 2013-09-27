@@ -25,13 +25,13 @@ trait Library {
 }
 
 trait ToScala extends base.ToScala with Syntax {
-  def containsFunctions(t: Type): Boolean =
+  private[this] def containsFunctions(t: Type): Boolean =
     t match {
       case _ =>: _ => true
       case _ =>
         t.productIterator.toSeq exists {
           case x: Type =>
-            containsFunction(x)
+            containsFunctions(x)
           case _ =>
             false
         }

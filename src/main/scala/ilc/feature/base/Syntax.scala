@@ -433,7 +433,7 @@ Please do not declare getType as an abstract `val`.
   extends PolymorphicTerm
   {
     def specialize(argumentTypes: Type*): Term = {
-      object Underscore extends Type { override def toString = "_" }
+      case object Underscore extends Type { override def toString = "_" }
 
       if (argumentTypesMatch(argumentTypes, toTerm.getType))
         toTerm

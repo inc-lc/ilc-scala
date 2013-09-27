@@ -9,8 +9,8 @@ extends FunSuite
    with base.Syntax
    with functions.Syntax // for term application operator !
 {
-  object Bot extends Type { override def toString = "⊥" }
-  object Top extends Type { override def toString = "⊤" }
+  case object Bot extends Type { override def toString = "⊥" }
+  case object Top extends Type { override def toString = "⊤" }
   case object TT extends Term { def getType: Type = Top }
 
   test("SpecializedTerm detects mismatched argument type") {

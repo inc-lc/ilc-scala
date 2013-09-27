@@ -2,16 +2,18 @@ package ilc
 package feature
 package bags
 
+import collection.immutable.HashMap
+
 trait Library {
-  type Bag[T] = Map[T, Int]
+  type Bag[T] = HashMap[T, Int]
 
-  def bagEmpty[T]: Bag[T] = Map.empty[T, Int]
+  def bagEmpty[T]: Bag[T] = HashMap.empty[T, Int]
 
-  def bagSingleton[T](t: T): Bag[T] = Map(t -> 1)
+  def bagSingleton[T](t: T): Bag[T] = HashMap(t -> 1)
 
   //XXX: Could be made much faster by using builders (avoiding immutable
   //copies), but this shouldn't be necessary.
-  def bagUnion[T](b1: Bag[T])(b2: Bag[T]) =
+  def bagUnion[T](b1: Bag[T])(b2: Bag[T]): Bag[T] =
     b2 ++ (b1 flatMap {
       case (el, count) =>
 
@@ -35,5 +37,5 @@ trait Library {
     } yield e).foldRight[G](neutral)(Function.uncurried(op))
   }
 
-  def bagNegate[T](b: Bag[T]): Bag[T] = b mapValues (-_)
+  def bagNegate[T](b: Bag[T]): Bag[T] = b map {case (k, v) => (k, -v)}
 }

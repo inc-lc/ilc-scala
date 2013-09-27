@@ -25,11 +25,24 @@ trait Library {
 }
 
 trait ToScala extends base.ToScala with Syntax {
+  def containsFunctions(t: Type): Boolean =
+    t match {
+      case _ =>: _ => true
+      case _ =>
+        t.productIterator.toSeq exists {
+          case x: Type =>
+            containsFunction(x)
+          case _ =>
+            false
+        }
+    }
+
   override def toScala(t: Term): String =
     t match {
-      case Eq(v) =>
-        // XXX We should typecase here.
+      case Eq(v) if !containsFunctions(v) =>
         "equal[${toScala(v)] _"
+      case Eq(v) =>
+        sys.error(s"Cannot implement equality on type $v containing a function type")
       case _ =>
         super.toScala(t)
     }

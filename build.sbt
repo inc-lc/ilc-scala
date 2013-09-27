@@ -52,3 +52,5 @@ logBuffered := false
 // Allow ScalaMeter to run on JDK 6 ─ see
 // http://axel22.github.io/scalameter/2013/02/14/release_0_3.html
 testOptions += Tests.Argument(scalaMeterFramework, "-preJDK7")
+
+parallelExecution in Test := false

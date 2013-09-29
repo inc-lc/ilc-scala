@@ -23,22 +23,36 @@ extends Example
   def let(n: Name, value: TermBuilder)(body: Name => TermBuilder): TermBuilder =
     lambda(n)(body) ! value
 
-  def mapValues(keyType: Type): BTerm =
-    lambda("gv") { gv =>
-      GroupUnfold ! gv ! {
-        lambda("gb", "op", "inv", "e") { case Seq(gb, op, inv, e) =>
-          lambda("f") { f =>
-            FoldGroupMap ! (liftedValueGroup(keyType) ! gb) ! {
-              lambda("key", "value") { case Seq(key, value) =>
-                let("res", f ! value) { res =>
-                  ifTerm(Eq ! res ! e, EmptyMap, SingletonMap ! key ! res)
-                }}}}}}}
+  //map-values : ∀ {k a b} → Group b → (a → b) → Map k a → Map k b
 
+  def mapValues: PolymorphicTerm =
+    new PolymorphicTerm {
+      def specialize(argumentTypes: Type*): Term =
+        argumentTypes match {
+          case Seq(gt @ GroupType(elType), srcType =>: dstType, MapType(keyType, srcType2))
+              if srcType == srcType2 && elType == dstType =>
+
+            lambda(Var("gv", gt)) { gv =>
+              GroupUnfold(elType, MapType(keyType, elType)) ! gv !
+                lambda(
+                  Var("gb", gt),
+                  Var("op", binOpType(elType)),
+                  Var("inv", invType(elType)),
+                  Var("e", elType)) { case Seq(gb, op, inv, e) =>
+                    lambda("f") { f =>
+                      FoldGroupMap ! (liftedValueGroup(keyType) ! gb) ! {
+                        lambda("key", "value") { case Seq(key, value) =>
+                          let("res", f ! value) { res =>
+                            ifTerm(Eq ! res ! e, EmptyMap, SingletonMap ! key ! res)
+                          }}}}}}}}
+
+  //lifted-value-group = ∀ {k v} → Group v → Group (Map k v)
   def liftedValueGroup(keyType: Type): PolymorphicTerm =
     new PolymorphicTerm {
       def specialize(argumentTypes: Type*): Term =
         argumentTypes.head match {
           case gt @ GroupType(elType) =>
+
             lambda(Var("gv", gt)) { gv =>
               GroupUnfold(elType, MapType(keyType, elType)) ! gv !
                 lambda(
@@ -52,7 +66,7 @@ extends Example
                         let("res", op ! u ! v) { res =>
                           ifTerm((Eq ! res ! e), Nope(elType), Just ! res)
                         }}}} !
-                    (mapValues(keyType) ! gv ! inv) !
+                    (mapValues ! gv ! inv) !
                     EmptyMap
                 }}}}
 

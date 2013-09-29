@@ -2,8 +2,7 @@ package ilc
 package feature
 package equality
 
-trait Syntax extends base.Syntax with sums.Types with unit.Types {
-  val BoolType = SumType(UnitType, UnitType)
+trait Syntax extends base.Syntax with booleans.Types {
   //Signature: v -> v -> Bool
   case object Eq extends ConstantWith1TypeParameter {
     override val typeConstructor = TypeConstructor("v") { v =>
@@ -12,16 +11,7 @@ trait Syntax extends base.Syntax with sums.Types with unit.Types {
   }
 }
 
-trait Library {
-  type ObjBool = Either[Unit, Unit]
-
-  //Do we have any encoding of Booleans to follow?
-  def boolToObjBool(b: Boolean): ObjBool =
-    if (b)
-      Left(())
-    else
-      Right(())
-
+trait Library extends booleans.Library {
   def equal[T](a: T, b: T): ObjBool =
     boolToObjBool(a == b)
 }

@@ -3,10 +3,12 @@ package feature
 package equality
 
 trait Syntax extends base.Syntax with sums.Types with unit.Types {
-  val Bool = SumType(UnitType, UnitType)
+  val BoolType = SumType(UnitType, UnitType)
   //Signature: v -> v -> Bool
   case object Eq extends ConstantWith1TypeParameter {
-    override val typeConstructor = TypeConstructor("v") { v => Bool }
+    override val typeConstructor = TypeConstructor("v") { v =>
+      v =>: v =>: BoolType
+    }
   }
 }
 

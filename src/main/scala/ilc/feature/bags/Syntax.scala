@@ -6,13 +6,13 @@ trait Syntax extends base.Syntax with bags.Types {
   // intro/elim forms of bags (of values comparable for equality)
   //
   //   empty     : Bag v
-  //   singleton : v -> Bag v
-  //   union     : Bag v -> Bag v -> Bag v
-  //   negate    : Bag v -> Bag v
+  //   singleton : v → Bag v
+  //   union     : Bag v → Bag v → Bag v
+  //   negate    : Bag v → Bag v
   // In principle:
-  //   foldGroup : Group b -> (v -> b) -> Bag v -> b
+  //   foldGroup : Group b → (v → b) → Bag v → b
   // In practice:
-  //   foldGroup : (op : b -> b -> b) -> (inv : b -> b) -> (e : b) -> (v -> b) -> Bag v -> b
+  //   foldGroup : (op : b → b → b) → (inv : b → b) → (e : b) → (v → b) → Bag v → b
 
   case object EmptyBag extends ConstantWith1TypeParameter {
     val typeConstructor = TypeConstructor("v")(BagType)
@@ -52,7 +52,7 @@ trait SyntaxSugar extends Syntax with functions.Syntax {
     Union(v) ! Negate(v) ! EmptyBag(v)
    */
 
-  //flatMap : (v -> Bag u) -> Bag v -> Bag u
+  //flatMap : (v → Bag u) → Bag v → Bag u
   val flatMap : PolymorphicTerm =
     new PolymorphicTerm {
       def specialize(argumentTypes: Type*): Term =

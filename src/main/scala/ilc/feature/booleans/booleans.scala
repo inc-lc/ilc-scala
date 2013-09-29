@@ -17,5 +17,14 @@ trait Library {
       Right(())
 }
 
-trait Syntax extends Types {
+trait SyntaxSugar extends Types with functions.SyntaxSugar with sums.SyntaxSugar with unit.Syntax {
+  val trueTerm = Inj1(UnitType) ! UnitTerm ofType BoolType
+  val falseTerm = Inj2(UnitType) ! UnitTerm ofType BoolType
+
+  def ifTerm(cond: TermBuilder, thenBranch: TermBuilder, elseBranch: TermBuilder) =
+    case2(cond,
+      //const ! thenBranch % UnitType,
+      //const ! elseBranch % UnitType)
+      lambda(Var("ignored", UnitType)) {ignored => thenBranch},
+      lambda(Var("ignored", UnitType)) {ignored => elseBranch})
 }

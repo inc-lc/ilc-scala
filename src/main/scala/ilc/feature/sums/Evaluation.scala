@@ -19,7 +19,10 @@ trait EvaluationBase extends feature.base.Evaluation with Syntax {
       }
   }
 
-  case class SumValue(toSum: ValueSum) extends Value
+  case class SumValue(toSum: ValueSum) extends Value {
+    override def toString: String =
+      toSum.fold(x => s"Inj1($x)", y => s"Inj2($y)")
+  }
 
   object Inj1Value {
     def apply(v: Value): SumValue = SumValue(Left(v))

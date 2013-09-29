@@ -11,7 +11,9 @@ trait EvaluationBase extends feature.base.Evaluation with Syntax {
 
   private[this] type ValueMap = immutable.Map[Value, Value]
 
-  case class MapValue(toMap: ValueMap) extends Value
+  case class MapValue(toMap: ValueMap) extends Value {
+    override def toString = toMap.toString
+  }
 
   object MapValue {
     def apply[K <% Value, V <% Value](assoc: (K, V)*): MapValue = {

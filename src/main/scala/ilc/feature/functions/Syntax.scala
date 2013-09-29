@@ -316,3 +316,16 @@ trait Syntax extends base.Syntax {
       }
   }
 }
+
+trait SyntaxSugar extends Syntax {
+  /** Usage: `(const ! firstArg) % ignoredType`.
+    *
+    * Examples:
+    * {{{
+    * // if given a curried argument, `const` needs only 1 type argument
+    * val constSucc: Term = (const ! succ) % ℕ
+    * }}}
+    */
+  val const: TermBuilder =
+    lambda { x => lambda("ignored") { ignored => x } }
+}

@@ -16,7 +16,8 @@ extends maps.Syntax
   //
   //   combine : (v → v → Maybe v) → Map k v → Map k v
   //
-  //   foldGroup : (b × (b → b → b) × (b → b)) → (k → a → b) → Map k a → b
+  //   foldGroup : (op : b → b → b) → (inv : b → b) → (e : b) →
+  //               (k → a → b) → Map k a → b
   //
   // (It is not possible to encode combine with foldGroup because
   // there is no other means to enlarge the map.)
@@ -27,7 +28,7 @@ extends maps.Syntax
   //   delete : k → Map k v → Map k v
   //   lookup : k → Map k v → Maybe v
 
-  object Singleton extends ConstantWith2TypeParameters {
+  object SingletonMap extends ConstantWith2TypeParameters {
     val typeConstructor = TypeConstructor("keyType", "valType") {
       case Seq(keyType, valType) =>
         keyType =>: valType =>: MapType(keyType, valType)
@@ -41,5 +42,10 @@ extends maps.Syntax
     }
   }
 
-  //object FoldGroup extends ConstantWith3TypeParameters
+  case object FoldGroupMap extends ConstantWith3TypeParameters {
+    val typeConstructor = TypeConstructor("b", "k", "v") {
+      case Seq(b, k, v) =>
+        (b =>: b =>: b) =>: (b =>: b) =>: b =>: (k =>: v =>: b) =>: MapType(k, v) =>: b
+    }
+  }
 }

@@ -25,12 +25,18 @@ trait Library {
 }
 
 trait ToScala extends base.ToScala with Syntax {
-  private[this] def containsFunctions(t: Type): Boolean =
+  //This accepts arbitrary instances of Type, not just ours; see pattern match
+  //below for rationale.
+  private[this] def containsFunctions(t: base.Types#Type): Boolean =
     t match {
       case _ =>: _ => true
       case _ =>
         t.productIterator.toSeq exists {
-          case x: Type =>
+          //This pattern match cannot distinguish between "our" type and another
+          //one - this is visible because matching against `Type` would give an
+          //unchecked warning. However, the code is in fact safe, because it's
+          //enough to test for base.Types#Type.
+          case x: base.Types#Type =>
             containsFunctions(x)
           case _ =>
             false

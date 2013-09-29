@@ -35,5 +35,31 @@ extends base.Derivation
     case _ =>
       super.diffTerm(tau)
   }
+
+  object BagSurgery {
+    sealed trait Change
+    case class DELETE(value: Term) extends Change
+    case class INSERT(value: Term) extends Change
+    case class MODIFY(value: Term, deltaValue: Term) extends Change
+  }
+
+  //Copied from ReplacementValuesDerivation.scala
+  def mkSurgicalBagChange(valueType: Type)
+    (changes: BagSurgery.Change*): Term =
+  {
+    import BagSurgery._
+    if (changes.isEmpty)
+      EmptyBag(valueType)
+    else
+      ???
+  }
+
   //TODO: non-naive derivatives!
+  override def derive(t: Term): Term =
+    t match {
+      case EmptyBag(valueType) =>
+        mkSurgicalBagChange(valueType)()
+      case _ =>
+        super.derive(t)
+    }
 }

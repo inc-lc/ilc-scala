@@ -61,7 +61,7 @@ extends Example
                   Var("inv", invType(elType)),
                   Var("e", elType)) { case Seq(gv, op, inv, e) =>
                   groupBuildTerm ! {
-                    Combine ! {
+                    Combine(keyType, elType) ! {
                       lambda(Var("u", elType), Var("v", elType)) { case Seq(u, v) =>
                         let("res", op ! u ! v) { res =>
                           ifTerm((Eq ! res ! e), Nope(elType), Just ! res)

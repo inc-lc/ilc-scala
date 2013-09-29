@@ -10,6 +10,8 @@ trait EvaluationBase extends feature.base.Evaluation with Syntax {
 
   case class NatValue(toNat: Int) extends Value {
     require(toNat >= 0)
+
+    override def toString = toNat.toString
   }
 
   implicit def liftNatValue(n: Int): Value = NatValue(n)

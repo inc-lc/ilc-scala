@@ -16,9 +16,10 @@ trait ToScala extends base.ToScala with Syntax {
 
     case FoldNat(rType) => {
       val r = toScala(rType)
+      val fType = toScala(rType =>: rType)
       val body = s"Range.inclusive(1, n).foldLeft[$r](z)" ++
         s"((x: $r, _: $natType) => f(x))"
-      s"((z: $r) => (f: $r => $r) => (n: $natType) => $body)"
+      s"((z: $r) => (f: $fType) => (n: $natType) => $body)"
     }
 
     case _ =>

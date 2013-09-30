@@ -7,8 +7,9 @@ trait ToScala extends base.ToScala with Syntax {
     case Maybe(aType, bType) => {
       val List(a, b) = List(aType, bType) map toScala
       val maybe_a = toScala(MaybeType(aType))
+      val fType = toScala(aType =>: bType)
       val body = s"m.fold[$b](z)(f)"
-      s"((z: $b) => (f: $a => $b) => (m: $maybe_a) => $body)"
+      s"((z: $b) => (f: $fType) => (m: $maybe_a) => $body)"
     }
 
     case Nope(contentType) => {

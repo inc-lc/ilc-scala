@@ -34,7 +34,7 @@ trait ToScala extends base.ToScala with Syntax {
     case Fold(k, a, b) => {
       val (mType, kType, aType) = mapTypes(k, a)
       val bType = toScala(b)
-      val fType = s"$kType => $aType => $bType => $bType"
+      val fType = toScala(k =>: a =>: b =>: b)
       val body = s"m.foldRight[$bType](z)((p, b) => f(p._1)(p._2)(b))"
       s"((f: $fType) => (z: $bType) => (m: $mType) => $body)"
     }

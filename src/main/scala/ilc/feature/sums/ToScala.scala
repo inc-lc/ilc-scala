@@ -11,7 +11,13 @@ trait ToScala extends base.ToScala with Syntax {
       val List(a, b, c) = List(aType, bType, cType) map toScala
       val either_a_b = sumType(aType, bType)
       val body = s"s.fold[$c](f, g)"
-      s"((f: $a => $c) => (g: $b => $c) => (s: $either_a_b) => $body)"
+      // CAUTION: function types must be handled delicately!
+      // NEVER, EVER writes an => as the type of something!
+      // Reason: (Int, Int) => Int is NOT a function with domains
+      // in a product type.
+      val fType = toScala(aType =>: cType)
+      val gType = toScala(bType =>: cType)
+      s"((f: $fType) => (g: $gType) => (s: $either_a_b) => $body)"
     }
 
     case Inj1(aType, bType) => {

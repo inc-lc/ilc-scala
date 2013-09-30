@@ -309,5 +309,10 @@ trait Syntax extends base.Syntax {
         val t0Term = t0(context).specialize(intermediateType)
         (lambda(domain) { x => t0Term ! (t1Term ! x) })(TypingContext.empty)
       }
+
+    def composeWithBuilder(t1: TermBuilder): TermBuilder =
+      lambda("hole") { hole =>
+        t0 ! (t1 ! hole)
+      }
   }
 }

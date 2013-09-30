@@ -354,7 +354,7 @@ Please do not declare getType as an abstract `val`.
           case (Nil, i) => {
             val typeVariableName = typeVariableNames(i)
             sys error s"type variable $typeVariableName " +
-              s"unused in body of $getConstantName"
+              s"unused in arguments given to $getConstantName"
           }
 
           case (candidate :: otherWitnesses, i) => {

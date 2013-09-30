@@ -13,7 +13,7 @@ trait Syntax extends base.Syntax {
           range
         else
           typeErrorNotTheSame(
-            "operand position",
+            s"operand position of $operator : ${expectedDomain =>: range}",
             expectedDomain,
             s"$operand : $actualDomain")
 

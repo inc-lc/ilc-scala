@@ -4,27 +4,27 @@ package integers
 
 import org.scalatest.FunSuite
 import ilc.util.EvalScala
+import ilc.language.bacchus
+import scala.language.implicitConversions
 
 class IntegerSuite
 extends FunSuite
    with AbelianDerivation
    with Evaluation
-   with functions.Evaluation
-   with products.Evaluation
-   with sums.Evaluation
    with ToScala
-   with functions.ToScala
-   with products.ToScala
-   with sums.ToScala
+   with bacchus.Evaluation
+   with bacchus.BasicDerivation
+   with bacchus.ToScala
    with EvalScala
    with functions.Pretty
 {
   override def language = "IntegerSuite"
   private val ℤ = IntType
+  implicit def intToTerm(i: Int): Term = ILit(i)
 
   def expectToGet(i: Int)(t: => Term) {
     assert(eval(t) === IntValue(i))
-    try { assert(evalScala(toScala(t)) === i) }
+    try { assert(evalScala(addImports(toScala(t))) === i) }
     catch { case e: Throwable =>
       info(e.getMessage)
       info(pretty(t))
@@ -47,4 +47,11 @@ extends FunSuite
     assert(plus20.getType === deltaType(IntType))
     expectToGet(16) { ChangeUpdate ! plus20 ! -4 }
   }
+
+  // hack to import from bacchus.Libraries
+  def addImports(code: String): String = s"""|
+    |{
+    |  import ilc.language.bacchus.Libraries._
+    |  $code
+    |}""".stripMargin
 }

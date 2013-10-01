@@ -60,8 +60,8 @@ extends base.Derivation
   }
 
   override def derive(t: Term): Term = t match {
-    case Literal(i) =>
-      replaceBy ! i
+    case ILit(i) =>
+      replaceBy ! t
 
     // Plus and Minus can use the slow derivative. It operates on
     // integers, so calling `updateTerm` and `diffTerm` is okay.

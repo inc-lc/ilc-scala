@@ -13,5 +13,5 @@ extends functions.ToScala
    with sums.ToScala
    with equality.ToScala
 {
-  def language = "bacchus"
+  override def language = "bacchus"
 }

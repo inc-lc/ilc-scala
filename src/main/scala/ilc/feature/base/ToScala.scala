@@ -31,5 +31,5 @@ trait ToScala extends Syntax with functions.Types {
     * Package name for the language. Trait ilc.language.$someName.ToScala should
     * define this field to "$someName".
     */
-  def language: String
+  def language: String = "bacchus"
 }

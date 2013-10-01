@@ -19,6 +19,7 @@ extends FunSuite
    with EvalScala
    with functions.Pretty
 {
+  override def language = "IntegerSuite"
   private val ℤ = IntType
 
   def expectToGet(i: Int)(t: => Term) {

@@ -23,7 +23,4 @@ extends base.Syntax
 
   // ℤ can be folded over just like ℕ ⊎ ℕ.
   // foldInt isn't used yet. to add later?
-
-  implicit def intToTerm
-    (i: Int): Term = Literal(i)
 }

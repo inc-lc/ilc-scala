@@ -8,3 +8,4 @@ object Libraries
 extends bags.Library
    with equality.Library
    with abelianGroups.Library
+   with Serializable

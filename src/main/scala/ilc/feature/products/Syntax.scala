@@ -31,17 +31,6 @@ extends base.Syntax
 
 trait SyntaxSugar extends Syntax with functions.Syntax
 {
-  /** As in Agda, tuples are nested toward the right.
-    * If tuples are nested toward the left,
-    * then proj(i) is ill-defined.
-    */
-
-  def tupleType(elementTypes: Type*): Type =
-    if (elementTypes.size == 1)
-      elementTypes.head
-    else
-      ProductType(elementTypes.head, tupleType(elementTypes.tail: _*))
-
   def tuple(n: Int): TermBuilder = {
     def loop(i: Int, prefix: TermBuilder): TermBuilder = {
       if (i == 2)

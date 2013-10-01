@@ -33,8 +33,8 @@ extends FunSuite
     }
   }
 
-  test("2 + 2 =  4") { expectToGet( 4) { Plus ! 2 ! 2 } }
-  test("2 - 4 = -2") { expectToGet(-2) { Minus ! 2 ! 4} }
+  test("2 + 2 =  4") { expectToGet( 4) { IPlus ! 2 ! 2 } }
+  test("2 - 4 = -2") { expectToGet(-2) { IMinus ! 2 ! 4} }
 
   test("i ⊕ (j ⊝ i) = j") {
     val (i, j) = (4, 2)
@@ -43,7 +43,7 @@ extends FunSuite
 
   test("-4 ⊕ (+ 20) = 16") {
     val plus20: Term = Inj1(ℤ) !
-      (Pair ! (abelian ! Plus ! (Minus ! 0) ! 0) ! 20)
+      (Pair ! (AbelianGroup ! IPlus ! (IMinus ! 0) ! 0) ! 20)
     assert(plus20.getType === deltaType(IntType))
     expectToGet(16) { ChangeUpdate ! plus20 ! -4 }
   }

@@ -5,7 +5,7 @@ package bags
 trait Syntax
 extends base.Syntax
    with bags.Types
-   with abelians.Types
+   with abelianGroups.Types
 {
   // intro/elim forms of bags (of values comparable for equality)
   //
@@ -13,7 +13,7 @@ extends base.Syntax
   //   singleton : v → Bag v
   //   union     : Bag v → Bag v → Bag v
   //   negate    : Bag v → Bag v
-  //   foldGroup : Abelian b → (v → b) → Bag v → b
+  //   foldGroup : AbelianGroup b → (v → b) → Bag v → b
 
   case object EmptyBag extends ConstantWith1TypeParameter {
     val typeConstructor = TypeConstructor("v")(BagType)
@@ -42,7 +42,7 @@ extends base.Syntax
   case object FoldGroup extends ConstantWith2TypeParameters {
     val typeConstructor = TypeConstructor("b", "v") {
       case Seq(b, v) =>
-        AbelianType(b) =>: (v =>: b) =>: BagType(v) =>: b
+        AbelianGroupType(b) =>: (v =>: b) =>: BagType(v) =>: b
     }
   }
 }
@@ -50,7 +50,7 @@ extends base.Syntax
 trait SyntaxSugar
 extends Syntax
    with functions.Syntax
-   with abelians.Syntax
+   with abelianGroups.Syntax
 {
   //flatMap : (v → Bag u) → Bag v → Bag u
   val flatMap : PolymorphicTerm =
@@ -59,7 +59,7 @@ extends Syntax
         argumentTypes.head match {
           case fType @ (v =>: BagType(u)) =>
             FoldGroup(BagType(u), v) !
-              (abelian ! Union(u) ! Negate(u) ! EmptyBag(u))
+              (AbelianGroup ! Union(u) ! Negate(u) ! EmptyBag(u))
         }
     }
 

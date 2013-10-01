@@ -15,7 +15,7 @@ extends Example
    with bacchus.BasicDerivation
 
    with booleans.SyntaxSugar
-   with groups.SyntaxSugar
+//   with groups.SyntaxSugar
 {
   // dummy program TODO: replace me!
   def program = lambda(NatType) {x => x}

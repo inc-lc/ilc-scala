@@ -2,7 +2,7 @@ package ilc
 package feature
 package integers
 
-/** Δℤ = (Abelian ℤ × ℤ) ⊎ ℤ
+/** Δℤ = (AbelianGroup ℤ × ℤ) ⊎ ℤ
   *
   * The change to an integer is an abelian group element or a
   * replacement.
@@ -11,19 +11,20 @@ trait AbelianDerivation
 extends base.Derivation
    with Syntax
    with functions.Derivation // for `lambdaDelta`
-   with abelians.Derivation
+   with abelianGroups.Derivation
+   with products.Syntax
    with sums.SyntaxSugar
 {
-  private def groupElemType = ProductType(AbelianType(IntType), IntType)
-  private def getBinaryOp = binaryOp composeWith Proj1%groupElemType
-  private def getNegation = negation composeWith Proj1%groupElemType
-  private def getNeutral  = neutral  composeWith Proj1%groupElemType
-  private def getElement  = Proj2%groupElemType
-  private def replaceBy   = Inj2(groupElemType, IntType)
+  private def deltaInt    = ProductType(AbelianGroupType(IntType), IntType)
+  private def getBinaryOp = GetBinOp   composeWith Proj1%deltaInt
+  private def getInverse  = GetInv     composeWith Proj1%deltaInt
+  private def getNeutral  = GetNeutral composeWith Proj1%deltaInt
+  private def getElement  = Proj2%deltaInt
+  private def replaceBy   = Inj2(deltaInt, IntType)
 
   override def deltaType(tau: Type): Type = tau match {
     case IntType =>
-      SumType(groupElemType, IntType)
+      SumType(deltaInt, IntType)
 
     case _ =>
       super.deltaType(tau)
@@ -35,7 +36,7 @@ extends base.Derivation
         case Seq(dn, n) =>
           case2(dn,
             // group element
-            lambda(groupElemType) { groupElem =>
+            lambda(deltaInt) { groupElem =>
               getBinaryOp ! groupElem ! (getElement ! groupElem) ! n
             },
             // replacement

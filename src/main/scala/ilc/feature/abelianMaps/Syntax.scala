@@ -4,7 +4,7 @@ package abelianMaps
 
 trait Syntax
 extends maps.Syntax
-   with abelians.Types
+   with abelianGroups.Types
 {
   // intro/elim forms of maps with abelian groups on values
   //
@@ -12,9 +12,9 @@ extends maps.Syntax
   //
   //   singleton : k → v → Map k v
   //
-  //   liftGroup : Abelian v → Abelian (Map k v)
+  //   liftGroup : AbelianGroup v → AbelianGroup (Map k v)
   //
-  //   foldByHom : Abelian a → Abelian b →
+  //   foldByHom : AbelianGroup a → AbelianGroup b →
   //               (k → a → b) → Map k a → b
   //
   // (inherited from feature.maps)
@@ -33,14 +33,15 @@ extends maps.Syntax
   object LiftGroup extends ConstantWith2TypeParameters {
     val typeConstructor = TypeConstructor("keyType", "valType") {
       case Seq(keyType, valType) =>
-        AbelianType(valType) =>: AbelianType(MapType(keyType, valType))
+        AbelianGroupType(valType) =>:
+          AbelianGroupType(MapType(keyType, valType))
     }
 
     /** Give only the key type of LiftGroup, deduce valType from
       * argument
       * {{{
       * (LiftGroup(Word) ! additiveGroup).getType =
-      *   AbelianType(MapType(Word, IntType))
+      *   AbelianGroupType(MapType(Word, IntType))
       * }}}
       * Although this pattern of partially specifying type
       * arguments might be abstracted in traits, it's probably
@@ -50,7 +51,7 @@ extends maps.Syntax
     def apply(keyType: Type): PolymorphicTerm = new PolymorphicTerm {
       def specialize(argumentTypes: Type*): Term = {
         val Seq(valType) =
-          TypeConstructor("v")(AbelianType.apply _).
+          TypeConstructor("v")(AbelianGroupType.apply _).
             inverse(argumentTypes.head)
         LiftGroup(keyType, valType)
       }
@@ -60,7 +61,7 @@ extends maps.Syntax
   object FoldByHom extends ConstantWith3TypeParameters {
     val typeConstructor = TypeConstructor("k", "a", "b") {
       case Seq(k, a, b) =>
-        AbelianType(a) =>: AbelianType(b) =>:
+        AbelianGroupType(a) =>: AbelianGroupType(b) =>:
           (k =>: a =>: b) =>: MapType(k, a) =>: b
     }
   }

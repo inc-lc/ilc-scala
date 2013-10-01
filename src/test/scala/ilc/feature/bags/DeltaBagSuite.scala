@@ -10,7 +10,7 @@ extends FunSuite with ShouldMatchers
    with Library
 {
   def sum(b: Bag[Int]) =
-    bagFoldGroup(AbelianGroup[Int](x => x + _, -_, 0))(identity[Int])(b)
+    bagFoldGroup(GenerativeGroup[Int](x => x + _, -_, 0))(identity[Int])(b)
   val bag_1_1 = bagUnion(bagSingleton(1))(bagSingleton(1))
   test("sum(Bag(1, 1)) = 2") {
     sum(bag_1_1) should be (2)

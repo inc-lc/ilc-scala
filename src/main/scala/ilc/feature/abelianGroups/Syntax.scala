@@ -1,6 +1,6 @@
 package ilc
 package feature
-package groups
+package abelianGroups
 
 trait Syntax extends base.Syntax with Types {
   case object GroupConstructor extends ConstantWith1TypeParameter {

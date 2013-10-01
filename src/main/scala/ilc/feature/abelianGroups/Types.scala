@@ -1,6 +1,6 @@
 package ilc
 package feature
-package groups
+package abelianGroups
 
 trait Types extends functions.Types {
   case class GroupType(elType: Type) extends Type

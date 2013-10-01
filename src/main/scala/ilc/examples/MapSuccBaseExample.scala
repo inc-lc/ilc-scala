@@ -22,3 +22,14 @@ extends Example
   // constSucc = λ k (x: ℕ) → x + 1
   def constSucc: Term = (const ! succ) % ℕ
 }
+
+class MapSuccBagsExample
+extends Example
+   with bacchus.Syntax // for syntactic sugars
+   with bacchus.Prelude
+   with bacchus.ToScala
+   with bacchus.BasicDerivation
+{
+  def program: Term =
+    map ! succ
+}

@@ -13,7 +13,7 @@ class MapIntIntBenchData(val example: ExampleGenerated {
   type OutputType = Map[Int, Int]
   type DeltaInputType = Either[Map[Int, Either[Option[Int], Int]], Map[Int, Int]]
   type DeltaOutputType = Either[Map[Int, Either[Option[Int], Int]], Map[Int, Int]]
-}) extends BenchData
+}) extends BenchData with ReplacementChangeData
 {
   import example._
 
@@ -21,7 +21,7 @@ class MapIntIntBenchData(val example: ExampleGenerated {
 
   // consider leaving out the output.
   def inputOfSize(n: Int): Data =
-    (1 to n).map(i => (i, i))(breakOut)
+    (1 to n).map(i => (i -> i))(breakOut)
 
   lazy val changeDescriptions: Gen[String] = Gen.enumeration("change")(
     "no change",
@@ -46,5 +46,57 @@ class MapIntIntBenchData(val example: ExampleGenerated {
 
     case "remove n" =>
       Left(Map(n -> Left(None)))
+  }
+}
+
+import ilc.language.bacchus.Libraries._
+
+import collection.immutable.HashMap
+
+class BagIntBenchData(val example: ExampleGenerated {
+  type InputType = Bag[Int]
+  type OutputType = Bag[Int]
+  type DeltaInputType = Bag[Int]
+  type DeltaOutputType = Bag[Int]
+}) extends BenchData
+{
+  import example._
+
+  // consider leaving out the output.
+  def inputOfSize(n: Int): Data =
+    (1 to n).map(i => (i -> 1))(breakOut)
+
+  lazy val changeDescriptions: Gen[String] = Gen.enumeration("change")(
+    "no change",
+    "replace 1 by n + 1",
+    "add n + 2",
+    "remove 2",
+    "remove n"
+  )
+
+  def add(e: Int) =
+    bagSingleton(e)
+
+  def remove(e: Int) =
+    bagNegate(add(e))
+
+  def replace(a: Int, b: Int) =
+    bagUnion(remove(a))(add(b))
+
+  def lookupChange(n: Int, description: String): Change = description match {
+    case "no change" =>
+      bagEmpty
+
+    case "replace 1 by n + 1" =>
+      replace(1, n + 1)
+
+    case "add n + 2" =>
+      add(n + 2)
+
+    case "remove 2" =>
+      remove(2)
+
+    case "remove n" =>
+      remove(n)
   }
 }

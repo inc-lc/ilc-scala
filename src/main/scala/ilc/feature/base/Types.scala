@@ -3,5 +3,5 @@ package feature
 package base
 
 trait Types {
-  trait Type
+  trait Type extends Product
 }

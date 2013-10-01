@@ -18,5 +18,7 @@ extends Generator {
 
   //Ditto
   addExample("MapSuccBase", new MapSuccBaseExample)
+
+  addExample("MapSuccBags", new MapSuccBagsExample)
 }
    // idea for speeding up lookup/update: memoizing algorithms

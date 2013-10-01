@@ -6,7 +6,12 @@ import feature._
 
 trait ToScala
 extends functions.ToScala
+   with bags.ToScala
    with maps.ToScala
    with maybe.ToScala
    with naturals.ToScala
    with sums.ToScala
+   with equality.ToScala
+{
+  override def language = "bacchus"
+}

@@ -14,13 +14,26 @@ package abelians
   */
 
 trait Types
-extends products.SyntaxSugar
+extends base.TypeConstructor
+   with products.Types
 {
-  /** Abelian groups are encoded as products
-    * so as to take advantage of Δ(σ × τ) = Δσ × Δτ
-    */
-  def abelianType(elementType: Type): Type = {
-    val tau = elementType
-    tupleType(tau =>: tau =>: tau, tau =>: tau, tau)
+  /** (de-)constructor of the type of abelian groups */
+  object AbelianType {
+    def apply(elementType: Type): Type = {
+      val tau = elementType
+      tupleType(tau =>: tau =>: tau, tau =>: tau, tau)
+    }
+
+    def unapply(abelianType: Type): Option[Type] = {
+      val tuple = tupleTypeExtractor(3)
+      abelianType match {
+        case tuple(Seq(a0 =>: a1 =>: a2, a3 =>: a4, a5))
+            if List(a0, a1, a2, a3, a4, a5).distinct.size == 1 =>
+          Some(a0)
+
+        case _ =>
+          None
+      }
+    }
   }
 }

@@ -14,7 +14,7 @@ extends base.Derivation
    with abelians.Derivation
    with sums.SyntaxSugar
 {
-  private def groupElemType = ProductType(abelianType(IntType), IntType)
+  private def groupElemType = ProductType(AbelianType(IntType), IntType)
   private def getBinaryOp = binaryOp composeWith Proj1%groupElemType
   private def getNegation = negation composeWith Proj1%groupElemType
   private def getNeutral  = neutral  composeWith Proj1%groupElemType

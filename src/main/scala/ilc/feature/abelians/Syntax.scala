@@ -3,7 +3,7 @@ package feature
 package abelians
 
 trait Syntax
-extends base.Syntax
+extends products.SyntaxSugar
    with Types
 {
   def abelian: TermBuilder = new PolymorphicTerm {
@@ -12,7 +12,7 @@ extends base.Syntax
         case tau =>: tau2 =>: tau3 if tau == tau2 && tau == tau3 =>
           tuple(3) ofType (
             (tau =>: tau =>: tau) =>: (tau =>: tau) =>: tau =>:
-              abelianType(tau)
+              AbelianType(tau)
           )
 
         case _ =>

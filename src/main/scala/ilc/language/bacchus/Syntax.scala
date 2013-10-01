@@ -12,3 +12,4 @@ extends functions.Pretty
    with naturals.Syntax
    with sums.SyntaxSugar
    with equality.Syntax
+   with abelianGroups.Syntax

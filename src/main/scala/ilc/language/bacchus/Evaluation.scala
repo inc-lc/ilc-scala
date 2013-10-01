@@ -10,3 +10,4 @@ extends functions.Evaluation
    with maybe.Evaluation
    with naturals.Evaluation
    with sums.Evaluation
+   with abelianGroups.Evaluation

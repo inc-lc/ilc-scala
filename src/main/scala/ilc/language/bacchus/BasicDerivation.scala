@@ -11,3 +11,4 @@ extends functions.Derivation
    with maybe.ReplacementValuesDerivation
    with naturals.ReplacementValuesDerivation
    with sums.ReplacementValuesDerivation
+   with abelianGroups.Derivation

@@ -12,6 +12,7 @@ extends functions.ToScala
    with naturals.ToScala
    with sums.ToScala
    with equality.ToScala
+   with abelianGroups.ToScala
 {
   override def language = "bacchus"
 }

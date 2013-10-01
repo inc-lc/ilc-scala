@@ -8,6 +8,7 @@ extends base.Derivation
    with functions.Syntax
    with maybe.Syntax
    with sums.Syntax
+   with products.Derivation // TODO: REMOVE ME FROM BACCHUS!
 {
   override def deltaType(tau: Type): Type = tau match {
     case BagType(v) =>

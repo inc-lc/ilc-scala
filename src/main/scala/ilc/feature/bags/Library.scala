@@ -20,7 +20,19 @@ trait Library {
         el1 -> (count1 + count2)
     }
 
-  def bagFoldGroup[G, T](op: G => G => G)(inv: G => G)(neutral: G)(f: T => G)(bag: Bag[T]): G = {
+  // TODO (HACK, HORRIBLE BREAKDOWN OF ABSTRACTION BARRIER)
+  // amend after AbelianType inherits from Group
+  private type AbelianType[G] = (G => G => G, (G => G, G))
+  object AbelianGroup {
+    def apply[G](op: G => G => G, neg: G => G, neutral: G):
+        AbelianType[G] = (op, (neg, neutral))
+    def unapply[G](abelian: AbelianType[G]):
+        Option[(G => G => G, G => G, G)] =
+      Some((abelian._1, abelian._2._1, abelian._2._2))
+  }
+
+  def bagFoldGroup[G, T](abelian: AbelianType[G])(f: T => G)(bag: Bag[T]): G = {
+    val AbelianGroup(op, inv, neutral) = abelian
     (for {
       (t, count) <- bag
       g = f(t)

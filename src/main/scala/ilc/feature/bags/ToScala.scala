@@ -2,7 +2,11 @@ package ilc
 package feature
 package bags
 
-trait ToScala extends base.ToScala with Syntax {
+trait ToScala
+extends base.ToScala
+   with Syntax
+   with products.ToScala // TODO: REMOVE ME FROM BACCHUS!
+{
   private[this] def mapTypes(v: Type): (String, String) = {
     val vType = toScala(v)
     ("Bag[%s]".format(vType), vType)

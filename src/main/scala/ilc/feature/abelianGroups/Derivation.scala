@@ -29,7 +29,7 @@ trait Derivation extends base.Derivation with Syntax {
       lambda(_G, _G) { case Seq(_Gnew, _Gold) => _Gnew }
 
     case _ =>
-      super.updateTerm(tau)
+      super.diffTerm(tau)
   }
 
   // do not override derive, do replacement in all cases

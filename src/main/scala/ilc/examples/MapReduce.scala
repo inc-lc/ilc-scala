@@ -10,8 +10,7 @@ extends Example
    with bacchus.Prelude
    with bacchus.ToScala
    with bacchus.BasicDerivation
-
-   with booleans.SyntaxSugar
+   with booleans.Syntax
 //   with groups.SyntaxSugar
 {
   // dummy program TODO: replace me!

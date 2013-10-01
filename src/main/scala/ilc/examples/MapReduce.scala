@@ -6,9 +6,6 @@ import language.bacchus
 
 class MapReduceExample
 extends Example
-// We probably don't want to mix in Bacchus,
-// because naturals and integers don't play well together (yet)
-
    with bacchus.Syntax
    with bacchus.Prelude
    with bacchus.ToScala

@@ -6,16 +6,20 @@ import language.bacchus
 
 class MapReduceExample
 extends Example
+// We probably don't want to mix in Bacchus,
+// because naturals and integers don't play well together (yet)
+
    with bacchus.Syntax
    with bacchus.Prelude
    with bacchus.ToScala
    with bacchus.BasicDerivation
 
-   with integers.Syntax
    with booleans.SyntaxSugar
    with groups.SyntaxSugar
-   with mapReduce.Syntax
 {
+  // dummy program TODO: replace me!
+  def program = lambda(NatType) {x => x}
+/*
   type BTerm = TermBuilder
   def bagGroup(k: Type): BTerm =
     groupBuildTerm ! Union(k) ! Negate(k) ! EmptyBag(k)
@@ -86,5 +90,5 @@ extends Example
     liftedBagGroup(ℕ, ℕ)
     //liftedValueGroup(ℕ)
     //mapValues
-    //bagGroup(ℕ)
+    //bagGroup(ℕ) */
 }

@@ -6,14 +6,14 @@ trait Syntax extends base.Syntax with booleans.Types {
   //Signature: v -> v -> Bool
   case object Eq extends ConstantWith1TypeParameter {
     override val typeConstructor = TypeConstructor("v") { v =>
-      v =>: v =>: BoolType
+      v =>: v =>: BooleanType
     }
   }
 }
 
-trait Library extends booleans.Library {
-  def equal[T](a: T, b: T): ObjBool =
-    boolToObjBool(a == b)
+trait Library {
+  def equal[T](a: T, b: T): Boolean =
+    a == b
 }
 
 trait ToScala extends base.ToScala with Syntax {

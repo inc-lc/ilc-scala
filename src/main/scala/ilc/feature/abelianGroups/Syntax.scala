@@ -29,7 +29,7 @@ trait Syntax extends base.Syntax with Types with booleans.Types {
 
   case object AreEqualGroups extends ConstantWith1TypeParameter {
     val typeConstructor = TypeConstructor("e") { e =>
-      AbelianGroupType(e) =>: AbelianGroupType(e) =>: BoolType
+      AbelianGroupType(e) =>: AbelianGroupType(e) =>: BooleanType
     }
   }
 }

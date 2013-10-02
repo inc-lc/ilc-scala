@@ -20,7 +20,7 @@ extends FunSuite
 {
   override def language = "IntegerSuite"
   private val ℤ = IntType
-  implicit def intToTerm(i: Int): Term = ILit(i)
+  implicit def intToTerm(i: Int): Term = LiteralInt(i)
 
   def expectToGet(i: Int)(t: => Term) {
     assert(eval(t) === IntValue(i))
@@ -33,8 +33,8 @@ extends FunSuite
     }
   }
 
-  test("2 + 2 =  4") { expectToGet( 4) { IPlus ! 2 ! 2 } }
-  test("2 - 4 = -2") { expectToGet(-2) { IMinus ! 2 ! 4} }
+  test("2 + 2 =  4") { expectToGet( 4) { PlusInt ! 2 ! 2 } }
+  test("2 - 4 = -2") { expectToGet(-2) { MinusInt ! 2 ! 4} }
 
   test("i ⊕ (j ⊝ i) = j") {
     val (i, j) = (4, 2)
@@ -43,7 +43,7 @@ extends FunSuite
 
   test("-4 ⊕ (+ 20) = 16") {
     val plus20: Term = Inj1(ℤ) !
-      (Pair ! (AbelianGroup ! IPlus ! (IMinus ! 0) ! 0) ! 20)
+      (Pair ! (AbelianGroup ! PlusInt ! (MinusInt ! 0) ! 0) ! 20)
     assert(plus20.getType === deltaType(IntType))
     expectToGet(16) { ChangeUpdate ! plus20 ! -4 }
   }

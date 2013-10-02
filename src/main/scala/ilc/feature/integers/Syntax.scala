@@ -9,15 +9,15 @@ extends base.Syntax
    with Types
    with functions.Types
 {
-  case class ILit(i: Int) extends Term {
+  case class LiteralInt(i: Int) extends Term {
     override def getType: Type = IntType
   }
 
-  case object IPlus extends Term {
+  case object PlusInt extends Term {
     override def getType: Type = IntType =>: IntType =>: IntType
   }
 
-  case object IMinus extends Term {
+  case object MinusInt extends Term {
     override def getType: Type = IntType =>: IntType =>: IntType
   }
 

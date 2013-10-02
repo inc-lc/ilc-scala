@@ -19,13 +19,13 @@ trait Evaluation extends functions.Evaluation with Syntax
   }
 
   override def coreEval(t: Term, env: Env): Value = t match {
-    case ILit(i) =>
+    case LiteralInt(i) =>
       IntValue(i)
 
-    case IPlus =>
+    case PlusInt =>
       (i: Value) => (j: Value) => IntValue(i.toInt + j.toInt)
 
-    case IMinus =>
+    case MinusInt =>
       (i: Value) => (j: Value) => IntValue(i.toInt - j.toInt)
 
     case _ =>

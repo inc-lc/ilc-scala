@@ -34,7 +34,7 @@ extends products.Evaluation
     t match {
       case AbelianGroup(e) => {
         index += 1
-        fixType(tuple(4) ! ILit(index))
+        fixType(tuple(4) ! LiteralInt(index))
       }
 
       case GetBinOp(_)   => fixType(project(2))

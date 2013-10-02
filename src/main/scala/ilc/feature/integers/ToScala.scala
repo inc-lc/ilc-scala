@@ -11,9 +11,9 @@ trait ToScala extends base.ToScala with Syntax {
   }
 
   override def toScala(t: Term): String = t match {
-    case ILit(i) => s"($i: $int)"
-    case IPlus   => s"((i: $int) => (j: $int) => i + j)"
-    case IMinus  => s"((i: $int) => (j: $int) => i - j)"
+    case LiteralInt(i) => s"($i: $int)"
+    case PlusInt   => s"((i: $int) => (j: $int) => i + j)"
+    case MinusInt  => s"((i: $int) => (j: $int) => i - j)"
     case _       => super.toScala(t)
   }
 }

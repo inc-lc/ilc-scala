@@ -6,6 +6,8 @@ trait ToScala
 extends base.ToScala
    with Syntax
 {
+  override val feature = HasLibrary("bags")
+
   private[this] def mapTypes(v: Type): (String, String) = {
     val vType = toScala(v)
     ("Bag[%s]".format(vType), vType)

@@ -5,7 +5,7 @@ package unit
 trait ToScala extends base.ToScala with Syntax {
   override def toScala(t: Term): String = t match {
     case UnitTerm =>
-      "()"
+      s"((): ${toScala(UnitType)})"
 
     case _ =>
       super.toScala(t)

@@ -2,7 +2,10 @@ package ilc
 package feature
 package booleans
 
-trait Evaluation extends functions.Evaluation with Syntax {
+trait Evaluation
+extends functions.Evaluation
+   with unit.Evaluation
+   with Syntax {
   case class BooleanValue(toBoolean: Boolean) extends Value {
     override def toString = toBoolean.toString
   }
@@ -30,7 +33,7 @@ trait Evaluation extends functions.Evaluation with Syntax {
       (condition: Value) => (thenBranch: Value) => (elseBranch: Value) =>
         condition match {
           case BooleanValue(satisfied) =>
-            if (satisfied) thenBranch else elseBranch
+            if (satisfied) thenBranch(UnitValue) else elseBranch(UnitValue)
         }
 
     case _ =>

@@ -2,7 +2,7 @@ package ilc
 package feature
 package abelianGroups
 
-trait Library {
+object Library extends base.Library {
   trait AbelianGroup[T] {
     def binOp: T => T => T
     def inv: T => T

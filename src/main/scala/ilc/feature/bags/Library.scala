@@ -4,7 +4,9 @@ package bags
 
 import collection.immutable.HashMap
 
-trait Library extends abelianGroups.Library {
+object Library extends base.Library {
+  import abelianGroups.Library._
+
   type Bag[T] = HashMap[T, Int]
 
   def bagEmpty[T]: Bag[T] = HashMap.empty[T, Int]

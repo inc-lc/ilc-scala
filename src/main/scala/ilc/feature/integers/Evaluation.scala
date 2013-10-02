@@ -25,8 +25,8 @@ trait Evaluation extends functions.Evaluation with Syntax
     case PlusInt =>
       (i: Value) => (j: Value) => IntValue(i.toInt + j.toInt)
 
-    case MinusInt =>
-      (i: Value) => (j: Value) => IntValue(i.toInt - j.toInt)
+    case NegateInt =>
+      (i: Value) => IntValue(- i.toInt)
 
     case _ =>
       super.coreEval(t, env)

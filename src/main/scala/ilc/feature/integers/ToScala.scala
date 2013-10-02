@@ -13,7 +13,7 @@ trait ToScala extends base.ToScala with Syntax {
   override def toScala(t: Term): String = t match {
     case LiteralInt(i) => s"($i: $int)"
     case PlusInt   => s"((i: $int) => (j: $int) => i + j)"
-    case MinusInt  => s"((i: $int) => (j: $int) => i - j)"
+    case NegateInt => s"((i: $int) => - i)"
     case _       => super.toScala(t)
   }
 }

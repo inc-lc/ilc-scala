@@ -17,8 +17,8 @@ extends base.Syntax
     override def getType: Type = IntType =>: IntType =>: IntType
   }
 
-  case object MinusInt extends Term {
-    override def getType: Type = IntType =>: IntType =>: IntType
+  case object NegateInt extends Term {
+    override def getType: Type = IntType =>: IntType
   }
 
   // ℤ can be folded over just like ℕ ⊎ ℕ.

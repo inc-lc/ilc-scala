@@ -32,3 +32,11 @@ trait EvalScala
   def getToolbox(scopeObject: Any) =
     universe.runtimeMirror(scopeObject.getClass.getClassLoader).mkToolBox()
 }
+
+trait EvalGenerated extends feature.base.ToScala with EvalScala {
+  def evalGenerated(t: Term): Any =
+    evalScala(s"""|{
+                  |  $imports
+                  |  ${toScala(t)}
+                  |}""".stripMargin)
+}

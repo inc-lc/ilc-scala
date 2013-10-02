@@ -29,5 +29,8 @@ extends functions.ToScala
       val function = s"(condition => thenBranch => elseBranch => $body)"
       s"($function: ${toScala(t.getType)})"
     }
+
+    case _ =>
+      super.toScala(t)
   }
 }

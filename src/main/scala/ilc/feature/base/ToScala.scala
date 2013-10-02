@@ -22,15 +22,29 @@ trait ToScala extends Syntax with functions.Types {
       sys error s"Unknown type $tau"
   }
 
-  //Subclass obligations:
+  // automatic imports for generated code
+  private[this]
+  val features = collection.mutable.Set.empty[String]
+
+  sealed trait Feature
+
+  // a feature exports no library by default
+  private[this]
+  case object HasNoLibrary extends Feature
+
+  case class HasLibrary(featureName: String) extends Feature {
+    features += featureName
+  }
 
   /** Imports to include in generated code. By default, the name is determined depending on this.language.
     */
-  def imports: String = s"import ilc.language.$language.Libraries._"
+  def imports: String = features map { featureName =>
+    s"import ilc.feature.$featureName.Library._"
+  } mkString "\n"
 
   /**
-    * Package name for the language. Trait ilc.language.$someName.ToScala should
-    * define this field to "$someName".
+    * Feature name. Trait ilc.feature.$someName.ToScala could
+    * overwrite this field to HasLibrary("$someName").
     */
-  def language: String = "bacchus"
+  val feature: Feature = HasNoLibrary
 }

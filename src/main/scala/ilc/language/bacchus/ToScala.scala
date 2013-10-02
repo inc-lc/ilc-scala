@@ -14,6 +14,3 @@ extends functions.ToScala
    with equality.ToScala
    with abelianGroups.ToScala
    with products.ToScala
-{
-  override def language = "bacchus"
-}

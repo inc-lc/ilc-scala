@@ -49,7 +49,7 @@ class MapIntIntBenchData(val example: ExampleGenerated {
   }
 }
 
-import ilc.language.bacchus.Libraries._
+import ilc.feature.bags.Library._
 
 import collection.immutable.HashMap
 

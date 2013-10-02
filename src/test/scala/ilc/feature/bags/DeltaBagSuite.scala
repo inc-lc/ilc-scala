@@ -7,8 +7,10 @@ import org.scalatest.matchers.ShouldMatchers
 
 class LibrarySuite
 extends FunSuite with ShouldMatchers
-   with Library
 {
+  import Library._
+  import abelianGroups.Library._
+
   def sum(b: Bag[Int]) =
     bagFoldGroup(GenerativeGroup[Int](x => x + _, -_, 0))(identity[Int])(b)
   val bag_1_1 = bagUnion(bagSingleton(1))(bagSingleton(1))

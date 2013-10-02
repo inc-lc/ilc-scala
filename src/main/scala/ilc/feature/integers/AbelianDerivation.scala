@@ -63,7 +63,7 @@ extends base.Derivation
     case LiteralInt(i) =>
       replaceBy ! t
 
-    // Plus and Minus can use the slow derivative. It operates on
+    // PlusInt and MinusInt can use the slow derivative. It operates on
     // integers, so calling `updateTerm` and `diffTerm` is okay.
 
     case _ =>

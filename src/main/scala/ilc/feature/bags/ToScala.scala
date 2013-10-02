@@ -5,7 +5,6 @@ package bags
 trait ToScala
 extends base.ToScala
    with Syntax
-   with products.ToScala // TODO: REMOVE ME FROM BACCHUS!
 {
   private[this] def mapTypes(v: Type): (String, String) = {
     val vType = toScala(v)

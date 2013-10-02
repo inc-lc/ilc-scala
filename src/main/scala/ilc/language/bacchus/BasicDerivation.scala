@@ -12,3 +12,4 @@ extends functions.Derivation
    with naturals.ReplacementValuesDerivation
    with sums.ReplacementValuesDerivation
    with abelianGroups.Derivation
+   with products.Derivation

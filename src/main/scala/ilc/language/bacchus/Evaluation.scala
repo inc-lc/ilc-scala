@@ -11,3 +11,4 @@ extends functions.Evaluation
    with naturals.Evaluation
    with sums.Evaluation
    with abelianGroups.Evaluation
+   with products.Evaluation

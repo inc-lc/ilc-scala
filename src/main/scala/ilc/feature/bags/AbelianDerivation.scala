@@ -76,7 +76,8 @@ extends Syntax
 
     case term @ FoldGroup(resultType, valueType)
         if isAbelianType(resultType) &&
-           s.hasStableArgument(0) && s.hasStableArgument(1) =>
+           s.hasStableArgument(0) &&
+           s.hasStableArgument(1) =>
       lambdaDelta(term) { case Seq(_G, dG, f, df, bag, dbag) =>
         ???
       }

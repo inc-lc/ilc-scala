@@ -29,4 +29,10 @@ trait SyntaxSugar extends Syntax with functions.Syntax {
 
   def mkIfThenElseBranch(t: TermBuilder): TermBuilder =
     lambda(Var("unit", UnitType)) { unit => t }
+
+  def andTerm: Term =
+    lambda(Var("cond1", BooleanType), Var("cond2", BooleanType)) {
+      case Seq(cond1, cond2) =>
+        ifThenElse(cond1, cond2, False)
+    }
 }

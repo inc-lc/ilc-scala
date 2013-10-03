@@ -328,4 +328,16 @@ trait SyntaxSugar extends Syntax {
     */
   val const: TermBuilder =
     lambda { x => lambda("ignored") { ignored => x } }
+
+  /** Usage:
+    * {{{
+    * let_x_= {
+    *   stuff
+    * } { x =>
+    *   blah blah x blah
+    * }
+    */
+  def let_x_= (designation: => TermBuilder)
+              (body: Name => TermBuilder): TermBuilder =
+    lambda { body } ! designation
 }

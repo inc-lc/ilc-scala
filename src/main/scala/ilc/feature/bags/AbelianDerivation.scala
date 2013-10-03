@@ -29,6 +29,9 @@ extends Syntax
     }
   }
 
+  private def changeTypes(valueType: Type): (Type, Type) =
+    (groupBasedChangeType(BagType(valueType)), BagType(valueType))
+
   override def deriveSubterm(s: Subterm): Term = s.toTerm match {
     case EmptyBag(valueType) =>
       freeGroupBasedChange ! EmptyBag(valueType)
@@ -37,8 +40,7 @@ extends Syntax
       freeGroupBasedChange ! EmptyBag(valueType)
 
     case term @ Union(valueType) => {
-      val (grp, rep) =
-        (groupBasedChangeType(BagType(valueType)), BagType(valueType))
+      val (grp, rep) = changeTypes(valueType)
       val freeAbelianGroup = FreeAbelianGroup(valueType)
       lambdaDelta(term) { case Seq(bag1, dbag1, bag2, dbag2) =>
         // CAUTION:
@@ -47,10 +49,8 @@ extends Syntax
         // Let-bindings evaluate the bound value eagerly.
         // Evaluating the replacement value eagerly cannot be
         // what we want.
-        val replacement: TermBuilder =
-          replacementChange !
-            (Union ! (ChangeUpdate ! dbag1 ! bag1) !
-                     (ChangeUpdate ! dbag2 ! bag2))
+        val replacement =
+          super.deriveSubterm(s) ! bag1 ! dbag1 ! bag2 ! dbag2
         case4(dbag1, dbag2,
           lambda(grp, grp) { case Seq(grp1, grp2) =>
             ifThenElse(

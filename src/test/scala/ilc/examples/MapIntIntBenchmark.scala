@@ -100,3 +100,27 @@ class BagIntBenchData(val example: ExampleGenerated {
       remove(n)
   }
 }
+
+import ilc.feature.abelianGroups.Library._
+import ilc.feature.bags.BagChanges
+
+class AbelianBagIntBenchData(val example: ExampleGenerated {
+  type InputType = Bag[Int]
+  type OutputType = Bag[Int]
+  type DeltaInputType = DeltaOutputType
+  type DeltaOutputType =
+    Either[(AbelianGroup[Bag[Int]], Bag[Int]), Bag[Int]]
+}) extends BenchData with BagChanges
+{
+  import examples._
+
+  // copied from BagIntBenchData
+  def inputOfSize(n: Int): Data =
+    (1 to n).map(i => (i -> 1))(breakOut)
+
+  lazy val changeDescriptions: Gen[String] =
+    Gen.enumeration("change")(changesToBagsOfIntegers.keySet.toSeq: _*)
+
+  def lookupChange(n: Int, description: String): Change =
+    changesToBagsOfIntegers(description)(n)
+}

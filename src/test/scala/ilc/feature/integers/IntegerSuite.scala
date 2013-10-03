@@ -9,7 +9,6 @@ import scala.language.implicitConversions
 
 class IntegerSuite
 extends FunSuite
-   with AbelianDerivation
    with Evaluation
    with ToScala
    with bacchus.Evaluation
@@ -17,6 +16,7 @@ extends FunSuite
    with bacchus.ToScala
    with EvalGenerated
    with functions.Pretty
+   with AbelianDerivation
 {
   private val ℤ = IntType
   implicit def intToTerm(i: Int): Term = LiteralInt(i)

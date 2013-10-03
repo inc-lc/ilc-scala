@@ -2,6 +2,11 @@ package ilc
 package feature
 package bags
 
+/** {{{
+  * Δ(Bag a) = Bag a
+  * }}}
+  */
+
 trait Derivation
 extends base.Derivation
    with Syntax

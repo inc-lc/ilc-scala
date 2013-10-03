@@ -6,18 +6,8 @@ package functions
  * Symbolic derivation for first-class functions.
  */
 trait Derivation
-extends base.Derivation
-   with Syntax {
-  def lambdaDelta(t: Term)
-    (derivativeBody: Seq[Name] => TermBuilder): TermBuilder =
-  {
-    val argumentTypesOfDerivative: List[Type] =
-      getArgumentTypes(t.getType) flatMap { theType =>
-        List(theType, deltaType(theType))
-      }
-    lambda(argumentTypesOfDerivative)(derivativeBody)
-  }
-
+extends LambdaDelta
+{
   override def deltaType(tau: Type): Type = tau match {
     case domain =>: range =>
       domain =>: deltaType(domain) =>: deltaType(range)

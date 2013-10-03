@@ -23,12 +23,12 @@ extends FunSuite
 
   test("the compiled derivative is correct") {
     import collection.immutable.TreeMap // for sorted print-out
-    val old: InputType = (1 to n).map(i => i -> i)(collection.breakOut)
-    val res = program(old)
+    val res = program(oldInput)
     changes foreach { change =>
       assert(
-        TreeMap(updateOutput(derivative(old)(change))(res).toSeq: _*) ===
-          TreeMap(program(updateInput(change)(old)).toSeq: _*))
+        TreeMap(updateOutput(derivative(oldInput)(change))(res).toSeq: _*)
+          ===
+          TreeMap(program(updateInput(change)(oldInput)).toSeq: _*))
     }
   }
 

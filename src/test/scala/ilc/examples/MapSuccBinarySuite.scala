@@ -2,10 +2,12 @@ package ilc
 package examples
 
 import org.scalatest.FunSuite
+import ilc.feature.bags.BagChanges
 import MapSuccGenerated._
 
 class MapSuccGeneratedSuite
 extends FunSuite
+   with BagChanges
 {
   val n = 100
 
@@ -20,12 +22,7 @@ extends FunSuite
     }
   }
 
-  val changes: List[DeltaInputType] = {
-    List(
-      Left(Map.empty),
-      Left(Map(1 -> Right(n + 1))),
-      Left(Map(n + 2 -> Left(Some(n + 2)))),
-      Left(Map(2 -> Left(None))),
-      Left(Map(n -> Left(None))))
-  }
+  val changes: Iterable[ChangeToBags[Int]] =
+    changesToBagsOfIntegers.map(_ _2 n)
+
 }

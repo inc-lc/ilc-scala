@@ -3,7 +3,20 @@ package examples
 package bench
 
 /**
-  * Benchmark hand-tuned derivative. This shows what we could achieve by
+  * Benchmark generated derivative. This is what we can achieve by
   * improving our algorithms.
   */
-object MapSuccBenchmark extends ReplacementChangeBenchmark(new MapIntIntBenchData(MapSuccGenerated))
+
+object MapSuccBenchmark extends NonReplacementChangeBenchmark(
+  new AbelianBagIntBenchData(MapSuccGenerated) {
+    override def base = 500
+    override def last = 2500
+    override def step = 500
+  })
+
+object MapSuccVerification extends BenchmarkVerification(
+  new AbelianBagIntBenchData(MapSuccGenerated) {
+    override def base = 5
+    override def last = 25
+    override def step = 5
+  })

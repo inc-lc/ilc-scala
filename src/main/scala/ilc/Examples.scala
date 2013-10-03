@@ -17,6 +17,8 @@ extends Generator {
   addExample("MapSucc", new MapSuccExample)
 
   //Ditto
+  addExample("BagUnion", new BagUnionExample)
+
   addExample("MapSuccBase", new MapSuccBaseExample)
 
   addExample("MapSuccBags", new MapSuccBagsExample)

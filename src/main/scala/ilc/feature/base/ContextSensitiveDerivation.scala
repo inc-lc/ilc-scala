@@ -6,7 +6,7 @@ trait ContextSensitiveDerivation
 extends Derivation
    with Context
 {
-  override def derive(t: Term): Term =
+  final override def derive(t: Term): Term =
     deriveSubterm(Location.ofRoot(t))
 
   // subclass should override this one instead

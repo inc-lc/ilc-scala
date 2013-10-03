@@ -5,6 +5,7 @@ package bench
 import org.scalameter.api._
 import ilc.feature.abelianGroups.Library._
 import ilc.feature.bags.Library._
+import ilc.feature.bags.BagChanges
 
 /**
   * Benchmark bag union.
@@ -30,12 +31,12 @@ class BagPairBenchData(val example: ExampleGenerated {
   type OutputType = Bag[Int]
   type DeltaOutputType =
     Either[(AbelianGroup[Bag[Int]], Bag[Int]), Bag[Int]]
-}) extends BenchData
+}) extends BenchData with BagChanges
 {
   import example._
 
   type BagType = OutputType
-  type DeltaBagType = DeltaOutputType
+  type DeltaBagType = ChangeToBags[Int]
 
   // consider leaving out the output.
   def inputOfSize(n: Int): Data = {
@@ -44,24 +45,7 @@ class BagPairBenchData(val example: ExampleGenerated {
     (mkBag(1, n), mkBag(-n + n/2, -1 + n/2))
   }
 
-  private def mkChange(element: BagType): DeltaBagType =
-    Left((FreeAbelianGroup.apply[Int], element))
-
-  def add(e: Int) =
-    mkChange(bagSingleton(e))
-
-  def remove(e: Int) =
-    mkChange(bagNegate(bagSingleton(e)))
-
-  def replace(a: Int, b: Int) =
-    mkChange(bagUnion(bagNegate(bagSingleton(a)))(bagSingleton(b)))
-
-  def changes: Map[String, Int => DeltaBagType] =
-    Map("no change"          -> (n => mkChange(bagEmpty)),
-        "replace 1 by n + 1" -> (n => replace(1, n + 1)),
-        "add n + 2"          -> (n => add(n + 2)),
-        "remove 2"           -> (n => remove(2)),
-        "remove n"           -> (n => remove(n)))
+  def changes: Map[String, Int => DeltaBagType] = changesToBagsOfIntegers
 
   def pack(description1: String, description2: String): String =
     s"($description1, $description2)"

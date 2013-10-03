@@ -143,6 +143,26 @@ abstract class ExampleToBenchmark(val benchData: BenchData) extends BaseBenchmar
   import benchData._
   import example._
 
+  def verifyCorrectness() =
+    performance of
+    s"${className} (verification)" in {
+      using(inputsOutputsChanges) in {
+        case Datapack(oldInput, newInput, change, oldOutput) => {
+          val newOutput = program(newInput)
+          val derivedChange = derivative(oldInput)(change)
+          if (newOutput != updateOutput(derivedChange)(oldOutput)) {
+            println(s"change = $change")
+            println(s"oldInput = $oldInput")
+            println(s"newInput = $newInput")
+            println(s"oldOutput = $oldOutput")
+            println(s"newOutput = $newOutput")
+            println(s"derivedChange = ${derivedChange}")
+            sys error (s"failed ${this.getClass.getName}")
+          }
+        }
+      }
+    }
+
   def testSurgical() =
     performance of
     s"${className} (derivative, surgical change)" in {
@@ -171,6 +191,11 @@ abstract class ExampleToBenchmark(val benchData: BenchData) extends BaseBenchmar
     testSurgical()
     testRecomputation()
   }
+}
+
+abstract class BenchmarkVerification(benchData: BenchData)
+extends ExampleToBenchmark(benchData) {
+  verifyCorrectness()
 }
 
 abstract class NonReplacementChangeBenchmark(benchData: BenchData) extends ExampleToBenchmark(benchData) {

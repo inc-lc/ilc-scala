@@ -3,6 +3,7 @@ package feature
 package bags
 
 import collection.immutable.HashMap
+import collection.mutable.Stack
 
 object Library extends base.Library {
   import abelianGroups.Library._
@@ -15,12 +16,16 @@ object Library extends base.Library {
 
   //XXX: Could be made much faster by using builders (avoiding immutable
   //copies), but this shouldn't be necessary.
-  def bagUnion[T](b1: Bag[T])(b2: Bag[T]): Bag[T] =
+  def bagUnion[T](b1: Bag[T])(b2: Bag[T]): Bag[T] = {
+    val toDelete = Stack.empty[T]
     (b1 merged b2) {
       case ((el1, count1), (el2, count2)) =>
         assert(el1 == el2)
+        val sum = count1 + count2
+        if (sum == 0) toDelete push el1
         el1 -> (count1 + count2)
-    }
+    } -- toDelete
+  }
 
   def bagFoldGroup[G, T]
     (abelian: AbelianGroup[G])(f: T => G)(bag: Bag[T]): G =

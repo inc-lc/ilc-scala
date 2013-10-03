@@ -64,8 +64,7 @@ extends Syntax
       def specialize(argumentTypes: Type*): Term =
         argumentTypes.head match {
           case fType @ (v =>: BagType(u)) =>
-            FoldGroup(BagType(u), v) !
-              (AbelianGroup ! Union(u) ! Negate(u) ! EmptyBag(u))
+            FoldGroup(BagType(u), v) ! FreeAbelianGroup(u)
         }
     }
 

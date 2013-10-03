@@ -11,6 +11,16 @@ extends FunSuite
 {
   val n = 100
 
+  val oldInput: InputType = (1 to n).map(i => i -> 1)(collection.breakOut)
+  val oldOutput = program(oldInput)
+
+  test("the compiled derivative increments collections") {
+    val expected: OutputType = for {
+      (element, multiplicity) <- oldInput
+    } yield (element + 1, multiplicity)
+    assert(oldOutput === expected)
+  }
+
   test("the compiled derivative is correct") {
     import collection.immutable.TreeMap // for sorted print-out
     val old: InputType = (1 to n).map(i => i -> i)(collection.breakOut)

@@ -57,7 +57,6 @@ extends base.Derivation
       ???
   }
 
-  //TODO: non-naive derivatives!
   override def derive(t: Term): Term =
     t match {
       case EmptyBag(valueType) =>

@@ -70,8 +70,19 @@ extends Syntax
 
     case term @ Negate(valueType) =>
       lambdaDelta(term) { case Seq(bag, dbag) =>
-        // TODO: make sure dbag has bag group!
-        ??? // Negate ! dbag
+        val (grp, rep) = changeTypes(valueType)
+        val freeAbelianGroup = FreeAbelianGroup(valueType)
+        val replacement =
+          super.deriveSubterm(s) ! bag ! dbag
+        case2(dbag,
+          lambda(grp) { case grp0 =>
+            ifThenElse(
+              AreEqualGroups ! (Proj1 ! grp0) ! freeAbelianGroup,
+              groupBasedChange ! freeAbelianGroup !
+                (Negate ! (elementOfChange ! grp0)),
+              replacement)
+          },
+          lambda(rep) { case _ => replacement })
       }
 
     case term @ FoldGroup(resultType, valueType)
@@ -79,7 +90,19 @@ extends Syntax
            s.hasStableArgument(0) &&
            s.hasStableArgument(1) =>
       lambdaDelta(term) { case Seq(_G, dG, f, df, bag, dbag) =>
-        ???
+        val (grp, rep) = changeTypes(valueType)
+        val freeAbelianGroup = FreeAbelianGroup(valueType)
+        val replacement =
+          super.deriveSubterm(s) ! _G ! dG ! f ! df ! bag ! dbag
+        case2(dbag,
+          lambda(grp) { case grp0 =>
+            ifThenElse(
+              AreEqualGroups ! (Proj1 ! grp0) ! freeAbelianGroup,
+              groupBasedChange ! freeAbelianGroup !
+                (FoldGroup ! _G ! f ! (elementOfChange ! grp0)),
+              replacement)
+          },
+          lambda(rep) { case _ => replacement })
       }
 
     case _ =>

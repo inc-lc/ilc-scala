@@ -45,6 +45,12 @@ extends base.Syntax
         AbelianGroupType(b) =>: (v =>: b) =>: BagType(v) =>: b
     }
   }
+
+  case object FreeAbelianGroup extends ConstantWith1TypeParameter {
+    val typeConstructor = TypeConstructor("v") { v =>
+      AbelianGroupType(BagType(v))
+    }
+  }
 }
 
 trait SyntaxSugar

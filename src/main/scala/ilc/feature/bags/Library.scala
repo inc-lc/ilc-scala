@@ -35,4 +35,11 @@ object Library extends base.Library {
   }
 
   def bagNegate[T](b: Bag[T]): Bag[T] = b map {case (k, v) => (k, -v)}
+
+  case class FreeAbelianGroup[T]() extends AbelianGroup[Bag[T]] {
+    val binOp   = bagUnion[T] _
+    val inv     = bagNegate[T] _
+    val neutral = bagEmpty[T]
+    def isEqualGroup(that: AbelianGroup[Bag[T]]): Boolean = this == that
+  }
 }

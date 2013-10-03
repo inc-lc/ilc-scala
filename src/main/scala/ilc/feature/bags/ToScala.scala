@@ -3,7 +3,7 @@ package feature
 package bags
 
 trait ToScala
-extends base.ToScala
+extends abelianGroups.ToScala
    with Syntax
 {
   override val feature = HasLibrary("bags")
@@ -30,6 +30,8 @@ extends base.ToScala
       case FoldGroup(b, v) =>
         val (mType, vType) = mapTypes(v)
         s"(bagFoldGroup[${toScala(b)}, $vType] _)"
+      case FreeAbelianGroup(v) =>
+        s"(FreeAbelianGroup.apply[${toScala(v)}])"
       case _ =>
         super.toScala(t)
     }

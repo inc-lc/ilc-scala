@@ -10,10 +10,10 @@ trait ToScala extends base.ToScala with Syntax {
     case _       => super.toScala(tau)
   }
 
-  override def toScala(t: Term): String = t match {
-    case LiteralInt(i) => s"($i: $int)"
-    case PlusInt   => s"((i: $int) => (j: $int) => i + j)"
-    case NegateInt => s"((i: $int) => - i)"
-    case _       => super.toScala(t)
+  override def toUntypedScala(t: Term): String = t match {
+    case LiteralInt(i) => i.toString
+    case PlusInt   => scalaFunction("i", "j")("i + j")
+    case NegateInt => "(- _)"
+    case _       => super.toUntypedScala(t)
   }
 }

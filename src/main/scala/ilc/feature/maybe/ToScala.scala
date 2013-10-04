@@ -3,27 +3,18 @@ package feature
 package maybe
 
 trait ToScala extends base.ToScala with Syntax {
-  override def toScala(t: Term): String = t match {
-    case Maybe(aType, bType) => {
-      val List(a, b) = List(aType, bType) map toScala
-      val maybe_a = toScala(MaybeType(aType))
-      val fType = toScala(aType =>: bType)
-      val body = s"m.fold[$b](z)(f)"
-      s"((z: $b) => (f: $fType) => (m: $maybe_a) => $body)"
-    }
+  override def toUntypedScala(t: Term): String = t match {
+    case Maybe(a, b) =>
+      scalaFunction("z", "f", "m")(s"m.fold[${toScala(b)}](z)(f)")
 
-    case Nope(contentType) => {
-      val maybeType = toScala(t.getType)
-      s"(None: $maybeType)"
-    }
+    case Nope(contentType) =>
+      "None"
 
-    case Just(contentType) => {
-      val tau = toScala(contentType)
-      s"((x: $tau) => Some(x))"
-    }
+    case Just(contentType) =>
+      "(Some.apply _)"
 
     case _ =>
-      super.toScala(t)
+      super.toUntypedScala(t)
   }
 
   override def toScala(tau: Type): String = tau match {

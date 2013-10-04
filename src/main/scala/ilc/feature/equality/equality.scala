@@ -35,14 +35,14 @@ trait ToScala extends base.ToScala with Syntax {
         }
     }
 
-  override def toScala(t: Term): String =
+  override def toUntypedScala(t: Term): String =
     t match {
       case Eq(v) if !containsFunctions(v) =>
         "equal[${toScala(v)] _"
       case Eq(v) =>
         sys.error(s"Cannot implement equality on type $v containing a function type")
       case _ =>
-        super.toScala(t)
+        super.toUntypedScala(t)
     }
 
 }

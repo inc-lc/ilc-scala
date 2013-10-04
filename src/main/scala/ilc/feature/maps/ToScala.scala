@@ -8,39 +8,26 @@ trait ToScala extends base.ToScala with Syntax {
     ("Map[%s, %s]".format(kType, vType), kType, vType)
   }
 
-  override def toScala(t: Term): String = t match {
-    case EmptyMap(k, v) => {
-      val (_, kType, vType) = mapTypes(k, v)
-      "Map.empty[%s, %s]".format(kType, vType)
-    }
+  override def toUntypedScala(t: Term): String = t match {
+    case EmptyMap(k, v) =>
+      "Map.empty"
 
-    case Update(k, v) => {
-      val (mType, kType, vType) = mapTypes(k, v)
-      s"((k: $kType) => (v: $vType) => (m: $mType) => m.updated(k, v))"
-    }
+    case Update(k, v) =>
+      scalaFunction("k", "v", "m")("m.updated(k, v)")
 
-    case Lookup(k, v) => {
-      val (mType, kType, vType) = mapTypes(k, v)
-      val maybe = toScala(MaybeType(v))
-      val body = s"m.get(k)"
-      s"((k: $kType) => (m: $mType) => $body)"
-    }
+    case Lookup(k, v) =>
+      scalaFunction("k", "m")("m.get(k)")
 
-    case Delete(k, v) => {
-      val (mType, kType, vType) = mapTypes(k, v)
-      s"((k: $kType) => (m: $mType) => m - k)"
-    }
+    case Delete(k, v) =>
+      scalaFunction("k", "m")("m - k")
 
-    case Fold(k, a, b) => {
-      val (mType, kType, aType) = mapTypes(k, a)
-      val bType = toScala(b)
-      val fType = toScala(k =>: a =>: b =>: b)
-      val body = s"m.foldRight[$bType](z)((p, b) => f(p._1)(p._2)(b))"
-      s"((f: $fType) => (z: $bType) => (m: $mType) => $body)"
-    }
+    case Fold(k, a, b) =>
+      scalaFunction("f", "z", "m") {
+        s"m.foldRight[${toScala(b)}](z)((p, b) => f(p._1)(p._2)(b))"
+      }
 
     case _ =>
-      super.toScala(t)
+      super.toUntypedScala(t)
   }
 
   override def toScala(tau: Type): String = tau match {

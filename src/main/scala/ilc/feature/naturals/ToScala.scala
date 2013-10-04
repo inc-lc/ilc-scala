@@ -6,24 +6,20 @@ trait ToScala extends base.ToScala with Syntax {
   private[this] val natType: String =
     toScala(NatType)
 
-  override def toScala(t: Term): String = t match {
+  override def toUntypedScala(t: Term): String = t match {
     case Nat(n) =>
       n.toString
 
-    case Plus => {
-      s"((x: $natType) => (y: $natType) => x + y)"
-    }
+    case Plus =>
+      scalaFunction("x", "y")("x + y")
 
-    case FoldNat(rType) => {
-      val r = toScala(rType)
-      val fType = toScala(rType =>: rType)
-      val body = s"Range.inclusive(1, n).foldLeft[$r](z)" ++
-        s"((x: $r, _: $natType) => f(x))"
-      s"((z: $r) => (f: $fType) => (n: $natType) => $body)"
-    }
+    case FoldNat(r) =>
+      scalaFunction("z", "f", "n") {
+        s"Range.inclusive(1, n).foldLeft[${toScala(r)}](z)((x, _) => f(x))"
+      }
 
     case _ =>
-      super.toScala(t)
+      super.toUntypedScala(t)
   }
 
   override def toScala(tau: Type): String = tau match {

@@ -13,27 +13,22 @@ extends abelianGroups.ToScala
     ("Bag[%s]".format(vType), vType)
   }
 
-  override def toScala(t: Term): String =
+  override def toUntypedScala(t: Term): String =
     t match {
       case EmptyBag(v) =>
-        val (mType, vType) = mapTypes(v)
-        s"bagEmpty[$vType]"
+        s"bagEmpty"
       case Singleton(v) =>
-        val (mType, vType) = mapTypes(v)
-        s"(bagSingleton[$vType] _)"
+        s"bagSingleton"
       case Union(v) =>
-        val (mType, vType) = mapTypes(v)
-        s"(bagUnion[$vType] _)"
+        s"bagUnion"
       case Negate(v) =>
-        val (mType, vType) = mapTypes(v)
-        s"(bagNegate[$vType] _)"
+        s"bagNegate"
       case FoldGroup(b, v) =>
-        val (mType, vType) = mapTypes(v)
-        s"(bagFoldGroup[${toScala(b)}, $vType] _)"
+        s"bagFoldGroup"
       case FreeAbelianGroup(v) =>
-        s"(FreeAbelianGroup.apply[${toScala(v)}])"
+        s"FreeAbelianGroup()"
       case _ =>
-        super.toScala(t)
+        super.toUntypedScala(t)
     }
 
   override def toScala(tau: Type): String =

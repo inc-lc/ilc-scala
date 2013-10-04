@@ -6,7 +6,7 @@ trait ToScala
 extends abelianGroups.ToScala
    with Syntax
 {
-  override val feature = HasLibrary("bags")
+  addLibrary("bags")
 
   private[this] def mapTypes(v: Type): (String, String) = {
     val vType = toScala(v)

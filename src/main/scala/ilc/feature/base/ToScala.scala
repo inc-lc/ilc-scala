@@ -26,13 +26,7 @@ trait ToScala extends Syntax with functions.Types {
   private[this]
   val features = collection.mutable.Set.empty[String]
 
-  sealed trait Feature
-
-  // a feature exports no library by default
-  private[this]
-  case object HasNoLibrary extends Feature
-
-  case class HasLibrary(featureName: String) extends Feature {
+  def addLibrary(featureName: String) {
     features += featureName
   }
 
@@ -41,10 +35,4 @@ trait ToScala extends Syntax with functions.Types {
   def imports: String = features map { featureName =>
     s"import ilc.feature.$featureName.Library._"
   } mkString "\n"
-
-  /**
-    * Feature name. Trait ilc.feature.$someName.ToScala could
-    * overwrite this field to HasLibrary("$someName").
-    */
-  val feature: Feature = HasNoLibrary
 }

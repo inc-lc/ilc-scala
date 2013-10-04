@@ -3,7 +3,7 @@ package feature
 package abelianGroups
 
 trait ToScala extends base.ToScala with Syntax {
-  override val feature = HasLibrary("abelianGroups")
+  addLibrary("abelianGroups")
 
   override def toScala(tau: Type): String = tau match {
     case AbelianGroupType(e) =>

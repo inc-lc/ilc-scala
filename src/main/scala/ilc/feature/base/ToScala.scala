@@ -25,6 +25,18 @@ trait ToScala extends Syntax with functions.Types {
       sys error s"Unknown type $tau"
   }
 
+  // helper to create scala functions
+  // subclasses should always call this helper to create scala
+  // functions. CAUTION: supplied parameter names are binding.
+  def scalaFunction(parameterNames: String*)(body: => String): String = {
+    def loop(names: Seq[String]): String =
+      if (names.isEmpty)
+        body
+      else
+        s"${names.head} => ${loop(names.tail)}"
+    s"(${loop(parameterNames)})"
+  }
+
   // automatic imports for generated code
   private[this]
   val features = collection.mutable.Set.empty[String]

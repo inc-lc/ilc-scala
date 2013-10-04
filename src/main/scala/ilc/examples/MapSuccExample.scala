@@ -3,6 +3,7 @@ package examples
 
 import feature._
 
+//Example 3: mapping over the values
 class MapSuccExample
 extends Example
    with bags.SyntaxSugar

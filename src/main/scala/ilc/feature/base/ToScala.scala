@@ -3,8 +3,11 @@ package feature
 package base
 
 trait ToScala extends Syntax with functions.Types {
-  // term constructors & polymorphic constants (TypedConst)
-  def toScala(t: Term): String = t match {
+  final def toScala(t: Term): String =
+    s"(${toUntypedScala(t)} : ${toScala(t.getType)})"
+
+  // subclasses should override this one without concern for types
+  def toUntypedScala(t: Term): String = t match {
     case variable: Variable =>
       variable.getName.toString
 

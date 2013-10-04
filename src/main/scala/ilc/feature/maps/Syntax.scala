@@ -58,6 +58,10 @@ extends Syntax
   with functions.Syntax
   with maybe.Syntax
 {
+  def fromAssoc[K <% Term, V <% Term]
+      (keyValuePairs: Iterable[(K, V)]): Term =
+    mapLiteral(keyValuePairs.head, keyValuePairs.tail.toSeq: _*)
+
   def mapLiteral[K <% Term, V <% Term]
     (keyValuePair: (K, V), otherPairs: (K, V)*): Term =
   {

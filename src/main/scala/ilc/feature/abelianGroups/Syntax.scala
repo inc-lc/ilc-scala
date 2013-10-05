@@ -34,7 +34,23 @@ trait Syntax extends base.Syntax with Types with booleans.Types {
   }
 }
 
-trait SyntaxSugar extends Syntax {
+trait SyntaxSugar
+extends Syntax
+   with booleans.SyntaxSugar
+{
+  def ifEqualGroups(firstPair: (TermBuilder, TermBuilder),
+                    groupPairs: (TermBuilder, TermBuilder)*)
+                   (thenBranch: => TermBuilder)
+                   (elseBranch: => TermBuilder): TermBuilder =
+    ifThenElse(
+      AreEqualGroups ! firstPair._1 ! firstPair._2,
+      (if (groupPairs.isEmpty)
+        thenBranch
+      else
+        ifEqualGroups(groupPairs.head, groupPairs.tail: _*)(
+          thenBranch)(elseBranch)),
+      elseBranch)
+
   //def groupUnfoldTerm: TermBuilder = GroupUnfold
   // stability framework can't tell higher-order arguments if
   // their arguments are stable. `groupUnfold` has to be a

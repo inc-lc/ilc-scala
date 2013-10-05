@@ -2,7 +2,11 @@ package ilc
 package feature
 package abelianMaps
 
-trait ToScala extends maps.ToScala with Syntax {
+trait ToScala
+extends maps.ToScala
+   with abelianGroups.ToScala
+   with Syntax
+{
   addLibrary("abelianMaps")
 
   override def toScala(tau: Type): String = tau match {

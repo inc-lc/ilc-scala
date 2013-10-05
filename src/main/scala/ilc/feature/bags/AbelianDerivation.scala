@@ -10,6 +10,7 @@ package bags
 trait AbelianDerivation
 extends Syntax
    with analysis.Stability
+   with abelianGroups.SyntaxSugar
    with functions.SyntaxSugar // for let-bindings
    with booleans.SyntaxSugar  // for ifThenElse, andTerm
    with abelianGroups.AbelianDerivation
@@ -87,22 +88,26 @@ extends Syntax
 
     case term @ FoldGroup(resultType, valueType)
         if isAbelianType(resultType) &&
-           s.hasStableArgument(0) &&
            s.hasStableArgument(1) =>
       lambdaDelta(term) { case Seq(_G, dG, f, df, bag, dbag) =>
         val (grp, rep) = changeTypes(valueType)
         val freeAbelianGroup = FreeAbelianGroup(valueType)
         val replacement =
           super.deriveSubterm(s) ! _G ! dG ! f ! df ! bag ! dbag
-        case2(dbag,
-          lambda(grp) { case grp0 =>
-            ifThenElse(
-              AreEqualGroups ! (Proj1 ! grp0) ! freeAbelianGroup,
-              groupBasedChange ! freeAbelianGroup !
-                (FoldGroup ! _G ! f ! (elementOfChange ! grp0)),
-              replacement)
-          },
-          lambda(rep) { case _ => replacement })
+        ifEqualGroups((_G, dG)) {
+          case2(dbag,
+            lambda(grp) { case grp0 =>
+              ifEqualGroups(((Proj1 ! grp0), freeAbelianGroup)) {
+                groupBasedChange ! freeAbelianGroup !
+                  (FoldGroup ! _G ! f ! (elementOfChange ! grp0))
+              } {
+                replacement
+              }
+            },
+            lambda(rep) { case _ => replacement })
+        } {
+          replacement
+        }
       }
 
     case _ =>

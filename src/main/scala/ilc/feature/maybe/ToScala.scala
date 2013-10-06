@@ -5,7 +5,7 @@ package maybe
 trait ToScala extends base.ToScala with Syntax {
   override def toUntypedScala(t: Term): String = t match {
     case Maybe(a, b) =>
-      scalaFunction("z", "f", "m")(s"m.fold[${toScala(b)}](z)(f)")
+      scalaFunction("z", "f", "m")(s"m.fold[${toScala(b)}](z)(x => f(x))")
 
     case Nope(contentType) =>
       "None"

@@ -16,7 +16,7 @@ extends FunSuite with ShouldMatchers
     IndexedGroup[Int](ayeDeeDeeExclamationMark, x => x + _, -_, 0)
 
   def sum(b: Bag[Int]) =
-    bagFoldGroup(additiveGroupOnIntegers)(identity[Int])(b)
+    bagFoldGroup[Int, Int](additiveGroupOnIntegers)(x => x)(b)
   val bag_1_1 = bagUnion(bagSingleton(1))(bagSingleton(1))
   test("sum(Bag(1, 1)) = 2") {
     sum(bag_1_1) should be (2)

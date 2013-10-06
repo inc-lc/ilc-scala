@@ -30,7 +30,7 @@ extends FunSuite
     asInstanceOf[abelianGroups.Library.AbelianGroup[Int]]
 
   val updateInput = evalGenerated(updateTerm(MapType(IntType, IntType))).
-    asInstanceOf[Any => Any => Any]
+    asInstanceOf[(=>Any) => (=>Any) => Any]
 
   def expectToGetFrom
     (input: => AbelianMap[Int, Int])
@@ -39,12 +39,12 @@ extends FunSuite
   {
     val programCode: Term = lambda(AbelianGroupType(ℤ))(programBody)
     val program = evalGenerated(programCode).
-      asInstanceOf[Any => Any => Any](additiveIntegerGroup)
+      asInstanceOf[(=>Any) => (=>Any) => Any](additiveIntegerGroup)
     val derivative = evalGenerated(derive(programCode)).
-      asInstanceOf[Any => Any => Any => Any => Any](
+      asInstanceOf[(=>Any) => (=>Any) => (=>Any) => (=>Any) => Any](
         additiveIntegerGroup)(additiveIntegerGroup)
     val updateOutput = evalGenerated(updateTerm(oldResultCode.getType)).
-      asInstanceOf[Any => Any => Any]
+      asInstanceOf[(=>Any) => (=>Any) => Any]
     val oldResult = evalGenerated(oldResultCode)
     program(input) should be(oldResult)
     for (change <- getChanges(input)) {

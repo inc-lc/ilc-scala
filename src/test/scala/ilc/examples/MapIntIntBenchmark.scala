@@ -112,7 +112,7 @@ class AbelianBagIntBenchData(val example: ExampleGenerated {
     Either[(AbelianGroup[Bag[Int]], Bag[Int]), Bag[Int]]
 }) extends BenchData with BagChanges
 {
-  import examples._
+  import example._
 
   // copied from BagIntBenchData
   def inputOfSize(n: Int): Data =

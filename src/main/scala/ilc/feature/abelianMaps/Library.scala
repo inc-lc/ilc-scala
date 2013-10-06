@@ -54,6 +54,9 @@ object Library {
     def isEqualGroup(that: AbelianGroup[T]): Boolean = that match {
       case that @ LiftedMapGroup(_) =>
         this.valueGroup isEqualGroup that.valueGroup
+
+      case _ =>
+        false
     }
   }
 }

@@ -10,6 +10,15 @@ object Library extends base.Library {
 
   type Bag[T] = HashMap[T, Int]
 
+  object Bag {
+    def apply[T](elements: T*) =
+      elements.foldRight(bagEmpty[T]) { (element, bag) =>
+        bag.get(element).fold(bag.updated(element, 1)) { i =>
+          bag.updated(element, i + 1)
+        }
+      }
+  }
+
   def bagEmpty[T]: Bag[T] = HashMap.empty[T, Int]
 
   def bagSingleton[T](t: T): Bag[T] = HashMap(t -> 1)

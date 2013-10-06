@@ -14,6 +14,7 @@ extends FunSuite
    with integers.AbelianDerivation
    with MapChanges
    with functions.SyntaxSugar
+   with integers.SyntaxSugar
    with maps.SyntaxSugar
    with ToScala
    with booleans.ToScala
@@ -24,6 +25,9 @@ extends FunSuite
    with EvalGenerated
 {
   val ℤ = IntType
+
+  val additiveIntegerGroup = evalGenerated(additiveGroupOnIntegers).
+    asInstanceOf[abelianGroups.Library.AbelianGroup[Int]]
 
   val updateInput = evalGenerated(updateTerm(MapType(IntType, IntType))).
     asInstanceOf[Any => Any => Any]
@@ -52,7 +56,7 @@ extends FunSuite
   def getChanges(input: AbelianMap[Int, Int]):
       Iterable[ChangeToMaps[Int, Int]] =
     changesToMapsBetweenIntegers map { case (key, mkChange) =>
-      mkChange(input)
+      mkChange(additiveIntegerGroup)(input)
     }
 
   test("sum of values") {

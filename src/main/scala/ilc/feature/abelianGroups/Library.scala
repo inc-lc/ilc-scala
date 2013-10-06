@@ -11,29 +11,23 @@ object Library extends base.Library {
   }
 
   object GenerativeGroup {
-    private[this] var counter = 0
-
-    private def nextId(): Int = {
-      counter += 1
-      counter
-    }
-
-    def curried[T]: (T => T => T) => (T => T) => T => AbelianGroup[T] =
-      binOp => inv => neutral => GenerativeGroup(binOp, inv, neutral)
+    def curried[T]:
+        Int => (T => T => T) => (T => T) => T => AbelianGroup[T] =
+      id => binOp => inv => neutral =>
+        GenerativeGroup(id, binOp, inv, neutral)
   }
 
   case class GenerativeGroup[T](
+    id: Int,
     binOp: T => T => T,
     inv: T => T,
     neutral: T
   )
   extends AbelianGroup[T]
   {
-    val id = GenerativeGroup.nextId()
-
     def isEqualGroup(that: AbelianGroup[T]): Boolean = that match {
-      case that @ GenerativeGroup(_, _, _) =>
-        this.id == that.id
+      case GenerativeGroup(thatId, _, _, _) =>
+        this.id == thatId
 
       case _ =>
         false

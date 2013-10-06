@@ -12,8 +12,6 @@ extends products.Evaluation
    with products.SyntaxSugar
    with integers.Syntax
 {
-  var index = 0
-
   override def coreEval(t: Term, env: Env): Value = t match {
     case AbelianGroup(_)
        | GetBinOp(_) | GetInv(_) | GetNeutral(_)  =>
@@ -32,10 +30,7 @@ extends products.Evaluation
     def fixType(x: TermBuilder): Term =
       x % (getArgumentTypes(t.getType).map(transformType): _*)
     t match {
-      case AbelianGroup(e) => {
-        index += 1
-        fixType(tuple(4) ! LiteralInt(index))
-      }
+      case AbelianGroup(e) => fixType(tuple(4))
 
       case GetBinOp(_)   => fixType(project(2))
       case GetInv(_)     => fixType(project(3))

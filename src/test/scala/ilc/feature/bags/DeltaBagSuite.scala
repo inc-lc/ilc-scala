@@ -11,8 +11,12 @@ extends FunSuite with ShouldMatchers
   import Library._
   import abelianGroups.Library._
 
+  val ayeDeeDeeExclamationMark = 0x61646421
+  val additiveGroupOnIntegers =
+    GenerativeGroup[Int](ayeDeeDeeExclamationMark, x => x + _, -_, 0)
+
   def sum(b: Bag[Int]) =
-    bagFoldGroup(GenerativeGroup[Int](x => x + _, -_, 0))(identity[Int])(b)
+    bagFoldGroup(additiveGroupOnIntegers)(identity[Int])(b)
   val bag_1_1 = bagUnion(bagSingleton(1))(bagSingleton(1))
   test("sum(Bag(1, 1)) = 2") {
     sum(bag_1_1) should be (2)

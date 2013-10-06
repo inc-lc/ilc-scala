@@ -8,6 +8,14 @@ object Library extends base.Library {
     def inv: T => T
     def neutral: T
     def isEqualGroup(that: AbelianGroup[T]): Boolean
+
+    override def equals(that: Any): Boolean = that match {
+      case that: AbelianGroup[T] =>
+        this.isEqualGroup(that)
+
+      case _ =>
+        false
+    }
   }
 
   object GenerativeGroup {

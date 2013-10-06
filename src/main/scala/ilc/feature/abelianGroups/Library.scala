@@ -18,14 +18,14 @@ object Library extends base.Library {
     }
   }
 
-  object GenerativeGroup {
+  object IndexedGroup {
     def curried[T]:
         Int => (T => T => T) => (T => T) => T => AbelianGroup[T] =
       id => binOp => inv => neutral =>
-        GenerativeGroup(id, binOp, inv, neutral)
+        IndexedGroup(id, binOp, inv, neutral)
   }
 
-  case class GenerativeGroup[T](
+  case class IndexedGroup[T](
     id: Int,
     binOp: T => T => T,
     inv: T => T,
@@ -34,7 +34,7 @@ object Library extends base.Library {
   extends AbelianGroup[T]
   {
     def isEqualGroup(that: AbelianGroup[T]): Boolean = that match {
-      case GenerativeGroup(thatId, _, _, _) =>
+      case IndexedGroup(thatId, _, _, _) =>
         this.id == thatId
 
       case _ =>

@@ -13,7 +13,7 @@ extends FunSuite with ShouldMatchers
 
   val ayeDeeDeeExclamationMark = 0x61646421
   val additiveGroupOnIntegers =
-    GenerativeGroup[Int](ayeDeeDeeExclamationMark, x => x + _, -_, 0)
+    IndexedGroup[Int](ayeDeeDeeExclamationMark, x => x + _, -_, 0)
 
   def sum(b: Bag[Int]) =
     bagFoldGroup(additiveGroupOnIntegers)(identity[Int])(b)

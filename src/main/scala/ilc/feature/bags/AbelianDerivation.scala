@@ -23,9 +23,9 @@ extends Syntax
 
   def freeGroupBasedChange: TermBuilder = new PolymorphicTerm {
     def specialize(argumentTypes: Type*): Term = {
-      val elemType = argumentTypes.head
-      lambda(elemType) { element =>
-        groupBasedChange ! FreeAbelianGroup(elemType) ! element
+      val BagType(elemType) = argumentTypes.head
+      lambda(BagType(elemType)) { bag =>
+        groupBasedChange ! FreeAbelianGroup(elemType) ! bag
       }
     }
   }
@@ -37,8 +37,10 @@ extends Syntax
     case EmptyBag(valueType) =>
       freeGroupBasedChange ! EmptyBag(valueType)
 
-    case Singleton(valueType) if s.hasStableArgument(0) =>
-      freeGroupBasedChange ! EmptyBag(valueType)
+    case term @ Singleton(valueType) if s.hasStableArgument(0) =>
+      lambdaDelta(term) { case Seq(v, dv) =>
+        freeGroupBasedChange ! EmptyBag(valueType)
+      }
 
     case term @ Union(valueType) => {
       val (grp, rep) = changeTypes(valueType)
@@ -96,9 +98,9 @@ extends Syntax
           super.deriveSubterm(s) ! _G ! dG ! f ! df ! bag ! dbag
         ifEqualGroups((_G, dG)) {
           case2(dbag,
-            lambda(grp) { case grp0 =>
+            lambda(Var("grp0" ,grp)) { case grp0 =>
               ifEqualGroups(((Proj1 ! grp0), freeAbelianGroup)) {
-                groupBasedChange ! freeAbelianGroup !
+                groupBasedChange ! _G !
                   (FoldGroup ! _G ! f ! (elementOfChange ! grp0))
               } {
                 replacement

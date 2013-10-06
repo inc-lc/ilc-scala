@@ -24,5 +24,7 @@ extends Generator {
   addExample("MapSuccBags", new MapSuccBagsExample)
 
   addExample("MapReduce", new MapReduceExample)
+
+  addExample("SumValues", new SumValuesExample)
 }
    // idea for speeding up lookup/update: memoizing algorithms

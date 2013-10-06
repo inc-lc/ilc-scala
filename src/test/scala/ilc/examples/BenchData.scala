@@ -30,7 +30,9 @@ trait BenchData extends Serializable {
     * Subclass obligation: map input size and change description to actual change.
     * (XXX: should use an enum instead of a description for the key).
     */
-  def lookupChange(n: Int, description: String): Change
+  def lookupChange(description: String,
+                   input: InputType,
+                   output: OutputType): Change
 
   case class Datapack(
     oldInput: Data,
@@ -49,9 +51,10 @@ trait BenchData extends Serializable {
     description <- changeDescriptions
   } yield {
     val oldInput = inputOfSize(n)
-    val change = lookupChange(n, description)
+    val oldOutput = program(oldInput)
+    val change = lookupChange(description, oldInput, oldOutput)
     val newInput = updateInput(change)(oldInput)
-    Datapack(oldInput, newInput, change, program(oldInput))
+    Datapack(oldInput, newInput, change, oldOutput)
   }
 
   def className: String = example.getClass.getName.stripSuffix("$")

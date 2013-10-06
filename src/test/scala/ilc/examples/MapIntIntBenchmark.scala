@@ -31,21 +31,26 @@ class MapIntIntBenchData(val example: ExampleGenerated {
     "remove n"
   )
 
-  def lookupChange(n: Int, description: String): Change = description match {
-    case "no change" =>
-      Left(Map.empty)
+  def lookupChange(description: String,
+                   input: InputType,
+                   output: OutputType): Change = {
+    val n = input.size
+    description match {
+      case "no change" =>
+        Left(Map.empty)
 
-    case "replace 1 by n + 1" =>
-      Left(Map(1 -> Right(n + 1)))
+      case "replace 1 by n + 1" =>
+        Left(Map(1 -> Right(n + 1)))
 
-    case "add n + 2" =>
-      Left(Map(n + 2 -> Left(Some(n + 2))))
+      case "add n + 2" =>
+        Left(Map(n + 2 -> Left(Some(n + 2))))
 
-    case "remove 2" =>
-      Left(Map(2 -> Left(None)))
+      case "remove 2" =>
+        Left(Map(2 -> Left(None)))
 
-    case "remove n" =>
-      Left(Map(n -> Left(None)))
+      case "remove n" =>
+        Left(Map(n -> Left(None)))
+    }
   }
 }
 
@@ -83,21 +88,26 @@ class BagIntBenchData(val example: ExampleGenerated {
   def replace(a: Int, b: Int) =
     bagUnion(remove(a))(add(b))
 
-  def lookupChange(n: Int, description: String): Change = description match {
-    case "no change" =>
-      bagEmpty
+  def lookupChange(description: String,
+                   input: InputType,
+                   output: OutputType): Change = {
+    val n = input.size
+    description match {
+      case "no change" =>
+        bagEmpty
 
-    case "replace 1 by n + 1" =>
-      replace(1, n + 1)
+      case "replace 1 by n + 1" =>
+        replace(1, n + 1)
 
-    case "add n + 2" =>
-      add(n + 2)
+      case "add n + 2" =>
+        add(n + 2)
 
-    case "remove 2" =>
-      remove(2)
+      case "remove 2" =>
+        remove(2)
 
-    case "remove n" =>
-      remove(n)
+      case "remove n" =>
+        remove(n)
+    }
   }
 }
 
@@ -121,6 +131,6 @@ class AbelianBagIntBenchData(val example: ExampleGenerated {
   lazy val changeDescriptions: Gen[String] =
     Gen.enumeration("change")(changesToBagsOfIntegers.keySet.toSeq: _*)
 
-  def lookupChange(n: Int, description: String): Change =
-    changesToBagsOfIntegers(description)(n)
+  def lookupChange(description: String, input: InputType, output: OutputType): Change =
+    changesToBagsOfIntegers(description)(input.size)
 }

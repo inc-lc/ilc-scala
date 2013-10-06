@@ -45,6 +45,12 @@ object Library extends base.Library {
     val binOp   = bagUnion[T] _
     val inv     = bagNegate[T] _
     val neutral = bagEmpty[T]
-    def isEqualGroup(that: AbelianGroup[Bag[T]]): Boolean = this == that
+    def isEqualGroup(that: AbelianGroup[Bag[T]]): Boolean = that match {
+      case FreeAbelianGroup() =>
+        true
+
+      case _ =>
+        false
+    }
   }
 }

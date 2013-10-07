@@ -145,9 +145,9 @@ abstract class ExampleToBenchmark(val benchData: BenchData) extends BaseBenchmar
 
   def iters: Int = 1
 
-  def testSurgical() =
+  def testSurgical(desc: String, derivative: (=> InputType) => (=> DeltaInputType) => DeltaOutputType) =
     performance of
-    s"${className} (derivative, surgical change)" in {
+    s"${className} (${desc}, surgical change)" in {
       using(inputsOutputsChanges) config (testConfig: _*) in {
         case Datapack(oldInput, newInput, change, oldOutput) => {
           // we compute the result change with the derivative,
@@ -157,6 +157,11 @@ abstract class ExampleToBenchmark(val benchData: BenchData) extends BaseBenchmar
         }
       }
     }
+
+  def testSurgical() {
+    testSurgical("derivative", derivative)
+    testSurgical("normalized derivative", normDerivative)
+  }
 
   def testRecomputation() =
     performance of s"${className} (recomputation)" in {

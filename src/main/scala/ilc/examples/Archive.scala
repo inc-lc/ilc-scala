@@ -32,7 +32,7 @@ object Archive {
   * corresponding to the used language features, and with the appropriate
   * syntax.
   */
-abstract class Example
+abstract class Example extends feature.functions.Pretty
 {
   this: feature.base.ToScala
    with feature.base.Derivation =>
@@ -51,12 +51,19 @@ abstract class Example
     val outputTypeCode = toScala(outputType)
     val deltaInputTypeCode = toScala(deltaType(inputType))
     val deltaOutputTypeCode = toScala(deltaType(outputType))
+
+    val programForHuman: String = pretty(program)
+    val derivativeForHuman: String = pretty(derivative)
+
     Source(objectName,
       s"""|package ilc.examples
           |
           |$imports
           |
           |object $objectName extends ExampleGenerated {
+          |  override val programForHuman = "$programForHuman"
+          |  override val derivativeForHuman = "$derivativeForHuman"
+          |
           |  override val program = $programCode
           |  override val derivative = $derivativeCode
           |  override val updateInput = $updateInputCode

@@ -56,7 +56,7 @@ extends Syntax
   extends Variable
   {
     override def getName: Name = DeltaName(original.getName)
-    override def getType: Type = deltaType(original.getType)
+    override lazy val getType: Type = deltaType(original.getType)
   }
 
   object ChangeUpdate extends PolymorphicTerm {

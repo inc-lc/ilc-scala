@@ -10,7 +10,7 @@ extends TypeConstructor
 {
   trait Typed {
     /** Returns type or fails horribly. */
-    def getType: Type
+    val getType: Type
   }
 
   trait Term extends Typed {
@@ -33,13 +33,15 @@ Please do not declare getType as an abstract `val`.
     */
   trait Variable extends Term {
     def getName: Name
-    def getType: Type
+    val getType: Type
   }
 
   /** The variable that a user writes:
     * x, y, z as opposed to dx, ddy, dddz
     */
-  case class Var(getName: Name, getType: Type) extends Variable
+  case class Var(getName: Name, _getType: Type) extends Variable {
+    lazy val getType = _getType
+  }
 
   // TYPING CONTEXT
 
@@ -181,7 +183,7 @@ Please do not declare getType as an abstract `val`.
     protected[this] case class Constant(typeArguments: Seq[Type])
     extends Term
     {
-      def getType: Type = typeConstructor(typeArguments)
+      lazy val getType: Type = typeConstructor(typeArguments)
 
       /** mimic the generated toString method of case classes */
       override def toString: String = {

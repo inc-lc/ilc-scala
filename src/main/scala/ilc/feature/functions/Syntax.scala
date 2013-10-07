@@ -7,7 +7,7 @@ import scala.collection.GenTraversable
 
 trait Syntax extends base.Syntax {
   case class App(operator: Term, operand: Term) extends Term {
-    override def getType = (operator.getType, operand.getType) match {
+    override lazy val getType = (operator.getType, operand.getType) match {
       case (expectedDomain =>: range, actualDomain) =>
         if (expectedDomain == actualDomain)
           range
@@ -26,7 +26,7 @@ trait Syntax extends base.Syntax {
   }
 
   case class Abs(variable: Variable, body: Term) extends Term {
-    override def getType = variable.getType =>: body.getType
+    override lazy val getType = variable.getType =>: body.getType
   }
 
   // HOW TO WRITE LAMBDA TERMS

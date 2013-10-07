@@ -44,6 +44,7 @@ abstract class Example extends feature.functions.Pretty with feature.functions.B
     val objectName = Archive.toGenName(name)
     val programCode = toScala(program)
     val derivativeCode = toScala(derivative)
+    val normalizedDerivCode = toScala(betaNorm(derivative))
     val inputType =>: outputType = program.getType
     val updateInputCode = toScala(updateTerm(inputType))
     val updateOutputCode = toScala(updateTerm(outputType))
@@ -70,6 +71,7 @@ abstract class Example extends feature.functions.Pretty with feature.functions.B
           |
           |  override val program = $programCode
           |  override val derivative = $derivativeCode
+          |  override val normDerivative = $normalizedDerivCode
           |  override val updateInput = $updateInputCode
           |  override val updateOutput = $updateOutputCode
           |

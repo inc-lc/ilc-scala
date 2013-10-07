@@ -46,6 +46,9 @@ Please do not declare getType as an abstract `val`.
     /** add a (typed) variable to the typing context */
     def +: (variable: Var): TypingContext =
       TypingContext(variable :: this.toList)
+
+    def ++(variables: Set[Variable]): TypingContext =
+      TypingContext(this.toList ++ variables)
   }
 
   object TypingContext {

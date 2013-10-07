@@ -80,9 +80,15 @@ Please do not declare getType as an abstract `val`.
     * freshName(englishMonachs, "Elisabeth") = "Elizabeth_3"
     * }}}
     */
-  def freshName(context: TypingContext, default: Name): Name = {
+  def freshName(context: TypingContext, _default: Name): Name = {
+    val (default, startIdx) = _default match {
+        case IndexedName(orig, idx) =>
+          (orig, idx)
+        case _ =>
+          (_default, 0)
+      }
     var newName = default
-    var index = 0
+    var index = startIdx
     while (context contains newName) {
       index += 1
       newName = IndexedName(default, index)

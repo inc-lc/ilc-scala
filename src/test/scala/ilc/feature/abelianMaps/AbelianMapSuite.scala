@@ -19,7 +19,7 @@ extends FunSuite
    with abelianGroups.ToScala
    with functions.SyntaxSugar
    with functions.ToScala
-   with integers.Syntax
+   with integers.SyntaxSugar
    with integers.ToScala
    with naturals.Syntax
    with naturals.ToScala
@@ -32,7 +32,7 @@ extends FunSuite
 
   val empty = EmptyMap(ℤ, ℤ)
   val singleton = SingletonMap ! 3 ! 5
-  val _G_+ = AbelianGroup ! PlusInt ! NegateInt ! 0
+  val _G_+ = additiveGroupOnIntegers
   val sumValues = FoldByHom ! _G_+ ! _G_+ ! snd%(ℤ, ℤ)
 
   val getSize = FoldByHom ! _G_+ ! _G_+ ! (const ! (const ! 1)%ℤ)%ℤ

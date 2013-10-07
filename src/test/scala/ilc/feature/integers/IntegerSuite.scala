@@ -9,6 +9,7 @@ import scala.language.implicitConversions
 
 class IntegerSuite
 extends FunSuite
+   with SyntaxSugar
    with Evaluation
    with ToScala
    with bacchus.Evaluation
@@ -42,7 +43,7 @@ extends FunSuite
 
   test("-4 ⊕ (+ 20) = 16") {
     val plus20: Term = Inj1(ℤ) !
-      (Pair ! (AbelianGroup ! PlusInt ! NegateInt ! 0) ! 20)
+      (Pair ! additiveGroupOnIntegers ! 20)
     assert(plus20.getType === deltaType(IntType))
     expectToGet(16) { ChangeUpdate ! plus20 ! -4 }
   }

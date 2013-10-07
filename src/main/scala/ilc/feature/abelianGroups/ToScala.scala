@@ -19,7 +19,7 @@ trait ToScala extends base.ToScala with Syntax {
     // an abelian group)
     t match {
       case AbelianGroup(e) =>
-        s"GenerativeGroup.curried[${toScala(e)}]"
+        s"IndexedGroup.curried[${toScala(e)}]"
 
       case GetBinOp(_)   => s"(_.binOp)"
       case GetInv(_)     => s"(_.inv)"

@@ -2,10 +2,16 @@ package ilc
 package feature
 package abelianGroups
 
-trait Syntax extends base.Syntax with Types with booleans.Types {
+trait Syntax
+extends base.Syntax
+   with Types
+   with booleans.Types
+   with integers.Types // for identifying abelian groups
+{
   case object AbelianGroup extends ConstantWith1TypeParameter {
     val typeConstructor = TypeConstructor("e") { e =>
-      (e =>: e =>: e) =>: (e =>: e) =>: e =>: AbelianGroupType(e)
+      IntType =>:
+        (e =>: e =>: e) =>: (e =>: e) =>: e =>: AbelianGroupType(e)
     }
   }
 

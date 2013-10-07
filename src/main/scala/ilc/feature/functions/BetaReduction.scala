@@ -3,8 +3,8 @@ package feature
 package functions
 
 trait BetaReduction extends Syntax with analysis.FreeVariables {
-  def subst(toReplace: Variable, replacement: Term, typingContext: TypingContext): Term => Term = {
-    def go(replaceIn: Term): Term =
+  def subst(toReplace: Variable, replacement: Term): (TypingContext, Term) => Term = {
+    def go(typingContext: TypingContext, replaceIn: Term): Term =
       replaceIn match {
         case v: Variable =>
           if (toReplace == v)
@@ -24,11 +24,11 @@ trait BetaReduction extends Syntax with analysis.FreeVariables {
             //This typing context needs to be bigger than usual, since we're
             //moving the term to a different lambda context.
             val extContext = vPrime +: v +: typingContext
-            val alphaRenamedBody = subst(v, vPrime, extContext)(body)
-            Abs(vPrime, subst(toReplace, replacement, extContext)(alphaRenamedBody))
+            val alphaRenamedBody = subst(v, vPrime)(extContext, body)
+            Abs(vPrime, go(extContext, alphaRenamedBody))
           }
         case App(fun, arg) =>
-          App(go(fun), go(arg))
+          App(go(typingContext, fun), go(typingContext, arg))
         case _ => replaceIn
       }
     go _
@@ -50,7 +50,7 @@ trait BetaReduction extends Syntax with analysis.FreeVariables {
         val argNorm = betaNormalize(arg, typingContext)
         funNorm match {
           case Abs(v, body) =>
-            subst(v, argNorm, typingContext)(body)
+            subst(v, argNorm)(typingContext, body)
           case _ =>
             App(funNorm, argNorm)
         }

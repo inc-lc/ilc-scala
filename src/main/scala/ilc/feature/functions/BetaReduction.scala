@@ -15,10 +15,11 @@ trait BetaReduction extends Syntax {
           if (v == v2) //v is shadowed
             body
           else { // (v != v2)
+            //XXX: ensure this is not free in arg.
             val v3 = Var(freshName(typingContext, v2.getName), v2.getType)
             val extContext = v2 +: typingContext
-            val notCapturedArg = subst(v2, v3, extContext)(arg)
-            Abs(v2, subst(v, notCapturedArg, extContext)(body2))
+            val alphaRenamedBody2 = subst(v2, v3, extContext)(body2)
+            Abs(v3, subst(v, arg, extContext)(alphaRenamedBody2))
           }
         case App(fun, arg2) =>
           App(go(fun), go(arg2))

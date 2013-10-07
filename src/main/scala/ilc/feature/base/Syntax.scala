@@ -43,11 +43,13 @@ Please do not declare getType as an abstract `val`.
     lazy val getType = _getType
   }
 
-  // TYPING CONTEXT
+  import collection.immutable.HashMap
 
-  case class TypingContext(toList: List[Variable]) {
+  // TYPING CONTEXT
+  //This is a case class just to get equals generated.
+  case class TypingContext(private val vars: Map[Name, Variable]) {
     def lookup(name: Name): Option[Variable] =
-      this.toList.find(_.getName == name)
+      this.vars get name
 
     /** find the name, or die **/
     def apply(name: Name): Variable =
@@ -57,18 +59,21 @@ Please do not declare getType as an abstract `val`.
     def contains(name: Name): Boolean =
       lookup(name).fold(false)(_ => true)
 
+    private def toEntry(v: Variable) =
+      v.getName -> v
+
     /** add a (typed) variable to the typing context */
     def +: (variable: Variable): TypingContext =
-      TypingContext(variable :: this.toList)
+      TypingContext(this.vars + toEntry(variable))
 
-    def ++(variables: Set[Variable]): TypingContext =
-      TypingContext(this.toList ++ variables)
+    def ++(variables: Traversable[Variable]): TypingContext =
+      TypingContext(this.vars ++ (variables map toEntry))
   }
 
   object TypingContext {
-    val empty: TypingContext = TypingContext(Nil)
+    val empty: TypingContext = TypingContext(HashMap.empty[Name, Variable])
     def apply(variables: Variable*): TypingContext =
-      TypingContext(List(variables: _*))
+      TypingContext.empty ++ variables
   }
 
   /** Generate a name unbound in context

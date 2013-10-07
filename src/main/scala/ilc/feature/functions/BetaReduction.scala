@@ -6,7 +6,11 @@ trait BetaReduction extends Syntax {
   def subst(v: Variable, arg: Term, typingContext: TypingContext): Term => Term = {
     def go(body: Term): Term =
       body match {
-        case v: Var => v
+        case v2: Var =>
+          if (v == v2)
+            arg
+          else
+            body
         case Abs(v2, body2) =>
           if (v == v2)
             body

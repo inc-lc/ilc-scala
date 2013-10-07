@@ -32,7 +32,7 @@ object Archive {
   * corresponding to the used language features, and with the appropriate
   * syntax.
   */
-abstract class Example extends feature.functions.Pretty
+abstract class Example extends feature.functions.Pretty with feature.functions.BetaReduction
 {
   this: feature.base.ToScala
    with feature.base.Derivation =>
@@ -54,6 +54,8 @@ abstract class Example extends feature.functions.Pretty
 
     val programForHuman: String = pretty(program)
     val derivativeForHuman: String = pretty(derivative)
+    val normalizedProgrForHuman: String = pretty(betaNorm(program))
+    val normalizedDerivForHuman: String = pretty(betaNorm(derivative))
 
     Source(objectName,
       s"""|package ilc.examples
@@ -63,6 +65,8 @@ abstract class Example extends feature.functions.Pretty
           |object $objectName extends ExampleGenerated {
           |  override val programForHuman = "$programForHuman"
           |  override val derivativeForHuman = "$derivativeForHuman"
+          |  override val normalizedProgrForHuman = "$normalizedProgrForHuman"
+          |  override val normalizedDerivForHuman = "$normalizedDerivForHuman"
           |
           |  override val program = $programCode
           |  override val derivative = $derivativeCode

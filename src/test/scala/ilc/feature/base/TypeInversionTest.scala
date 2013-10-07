@@ -18,7 +18,7 @@ extends FunSuite
   }
 
   object OperandT2 extends Term {
-    override def getType: Type = T2(Bot)
+    override lazy val getType: Type = T2(Bot)
   }
 
   test("can distinguish type constructors of the same arity") {

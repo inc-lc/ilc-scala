@@ -12,7 +12,7 @@ extends FunSuite
   // dummy types for testing
   case object A extends Type
   case object B extends Type
-  case object ATerm extends Term { def getType = A }
+  case object ATerm extends Term { lazy val getType = A }
 
   test("may give type arguments to constants") {
     info(pretty(EmptyMap(A, B)))

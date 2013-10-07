@@ -4,7 +4,7 @@ package examples
 // the storage aspect of an examples generator
 trait Archive {
   import scala.collection.mutable
-  val archive: mutable.Map[String, Example] = mutable.Map.empty
+  val archive: mutable.Map[String, Example] = mutable.LinkedHashMap.empty
 
   def get(exampleWithName: String): Example =
     archive(exampleWithName)

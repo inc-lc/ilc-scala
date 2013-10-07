@@ -16,7 +16,7 @@ trait BetaReduction extends Syntax with analysis.FreeVariables {
             replaceIn
           else { // (toReplace != v)
             val freeVars = replacement.freeVariables
-            val extendedTypingContext = v +: TypingContext(typingContext.toList ++ freeVars)
+            val extendedTypingContext = v +: (typingContext ++ freeVars)
             val vPrime = Var(freshName(extendedTypingContext, v.getName), v.getType)
             ////XXX this might be bigger than needed.
             //val extContext = vPrime +: extendedTypingContext

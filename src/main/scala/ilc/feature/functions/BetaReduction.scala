@@ -35,7 +35,7 @@ trait BetaReduction extends Syntax with analysis.FreeVariables {
   }
   //Use base.Syntax#Term ?
 
-  def betaNorm(t: Term) = betaNormalize(t, TypingContext.empty)
+  def betaNormSubst(t: Term) = betaNormalize(t, TypingContext.empty)
 
   //Should this prevent code/work duplication?
   def betaNormalize(t: Term, typingContext: TypingContext): Term = {
@@ -59,4 +59,20 @@ trait BetaReduction extends Syntax with analysis.FreeVariables {
         t
     }
   }
+
+  def betaNorm(t: Term) = betaNormalize2(t, Map.empty)
+  def betaNormalize2(t: Term, env: Map[Name, Term]): Term =
+    t match {
+      case v: Variable =>
+        env(v.getName)
+      case App(Abs(v, body), arg) =>
+        betaNormalize2(body, env + (v.getName -> arg))
+      case App(fun, arg) =>
+        App(betaNormalize2(fun, env), betaNormalize2(arg, env))
+      case Abs(v, body) =>
+        //Implement shadowing.
+        Abs(v, betaNormalize2(body, env + (v.getName -> v)))
+      case _ =>
+        t
+    }
 }

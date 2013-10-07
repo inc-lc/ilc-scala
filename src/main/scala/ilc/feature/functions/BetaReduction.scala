@@ -12,7 +12,7 @@ trait BetaReduction extends Syntax {
           else
             body
         case Abs(v2, body2) =>
-          if (v == v2)
+          if (v == v2) //v is shadowed
             body
           else { // (v != v2)
             val v3 = Var(freshName(typingContext, v2.getName), v2.getType)

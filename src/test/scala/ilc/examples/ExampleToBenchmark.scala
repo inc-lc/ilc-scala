@@ -90,9 +90,9 @@ abstract class ExampleToBenchmark(val benchData: BenchData) extends BaseBenchmar
   import benchData._
   import example._
 
-  def verifyCorrectness() =
+  def verifyCorrectness(desc: String, derivative: InputType => DeltaInputType => DeltaOutputType) =
     performance of
-    s"${className} (verification)" in {
+    s"${className} (${desc}, verification)" in {
       using(inputsOutputsChanges) in {
         case Datapack(oldInput, newInput, change, oldOutput) => {
           val newOutput = program(newInput)
@@ -123,8 +123,15 @@ abstract class ExampleToBenchmark(val benchData: BenchData) extends BaseBenchmar
     }
 
   def testSurgical() {
-    testSurgical("derivative", derivative)
-    testSurgical("normalized derivative", normDerivative)
+    for ((desc, derivative) <- derivatives) {
+      testSurgical(desc, derivative)
+    }
+  }
+
+  def verifyCorrectness() {
+    for ((desc, derivative) <- derivatives) {
+      verifyCorrectness(desc, derivative)
+    }
   }
 
   def testRecomputation() =

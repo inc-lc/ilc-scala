@@ -65,10 +65,19 @@ trait BetaReduction extends Syntax with analysis.FreeVariables {
     t match {
       case v: Variable =>
         env(v.getName)
-      case App(Abs(v, body), arg) =>
-        betaNormalize2(body, env + (v.getName -> arg))
       case App(fun, arg) =>
-        App(betaNormalize2(fun, env), betaNormalize2(arg, env))
+        //This fails because normArg can contain capture error, which become
+        //visible as soon as we normalize a term containing a normalized term!
+
+        val normFun = betaNormalize2(fun, env)
+        val normArg = betaNormalize2(arg, env)
+        normFun match {
+          case Abs(v, body) =>
+            //Here capture is possible.
+            betaNormalize2(body, env + (v.getName -> normArg))
+          case _ =>
+            App(normFun, normArg)
+        }
       case Abs(v, body) =>
         //Implement shadowing.
         Abs(v, betaNormalize2(body, env + (v.getName -> v)))

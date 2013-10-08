@@ -10,14 +10,14 @@ import ilc.feature.bags.Library._
 import ilc.feature.bags.BagChanges
 
 object HistogramBenchmark extends NonReplacementChangeBenchmark(
-  new BagPairBenchData(BagUnionGenerated) {
+  new PyramidBenchData(HistogramGenerated) {
     override def base = 5000
     override def last = 25000
     override def step = 5000
   })
 
 object HistogramVerification extends BenchmarkVerification(
-  new BagPairBenchData(BagUnionGenerated) {
+  new PyramidBenchData(HistogramGenerated) {
     override def base = 5
     override def last = 15
     override def step = 5

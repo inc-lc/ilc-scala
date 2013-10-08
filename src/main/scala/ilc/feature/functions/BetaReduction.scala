@@ -95,7 +95,7 @@ trait BetaReduction extends Syntax with analysis.FreeVariables {
     var index = 0
     def fresh(varName: Name, varType: Type): Var = {
       index += 1
-      Var(IndexedName(varName, index), varType)
+      Var(IndexedName("z", index), varType)
     }
 
     def reify(t: Value): Term =

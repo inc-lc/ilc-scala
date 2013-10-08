@@ -51,6 +51,7 @@ trait BetaReduction extends Syntax with analysis.FreeVariables {
         funNorm match {
           case Abs(v, body) =>
             subst(v, argNorm)(typingContext, body)
+            //XXX: if argNorm is a function, this produces new redexes!
           case _ =>
             App(funNorm, argNorm)
         }
@@ -60,7 +61,56 @@ trait BetaReduction extends Syntax with analysis.FreeVariables {
     }
   }
 
-  def betaNorm(t: Term) = betaNormalize2(t, Map.empty)
+  def betaNorm(t: Term) = {
+    import Normalize._
+    reify(eval(t, Map.empty))
+  }
+
+  object Normalize {
+    sealed trait Value
+    case class FunVal(fun: Value => Value, varName: Name, varType: Type) extends Value
+    case class TermVal(term: Term) extends Value
+    case class AppVal(fun: Value, arg: Value) extends Value
+
+    def eval(t: Term, env: Map[Name, Value]): Value =
+      t match {
+        case Abs(x, t) =>
+          FunVal((arg: Value) => eval(t, env.updated(x.getName, arg)), x.getName, x.getType)
+        case App(s, t) =>
+          val arg = eval(t, env)
+          eval(s, env) match {
+            case FunVal(f, _, _) =>
+              f(arg)
+            case nonFunVal =>
+              AppVal(nonFunVal, arg)
+          }
+        case variable: Variable =>
+          env(variable.getName)
+        case _ =>
+          TermVal(t)
+      }
+
+    //Have a very simple and reliable fresh variable generator. Tracking free
+    //variables might have been the performance killer of the other normalizer.
+    var index = 0
+    def fresh(varName: Name, varType: Type): Var = {
+      index += 1
+      Var(IndexedName("z", index), varType)
+    }
+
+    def reify(t: Value): Term =
+      t match {
+        case FunVal(f, varName, varType) => {
+          val x = fresh(varName, varType)
+          Abs(x, reify(f(TermVal(x))))
+        }
+        case TermVal(term) =>
+          term
+        case AppVal(fun, arg) =>
+          App(reify(fun), reify(arg))
+      }
+  }
+  /*
   def betaNormalize2(t: Term, env: Map[Name, Term]): Term =
     t match {
       case v: Variable =>
@@ -84,4 +134,5 @@ trait BetaReduction extends Syntax with analysis.FreeVariables {
       case _ =>
         t
     }
+ */
 }

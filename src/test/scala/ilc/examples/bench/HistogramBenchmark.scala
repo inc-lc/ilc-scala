@@ -47,8 +47,6 @@ extends BenchData
 {
   import example._
 
-  val numberOfChanges = 10
-
   def rand1(n: Int): Int = Random.nextInt(n) + 1
 
   def randomBag(size: Int, ceiling: Int): Bag[Int] =

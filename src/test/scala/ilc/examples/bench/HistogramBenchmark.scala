@@ -10,9 +10,9 @@ import ilc.feature.bags.Library._
 
 object HistogramBenchmark extends NonReplacementChangeBenchmark(
   new BootBenchData(HistogramGenerated) {
-    override def base = 500
-    override def last = 2500
-    override def step = 500
+    override def base = 5000
+    override def last = 25000
+    override def step = 5000
   })
 
 object HistogramVerification extends BenchmarkVerification(

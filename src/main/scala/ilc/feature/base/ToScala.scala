@@ -18,7 +18,7 @@ trait ToScala extends Syntax with functions.Types {
   // types
   def toScala(tau: Type): String = tau match {
     case sigma0 =>: sigma1 => {
-      s"((${toScala(sigma0)}) => ${toScala(sigma1)})"
+      s"((=>${toScala(sigma0)}) => ${toScala(sigma1)})"
     }
 
     case _ =>
@@ -29,11 +29,15 @@ trait ToScala extends Syntax with functions.Types {
   // subclasses should always call this helper to create scala
   // functions. CAUTION: supplied parameter names are binding.
   def scalaFunction(parameterNames: String*)(body: => String): String = {
+    def toParam(name: String) = name + "_param"
+    val declarations = parameterNames.map { name =>
+      s"lazy val $name = ${toParam(name)}"
+    } mkString ";"
     def loop(names: Seq[String]): String =
       if (names.isEmpty)
-        body
+        s"{$declarations; $body}"
       else
-        s"${names.head} => ${loop(names.tail)}"
+        s"${toParam(names.head)} => ${loop(names.tail)}"
     s"(${loop(parameterNames)})"
   }
 

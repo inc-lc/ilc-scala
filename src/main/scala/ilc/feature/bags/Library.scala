@@ -21,11 +21,14 @@ object Library extends base.Library {
 
   def bagEmpty[T]: Bag[T] = HashMap.empty[T, Int]
 
-  def bagSingleton[T](t: T): Bag[T] = HashMap(t -> 1)
+  def bagSingleton[T]: (=>T) => Bag[T] = t => HashMap(t -> 1)
 
   //XXX: Could be made much faster by using builders (avoiding immutable
   //copies), but this shouldn't be necessary.
-  def bagUnion[T](b1: Bag[T])(b2: Bag[T]): Bag[T] = {
+  def bagUnion[T]:
+      (=>Bag[T]) => (=>Bag[T]) => Bag[T] = b1Param => b2Param => {
+    lazy val b1 = b1Param
+    lazy val b2 = b2Param
     val toDelete = Stack.empty[T]
     (b1 merged b2) {
       case ((el1, count1), (el2, count2)) =>
@@ -36,23 +39,29 @@ object Library extends base.Library {
     } -- toDelete
   }
 
-  def bagFoldGroup[G, T]
-    (abelian: AbelianGroup[G])(f: T => G)(bag: Bag[T]): G =
+  def bagFoldGroup[G, T]:
+      (=>AbelianGroup[G]) => (=>(=>T) => G) => (=>Bag[T]) => G =
+    abelianparam => fParam => bagParam =>
   {
+    lazy val abelian = abelianparam
+    lazy val f = fParam
+    lazy val bag = bagParam
     val (op, inv, neutral) = (abelian.binOp, abelian.inv, abelian.neutral)
     (for {
       (t, count) <- bag
       g = f(t)
       (h, posCount) = if (count >= 0) (g, count) else (inv(g), -count)
       e <- Seq.tabulate(posCount)(_ => h)
-    } yield e).foldRight[G](neutral)(Function.uncurried(op))
+    } yield e).foldRight[G](neutral){ case (elem1, elem2) =>
+        op(elem1)(elem2)
+    }
   }
 
-  def bagNegate[T](b: Bag[T]): Bag[T] = b map {case (k, v) => (k, -v)}
+  def bagNegate[T]:(=>Bag[T]) => Bag[T] = _ map {case (k, v) => (k, -v)}
 
   case class FreeAbelianGroup[T]() extends AbelianGroup[Bag[T]] {
-    val binOp   = bagUnion[T] _
-    val inv     = bagNegate[T] _
+    val binOp   = bagUnion[T]
+    val inv     = bagNegate[T]
     val neutral = bagEmpty[T]
     def isEqualGroup(that: AbelianGroup[Bag[T]]): Boolean = that match {
       case FreeAbelianGroup() =>

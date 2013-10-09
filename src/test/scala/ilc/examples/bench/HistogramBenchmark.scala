@@ -47,7 +47,9 @@ extends BenchData
 {
   import example._
 
-  def rand1(n: Int): Int = Random.nextInt(n) + 1
+  def rand(from: Int, to: Int) = from + Random.nextInt(to - from + 1)
+
+  def rand1(n: Int): Int = rand(1, n)
 
   def randomBag(size: Int, ceiling: Int): Bag[Int] =
     Bag(Seq.fill(size)(rand1(ceiling)): _*)
@@ -56,8 +58,8 @@ extends BenchData
     Gen.enumeration("change")(changesToMapsBetweenIntegers.keySet.toSeq: _*)
 
   def inputOfSize(n: Int): InputType = {
-    val numberOfBags = rand1(n)
-    val numberPerBag = n / numberOfBags
+    val numberPerBag = rand(2, n)
+    val numberOfBags = n / numberPerBag
     val firstBagSize = n - numberPerBag * (numberOfBags - 1)
     val randMax = math.max(math.sqrt(n.toDouble).toInt, 10)
     AbelianMap(

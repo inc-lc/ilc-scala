@@ -17,8 +17,8 @@ object HistogramBenchmark extends NonReplacementChangeBenchmark(
 
 object HistogramVerification extends BenchmarkVerification(
   new BootBenchData(HistogramGenerated) {
-    override def base = 5
-    override def last = 5
+    override def base = 25
+    override def last = 25
     override def step = 5
   })
 

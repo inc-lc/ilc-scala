@@ -63,7 +63,7 @@ extends BenchData
     val firstBagSize = n - numberPerBag * (numberOfBags - 1)
     val randMax = math.max(math.sqrt(n.toDouble).toInt, 10)
     AbelianMap(
-      (2 to n).map(_ -> randomBag(numberPerBag, randMax)).toSeq: _*
+      (2 to numberOfBags).map(_ -> randomBag(numberPerBag, randMax)).toSeq: _*
     ).updated(1, randomBag(firstBagSize, randMax))
   }
 

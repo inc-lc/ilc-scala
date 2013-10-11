@@ -53,4 +53,6 @@ logBuffered := false
 // http://axel22.github.io/scalameter/2013/02/14/release_0_3.html
 testOptions += Tests.Argument(scalaMeterFramework, "-preJDK7")
 
+testOptions += Tests.Argument(scalaMeterFramework, "-CresultDir testOutput")
+
 parallelExecution in Test := false

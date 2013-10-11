@@ -8,7 +8,7 @@ import ilc.feature.abelianMaps.Library._
 import ilc.feature.abelianGroups.Library._
 import ilc.feature.bags.Library._
 
-object HistogramBenchmark extends NonReplacementChangeBenchmark(
+class HistogramBenchmark extends NonReplacementChangeBenchmark(
   new BootBenchData(HistogramGenerated) {
     override def base = 5000
     override def last = 25000

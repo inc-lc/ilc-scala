@@ -7,7 +7,7 @@ package bench
   * improving our algorithms.
   */
 
-object MapSuccBenchmark extends NonReplacementChangeBenchmark(
+class MapSuccBenchmark extends NonReplacementChangeBenchmark(
   new AbelianBagIntBenchData(MapSuccGenerated) {
     override def base = 500
     override def last = 2500

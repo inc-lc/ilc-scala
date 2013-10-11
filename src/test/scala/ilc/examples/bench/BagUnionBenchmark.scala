@@ -10,7 +10,7 @@ import ilc.feature.bags.BagChanges
 /**
   * Benchmark bag union.
   */
-object BagUnionBenchmark extends NonReplacementChangeBenchmark(
+class BagUnionBenchmark extends NonReplacementChangeBenchmark(
   new BagPairBenchData(BagUnionGenerated) {
     override def base = 5000
     override def last = 25000

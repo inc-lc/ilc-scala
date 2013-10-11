@@ -7,7 +7,7 @@ import ilc.feature.abelianGroups.Library._
 import ilc.feature.abelianMaps.Library._
 import ilc.feature.abelianMaps.MapChanges
 
-object SumValuesBenchmark extends NonReplacementChangeBenchmark(
+class SumValuesBenchmark extends NonReplacementChangeBenchmark(
   new AdditiveMapBenchData(SumValuesGenerated) {
     override def base = 5000
     override def last = 25000

@@ -92,10 +92,12 @@ trait BaseBenchmark extends RegressionTesting with Serializable {
   /* You need to use this explicitly when defining each test */
   def testConfig =
     Seq(
-      reports.regression.significance -> 0.05) ++ //Configence level = 95 %
+      reports.regression.significance -> 0.01) ++ //Configence level = 99 %
     QuickAndDirty.choose(Seq.empty,
       Seq(
         exec.minWarmupRuns -> 20,
+        exec.warmupCovThreshold -> 0.05,
+        exec.reinstantiation.fullGC -> true,
         exec.maxWarmupRuns -> 100))
 }
 

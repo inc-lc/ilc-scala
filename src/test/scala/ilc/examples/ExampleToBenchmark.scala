@@ -75,6 +75,12 @@ trait BaseBenchmark extends RegressionTesting with Serializable {
 
   //Don't save QuickAndDirty results.
   override lazy val persistor = QuickAndDirty.choose(Persistor.None, new SerializationPersistor)
+
+  /* You need to use this explicitly when defining each test */
+  def testConfig =
+    Seq(
+      reports.resultDir -> "testOutput",
+      reports.regression.significance -> 0.05) //Configence level = 95 %
 }
 
 /**
@@ -92,7 +98,7 @@ abstract class ExampleToBenchmark(val benchData: BenchData) extends BaseBenchmar
 
   def verifyCorrectness() =
     performance of
-    s"${className} (verification)" in {
+    s"${className} (verification)" config (testConfig: _*) in {
       using(inputsOutputsChanges) in {
         case Datapack(oldInput, newInput, change, oldOutput) => {
           val newOutput = program(newInput)
@@ -112,7 +118,7 @@ abstract class ExampleToBenchmark(val benchData: BenchData) extends BaseBenchmar
 
   def testSurgical() =
     performance of
-    s"${className} (derivative, surgical change)" in {
+    s"${className} (derivative, surgical change)" config (testConfig: _*) in {
       using(inputsOutputsChanges) in {
         case Datapack(oldInput, newInput, change, oldOutput) => {
           // we compute the result change with the derivative,
@@ -123,7 +129,7 @@ abstract class ExampleToBenchmark(val benchData: BenchData) extends BaseBenchmar
     }
 
   def testRecomputation() =
-    performance of s"${className} (recomputation)" in {
+    performance of s"${className} (recomputation)" config (testConfig: _*) in {
       using(inputsOutputsChanges) in {
         case Datapack(oldInput, newInput, change, oldOutput) => {
           program(newInput)
@@ -157,7 +163,7 @@ abstract class ReplacementChangeBenchmark(override val benchData: BenchData with
   testSurgical()
 
   performance of
-  s"${className} (derivative, replacement change)" in {
+  s"${className} (derivative, replacement change)" config (testConfig: _*) in {
     using(inputsOutputsChanges) in {
       case Datapack(oldInput, newInput, change, oldOutput) => {
         updateOutput(derivative(oldInput)(replacementChange(newInput)))(oldOutput)

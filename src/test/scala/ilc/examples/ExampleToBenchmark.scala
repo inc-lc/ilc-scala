@@ -57,10 +57,16 @@ trait BaseBenchmark extends RegressionTesting with Serializable {
   override def aggregator = QuickAndDirty.choose(Aggregator.min, super.aggregator)
   override def regressionTester = RegressionReporter.Tester.Accepter()
 
-  //Removes Measurer.PeriodicReinstantiation and Measurer.RelativeNoise from the
+  //Removes Measurer.RelativeNoise from the
   //above default, since we're not really doing regression testing, hence we
   //don't need to add noise to results.
-  override def measurer: Measurer = new Measurer.IgnoringGC with Measurer.OutlierElimination
+  //
+  //Measurer.PeriodicReinstantiation is in because it can change, by
+  //reinstantiation, the layout in which data is allocated, limiting the effects
+  //of bad allocation patterns.
+  override def measurer: Measurer =
+    new Measurer.IgnoringGC with Measurer.PeriodicReinstantiation
+        with Measurer.OutlierElimination
 
   override def reporters = baseReporters ++ QuickAndDirty.choose(Seq.empty, expensiveReporters)
 

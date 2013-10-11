@@ -52,8 +52,15 @@ trait RegressionTesting extends PerformanceTest {
   * Our benchmarking settings.
   */
 trait BaseBenchmark extends RegressionTesting with Serializable {
+  import Executor.Measurer
+
   override def aggregator = QuickAndDirty.choose(Aggregator.min, super.aggregator)
   override def regressionTester = RegressionReporter.Tester.Accepter()
+
+  //Removes Measurer.PeriodicReinstantiation and Measurer.RelativeNoise from the
+  //above default, since we're not really doing regression testing, hence we
+  //don't need to add noise to results.
+  override def measurer: Measurer = new Measurer.IgnoringGC with Measurer.OutlierElimination
 
   override def reporters = baseReporters ++ QuickAndDirty.choose(Seq.empty, expensiveReporters)
 
@@ -80,7 +87,11 @@ trait BaseBenchmark extends RegressionTesting with Serializable {
   def testConfig =
     Seq(
       reports.resultDir -> "testOutput",
-      reports.regression.significance -> 0.05) //Configence level = 95 %
+      reports.regression.significance -> 0.05) ++ //Configence level = 95 %
+    QuickAndDirty.choose(Seq.empty,
+      Seq(
+        exec.minWarmupRuns -> 20,
+        exec.maxWarmupRuns -> 100))
 }
 
 /**

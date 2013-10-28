@@ -55,7 +55,7 @@ extends BenchData
   def randomBag(size: Int, ceiling: Int): Bag[Int] =
     Bag(Seq.fill(size)(rand1(ceiling)): _*)
 
-  def changeDescriptions: org.scalameter.api.Gen[String] =
+  def changeDescriptions: Gen[String] =
     Gen.enumeration("change")(changesToMapsBetweenIntegers.keySet.toSeq: _*)
 
   def inputOfSize(n: Int): InputType = {

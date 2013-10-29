@@ -65,7 +65,8 @@ trait BaseBenchmark extends RegressionTesting with Serializable {
   //reinstantiation, the layout in which data is allocated, limiting the effects
   //of bad allocation patterns.
   override def measurer: Measurer =
-    new Measurer.IgnoringGC with Measurer.PeriodicReinstantiation
+      //Comment it out, since it makes things so slow.
+    new Measurer.IgnoringGC// with Measurer.PeriodicReinstantiation
         with Measurer.OutlierElimination
 
   override def reporters = baseReporters ++ QuickAndDirty.choose(Seq.empty, expensiveReporters)

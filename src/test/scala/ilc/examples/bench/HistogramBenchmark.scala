@@ -56,6 +56,10 @@ extends BenchData
 {
   import example._
 
+  /**
+    * Returns a pseudorandom, uniformly distributed int value between from
+    * (inclusive) and to (inclusive).
+    */
   def rand(from: Int, to: Int) = from + Random.nextInt(to - from + 1)
 
   def rand1(n: Int): Int = rand(1, n)

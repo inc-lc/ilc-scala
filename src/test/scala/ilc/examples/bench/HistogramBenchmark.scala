@@ -66,7 +66,8 @@ extends BenchData
   def changeDescriptions: Gen[String] =
     Gen.enumeration("change")(changesToMapsBetweenIntegers.keySet.toSeq: _*)
 
-  def inputOfSize(n: Int): InputType = {
+  def inputOfSize(nOrig: Int): InputType = {
+    val n = nOrig + rand(-5, 5)
     val numberPerBag = rand(2, n)
     val numberOfBags = n / numberPerBag
     val firstBagSize = n - numberPerBag * (numberOfBags - 1)

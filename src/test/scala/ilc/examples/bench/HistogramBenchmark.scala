@@ -8,10 +8,18 @@ import ilc.feature.abelianMaps.Library._
 import ilc.feature.abelianGroups.Library._
 import ilc.feature.bags.Library._
 
-class HistogramBenchmark extends NonReplacementChangeBenchmark(
+class HistogramBenchmark extends OnlyDerivativeBenchmark(
   new BootBenchData(HistogramGenerated) {
-    override def base = 100 //Should be around the break-even point.
-    override def last = 10 * 1000 * 1000
+    override def base = 10 //Should be around the break-even point.
+    override def last = 1000 * 1000
+    override def step = 10
+    override def sizes: Gen[Int] = Gen.exponential("n")(base, last, step)
+  })
+
+class HistogramRecomputeBenchmark extends OnlyRecomputationBenchmark(
+  new BootBenchData(HistogramGenerated) {
+    override def base = 10
+    override def last = 100
     override def step = 10
     override def sizes: Gen[Int] = Gen.exponential("n")(base, last, step)
   })

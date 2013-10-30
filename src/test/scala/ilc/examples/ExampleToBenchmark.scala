@@ -141,6 +141,8 @@ abstract class ExampleToBenchmark(val benchData: BenchData) extends BaseBenchmar
       }
     }
 
+  def iters: Int = 1
+
   def testSurgical() =
     performance of
     s"${className} (derivative, surgical change)" in {
@@ -148,7 +150,8 @@ abstract class ExampleToBenchmark(val benchData: BenchData) extends BaseBenchmar
         case Datapack(oldInput, newInput, change, oldOutput) => {
           // we compute the result change with the derivative,
           // then apply it to the old value.
-          updateOutput(derivative(oldInput)(change))(oldOutput)
+          for (i <- 1 to iters)
+            updateOutput(derivative(oldInput)(change))(oldOutput)
         }
       }
     }

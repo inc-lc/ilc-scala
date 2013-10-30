@@ -14,7 +14,9 @@ class HistogramBenchmark extends OnlyDerivativeBenchmark(
     override def last = 1000 * 1000
     override def step = 10
     override def sizes: Gen[Int] = Gen.exponential("n")(base, last, step)
-  })
+  }) {
+  override def iters: Int = 10
+}
 
 class HistogramRecomputeBenchmark extends OnlyRecomputationBenchmark(
   new BootBenchData(HistogramGenerated) {

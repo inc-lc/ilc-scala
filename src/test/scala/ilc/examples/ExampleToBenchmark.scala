@@ -65,8 +65,15 @@ trait BaseBenchmark extends RegressionTesting with Serializable {
   //reinstantiation, the layout in which data is allocated, limiting the effects
   //of bad allocation patterns.
   override def measurer: Measurer =
-    new Measurer.IgnoringGC with Measurer.PeriodicReinstantiation
-        with Measurer.OutlierElimination
+    new Measurer.IgnoringGC
+      //Comment it out, since it makes things so slow.
+      // with Measurer.PeriodicReinstantiation
+
+      //OutlierElimination is not described by the paper we're citing; and I do
+      //get quite some outliers in every test run where I can observe the lower
+      //results (and the behavior of outlier elimination doesn't look nice).
+
+      // with Measurer.OutlierElimination
 
   override def reporters = baseReporters ++ QuickAndDirty.choose(Seq.empty, expensiveReporters)
 
@@ -134,6 +141,8 @@ abstract class ExampleToBenchmark(val benchData: BenchData) extends BaseBenchmar
       }
     }
 
+  def iters: Int = 1
+
   def testSurgical() =
     performance of
     s"${className} (derivative, surgical change)" in {
@@ -141,7 +150,8 @@ abstract class ExampleToBenchmark(val benchData: BenchData) extends BaseBenchmar
         case Datapack(oldInput, newInput, change, oldOutput) => {
           // we compute the result change with the derivative,
           // then apply it to the old value.
-          updateOutput(derivative(oldInput)(change))(oldOutput)
+          for (i <- 1 to iters)
+            updateOutput(derivative(oldInput)(change))(oldOutput)
         }
       }
     }
@@ -171,6 +181,14 @@ extends ExampleToBenchmark(benchData) {
 
 abstract class NonReplacementChangeBenchmark(benchData: BenchData) extends ExampleToBenchmark(benchData) {
   sharedTests()
+}
+
+abstract class OnlyDerivativeBenchmark(benchData: BenchData) extends ExampleToBenchmark(benchData) {
+  testSurgical()
+}
+
+abstract class OnlyRecomputationBenchmark(benchData: BenchData) extends ExampleToBenchmark(benchData) {
+  testRecomputation()
 }
 
 // This must be a class because one can't define tests in a trait.

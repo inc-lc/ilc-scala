@@ -342,6 +342,7 @@ trait SyntaxSugar extends Syntax {
     * } { x =>
     *   blah blah x blah
     * }
+    * }}}
     */
   def let_x_= (designation: => TermBuilder)
               (body: Name => TermBuilder): TermBuilder =

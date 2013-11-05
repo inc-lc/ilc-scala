@@ -9,7 +9,7 @@ import ilc.feature.abelianGroups.Library._
 import ilc.feature.bags.Library._
 
 class HistogramBenchmark extends OnlyDerivativeBenchmark(
-  new BootBenchData(HistogramGenerated) {
+  new RandomAbelianMapBenchData(HistogramGenerated) {
     override def base = 10 //Should be around the break-even point.
     override def last = 1000 * 1000
     override def step = 10
@@ -19,7 +19,7 @@ class HistogramBenchmark extends OnlyDerivativeBenchmark(
 }
 
 class HistogramRecomputeBenchmark extends OnlyRecomputationBenchmark(
-  new BootBenchData(HistogramGenerated) {
+  new RandomAbelianMapBenchData(HistogramGenerated) {
     override def base = 10
     override def last = 100
     override def step = 10
@@ -27,22 +27,14 @@ class HistogramRecomputeBenchmark extends OnlyRecomputationBenchmark(
   })
 
 object HistogramVerification extends BenchmarkVerification(
-  new BootBenchData(HistogramGenerated) {
+  new RandomAbelianMapBenchData(HistogramGenerated) {
     override def base = 25
     override def last = 25
     override def step = 5
   })
 
 
-/** Given `n`, create a hash trie of bags with `n` random numbers
-  * in total.
-  *
-  * The second to the last bag gets the same amount of numbers,
-  * the first bag gets the rest, which is is usually more.
-  * If we make a bar chart of the size of bags agains the orginal
-  * numbers of bags, then it looks like a boot facing right.
-  */
-class BootBenchData(val example: ExampleGenerated {
+class RandomAbelianMapBenchData(val example: ExampleGenerated {
   type InputType = AbelianMap[Int, Bag[Int]]
   type DeltaInputType =
     Either[(AbelianGroup[InputType], InputType), InputType]
@@ -52,9 +44,6 @@ class BootBenchData(val example: ExampleGenerated {
     Either[(AbelianGroup[OutputType], OutputType), OutputType]
 })
 extends BenchData
-   // a hack to use MapChanges: depends on that both bags and
-   // abelian maps are HashMap when generated.
-   with feature.abelianMaps.MapChanges
 {
   import example._
 
@@ -66,43 +55,93 @@ extends BenchData
 
   def rand1(n: Int): Int = rand(1, n)
 
-  def randomBag(size: Int, ceiling: Int): Bag[Int] =
-    Bag(Seq.fill(size)(rand1(ceiling)): _*)
-
-  def changeDescriptions: Gen[String] =
-    Gen.enumeration("change")(changesToMapsBetweenIntegers.keySet.toSeq: _*)
-
-  def inputOfSize(nOrig: Int): InputType = {
-    val n = nOrig + rand(-5, 5)
-    val numberPerBag = rand(2, n)
-    val numberOfBags = n / numberPerBag
-    val firstBagSize = n - numberPerBag * (numberOfBags - 1)
-    val randMax = math.max(math.sqrt(n.toDouble).toInt, 10)
-    AbelianMap(
-      (2 to numberOfBags).map(_ -> randomBag(numberPerBag, randMax)).toSeq: _*
-    ).updated(1, randomBag(firstBagSize, randMax))
+  def randomSeq(size: Int, ceiling: Int): Seq[Int] = {
+    val actualCeiling = Math.max(1, ceiling)
+    Seq.fill(size)(rand1(actualCeiling))
   }
 
-  /** apply the change to a random element in input */
-  def lookupChange(desc: String, input: InputType, output: OutputType):
-      DeltaInputType = {
-    val n = input.size
-    val chosenKey = rand1(input.size)
-    val chosenBag = input(chosenKey)
+  /** Put `elements` randomly in a `numberOfGroups`. */
+  def randomGroups(elements: Seq[Int], numberOfGroups: Int):
+      Seq[List[Int]] =
+    {
+      val groups: Array[List[Int]] = Array.fill(numberOfGroups)(Nil)
+      val maxGroupIndex = numberOfGroups - 1
+      elements foreach { element =>
+        val i = rand(0, maxGroupIndex)
+        groups(i) = element :: groups(i)
+      }
+      groups
+    }
+
+  def changeDescriptions: Gen[String] =
+    Gen.enumeration("change")("up to 10 random changes")
+
+  /** Given `n`, create a hash trie of bags with `n` random numbers
+    * in total. The size of the trie is random between 1 and n.
+    * Random numbers between 1 and n/expectedCollisions are generated
+    * and put into a random bag.
+    */
+  def inputOfSize(n: Int): InputType =
+    mkAbelianMap(n, getUpperBound(n))
+
+  // expectedCollisions should be a small constant.
+  // this way, the heap memory consumption of input stays linear in n.
+  // Reason: repeated elements in a bag are represented only once in
+  // memory. They should still count toward input size, because
+  // repeated elements means repeated function calls during a fold.
+  val expectedCollisions = 10
+  def getUpperBound(n: Int): Int = n / expectedCollisions
+
+  def mkAbelianMap(size: Int, upperBound: Int): InputType = {
+    val trieSize = rand(1, size)
+    val elements = randomSeq(size, upperBound)
+    val bags     = randomGroups(elements, trieSize) map { group =>
+      Bag(group: _*)
+    }
+    val keys     = randomSubset(trieSize, size)
+    AbelianMap((0 until trieSize) map {i => (keys(i), bags(i))}: _*)
+  }
+
+  // Robert Floyd's sampling algorithm
+  def randomSubset(subsetSize: Int, totalSize: Int): Seq[Int] = {
+    val result: collection.mutable.Set[Int] =
+      collection.mutable.Set.empty
+    (totalSize - subsetSize until totalSize) foreach { i =>
+      val element = rand(0, i)
+      result += (if (result contains element) i else element)
+    }
+    result.toSeq
+  }
+
+  /** changes have random size between 1 and 10 */
+  def changeSize = rand(1, 10)
+
+  def halfChance: Boolean = if (rand(0, 1) == 0) true else false
+
+  /** Generate a random abelian map to bags of integers as change.
+    * The bags may have negative multiplicities.
+    */
+  def lookupChange(desc: String,
+                   inputSize: Int,
+                   input: InputType,
+                   output: OutputType):
+      DeltaInputType =
+  {
+    val randomMap = mkAbelianMap(changeSize, getUpperBound(inputSize))
+    val changeGroupElement: InputType = randomMap map { case (key, bag) =>
+      val bagChange: Bag[Int] = bag map { case (element, multiplicity) =>
+        val keyExists = input contains key
+        val modifiedMultiplicity: Int =
+          if (halfChance)
+            - multiplicity
+          else
+            multiplicity
+        (element, modifiedMultiplicity)
+      }
+      (key, bagChange)
+    }
     Left((
       LiftedMapGroup[Int, Bag[Int]](FreeAbelianGroup()),
-      AbelianMap(chosenKey ->
-        // maps between integers happen to be bags of integers, too
-        changesToMapsBetweenIntegers(desc)(
-          // the index of this group is unused and can be anything
-          // but the group itself is important, because lifting
-          // the additive group on integers yields an abelian
-          // group on maps that is identical to the free abelian
-          // group of integers, i. e., bags.
-          IndexedGroup.apply[Int](42, x => y => x + y, -_, 0)
-        )(chosenBag).fold[Bag[Int]](_._2,
-          _ => sys error "I want group-based bag changes" +
-                         " but got a replacement"))
-    ))
+      changeGroupElement))
   }
 }

@@ -64,7 +64,7 @@ class BagPairBenchData(val example: ExampleGenerated {
     Gen.enumeration("change")(jointDescriptions: _*)
   }
 
-  def lookupChange(jointDescription: String, input: InputType, output: OutputType): Change = {
+  def lookupChange(jointDescription: String, inputSize: Int, input: InputType, output: OutputType): Change = {
     val (description1, description2) = unpack(jointDescription)
     ( changes(description1)(input._1.size),
       changes(description2)(input._2.size) )

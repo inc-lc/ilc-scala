@@ -50,6 +50,7 @@ class AdditiveMapBenchData(val example: ExampleGenerated {
     Gen.enumeration("change")(changesToMapsBetweenIntegers.keySet.toSeq: _*)
 
   def lookupChange(description: String,
+                   inputSize: Int,
                    input: InputType,
                    output: OutputType): Change =
     changesToMapsBetweenIntegers(description)(output._2)(input)

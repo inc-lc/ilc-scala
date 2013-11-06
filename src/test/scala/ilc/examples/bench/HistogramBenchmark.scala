@@ -55,6 +55,11 @@ extends BenchData
 
   def rand1(n: Int): Int = rand(1, n)
 
+  def randomWord(totalWords: Int): Int = {
+    val vocabularySize = Math.max(1, getUpperBound(totalWords))
+    rand1(vocabularySize)
+  }
+
   def randomSeq(size: Int, ceiling: Int): Seq[Int] = {
     val actualCeiling = Math.max(1, ceiling)
     Seq.fill(size)(rand1(actualCeiling))
@@ -74,7 +79,7 @@ extends BenchData
     }
 
   def changeDescriptions: Gen[String] =
-    Gen.enumeration("change")("up to 10 random changes")
+    Gen.enumeration("change")("a random changes")
 
   /** Given `n`, create a hash trie of bags with `n` random numbers
     * in total. The size of the trie is random between 1 and n.
@@ -113,9 +118,6 @@ extends BenchData
     result.toSeq
   }
 
-  /** changes have random size between 1 and 10 */
-  def changeSize = rand(1, 10)
-
   def halfChance: Boolean = if (rand(0, 1) == 0) true else false
 
   /** Generate a random abelian map to bags of integers as change.
@@ -127,21 +129,67 @@ extends BenchData
                    output: OutputType):
       DeltaInputType =
   {
-    val randomMap = mkAbelianMap(changeSize, getUpperBound(inputSize))
-    val changeGroupElement: InputType = randomMap map { case (key, bag) =>
-      val bagChange: Bag[Int] = bag map { case (element, multiplicity) =>
-        val keyExists = input contains key
-        val modifiedMultiplicity: Int =
-          if (halfChance)
-            - multiplicity
-          else
-            multiplicity
-        (element, modifiedMultiplicity)
-      }
-      (key, bagChange)
-    }
+    val changeGroupElement: InputType =
+      //if (halfChance)
+        generateInsertion(input, inputSize)
+      //else
+      //  generateDeletion(input, inputSize)
     Left((
       LiftedMapGroup[Int, Bag[Int]](FreeAbelianGroup()),
       changeGroupElement))
+  }
+
+  sealed trait CountingWords
+  case class FoundTheWord(word: Int) extends CountingWords
+  case class CountedWholeDocument(wordCount: Int) extends CountingWords
+
+  def ithWord(document: Bag[Int], i: Int): CountingWords = {
+    var wordCount = 0
+    val iterator = document.iterator
+    while (iterator.hasNext) {
+      val (word, multiplicity) = iterator.next
+      wordCount += multiplicity
+      if (wordCount > i)
+        return FoundTheWord(word)
+    }
+    CountedWholeDocument(wordCount)
+  }
+
+  def ithWordInDoc(input: InputType, i: Int): (Int, Int) = {
+    def loop(i: Int, iterator: Iterator[(Int, Bag[Int])]): (Int, Int) = {
+      val (docID, document) = iterator.next
+      ithWord(document, i) match {
+        case FoundTheWord(word) =>
+          (word, docID)
+        case CountedWholeDocument(wordCount) =>
+          loop(i - wordCount, iterator)
+      }
+    }
+    loop(i, input.iterator)
+  }
+
+  def generateDeletion(input: InputType, totalWords: Int): InputType = {
+    val (word, docID) = ithWordInDoc(input, rand(0, totalWords - 1))
+    AbelianMap(docID -> bagNegate(Bag(word)))
+  }
+
+  def generateInsertion(input: InputType, totalWords: Int): InputType = {
+    val numberOfDocuments = input.size
+    val insertedWord = randomWord(totalWords)
+    val locationOfInsertion = rand(- numberOfDocuments, totalWords - 1)
+    // negative locations represent space between documents.
+    // if a word is inserted there, then a new document is created.
+    if (false && locationOfInsertion < 0) {
+      val newDocID = totalWords + 1
+      assert(! (input contains newDocID))
+      AbelianMap(newDocID -> Bag(insertedWord))
+    }
+    else {
+      val (word, docID) = ithWordInDoc(input, locationOfInsertion)
+      // triggers scala 2.10.2 bug in merging HashMaps (Bags):
+      // if multiplicity is 1, sometimes the collision handler
+      // is invoked on null.
+      AbelianMap(docID -> Bag(insertedWord))
+    }
   }
 }

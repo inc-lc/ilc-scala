@@ -124,16 +124,17 @@ extends BenchData
     * The bags may have negative multiplicities.
     */
   def lookupChange(desc: String,
-                   inputSize: Int,
+                   n: Int,
                    input: InputType,
                    output: OutputType):
       DeltaInputType =
   {
+    val totalWords = getTotalWords(n)
     val changeGroupElement: InputType =
-      //if (halfChance)
-        generateInsertion(input, inputSize)
-      //else
-      //  generateDeletion(input, inputSize)
+      if (halfChance)
+        generateInsertion(input, totalWords)
+      else
+        generateDeletion(input, totalWords)
     Left((
       LiftedMapGroup[Int, Bag[Int]](FreeAbelianGroup()),
       changeGroupElement))
@@ -179,7 +180,7 @@ extends BenchData
     val locationOfInsertion = rand(- numberOfDocuments, totalWords - 1)
     // negative locations represent space between documents.
     // if a word is inserted there, then a new document is created.
-    if (false && locationOfInsertion < 0) {
+    if (locationOfInsertion < 0) {
       val newDocID = totalWords + 1
       assert(! (input contains newDocID))
       AbelianMap(newDocID -> Bag(insertedWord))

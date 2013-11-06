@@ -47,8 +47,7 @@ extends BenchData
 {
   import example._
 
-  /** number of modern entries in Oxford English Dictionary, 2nd ed */
-  val vocabularySize = 171476
+  val vocabularySize = 1000
 
   /** word limit in UCLA personal statement for undergrad admission */
   val expectedDocumentSize = 1000

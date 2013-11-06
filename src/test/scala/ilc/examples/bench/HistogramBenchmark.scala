@@ -47,6 +47,12 @@ extends BenchData
 {
   import example._
 
+  /** number of modern entries in Oxford English Dictionary, 2nd ed */
+  val vocabularySize = 171476
+
+  /** word limit in UCLA personal statement for undergrad admission */
+  val expectedDocumentSize = 1000
+
   /**
     * Returns a pseudorandom, uniformly distributed int value between from
     * (inclusive) and to (inclusive).
@@ -55,15 +61,10 @@ extends BenchData
 
   def rand1(n: Int): Int = rand(1, n)
 
-  def randomWord(totalWords: Int): Int = {
-    val vocabularySize = Math.max(1, getUpperBound(totalWords))
-    rand1(vocabularySize)
-  }
+  def randomWord: Int = rand1(vocabularySize)
 
-  def randomSeq(size: Int, ceiling: Int): Seq[Int] = {
-    val actualCeiling = Math.max(1, ceiling)
-    Seq.fill(size)(rand1(actualCeiling))
-  }
+  def randomWords(wordCount: Int): Seq[Int] =
+    Seq.fill(wordCount)(randomWord)
 
   /** Put `elements` randomly in a `numberOfGroups`. */
   def randomGroups(elements: Seq[Int], numberOfGroups: Int):
@@ -81,42 +82,23 @@ extends BenchData
   def changeDescriptions: Gen[String] =
     Gen.enumeration("change")("a random changes")
 
-  /** Given `n`, create a hash trie of bags with `n` random numbers
-    * in total. The size of the trie is random between 1 and n.
-    * Random numbers between 1 and n/expectedCollisions are generated
-    * and put into a random bag.
+  /** Given `n`, create a hash trie of `n` documents with
+    *
+    *   n * expectedDocumentSize
+    *
+    * words in total. Words are put into documents at random
+    * in the manner of the balls-and-bins situation.
     */
-  def inputOfSize(n: Int): InputType =
-    mkAbelianMap(n, getUpperBound(n))
-
-  // expectedCollisions should be a small constant.
-  // this way, the heap memory consumption of input stays linear in n.
-  // Reason: repeated elements in a bag are represented only once in
-  // memory. They should still count toward input size, because
-  // repeated elements means repeated function calls during a fold.
-  val expectedCollisions = 10
-  def getUpperBound(n: Int): Int = n / expectedCollisions
-
-  def mkAbelianMap(size: Int, upperBound: Int): InputType = {
-    val trieSize = rand(1, size)
-    val elements = randomSeq(size, upperBound)
-    val bags     = randomGroups(elements, trieSize) map { group =>
+  def inputOfSize(n: Int): InputType = {
+    val numberOfDocuments = n
+    val words = randomWords(getTotalWords(n))
+    val documents = randomGroups(words, numberOfDocuments) map { group =>
       Bag(group: _*)
     }
-    val keys     = randomSubset(trieSize, size)
-    AbelianMap((0 until trieSize) map {i => (keys(i), bags(i))}: _*)
+    AbelianMap((0 until numberOfDocuments) map {i => (i, documents(i))}: _*)
   }
 
-  // Robert Floyd's sampling algorithm
-  def randomSubset(subsetSize: Int, totalSize: Int): Seq[Int] = {
-    val result: collection.mutable.Set[Int] =
-      collection.mutable.Set.empty
-    (totalSize - subsetSize until totalSize) foreach { i =>
-      val element = rand(0, i)
-      result += (if (result contains element) i else element)
-    }
-    result.toSeq
-  }
+  def getTotalWords(n: Int): Int = n * expectedDocumentSize
 
   def halfChance: Boolean = if (rand(0, 1) == 0) true else false
 
@@ -176,12 +158,12 @@ extends BenchData
 
   def generateInsertion(input: InputType, totalWords: Int): InputType = {
     val numberOfDocuments = input.size
-    val insertedWord = randomWord(totalWords)
+    val insertedWord = randomWord
     val locationOfInsertion = rand(- numberOfDocuments, totalWords - 1)
     // negative locations represent space between documents.
     // if a word is inserted there, then a new document is created.
     if (locationOfInsertion < 0) {
-      val newDocID = totalWords + 1
+      val newDocID = numberOfDocuments
       assert(! (input contains newDocID))
       AbelianMap(newDocID -> Bag(insertedWord))
     }

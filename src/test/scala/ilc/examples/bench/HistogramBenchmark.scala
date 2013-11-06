@@ -9,7 +9,7 @@ import ilc.feature.abelianGroups.Library._
 import ilc.feature.bags.Library._
 
 class HistogramBenchmark extends OnlyDerivativeBenchmark(
-  new RandomAbelianMapBenchData(HistogramGenerated) {
+  new WordCountBenchData(HistogramGenerated) {
     override def base = 10 //Should be around the break-even point.
     override def last = 1000 * 1000
     override def step = 10
@@ -19,7 +19,7 @@ class HistogramBenchmark extends OnlyDerivativeBenchmark(
 }
 
 class HistogramRecomputeBenchmark extends OnlyRecomputationBenchmark(
-  new RandomAbelianMapBenchData(HistogramGenerated) {
+  new WordCountBenchData(HistogramGenerated) {
     override def base = 10
     override def last = 100
     override def step = 10
@@ -27,14 +27,14 @@ class HistogramRecomputeBenchmark extends OnlyRecomputationBenchmark(
   })
 
 object HistogramVerification extends BenchmarkVerification(
-  new RandomAbelianMapBenchData(HistogramGenerated) {
+  new WordCountBenchData(HistogramGenerated) {
     override def base = 25
     override def last = 25
     override def step = 5
   })
 
 
-class RandomAbelianMapBenchData(val example: ExampleGenerated {
+class WordCountBenchData(val example: ExampleGenerated {
   type InputType = AbelianMap[Int, Bag[Int]]
   type DeltaInputType =
     Either[(AbelianGroup[InputType], InputType), InputType]

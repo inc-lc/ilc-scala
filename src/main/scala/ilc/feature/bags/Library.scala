@@ -30,12 +30,27 @@ object Library extends base.Library {
     lazy val b1 = b1Param
     lazy val b2 = b2Param
     val toDelete = Stack.empty[T]
-    (b1 merged b2) {
+    val collisionHandler: (((T, Int), (T, Int))) => (T, Int) = {
       case ((el1, count1), (el2, count2)) =>
         assert(el1 == el2)
         val sum = count1 + count2
         if (sum == 0) toDelete push el1
-        el1 -> (count1 + count2)
+        el1 -> sum
+    }
+    // to work around a scala bug:
+    // sometimes `merged` calls the collision handler with null arguments!
+    (b1 merged b2) {
+      case (null, null) =>
+        sys error "No clue when merging bags, giving up."
+
+      case ((el1, count1), null) =>
+        collisionHandler(((el1, count1), (el1, b2(el1))))
+
+      case (null, (el2, count2)) =>
+        collisionHandler(((el2, b1(el2)), (el2, count2)))
+
+      case otherwise =>
+        collisionHandler(otherwise)
     } -- toDelete
   }
 

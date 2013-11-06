@@ -10,9 +10,9 @@ import ilc.feature.bags.Library._
 
 class HistogramBenchmark extends OnlyDerivativeBenchmark(
   new WordCountBenchData(HistogramGenerated) {
-    override def base = 10 //Should be around the break-even point.
-    override def last = 1000 * 1000
-    override def step = 10
+    override def base = 1 //Should be around the break-even point.
+    override def last = 1024
+    override def step = 2
     override def sizes: Gen[Int] = Gen.exponential("n")(base, last, step)
   }) {
   override def iters: Int = 10
@@ -20,17 +20,17 @@ class HistogramBenchmark extends OnlyDerivativeBenchmark(
 
 class HistogramRecomputeBenchmark extends OnlyRecomputationBenchmark(
   new WordCountBenchData(HistogramGenerated) {
-    override def base = 10
-    override def last = 100
-    override def step = 10
+    override def base = 1
+    override def last = 16
+    override def step = 2
     override def sizes: Gen[Int] = Gen.exponential("n")(base, last, step)
   })
 
 object HistogramVerification extends BenchmarkVerification(
   new WordCountBenchData(HistogramGenerated) {
-    override def base = 25
-    override def last = 25
-    override def step = 5
+    override def base = 2
+    override def last = 2
+    override def step = 10
   })
 
 

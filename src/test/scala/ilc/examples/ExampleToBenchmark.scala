@@ -94,16 +94,19 @@ trait BaseBenchmark extends RegressionTesting with Serializable {
   //Don't save QuickAndDirty results.
   override lazy val persistor = QuickAndDirty.choose(Persistor.None, new SerializationPersistor)
 
+  def minWarmupRuns: Int = 20
+  def maxWarmupRuns: Int = 100
+
   /* You need to use this explicitly when defining each test */
   def testConfig =
     Seq(
       reports.regression.significance -> 0.01) ++ //Confidence level = 99 %
     QuickAndDirty.choose(Seq.empty,
       Seq(
-        exec.minWarmupRuns -> 10000,
+        exec.minWarmupRuns -> minWarmupRuns,
         exec.warmupCovThreshold -> 0.05,
         exec.reinstantiation.fullGC -> true,
-        exec.maxWarmupRuns -> 10000))
+        exec.maxWarmupRuns -> maxWarmupRuns))
 }
 
 /**
@@ -182,6 +185,9 @@ abstract class NonReplacementChangeBenchmark(benchData: BenchData) extends Examp
 }
 
 abstract class OnlyDerivativeBenchmark(benchData: BenchData) extends ExampleToBenchmark(benchData) {
+  override def minWarmupRuns = 10000
+  override def maxWarmupRuns = 10000
+
   testSurgical()
 }
 

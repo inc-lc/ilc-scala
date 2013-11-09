@@ -79,7 +79,7 @@ extends BenchData
     }
 
   def changeDescriptions: Gen[String] =
-    Gen.enumeration("change")("a random changes")
+    Gen.enumeration("change")("random changes")
 
   /** Given `n`, create a hash trie of `n` documents with
     *

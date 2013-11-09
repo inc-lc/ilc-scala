@@ -69,11 +69,9 @@ trait BaseBenchmark extends RegressionTesting with Serializable {
       //Comment it out, since it makes things so slow.
       // with Measurer.PeriodicReinstantiation
 
-      //OutlierElimination is not described by the paper we're citing; and I do
-      //get quite some outliers in every test run where I can observe the lower
-      //results (and the behavior of outlier elimination doesn't look nice).
-
-      // with Measurer.OutlierElimination
+      //OutlierElimination is not described by the paper we're citing. However,
+      //it behaves well given enough initial warmup.
+      with Measurer.OutlierElimination
 
   override def reporters = baseReporters ++ QuickAndDirty.choose(Seq.empty, expensiveReporters)
 
@@ -99,13 +97,13 @@ trait BaseBenchmark extends RegressionTesting with Serializable {
   /* You need to use this explicitly when defining each test */
   def testConfig =
     Seq(
-      reports.regression.significance -> 0.01) ++ //Configence level = 99 %
+      reports.regression.significance -> 0.01) ++ //Confidence level = 99 %
     QuickAndDirty.choose(Seq.empty,
       Seq(
-        exec.minWarmupRuns -> 20,
+        exec.minWarmupRuns -> 10000,
         exec.warmupCovThreshold -> 0.05,
         exec.reinstantiation.fullGC -> true,
-        exec.maxWarmupRuns -> 100))
+        exec.maxWarmupRuns -> 10000))
 }
 
 /**

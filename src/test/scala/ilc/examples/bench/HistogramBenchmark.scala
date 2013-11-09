@@ -21,7 +21,7 @@ class HistogramBenchmark extends OnlyDerivativeBenchmark(
 class HistogramRecomputeBenchmark extends OnlyRecomputationBenchmark(
   new WordCountBenchData(HistogramGenerated) {
     override def base = 1
-    override def last = 16
+    override def last = 1024
     override def step = 2
     override def sizes: Gen[Int] = Gen.exponential("n")(base, last, step)
   })

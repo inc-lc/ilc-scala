@@ -11,7 +11,7 @@ import ilc.feature.bags.Library._
 class HistogramBenchmark extends OnlyDerivativeBenchmark(
   new WordCountBenchData(HistogramGenerated) {
     override def base = 1 //Should be around the break-even point.
-    override def last = 1024
+    override def last = 4096
     override def step = 2
     override def sizes: Gen[Int] = Gen.exponential("n")(base, last, step)
   }) {
@@ -21,9 +21,13 @@ class HistogramBenchmark extends OnlyDerivativeBenchmark(
 class HistogramRecomputeBenchmark extends OnlyRecomputationBenchmark(
   new WordCountBenchData(HistogramGenerated) {
     override def base = 1
-    override def last = 1024
+    override def last = 4096
     override def step = 2
-    override def sizes: Gen[Int] = Gen.exponential("n")(base, last, step)
+    override def sizes: Gen[Int] =
+      Gen.exponential("n")(base, last, step)
+      // exponential doesn't support base = last (it produces n = 0 during
+      // warmup). Great! Use single instead:
+      //Gen.single("n")(last)
   })
 
 object HistogramVerification extends BenchmarkVerification(

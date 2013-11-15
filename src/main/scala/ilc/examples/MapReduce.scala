@@ -97,10 +97,6 @@ extends products.Derivation
     * The hidden `Nothing` constructor is the neutral element
     * specified by the first argument, the abelian group on v₃.
     *
-    * XXX It would be perfect if we could use (Maybe v₃) as
-    * the result type of userReduce, but I ran out of time to
-    * implement abelian group support for maybe. (cai 06.10.13)
-    *
     * {{{
     * reduce-per-key : ∀ {k₂ v₂ v₃} →
     *   AbelianGroup v₃ →

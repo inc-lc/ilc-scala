@@ -16,6 +16,7 @@ extends products.Derivation
    with products.ToScala
    with booleans.ToScala
    with sums.ToScala
+   with GroupBy
 {
   /** {{{
     * mapReduce : ∀ {k₁ v₁ k₂ v₂} →
@@ -83,6 +84,9 @@ extends products.Derivation
     def specialize(argumentTypes: Type*): Term =
       argumentTypes.head match {
         case BagType(ProductType(k2, v2)) =>
+          //This alternative implementation compiles and generates code correctly as well, but I did not benchmark it yet.
+          //groupByGen ! Proj1(k2, v2) ! Proj2(k2, v2)
+
           FoldGroup !
             (LiftGroup(k2) ! FreeAbelianGroup(v2)) !
             lambda(Var("k2v2Pair", ProductType(k2, v2))) { k2v2Pair =>

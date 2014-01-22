@@ -30,7 +30,7 @@ extends FunSuite
   // this is intToTerm actually
   override implicit def natToTerm(i: Int): Term = LiteralInt(i)
 
-  val empty = EmptyMap(ℤ, ℤ)
+  val myEmpty = EmptyMap(ℤ, ℤ)
   val singleton = SingletonMap ! 3 ! 5
   val _G_+ = additiveGroupOnIntegers
   val sumValues = FoldByHom ! _G_+ ! _G_+ ! snd%(ℤ, ℤ)
@@ -47,11 +47,11 @@ extends FunSuite
   }
 
   test("EmptyMap, SingletonMap, Delete, Lookup") {
-    evalGenerated(empty) should be(AbelianMap.empty)
+    evalGenerated(myEmpty) should be(AbelianMap.empty)
 
     evalGenerated(singleton) should be(AbelianMap(3 -> 5))
 
-    evalGenerated(Delete ! 5 ! empty) should be(AbelianMap.empty)
+    evalGenerated(Delete ! 5 ! myEmpty) should be(AbelianMap.empty)
 
     evalGenerated(Delete ! 5 ! singleton) should be(AbelianMap(3 -> 5))
 

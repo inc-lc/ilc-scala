@@ -79,7 +79,7 @@ trait TypeConstructor extends functions.Types with Names {
         case (name, index) => TypeVariable(index)
       }
 
-    private[this] val arity = typeVariables.size
+    val arity = typeVariables.size
 
     // necessary for inversion and force early failure if
     // typeFunction is specified with incorrect arity

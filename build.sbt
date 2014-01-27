@@ -31,7 +31,7 @@ scalacOptions in (Compile, doc) <<= scalacOptions in doc
 
 scalacOptions in (Test, doc) <<= scalacOptions in doc
 
-libraryDependencies += "org.scalatest" %% "scalatest" % "1.9.1" % "test"
+libraryDependencies += "org.scalatest" %% "scalatest" % "2.0" % "test"
 
 libraryDependencies <+= scalaVersion("org.scala-lang" % "scala-reflect" % _ )
 

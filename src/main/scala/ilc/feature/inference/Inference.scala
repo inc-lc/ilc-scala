@@ -83,8 +83,7 @@ extends base.Syntax
   }
 
   def occurs(variable: TypeVariable, value: InferredType): Boolean = value match {
-    // what are == and equals in Scala exactly?
-    case tv: TypeVariable => tv equals variable
+    case tv: TypeVariable => tv == variable
     case Arrow(t1, t2) => occurs(variable, t1) || occurs(variable, t2)
     case anythingElse => sys error s"implement occurs for $anythingElse"
   }

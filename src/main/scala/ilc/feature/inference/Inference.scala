@@ -66,20 +66,18 @@ extends base.Syntax
         case Some(typ) => (TVar(name, typ), emptyConstraintSet)
         case None => sys error s"Unbound variable ${UVar(name)}"
       }
-    case UAbs(UVar(name), body) => {
+    case UAbs(UVar(name), body) =>
       val alpha = freshTypeVariable()
       val x = TVar(name, alpha)
       val (typedBody, c) = collectConstraints(body, extend(context, name, alpha))
       (TAbs(x, typedBody), c)
-    }
-    case UApp(t1, t2) => {
+    case UApp(t1, t2) =>
       val (tt1, c1) = collectConstraints(t1, context)
       val (tt2, c2) = collectConstraints(t2, context)
       val x = freshTypeVariable()
       val c = c1 ++ c2 + Constraint(tt1.getType, Arrow(tt2.getType, x))
       (TApp(tt1, tt2, x), c)
-    }
-    case term => sys error s"Cannot infer type for $term"
+    case _ => sys error s"Cannot infer type for $term"
   }
 
   def occurs(variable: TypeVariable, value: InferredType): Boolean = value match {
@@ -103,15 +101,15 @@ extends base.Syntax
 
   def unification(constraints: Set[Constraint]): Map[TypeVariable, InferredType] = {
     def typeVariableAndAnythingElse(tn: TypeVariable, a: InferredType, remaining: Set[Constraint], substitutions: Map[TypeVariable, InferredType]) = {
-      val nextRemaining = remaining.drop(1)
+      val nextRemaining = remaining.tail
       val nextSubstitutions = substitutions + ((tn, a))
-      unificationHelper(substitute(nextRemaining, nextSubstitutions), substitutions)
+      unificationHelper(substitute(nextRemaining, nextSubstitutions), nextSubstitutions)
     }
     @tailrec
     def unificationHelper(remaining: Set[Constraint], substitutions: Map[TypeVariable, InferredType]): Map[TypeVariable, InferredType] = {
       remaining.headOption match {
         case None => substitutions
-        case Some((a, b)) if a equals b => unificationHelper(remaining.tail, substitutions)
+        case Some((a, b)) if a == b => unificationHelper(remaining.tail, substitutions)
         case Some((tn@TypeVariable(n), a)) if !occurs(tn, a) => typeVariableAndAnythingElse(tn, a, remaining, substitutions)
         case Some((a, tn@TypeVariable(n))) if !occurs(tn, a) => typeVariableAndAnythingElse(tn, a, remaining, substitutions)
         case Some((Arrow(t1, t2), Arrow(t3, t4))) => unificationHelper(remaining.tail + ((t1, t3)) + ((t2, t4)), substitutions)
@@ -134,16 +132,10 @@ extends base.Syntax
 // My workflow for the Scala REPL sucks.
 // Is it possible to trick the REPL into thinking it is inside some object that extends a given trait so I can just use and evaluate stuff?
 
-import ilc.feature.inference.Inference
-object Foo extends Inference {
-
-  def doStuff = {
-
-    val id: UntypedTerm = UAbs(UVar("x"), UVar("x"))
-
-    printf(collectConstraints(UApp(id, id), List()).toString())
-
-  }
+object Foo extends scala.App with ilc.feature.inference.Inference {
+  val id: UntypedTerm = UAbs(UVar("x"), UVar("x"))
+  printf(collectConstraints(UApp(id, id), List()).toString())
+  printf(unification(collectConstraints(UApp(id, id), List())._2).toString())
 //  val idType: InferredType = Arrow(TypeVariable(1), TypeVariable(1));
 }
 

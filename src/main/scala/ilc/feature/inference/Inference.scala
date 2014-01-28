@@ -11,14 +11,9 @@ extends base.Syntax
 
   trait UntypedTerm
 
-  // NOTE: no idea how to import `Name`, but should probably use that instead
-  //       Or maybe not. I forget.
   case class UVar(getName: String) extends UntypedTerm
-
   case class UAbs(variable: UVar, body: UntypedTerm) extends UntypedTerm
-
   case class UApp(operator: UntypedTerm, operand: UntypedTerm) extends UntypedTerm
-
 
   trait InferredType
 
@@ -55,7 +50,6 @@ extends base.Syntax
   case class TAbs(variable: TVar, body: TypedTerm) extends TypedTerm {
     override def getType = Arrow(variable.getType, body.getType)
   }
-  // Not so happy with this. There is a redundancy in types.
   case class TApp(t1: TypedTerm, t2: TypedTerm, typ: InferredType) extends TypedTerm {
     override def getType = typ
   }
@@ -128,31 +122,9 @@ extends base.Syntax
     unificationHelper(constraints, Map())
   }
 
-  /* This seems somewhat reasonable so far.
-     (Largely inspired by http://lampwww.epfl.ch/teaching/archive/type_systems/2010/exercises/5-inference/
-      Maybe I should have looked for solutions, not exercises, but whatever...)
+  /* Largely inspired by http://lampwww.epfl.ch/teaching/archive/type_systems/2010/exercises/5-inference/
      Problems:
-     Substitution is implemented for types. Need to do this for TypedTerms (again?)
      Largely untested
    */
 
 }
-
-// My workflow for the Scala REPL sucks.
-// Is it possible to trick the REPL into thinking it is inside some object that extends a given trait so I can just use and evaluate stuff?
-
-object Foo extends scala.App with ilc.feature.inference.Inference {
-  val id: UntypedTerm = UAbs(UVar("x"), UVar("x"))
-  printf(collectConstraints(UApp(id, id), List()).toString())
-  printf(unification(collectConstraints(UApp(id, id), List())._2).toString())
-  val (tterm, constraints) = collectConstraints(UApp(id, id), List())
-  printf(tterm toString)
-  printf(constraints toString)
-  val solved = unification(constraints)
-  printf(solved toString)
-  val finalTerm = substitute(tterm, solved)
-  printf(finalTerm toString)
-//  val idType: InferredType = Arrow(TypeVariable(1), TypeVariable(1));
-}
-
-//Foo.doStuff

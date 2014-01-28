@@ -3,7 +3,6 @@ package ilc.feature.inference
 import ilc.feature._
 import java.util.concurrent.atomic.AtomicInteger
 import scala.annotation.tailrec
-import ilc.feature.booleans.Syntax.False
 
 trait Inference
 extends base.Syntax

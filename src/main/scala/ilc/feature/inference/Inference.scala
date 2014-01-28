@@ -103,23 +103,21 @@ extends base.Syntax
     constraints.map(substituteInConstraint(substitutions))
 
   def unification(constraints: Set[Constraint]): Map[TypeVariable, InferredType] = {
+    def typeVariableAndAnythingElse(tn: TypeVariable, a: InferredType, remaining: Set[Constraint], substitutions: Map[TypeVariable, InferredType]) = {
+      val nextRemaining = remaining.drop(1)
+      val nextSubstitutions = substitutions + ((tn, a))
+      unificationHelper(substitute(nextRemaining, nextSubstitutions), substitutions)
+    }
     @tailrec
     def unificationHelper(remaining: Set[Constraint], substitutions: Map[TypeVariable, InferredType]): Map[TypeVariable, InferredType] = {
-      remaining.take(1) match {
-        case (a, b) if a equals b => unificationHelper(remaining.drop(1), substitutions)
-        // why do I need the InferredType annotation here?
-        case (tn@TypeVariable(n), a: InferredType) if !occurs(tn, a) => {
-          val nextRemaining = remaining.drop(1)
-          val nextSubstitutions = substitutions + ((tn, a))
-          unificationHelper(substitute(nextRemaining, nextSubstitutions), substitutions)
-        }
-        // TODO Symmetric case
-        // I would like to do just:
-        // case (tn@TypeVariable(n), a) | (a, tn@TypeVariable(n)) if ... but that does not work https://issues.scala-lang.org/browse/SUGGEST-25
-        case (Arrow(t1, t2), Arrow(t3, t4)) => unificationHelper(remaining.drop(1) + ((t1, t3)) + ((t2, t4)), substitutions)
+      remaining.headOption match {
+        case None => substitutions
+        case Some((a, b)) if a equals b => unificationHelper(remaining.tail, substitutions)
+        case Some((tn@TypeVariable(n), a)) if !occurs(tn, a) => typeVariableAndAnythingElse(tn, a, remaining, substitutions)
+        case Some((a, tn@TypeVariable(n))) if !occurs(tn, a) => typeVariableAndAnythingElse(tn, a, remaining, substitutions)
+        case Some((Arrow(t1, t2), Arrow(t3, t4))) => unificationHelper(remaining.tail + ((t1, t3)) + ((t2, t4)), substitutions)
         case _ => sys error "No substitution possible."
       }
-
     }
     unificationHelper(constraints, Map())
   }

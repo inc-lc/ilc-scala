@@ -89,7 +89,7 @@ extends base.Syntax
   def substitute(typ: InferredType, substitutions: Map[TypeVariable, InferredType]): InferredType = typ match {
     case tv@TypeVariable(n) => substitutions.getOrElse(tv, tv)
     case Arrow(t1, t2) => Arrow(substitute(t1, substitutions), substitute(t2, substitutions))
-    case anythingElse => sys error s"implement substituteInType for $anythingElse"
+    case anythingElse => sys error s"implement substitute for $anythingElse"
   }
 
   def substituteInConstraint(substitutions: Map[TypeVariable, InferredType])(constraint: Constraint): Constraint =
@@ -105,6 +105,7 @@ extends base.Syntax
     // I guess it would be possible to statically guarantee this, but is it worth it?
     case TAbs(variable, body) => TAbs(substitute(variable, substitutions).asInstanceOf[TVar], substitute(body, substitutions))
     case TApp(t1, t2, typ) => TApp(substitute(t1, substitutions), substitute(t2, substitutions), substitute(typ, substitutions))
+    case anythingElse => sys error s"implement substitute for $anythingElse"
   }
 
   def unification(constraints: Set[Constraint]): Map[TypeVariable, InferredType] = {

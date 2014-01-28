@@ -86,18 +86,26 @@ extends base.Syntax
     case anythingElse => sys error s"implement occurs for $anythingElse"
   }
 
-  def substituteInType(typ: InferredType, substitutions: Map[TypeVariable, InferredType]): InferredType = typ match {
+  def substitute(typ: InferredType, substitutions: Map[TypeVariable, InferredType]): InferredType = typ match {
     case tv@TypeVariable(n) => substitutions.getOrElse(tv, tv)
-    case Arrow(t1, t2) => Arrow(substituteInType(t1, substitutions), substituteInType(t2, substitutions))
+    case Arrow(t1, t2) => Arrow(substitute(t1, substitutions), substitute(t2, substitutions))
     case anythingElse => sys error s"implement substituteInType for $anythingElse"
   }
 
   def substituteInConstraint(substitutions: Map[TypeVariable, InferredType])(constraint: Constraint): Constraint =
-    (substituteInType(constraint._1, substitutions),
-     substituteInType(constraint._2, substitutions))
+    (substitute(constraint._1, substitutions),
+     substitute(constraint._2, substitutions))
 
   def substitute(constraints: Set[Constraint], substitutions: Map[TypeVariable, InferredType]): Set[Constraint] =
     constraints.map(substituteInConstraint(substitutions))
+
+  def substitute(term: TypedTerm, substitutions: Map[TypeVariable, InferredType]): TypedTerm = term match {
+    case TVar(name, typ: TypeVariable) => TVar(name, substitutions.getOrElse(typ, typ))
+    // NOTE: We know (by contract) that substitution on a TVar should produce a TVar.
+    // I guess it would be possible to statically guarantee this, but is it worth it?
+    case TAbs(variable, body) => TAbs(substitute(variable, substitutions).asInstanceOf[TVar], substitute(body, substitutions))
+    case TApp(t1, t2, typ) => TApp(substitute(t1, substitutions), substitute(t2, substitutions), substitute(typ, substitutions))
+  }
 
   def unification(constraints: Set[Constraint]): Map[TypeVariable, InferredType] = {
     def typeVariableAndAnythingElse(tn: TypeVariable, a: InferredType, remaining: Set[Constraint], substitutions: Map[TypeVariable, InferredType]) = {
@@ -136,6 +144,13 @@ object Foo extends scala.App with ilc.feature.inference.Inference {
   val id: UntypedTerm = UAbs(UVar("x"), UVar("x"))
   printf(collectConstraints(UApp(id, id), List()).toString())
   printf(unification(collectConstraints(UApp(id, id), List())._2).toString())
+  val (tterm, constraints) = collectConstraints(UApp(id, id), List())
+  printf(tterm toString)
+  printf(constraints toString)
+  val solved = unification(constraints)
+  printf(solved toString)
+  val finalTerm = substitute(tterm, solved)
+  printf(finalTerm toString)
 //  val idType: InferredType = Arrow(TypeVariable(1), TypeVariable(1));
 }
 

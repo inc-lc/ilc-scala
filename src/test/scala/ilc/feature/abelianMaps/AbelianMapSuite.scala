@@ -4,13 +4,13 @@ package abelianMaps
 
 import scala.language.implicitConversions
 import org.scalatest.FunSuite
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest.Matchers
 import ilc.feature.abelianMaps.Library._
 import ilc.util.EvalGenerated
 
 class AbelianMapSuite
 extends FunSuite
-   with ShouldMatchers
+   with Matchers
    with EvalGenerated
    with Syntax
    with ToScala

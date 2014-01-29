@@ -2,12 +2,12 @@ package ilc
 package examples
 
 import org.scalatest.FunSuite
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest.Matchers
 
 /** test that map-reduce terms are well typed */
 class MapReduceSuite
 extends FunSuite
-   with ShouldMatchers
+   with Matchers
    with MapReduce
 {
   case object K1 extends Type

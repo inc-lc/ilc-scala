@@ -3,11 +3,11 @@ package language
 package bacchus
 
 import org.scalatest.FunSuite
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest.Matchers
 
 class BacchusPrettySuite
 extends FunSuite
-   with ShouldMatchers
+   with Matchers
    with Evaluation
 {
   test("values have short descriptions") {

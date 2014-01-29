@@ -22,6 +22,8 @@ extends FlatSpec
     assert(unification(s) === Map((TypeVariable(2), TypeVariable(1))))
   }
 
+  // TODO port unification tests from https://github.com/Blaisorblade/Unification-Playground/blob/master/Haskell/UnifyTest.hs
+
   "Type inference" should "infer α -> α for (id id)" in {
     val id: UntypedTerm = UAbs(UVar("x"), UVar("x"))
     val (typedTerm, constraints) = collectConstraints(UApp(id, id), List())

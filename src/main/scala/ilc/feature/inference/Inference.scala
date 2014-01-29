@@ -15,7 +15,7 @@ extends base.Syntax
   case class UAbs(variable: UVar, body: UntypedTerm) extends UntypedTerm
   case class UApp(operator: UntypedTerm, operand: UntypedTerm) extends UntypedTerm
 
-  trait InferredType
+  type InferredType = Type
 
   // Only use this for pattern matching. Create new TypeVariables with freshTypeVariable.
   case class TypeVariable(name: Int) extends InferredType
@@ -26,7 +26,8 @@ extends base.Syntax
     TypeVariable(name)
   }
 
-  case class Arrow(left: InferredType, right: InferredType) extends InferredType
+//  case class Arrow(left: InferredType, right: InferredType) extends InferredType
+  val Arrow = =>:
 
 
   type Constraint = (InferredType, InferredType)

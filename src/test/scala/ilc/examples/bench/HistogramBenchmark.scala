@@ -105,9 +105,7 @@ extends BenchData
 
   def halfChance: Boolean = if (rand(0, 1) == 0) true else false
 
-  /** Generate a random abelian map to bags of integers as change.
-    * The bags may have negative multiplicities.
-    */
+  /** Generate a random insertion or a random deletion. */
   def lookupChange(desc: String,
                    n: Int,
                    input: InputType,

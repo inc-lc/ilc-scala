@@ -8,6 +8,7 @@ trait Inference
 extends base.Syntax
    with functions.Syntax
 {
+  class UnificationFailure extends Exception("No unification possible")
 
   trait UntypedTerm
 
@@ -116,7 +117,7 @@ extends base.Syntax
         case Some((tn@TypeVariable(n), a)) if !occurs(tn, a) => typeVariableAndAnythingElse(tn, a, remaining, substitutions)
         case Some((a, tn@TypeVariable(n))) if !occurs(tn, a) => typeVariableAndAnythingElse(tn, a, remaining, substitutions)
         case Some((Arrow(t1, t2), Arrow(t3, t4))) => unificationHelper(remaining.tail + ((t1, t3)) + ((t2, t4)), substitutions)
-        case _ => sys error "No substitution possible."
+        case _ => throw new UnificationFailure()
       }
     }
     unificationHelper(constraints, Map())

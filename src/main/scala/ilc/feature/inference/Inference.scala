@@ -15,6 +15,7 @@ extends base.Syntax
   case class UVar(getName: String) extends UntypedTerm
   case class UAbs(variable: UVar, body: UntypedTerm) extends UntypedTerm
   case class UApp(operator: UntypedTerm, operand: UntypedTerm) extends UntypedTerm
+  case class UTerm(term: Term) extends UntypedTerm
 
   type InferredType = Type
 
@@ -43,6 +44,8 @@ extends base.Syntax
   def extend(context: Context, name: String, typ: InferredType): Context =
     (name, typ) :: context
 
+  def emptyContext = List()
+
   trait TypedTerm {
     def getType: InferredType
   }
@@ -55,6 +58,12 @@ extends base.Syntax
   case class TApp(t1: TypedTerm, t2: TypedTerm, typ: InferredType) extends TypedTerm {
     override def getType = typ
   }
+  case class TTerm(term: Term, typ: InferredType) extends TypedTerm {
+    override def getType = typ
+  }
+
+  def collectConstraints(term: UntypedTerm): (TypedTerm, Set[Constraint]) =
+    collectConstraints(term, emptyContext)
 
   def collectConstraints(term: UntypedTerm, context: Context): (TypedTerm, Set[Constraint]) = term match {
     case UVar(name) =>

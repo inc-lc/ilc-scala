@@ -168,7 +168,8 @@ trait TypeConstructor extends functions.Types with Names {
       typeInfo.zipWithIndex map {
         case (Nil, i) => {
           val typeVariableName = typeVariableNames(i)
-          sys error s"type variable $typeVariableName unused in given arguments"
+          throw new TypeError(
+            s"type variable $typeVariableName unused in given arguments")
         }
 
         case (candidate :: otherWitnesses, i) => {

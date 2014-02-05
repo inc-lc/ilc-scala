@@ -61,7 +61,7 @@ trait Syntax extends base.Syntax {
     mkLambda(nameSuggestion, None)(body)
 
   /** Specify the argument type without specifying a name.
-    * Useful for higher-order arguments.
+    * Useful in higher-order arguments.
     * {{{
     * val powerOfTwo = FoldNat ! 1 ! lambda(NatType) {x => Plus ! x ! x}
     * }}}

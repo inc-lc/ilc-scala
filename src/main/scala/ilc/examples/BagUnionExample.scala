@@ -3,7 +3,7 @@ package examples
 
 import feature._
 
-// program = curry union
+// program = uncurry union
 // input   = (Bag(1, 2, ..., 1997), Bag(-1, -2, ..., -1997)
 // output  = Bag(-1997, -1996, ..., 1997)
 class BagUnionExample
@@ -27,6 +27,8 @@ extends Example
 {
   val inputType = ProductType(BagType(IntType), BagType(IntType))
 
+  //   λ pair : inputType.
+  //      union (proj₁ pair) (proj₂ pair)
   def program: Term =
     lambda(inputType) { pair =>
       Union ! (Proj1 ! pair) ! (Proj2 ! pair)

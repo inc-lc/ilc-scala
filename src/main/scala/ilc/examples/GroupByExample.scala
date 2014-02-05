@@ -20,6 +20,24 @@ extends abelianMaps.AbelianDerivation
     bagFoldGroup(liftGroup[K, Bag[V]](bags.Library.FreeAbelianGroup[V]()))(h)(b)
   }
 
+  /** A polymorphic syntactic sugar representing the `groupBy` operation
+    * on bags:
+    *
+    *   groupByGen : ∀t k v. (t → k) → (t → v) → Bag t → Map k (Bag v)
+    *   groupByGen =
+    *     Λt k v.  λf : t → k.  λg : t → v.
+    *       foldGroup (liftGroup FreeAbelianGroup)
+    *                 (λe : t. singletonMap (f e) (singleton (g e)))
+    *
+    * where
+    *
+    *   singletonMap : k → v → Map k v
+    *      singleton : v → Bag v
+    *
+    * The type of primitives such as `foldGroup` can be looked up in
+    *   src/main/scala/ilc/feature/bags/Syntax.scala             and
+    *   src/main/scala/ilc/feature/abelianMaps/Syntax.scala
+    */
   val groupByGen: TermBuilder =
     new PolymorphicTerm {
       def specialize(argumentTypes: Type*): Term =
@@ -61,8 +79,15 @@ extends Example
     bagFoldGroup(liftGroup[K, Bag[T]](bags.Library.FreeAbelianGroup[T]()))(g)(b)
   }
 
-  // More generic version of groupByKey. This corresponds to Scala's groupBy.
-  //XXX refactor with groupByGen.
+  /** More generic version of groupByKey. This corresponds to Scala's groupBy.
+    *
+    *   groupBy : ∀t k v. (t → k) → Bag t → Map k (Bag v)
+    *   groupBy =
+    *     Λt k v.  λf : t → k.
+    *       foldGroup (liftGroup FreeAbelianGroup)
+    *                 (λe : t. singletonMap (f e) (singleton e))
+    */
+  //TODO refactor with groupByGen.
   val groupBy: TermBuilder =
     new PolymorphicTerm {
       def specialize(argumentTypes: Type*): Term =
@@ -80,13 +105,14 @@ extends Example
         }
     }
 
-  /*
-  val program: Term =
-    groupBy ofType
-      (BagType(ProductType(ℤ, ℤ)) =>: (ProductType(ℤ, ℤ) =>: ℤ) =>: MapType(ℤ, BagType(ProductType(ℤ, ℤ))))
-   */
 
-
+  /** An ascription of `groupByGen`, instantiating it to a simply
+    * typed term.
+    *
+    * program =
+    *   groupByGen : ((ℤ × ℤ) → ℤ) → ((ℤ × ℤ) → ℤ) →
+    *                  Bag (ℤ × ℤ) → Map ℤ (Bag ℤ)
+    */
   val program: Term =
     groupByGen ofType
       ((ProductType(ℤ, ℤ) =>: ℤ) =>: (ProductType(ℤ, ℤ) =>: ℤ)

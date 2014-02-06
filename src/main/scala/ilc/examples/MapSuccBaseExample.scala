@@ -19,8 +19,9 @@ extends Example
 {
   def program: Term = mapWithKey ! constSucc
 
-  // constSucc = λ k (x: ℕ) → x + 1
-  def constSucc: Term = (const ! succ) % ℕ
+  // constSucc : ℕ → (ℕ → ℕ)
+  // constSucc = λk : ℕ. succ
+  def constSucc: Term = lambda(NatType) { k => succ }
 }
 
 class MapSuccBagsExample

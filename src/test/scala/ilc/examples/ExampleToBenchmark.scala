@@ -9,6 +9,7 @@ trait ReplacementChangeData extends BenchData {
 
 import org.scalameter.{reporting, api, execution, Aggregator}
 import org.scalameter.api._
+import ilc.examples.bench.FastBenchmarksFlag
 
 /**
   * A more customizable version of ScalaMeter's PerformanceTest.Regression.
@@ -97,13 +98,14 @@ trait BaseBenchmark extends RegressionTesting with Serializable {
   def minWarmupRuns: Int = 20
   def maxWarmupRuns: Int = 100
 
+  def memorySizeMB: Int = FastBenchmarksFlag.choose(1024, 4096)
   /* You need to use this explicitly when defining each test */
   def testConfig =
     Seq(
       reports.regression.significance -> 0.01) ++ //Confidence level = 99 %
     QuickAndDirty.choose(Seq.empty,
       Seq(
-        exec.jvmflags -> "-Xmx4096m -Xms4096m -XX:CompileThreshold=100",
+        exec.jvmflags -> s"-Xmx${memorySizeMB}m -Xms${memorySizeMB}m -XX:CompileThreshold=100",
         exec.minWarmupRuns -> minWarmupRuns,
         exec.warmupCovThreshold -> 0.05,
         exec.reinstantiation.fullGC -> true,

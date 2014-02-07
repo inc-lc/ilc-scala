@@ -4,6 +4,20 @@ Scala implementation of incremental lambda calculus
 This code can be compiled using SBT. Development should follow the style guide
 available at http://docs.scala-lang.org/style/.
 
+How to run the evaluation from the paper
+========================================
+Start sbt **inside this folder** with
+```
+$ sbt
+```
+and give the command
+```
+test-only ilc.examples.bench.BenchSuite
+```
+
+This will fetch any needed dependencies, compile everything and start running
+tests. Warning: The test execution will proceed for quite a while (around 10
+minutes here, more on slower machines) without producing any output.
 
 Cross reference
 ===============

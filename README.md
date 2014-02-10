@@ -6,6 +6,7 @@ available at http://docs.scala-lang.org/style/.
 
 How to run the evaluation from the paper
 ========================================
+
 Start sbt **inside this folder** with
 ```
 $ sbt
@@ -17,7 +18,26 @@ test-only ilc.examples.bench.BenchSuite
 
 This will fetch any needed dependencies, compile everything and start running
 tests. Warning: The test execution will proceed for quite a while (around 10
-minutes here, more on slower machines) without producing any output.
+minutes here, more on slower machines) without producing any output, as if
+it had hang. Please be patient; you can observe the progress using the
+pre-installed JVisualVM.
+
+Running benchmarks with bigger datasets will require more time and (no less
+than) 4G of RAM - because of this, it is better done on a different (64bit)
+host.
+
+You need to replace
+```
+  val value = true
+```
+with
+```
+  val value = false
+```
+in `scala-prototype/src/test/scala/ilc/examples/bench/FastBenchmarksFlag.scala`
+(this will affect the actual parameters set in
+`scala-prototype/src/test/scala/ilc/examples/bench/HistogramBenchmark.scala` and
+`scala-prototype/src/test/scala/ilc/examples/ExampleToBenchmark.scala`).
 
 Cross reference
 ===============

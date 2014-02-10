@@ -18,9 +18,11 @@ test-only ilc.examples.bench.BenchSuite
 
 This will fetch any needed dependencies, compile everything and start running
 tests. Warning: The test execution will proceed for quite a while (around 10
-minutes here, more on slower machines) without producing any output, as if
-it had hang. Please be patient; you can observe the progress using the
-pre-installed JVisualVM.
+minutes here, more on slower machines) without producing any output, as if it
+had hang. Please be patient; you can observe the progress using the VisualVM
+profiling/monitoring tool (inside the virtual machine, this is pre-installed ---
+see icon on the left-hand side of the screen). Warning: VisualVM can do
+profiling, so it can invalidate the benchmark results themselves.
 
 Running benchmarks with bigger datasets will require more time and (no less
 than) 4G of RAM - because of this, it is better done on a different (64bit)

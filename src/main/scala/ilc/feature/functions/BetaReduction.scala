@@ -97,6 +97,9 @@ trait BetaReduction extends Syntax with analysis.FreeVariables {
       index += 1
       Var(IndexedName("z", index), varType)
     }
+    def fresh: Var => Var = {
+      case Var(varName, varType) => fresh(varName, varType)
+    }
 
     def reify(t: Value): Term =
       t match {
@@ -110,15 +113,12 @@ trait BetaReduction extends Syntax with analysis.FreeVariables {
           App(reify(fun), reify(arg))
       }
   }
-  /*
   def betaNormalize2(t: Term, env: Map[Name, Term]): Term =
     t match {
       case v: Variable =>
         env(v.getName)
       case App(fun, arg) =>
-        //This fails because normArg can contain capture error, which become
-        //visible as soon as we normalize a term containing a normalized term!
-
+        //Capture is prevented by the freshening inside Abs.
         val normFun = betaNormalize2(fun, env)
         val normArg = betaNormalize2(arg, env)
         normFun match {
@@ -130,9 +130,10 @@ trait BetaReduction extends Syntax with analysis.FreeVariables {
         }
       case Abs(v, body) =>
         //Implement shadowing.
-        Abs(v, betaNormalize2(body, env + (v.getName -> v)))
+        //Freshen the variable, to prevent capture in the case for application. Thanks @Toxaris for the hint.
+        val w = fresh(v)
+        Abs(w, betaNormalize2(body, env + (v.getName -> w)))
       case _ =>
         t
     }
- */
 }

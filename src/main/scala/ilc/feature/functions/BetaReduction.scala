@@ -72,15 +72,18 @@ trait BetaReduction extends Syntax with analysis.FreeVariables {
     case class TermVal(term: Term) extends Value
     case class AppVal(fun: Value, arg: Value) extends Value
 
+    //XXX: compute doInline more cleverly, by counting occurrences, to turn this into shrinking reductions.
+    def precomputeDoInline(x: Var, t: Term) = true
+    def doInlineHeuristics(fv: FunVal, arg: Value) = fv.doInline
+
     def eval(t: Term, env: Map[Name, Value]): Value =
       t match {
         case Abs(x, t) =>
-          //XXX: compute doInline more cleverly.
-          FunVal((arg: Value) => eval(t, env.updated(x.getName, arg)), x.getName, x.getType, true)
+          FunVal((arg: Value) => eval(t, env.updated(x.getName, arg)), x.getName, x.getType, precomputeDoInline(x, t))
         case App(s, t) =>
           val arg = eval(t, env)
           eval(s, env) match {
-            case FunVal(f, _, _, true) =>
+            case fv @ FunVal(f, _, _, _) if doInlineHeuristics(fv, arg) =>
               f(arg)
             case nonFunVal =>
               AppVal(nonFunVal, arg)

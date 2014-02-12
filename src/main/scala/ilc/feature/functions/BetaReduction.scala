@@ -68,18 +68,19 @@ trait BetaReduction extends Syntax with analysis.FreeVariables {
 
   object Normalize {
     sealed trait Value
-    case class FunVal(fun: Value => Value, varName: Name, varType: Type) extends Value
+    case class FunVal(fun: Value => Value, varName: Name, varType: Type, doInline: Boolean) extends Value
     case class TermVal(term: Term) extends Value
     case class AppVal(fun: Value, arg: Value) extends Value
 
     def eval(t: Term, env: Map[Name, Value]): Value =
       t match {
         case Abs(x, t) =>
-          FunVal((arg: Value) => eval(t, env.updated(x.getName, arg)), x.getName, x.getType)
+          //XXX: compute doInline more cleverly.
+          FunVal((arg: Value) => eval(t, env.updated(x.getName, arg)), x.getName, x.getType, true)
         case App(s, t) =>
           val arg = eval(t, env)
           eval(s, env) match {
-            case FunVal(f, _, _) =>
+            case FunVal(f, _, _, true) =>
               f(arg)
             case nonFunVal =>
               AppVal(nonFunVal, arg)
@@ -103,7 +104,7 @@ trait BetaReduction extends Syntax with analysis.FreeVariables {
 
     def reify(t: Value): Term =
       t match {
-        case FunVal(f, varName, varType) => {
+        case FunVal(f, varName, varType, _) => {
           val x = fresh(varName, varType)
           Abs(x, reify(f(TermVal(x))))
         }

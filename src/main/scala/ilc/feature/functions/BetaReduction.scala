@@ -73,7 +73,7 @@ trait BetaReduction extends Syntax with analysis.FreeVariables {
     case class AppVal(fun: Value, arg: Value) extends Value
 
     //XXX: compute doInline more cleverly, by counting occurrences, to turn this into shrinking reductions.
-    def precomputeDoInline(x: Var, t: Term) = true
+    def precomputeDoInline(x: Variable, t: Term) = true
     def doInlineHeuristics(fv: FunVal, arg: Value) = fv.doInline
 
     def eval(t: Term, env: Map[Name, Value]): Value =
@@ -106,6 +106,7 @@ trait BetaReduction extends Syntax with analysis.FreeVariables {
           App(reify(fun), reify(arg))
       }
   }
+  //XXX: check whether building Vars when freshening up arbitrary Variables is OK. 
 
   //Have a very simple and reliable fresh variable generator. Tracking free
   //variables might have been the performance killer of the other normalizer.
@@ -114,9 +115,8 @@ trait BetaReduction extends Syntax with analysis.FreeVariables {
     index += 1
     Var(IndexedName("z", index), varType)
   }
-  def fresh: Var => Var = {
-    case Var(varName, varType) => fresh(varName, varType)
-  }
+
+  def fresh(v: Variable): Var = fresh(v.getName, v.getType)
 
   def betaNormalize2(t: Term, env: Map[Name, Term]): Term =
     t match {

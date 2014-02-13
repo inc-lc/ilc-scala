@@ -2,7 +2,7 @@ package ilc
 package feature
 package functions
 
-trait BetaReduction extends Syntax with analysis.FreeVariables {
+trait BetaReduction extends Syntax with analysis.FreeVariables with analysis.Occurrences {
   def subst(toReplace: Variable, replacement: Term): (TypingContext, Term) => Term = {
     def go(typingContext: TypingContext, replaceIn: Term): Term =
       replaceIn match {
@@ -61,9 +61,15 @@ trait BetaReduction extends Syntax with analysis.FreeVariables {
     }
   }
 
-  def betaNorm(t: Term) = {
+  def betaNormOnce(t: Term) = {
     import Normalize._
     reify(eval(t, Map.empty))
+  }
+
+  def betaNorm(t: Term) = {
+    //XXX because of how usage counts are computed (before normalization), this is not idempotent.
+    betaNormOnce(betaNormOnce(t))
+    //betaNormOnce(t)
   }
 
   object Normalize {
@@ -72,9 +78,21 @@ trait BetaReduction extends Syntax with analysis.FreeVariables {
     case class TermVal(term: Term) extends Value
     case class AppVal(fun: Value, arg: Value) extends Value
 
-    //XXX: compute doInline more cleverly, by counting occurrences, to turn this into shrinking reductions.
-    def precomputeDoInline(x: Variable, t: Term) = true
-    def doInlineHeuristics(fv: FunVal, arg: Value) = fv.doInline
+    //compute doInline by counting occurrences, turning this into shrinking reductions.
+    //Note: t has not been normalized yet here, and when we do inlining we
+    //don't get the actual value.
+    def precomputeDoInline(x: Variable, t: Term) = (t occurrencesOf x) <= 1
+    def doInlineHeuristics(fv: FunVal, arg: Value) = fv.doInline || isTrivial(arg)
+
+    //Move it to analysis to allow for more trivial terms.
+    def isTrivial(arg: Value): Boolean =
+      arg match {
+        case TermVal(Abs(_, _)) => false
+        case TermVal(App(_, _)) => false
+        //Variables or constants.
+        case TermVal(_) => true
+        case _ => false
+      }
 
     def eval(t: Term, env: Map[Name, Value]): Value =
       t match {
@@ -114,6 +132,8 @@ trait BetaReduction extends Syntax with analysis.FreeVariables {
   def fresh(varName: Name, varType: Type): Var = {
     index += 1
     Var(IndexedName("z", index), varType)
+    //For extra readability, during debugging. This increases the output size (by around 2%).
+    //Var(IndexedName(varName, index), varType)
   }
 
   def fresh(v: Variable): Var = fresh(v.getName, v.getType)

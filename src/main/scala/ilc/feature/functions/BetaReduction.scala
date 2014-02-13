@@ -94,17 +94,6 @@ trait BetaReduction extends Syntax with analysis.FreeVariables {
           TermVal(t)
       }
 
-    //Have a very simple and reliable fresh variable generator. Tracking free
-    //variables might have been the performance killer of the other normalizer.
-    var index = 0
-    def fresh(varName: Name, varType: Type): Var = {
-      index += 1
-      Var(IndexedName("z", index), varType)
-    }
-    def fresh: Var => Var = {
-      case Var(varName, varType) => fresh(varName, varType)
-    }
-
     def reify(t: Value): Term =
       t match {
         case FunVal(f, varName, varType, _) => {
@@ -117,6 +106,18 @@ trait BetaReduction extends Syntax with analysis.FreeVariables {
           App(reify(fun), reify(arg))
       }
   }
+
+  //Have a very simple and reliable fresh variable generator. Tracking free
+  //variables might have been the performance killer of the other normalizer.
+  var index = 0
+  def fresh(varName: Name, varType: Type): Var = {
+    index += 1
+    Var(IndexedName("z", index), varType)
+  }
+  def fresh: Var => Var = {
+    case Var(varName, varType) => fresh(varName, varType)
+  }
+
   def betaNormalize2(t: Term, env: Map[Name, Term]): Term =
     t match {
       case v: Variable =>

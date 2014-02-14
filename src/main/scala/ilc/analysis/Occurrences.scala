@@ -35,7 +35,18 @@ trait Occurrences extends functions.Syntax {
       case Abs(variable, body) if variable == soughtV =>
         zero
       case Abs(variable, body) =>
-        body.occurrencesOf(soughtV)
+        body.occurrencesOf(soughtV) match {
+          case `zero` => zero
+          //Rationale: if the variable is used once under lambda,
+          //since this lambda might be reused, the argument might end up being
+          //reused more often.
+          //This is discussed in the "Once upon a type" paper on the GHC
+          //optimizer; they propose a different solution, but ultimately they
+          //scrapped the whole line of research and switched to a different
+          //approach.
+          case other =>
+            more
+        }
       case App(operator, operand) =>
         operator.occurrencesOf(soughtV) + operand.occurrencesOf(soughtV)
       case _ => zero

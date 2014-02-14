@@ -81,7 +81,7 @@ trait BetaReduction extends Syntax with analysis.FreeVariables with analysis.Occ
     //compute doInline by counting occurrences, turning this into shrinking reductions.
     //Note: t has not been normalized yet here, and when we do inlining we
     //don't get the actual value.
-    def precomputeDoInline(x: Variable, t: Term) = (t occurrencesOf x) <= 1
+    def precomputeDoInline(x: Variable, t: Term) = (t occurrencesOf x) != UsageCount.more
     def doInlineHeuristics(fv: FunVal, arg: Value) = fv.doInline || isTrivial(arg)
 
     //Move it to analysis to allow for more trivial terms.

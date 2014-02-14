@@ -66,10 +66,18 @@ trait BetaReduction extends Syntax with analysis.FreeVariables with analysis.Occ
     reify(eval(t, Map.empty))
   }
 
-  def betaNorm(t: Term) = {
-    //XXX because of how usage counts are computed (before normalization), this is not idempotent.
-    betaNormOnce(betaNormOnce(t))
-    //betaNormOnce(t)
+  def betaNorm(t: Term): Term = {
+    //Because of how usage counts are computed (before normalization), this is not idempotent.
+    //That's also typical in shrinking reductions.
+    //Let's run this to convergence.
+    //Since I'm too lazy to implement alpha-equivalence testing, especially
+    //in an efficient way, just reset the freshness index.
+    resetIndex()
+    val u = betaNormOnce(t)
+    if (t == u)
+      t
+    else
+      betaNorm(u)
   }
 
   object Normalize {
@@ -129,6 +137,9 @@ trait BetaReduction extends Syntax with analysis.FreeVariables with analysis.Occ
   //Have a very simple and reliable fresh variable generator. Tracking free
   //variables might have been the performance killer of the other normalizer.
   var index = 0
+  def resetIndex() {
+    index = 0
+  }
   def fresh(varName: Name, varType: Type): Var = {
     index += 1
     Var(IndexedName("z", index), varType)

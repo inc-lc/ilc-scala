@@ -28,18 +28,8 @@ Please do not declare getType as an abstract `val`.
   }
 
   // Variable
-
-  /** The supertrait of all types of variables
-    */
-  trait Variable extends Term {
-    def getName: Name
-    val getType: Type
-  }
-
-  /** The variable that a user writes:
-    * x, y, z as opposed to dx, ddy, dddz
-    */
-  case class Var(getName: Name, getType: Type) extends Variable
+  case class Var(getName: Name, getType: Type) extends Term
+  type Variable = Var
 
   // TYPING CONTEXT
 

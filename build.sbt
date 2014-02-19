@@ -43,6 +43,10 @@ libraryDependencies += "com.github.axel22" %% "scalameter" % "0.4"
 
 logBuffered := false
 
+val scalaMeterFramework = new TestFramework("org.scalameter.ScalaMeterFramework")
+
+testFrameworks += scalaMeterFramework
+
 // Allow ScalaMeter to run on JDK 6 ─ see
 // http://axel22.github.io/scalameter/2013/02/14/release_0_3.html
 testOptions += Tests.Argument(scalaMeterFramework, "-preJDK7")
@@ -50,6 +54,8 @@ testOptions += Tests.Argument(scalaMeterFramework, "-preJDK7")
 testOptions += Tests.Argument(scalaMeterFramework, "-CresultDir testOutput")
 
 parallelExecution in Test := false
+
+//SCALA METER ENDS
 
 //Also generate HTML during compilation. We might want to move this later to a
 //separate task.

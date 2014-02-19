@@ -120,12 +120,13 @@ object BuildUnit extends Build {
       val javaOptions = classpathOption(classpath) :::
         mainClass :: options.toList
       val strategy = config.outputStrategy getOrElse LoggedOutput(log)
-      val process =  Fork.java.fork(config.javaHome,
-        config.runJVMOptions ++ javaOptions,
-        config.workingDirectory,
-        Map.empty,
-        config.connectInput,
-        strategy)
+      val updConfig = config copy (runJVMOptions = config.runJVMOptions ++ javaOptions, envVars = Map.empty, outputStrategy = Some(strategy))
+      val process =  Fork.java.fork(updConfig.javaHome,
+        updConfig.runJVMOptions,
+        updConfig.workingDirectory,
+        updConfig.envVars,
+        updConfig.connectInput,
+        updConfig.outputStrategy.get)
       def cancel() = {
         log.warn("Run canceled.")
         process.destroy()

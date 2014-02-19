@@ -116,7 +116,7 @@ extends base.Syntax
   def unification(constraints: Set[Constraint]): Map[TypeVariable, InferredType] = {
     def typeVariableAndAnythingElse(tn: TypeVariable, a: InferredType, remaining: Set[Constraint], substitutions: Map[TypeVariable, InferredType]) = {
       val nextRemaining = remaining.tail
-      val nextSubstitutions = substitutions + ((tn, a))
+      val nextSubstitutions = substitutions.mapValues(substitute(_, Map(tn -> a))) + (tn -> a)
       unificationHelper(substitute(nextRemaining, nextSubstitutions), nextSubstitutions)
     }
     @tailrec

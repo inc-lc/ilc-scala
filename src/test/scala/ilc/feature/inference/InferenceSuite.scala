@@ -40,10 +40,8 @@ extends FlatSpec
       (Arrow(t9, t7), t3),
       (t9, t5))
     val subst = unification(ex)
-    println(subst)
-    println(substitute(t0, subst))
-    // TODO decide on something, see below
-    fail()
+    assert(substitute(t0, subst) === ((t5 =>: t7 =>: t6) =>: (t5 =>: t7) =>: (t5 =>: t6)))
+
     /* We get:
     Substitutions: Map(TypeVariable(0) -> Arrow(TypeVariable(1),Arrow(Arrow(TypeVariable(9),TypeVariable(7)),Arrow(TypeVariable(5),TypeVariable(6)))),
                        TypeVariable(4) -> Arrow(TypeVariable(5),TypeVariable(6)),

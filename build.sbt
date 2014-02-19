@@ -1,4 +1,4 @@
-scalaVersion := "2.10.2"
+scalaVersion := "2.10.3"
 
 scalacOptions := Seq("-deprecation", "-feature", "-unchecked", "-Xlint")
 
@@ -56,3 +56,18 @@ testOptions += Tests.Argument(scalaMeterFramework, "-preJDK7")
 testOptions += Tests.Argument(scalaMeterFramework, "-CresultDir testOutput")
 
 parallelExecution in Test := false
+
+//Also generate HTML during compilation. We might want to move this later to a
+//separate task.
+resolvers += Resolver.url("Typesafe Releases", url("http://repo.typesafe.com/typesafe/ivy-releases"))(Resolver.ivyStylePatterns)
+
+addCompilerPlugin("org.scala-sbt.sxr" %% "sxr" % "0.3.0")
+
+scalacOptions in (Compile, compile) <+= scalaSource in Compile map { "-P:sxr:base-directory:" + _.getAbsolutePath }
+
+scalacOptions in (Test, compile) <+= scalaSource in Test map { "-P:sxr:base-directory:" + _.getAbsolutePath }
+
+scalacOptions in (Test, compile) <+= baseDirectory map { base =>
+  val linkFile = base / "sxr.links"
+  "-P:sxr:link-file:" + linkFile.getAbsolutePath
+}

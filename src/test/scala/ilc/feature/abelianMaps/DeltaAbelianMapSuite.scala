@@ -3,13 +3,13 @@ package feature
 package abelianMaps
 
 import org.scalatest.FunSuite
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest.Matchers
 import ilc.util.EvalGenerated
 import Library._
 
 class DeltaAbelianMapSuite
 extends FunSuite
-   with ShouldMatchers
+   with Matchers
    with AbelianDerivation
    with integers.AbelianDerivation
    with MapChanges

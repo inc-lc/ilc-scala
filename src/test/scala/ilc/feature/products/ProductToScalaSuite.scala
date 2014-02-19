@@ -3,12 +3,12 @@ package feature
 package products
 
 import org.scalatest.FunSuite
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest.Matchers
 import ilc.util.EvalScala
 
 class ProductToScalaSuite
 extends FunSuite
-   with ShouldMatchers
+   with Matchers
    with ToScala
    with naturals.ToScala
    with functions.ToScala

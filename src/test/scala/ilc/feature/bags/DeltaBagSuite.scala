@@ -3,10 +3,10 @@ package feature
 package bags
 
 import org.scalatest.FunSuite
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest.Matchers
 
 class LibrarySuite
-extends FunSuite with ShouldMatchers
+extends FunSuite with Matchers
 {
   import Library._
   import abelianGroups.Library._

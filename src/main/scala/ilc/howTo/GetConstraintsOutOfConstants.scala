@@ -72,7 +72,7 @@ extends feature.base.Syntax
 
   println(s"freshMap = $freshMap\n\n")
 
-  // > test-only ilc.howTo.getC*
+  // > test-only ilc.howTo.GetC*
   //
   // freshMap = MapType(TypeVariable(41), TypeVariable(42))
 }

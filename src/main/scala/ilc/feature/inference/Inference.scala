@@ -18,10 +18,8 @@ extends base.Syntax
   case class UApp(operator: UntypedTerm, operand: UntypedTerm) extends UntypedTerm
   case class UTerm(term: Term) extends UntypedTerm
 
-  type InferredType = Type
-
   // Only use this for pattern matching. Create new TypeVariables with freshTypeVariable.
-  case class TypeVariable(name: Int) extends InferredType
+  case class TypeVariable(name: Int) extends Type
 
   val typeVariableCounter: AtomicInteger = new AtomicInteger()
   def freshTypeVariable(): TypeVariable = {
@@ -29,37 +27,33 @@ extends base.Syntax
     TypeVariable(name)
   }
 
-//  case class Arrow(left: InferredType, right: InferredType) extends InferredType
-  val Arrow = =>:
-
-
-  type Constraint = (InferredType, InferredType)
-  def Constraint(a: InferredType, b: InferredType): Constraint = (a, b)
+  type Constraint = (Type, Type)
+  def Constraint(a: Type, b: Type): Constraint = (a, b)
 
   def emptyConstraintSet = Set[Constraint]()
 
-  type Context = List[(String, InferredType)]
-  def lookup(context: Context, name: String): Option[InferredType] =
+  type Context = List[(String, Type)]
+  def lookup(context: Context, name: String): Option[Type] =
     context.find(p => p._1 == name).map(_._2)
 
-  def extend(context: Context, name: String, typ: InferredType): Context =
+  def extend(context: Context, name: String, typ: Type): Context =
     (name, typ) :: context
 
   def emptyContext = List()
 
   trait TypedTerm {
-    def getType: InferredType
+    def getType: Type
   }
-  case class TVar(name: String, typ: InferredType) extends TypedTerm {
+  case class TVar(name: String, typ: Type) extends TypedTerm {
     override def getType = typ
   }
   case class TAbs(variable: TVar, body: TypedTerm) extends TypedTerm {
-    override def getType = Arrow(variable.getType, body.getType)
+    override def getType = =>:(variable.getType, body.getType)
   }
-  case class TApp(t1: TypedTerm, t2: TypedTerm, typ: InferredType) extends TypedTerm {
+  case class TApp(t1: TypedTerm, t2: TypedTerm, typ: Type) extends TypedTerm {
     override def getType = typ
   }
-  case class TTerm(term: Term, typ: InferredType) extends TypedTerm {
+  case class TTerm(term: Term, typ: Type) extends TypedTerm {
     override def getType = typ
   }
 
@@ -81,33 +75,33 @@ extends base.Syntax
       val (tt1, c1) = collectConstraints(t1, context)
       val (tt2, c2) = collectConstraints(t2, context)
       val x = freshTypeVariable()
-      val c = c1 ++ c2 + Constraint(tt1.getType, Arrow(tt2.getType, x))
+      val c = c1 ++ c2 + Constraint(tt1.getType, =>:(tt2.getType, x))
       (TApp(tt1, tt2, x), c)
     case _ => sys error s"Cannot infer type for $term"
   }
 
-  def occurs(variable: TypeVariable, value: InferredType): Boolean = value match {
+  def occurs(variable: TypeVariable, value: Type): Boolean = value match {
     case tv: TypeVariable => tv == variable
     case _ => value.productIterator.exists(member =>
-      if (member.isInstanceOf[InferredType])
-        occurs(variable, member.asInstanceOf[InferredType])
+      if (member.isInstanceOf[Type])
+        occurs(variable, member.asInstanceOf[Type])
       else false)
   }
 
-  def substitute(substitutions: Map[TypeVariable, InferredType]): InferredType => InferredType =
+  def substitute(substitutions: Map[TypeVariable, Type]): Type => Type =
     traverse {
       case tv@TypeVariable(n) => substitutions.getOrElse(tv, tv)
       case typ => typ
     }
 
-  def substituteInConstraint(substitutions: Map[TypeVariable, InferredType])(constraint: Constraint): Constraint =
+  def substituteInConstraint(substitutions: Map[TypeVariable, Type])(constraint: Constraint): Constraint =
     (substitute(substitutions)(constraint._1),
      substitute(substitutions)(constraint._2))
 
-  def substitute(constraints: Set[Constraint], substitutions: Map[TypeVariable, InferredType]): Set[Constraint] =
+  def substitute(constraints: Set[Constraint], substitutions: Map[TypeVariable, Type]): Set[Constraint] =
     constraints.map(substituteInConstraint(substitutions))
 
-  def substitute(term: TypedTerm, substitutions: Map[TypeVariable, InferredType]): TypedTerm = term match {
+  def substitute(term: TypedTerm, substitutions: Map[TypeVariable, Type]): TypedTerm = term match {
     case TVar(name, typ: TypeVariable) => TVar(name, substitutions.getOrElse(typ, typ))
     // NOTE: We know (by contract) that substitution on a TVar should produce a TVar.
     // I guess it would be possible to statically guarantee this, but is it worth it?
@@ -116,20 +110,20 @@ extends base.Syntax
     case anythingElse => sys error s"implement substitute for $anythingElse"
   }
 
-  def unification(constraints: Set[Constraint]): Map[TypeVariable, InferredType] = {
-    def typeVariableAndAnythingElse(tn: TypeVariable, a: InferredType, remaining: Set[Constraint], substitutions: Map[TypeVariable, InferredType]) = {
+  def unification(constraints: Set[Constraint]): Map[TypeVariable, Type] = {
+    def typeVariableAndAnythingElse(tn: TypeVariable, a: Type, remaining: Set[Constraint], substitutions: Map[TypeVariable, Type]) = {
       val nextRemaining = remaining.tail
       val nextSubstitutions = substitutions.mapValues(substitute(Map(tn -> a))) + (tn -> a)
       unificationHelper(substitute(nextRemaining, nextSubstitutions), nextSubstitutions)
     }
     @tailrec
-    def unificationHelper(remaining: Set[Constraint], substitutions: Map[TypeVariable, InferredType]): Map[TypeVariable, InferredType] = {
+    def unificationHelper(remaining: Set[Constraint], substitutions: Map[TypeVariable, Type]): Map[TypeVariable, Type] = {
       remaining.headOption match {
         case None => substitutions
         case Some((a, b)) if a == b => unificationHelper(remaining.tail, substitutions)
         case Some((tn@TypeVariable(n), a)) if !occurs(tn, a) => typeVariableAndAnythingElse(tn, a, remaining, substitutions)
         case Some((a, tn@TypeVariable(n))) if !occurs(tn, a) => typeVariableAndAnythingElse(tn, a, remaining, substitutions)
-        case Some((Arrow(t1, t2), Arrow(t3, t4))) => unificationHelper(remaining.tail + ((t1, t3)) + ((t2, t4)), substitutions)
+        case Some((=>:(t1, t2), =>:(t3, t4))) => unificationHelper(remaining.tail + ((t1, t3)) + ((t2, t4)), substitutions)
         case _ => throw new UnificationFailure()
       }
     }

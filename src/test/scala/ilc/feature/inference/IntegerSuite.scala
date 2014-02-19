@@ -20,7 +20,7 @@ extends FlatSpec
     val (typedTerm, constraints) = collectConstraints(UApp(id, id), List())
     val solved = unification(constraints)
     val finalTerm = substitute(typedTerm, solved)
-    assert(finalTerm.getType === Arrow(TypeVariable(2), TypeVariable(2)))
+    assert(finalTerm.getType === =>:(TypeVariable(2), TypeVariable(2)))
   }
 
 

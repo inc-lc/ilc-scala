@@ -9,7 +9,7 @@ extends Inference
     case _ => super.collectConstraints(term, context)
   }
 
-  override def substitute(term: TypedTerm, substitutions: Map[TypeVariable, InferredType]): TypedTerm = term match {
+  override def substitute(term: TypedTerm, substitutions: Map[TypeVariable, Type]): TypedTerm = term match {
     case TTerm(LiteralInt(_), IntType) => term
     case _ => super.substitute(term, substitutions)
   }

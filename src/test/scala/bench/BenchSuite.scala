@@ -1,8 +1,7 @@
-package ilc
-package examples
 package bench
 
 import org.scalameter.api._
+import ilc.examples.BaseBenchmark
 
 class BenchSuite extends BaseBenchmark {
   //include[BagUnionBenchmark]

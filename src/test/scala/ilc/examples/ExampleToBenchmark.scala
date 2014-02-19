@@ -3,7 +3,7 @@ package examples
 
 import org.scalameter.{reporting, execution, Aggregator}
 import org.scalameter.api._
-import ilc.examples.bench.FastBenchmarksFlag
+import bench.FastBenchmarksFlag
 
 trait ReplacementChangeData extends BenchData {
   def replacementChange(newInput: Data): Change

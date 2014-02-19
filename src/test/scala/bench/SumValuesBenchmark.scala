@@ -1,11 +1,14 @@
-package ilc
-package examples
 package bench
 
 import org.scalameter.api._
 import ilc.feature.abelianGroups.Library._
 import ilc.feature.abelianMaps.Library._
 import ilc.feature.abelianMaps.MapChanges
+import ilc.examples.BenchData
+import ilc.examples.BenchmarkVerification
+import ilc.examples.ExampleGenerated
+import ilc.examples.NonReplacementChangeBenchmark
+import ilc.examples.SumValuesGenerated
 
 class SumValuesBenchmark extends NonReplacementChangeBenchmark(
   new AdditiveMapBenchData(SumValuesGenerated) {

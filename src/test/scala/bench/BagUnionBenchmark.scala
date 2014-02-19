@@ -1,11 +1,14 @@
-package ilc
-package examples
 package bench
 
 import org.scalameter.api._
 import ilc.feature.abelianGroups.Library._
 import ilc.feature.bags.Library._
 import ilc.feature.bags.BagChanges
+import ilc.examples.BagUnionGenerated
+import ilc.examples.BenchData
+import ilc.examples.BenchmarkVerification
+import ilc.examples.ExampleGenerated
+import ilc.examples.NonReplacementChangeBenchmark
 
 /**
   * Benchmark bag union.

@@ -87,8 +87,10 @@ extends base.Syntax
 
   def occurs(variable: TypeVariable, value: InferredType): Boolean = value match {
     case tv: TypeVariable => tv == variable
-    case Arrow(t1, t2) => occurs(variable, t1) || occurs(variable, t2)
-    case anythingElse => sys error s"implement occurs for $anythingElse"
+    case _ => value.productIterator.exists(member =>
+      if (member.isInstanceOf[InferredType])
+        occurs(variable, member.asInstanceOf[InferredType])
+      else false)
   }
 
   def substitute(typ: InferredType, substitutions: Map[TypeVariable, InferredType]): InferredType = typ match {

@@ -9,11 +9,6 @@ extends Inference
     case _ => super.collectConstraints(term, context)
   }
 
-  override def occurs(variable: TypeVariable, value: InferredType): Boolean = value match {
-    case IntType => false
-    case _ => super.occurs(variable, value)
-  }
-
   override def substitute(typ: InferredType, substitutions: Map[TypeVariable, InferredType]): InferredType = typ match {
     case IntType => typ
     case _ => super.substitute(typ, substitutions)

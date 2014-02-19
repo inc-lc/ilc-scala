@@ -4,6 +4,8 @@ import ilc.feature._
 import java.util.concurrent.atomic.AtomicInteger
 import scala.annotation.tailrec
 
+/* Largely inspired by http://lampwww.epfl.ch/teaching/archive/type_systems/2010/exercises/5-inference/ */
+
 trait Inference
 extends base.Syntax
    with functions.Syntax
@@ -22,10 +24,7 @@ extends base.Syntax
   case class TypeVariable(name: Int) extends Type
 
   val typeVariableCounter: AtomicInteger = new AtomicInteger()
-  def freshTypeVariable(): TypeVariable = {
-    val name = typeVariableCounter.incrementAndGet()
-    TypeVariable(name)
-  }
+  def freshTypeVariable(): TypeVariable = TypeVariable(typeVariableCounter.incrementAndGet())
 
   type Constraint = (Type, Type)
   def Constraint(a: Type, b: Type): Constraint = (a, b)
@@ -129,11 +128,6 @@ extends base.Syntax
     }
     unificationHelper(constraints, Map())
   }
-
-  /* Largely inspired by http://lampwww.epfl.ch/teaching/archive/type_systems/2010/exercises/5-inference/
-     Problems:
-     Largely untested
-   */
 
   /**
    * Take a transformer and a term, and apply transformer to each subterm of term. 

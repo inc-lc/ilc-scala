@@ -117,11 +117,11 @@ object BuildUnit extends Build {
     override def run(mainClass: String, classpath: Seq[File],
       options: Seq[String], log: Logger): Option[String] =
     {
-      val javaOptions = classpathOption(classpath) :::
-        mainClass :: options.toList
+      val javaOptions = classpathOption(classpath)
+
       val strategy = config.outputStrategy getOrElse LoggedOutput(log)
       val updConfig = config copy (runJVMOptions = config.runJVMOptions ++ javaOptions, envVars = Map.empty, outputStrategy = Some(strategy))
-      val process =  Fork.java.fork(updConfig, Seq())
+      val process =  Fork.java.fork(updConfig, mainClass :: options.toList)
       def cancel() = {
         log.warn("Run canceled.")
         process.destroy()

@@ -2,10 +2,12 @@ package ilc
 package feature
 package base
 
+import ilc.feature.inference.Reflection
+
 trait Types {
   // We want subclasses of Type to be case classes.
   // If subclass is not a case class/case object, then they
-  // fail to intantiate at compile time (a good thing) with
+  // fail to instantiate at compile time (a good thing) with
   // an obscure error message (a necessary evil).
   trait Type extends Product
 

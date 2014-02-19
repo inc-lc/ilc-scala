@@ -7,6 +7,7 @@ import scala.annotation.tailrec
 trait Inference
 extends base.Syntax
    with functions.Syntax
+   with Reflection
 {
   class UnificationFailure extends Exception("No unification possible")
 
@@ -93,15 +94,15 @@ extends base.Syntax
       else false)
   }
 
-  def substitute(typ: InferredType, substitutions: Map[TypeVariable, InferredType]): InferredType = typ match {
-    case tv@TypeVariable(n) => substitutions.getOrElse(tv, tv)
-    case Arrow(t1, t2) => Arrow(substitute(t1, substitutions), substitute(t2, substitutions))
-    case anythingElse => sys error s"implement substitute for $anythingElse"
-  }
+  def substitute(substitutions: Map[TypeVariable, InferredType]): InferredType => InferredType =
+    traverse {
+      case tv@TypeVariable(n) => substitutions.getOrElse(tv, tv)
+      case typ => typ
+    }
 
   def substituteInConstraint(substitutions: Map[TypeVariable, InferredType])(constraint: Constraint): Constraint =
-    (substitute(constraint._1, substitutions),
-     substitute(constraint._2, substitutions))
+    (substitute(substitutions)(constraint._1),
+     substitute(substitutions)(constraint._2))
 
   def substitute(constraints: Set[Constraint], substitutions: Map[TypeVariable, InferredType]): Set[Constraint] =
     constraints.map(substituteInConstraint(substitutions))
@@ -111,14 +112,14 @@ extends base.Syntax
     // NOTE: We know (by contract) that substitution on a TVar should produce a TVar.
     // I guess it would be possible to statically guarantee this, but is it worth it?
     case TAbs(variable, body) => TAbs(substitute(variable, substitutions).asInstanceOf[TVar], substitute(body, substitutions))
-    case TApp(t1, t2, typ) => TApp(substitute(t1, substitutions), substitute(t2, substitutions), substitute(typ, substitutions))
+    case TApp(t1, t2, typ) => TApp(substitute(t1, substitutions), substitute(t2, substitutions), substitute(substitutions)(typ))
     case anythingElse => sys error s"implement substitute for $anythingElse"
   }
 
   def unification(constraints: Set[Constraint]): Map[TypeVariable, InferredType] = {
     def typeVariableAndAnythingElse(tn: TypeVariable, a: InferredType, remaining: Set[Constraint], substitutions: Map[TypeVariable, InferredType]) = {
       val nextRemaining = remaining.tail
-      val nextSubstitutions = substitutions.mapValues(substitute(_, Map(tn -> a))) + (tn -> a)
+      val nextSubstitutions = substitutions.mapValues(substitute(Map(tn -> a))) + (tn -> a)
       unificationHelper(substitute(nextRemaining, nextSubstitutions), nextSubstitutions)
     }
     @tailrec
@@ -140,4 +141,35 @@ extends base.Syntax
      Largely untested
    */
 
+  /**
+   * Take a transformer and a term, and apply transformer to each subterm of term. 
+   * @param transformer
+   */
+  def mapSubtrees(transformer: Type => Type): Type => Type =
+    Type => {
+      val subTypes = Type.productIterator.toList map {
+        //The pattern matching cannot distinguish this.Type from (something else).Type.
+        //Won't be a problem as long as you don't mix different Types in the same tree.
+        case subType: Type @unchecked => transformer(subType)
+        case notType => notType
+      }
+      reflectiveCopy(Type, subTypes: _*)
+    }
+
+  /**
+   * Apply transformer to a Type bottom-up: transformer is applied to each leave,
+   * then the parent node is rebuilt with the transformed leaves, then the
+   * transformer is applied to the newly constructed nodes, and so forth.
+   * The traversal algorithm is the same as a fold.
+   *
+   * If you want to implement a rewrite system, this might not be enough — you
+   * might need to implement fix-point iteration, if a single rule needs to be
+   * applied more than once in the same position. Since in my experience most
+   * rules must be applied at most once, this is left to the rules themselves.
+   *
+   * Beta-reduction is a typical example of a rule needing fixpoint iteration.  
+   */
+  def traverse(transformer: Type => Type): Type => Type =
+    Type =>
+      transformer(mapSubtrees(traverse(transformer))(Type))
 }

@@ -39,7 +39,7 @@ resolvers += "Sonatype OSS Snapshots" at
   "https://oss.sonatype.org/content/repositories/snapshots"
 
 // ScalaMeter
-libraryDependencies += "com.github.axel22" %% "scalameter" % "0.4-M2"
+libraryDependencies += "com.github.axel22" %% "scalameter" % "0.4"
 
 logBuffered := false
 

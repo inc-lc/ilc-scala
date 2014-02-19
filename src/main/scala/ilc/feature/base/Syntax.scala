@@ -39,9 +39,7 @@ Please do not declare getType as an abstract `val`.
   /** The variable that a user writes:
     * x, y, z as opposed to dx, ddy, dddz
     */
-  case class Var(getName: Name, _getType: Type) extends Variable {
-    lazy val getType = _getType
-  }
+  case class Var(getName: Name, getType: Type) extends Variable
 
   // TYPING CONTEXT
 

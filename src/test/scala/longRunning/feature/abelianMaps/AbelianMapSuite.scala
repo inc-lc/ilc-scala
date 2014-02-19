@@ -1,11 +1,13 @@
-package ilc
-package feature
-package abelianMaps
+package longRunning.feature.abelianMaps
 
 import scala.language.implicitConversions
 import org.scalatest.FunSuite
 import org.scalatest.Matchers
+
+import ilc.feature._
 import ilc.feature.abelianMaps.Library._
+import ilc.feature.abelianMaps.Syntax
+import ilc.feature.abelianMaps.ToScala
 import ilc.util.EvalGenerated
 
 class AbelianMapSuite

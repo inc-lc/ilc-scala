@@ -1,4 +1,4 @@
-package bench
+package longRunning
 
 import scala.util.Random
 import org.scalameter.api.Gen

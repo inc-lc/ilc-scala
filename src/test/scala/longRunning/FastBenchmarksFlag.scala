@@ -1,4 +1,4 @@
-package bench
+package longRunning
 
 object FastBenchmarksFlag extends ilc.utils.BooleanFlag {
   /**

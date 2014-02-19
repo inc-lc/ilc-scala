@@ -1,4 +1,4 @@
-package bench
+package longRunning
 
 import ilc.examples.BagIntBenchData
 import ilc.examples.MapSuccBagsGenerated

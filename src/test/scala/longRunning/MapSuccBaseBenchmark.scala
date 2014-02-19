@@ -1,4 +1,4 @@
-package bench
+package longRunning
 
 import ilc.examples.MapIntIntBenchData
 import ilc.examples.MapSuccBaseGenerated

@@ -1,4 +1,4 @@
-package bench
+package longRunning
 
 import org.scalameter.api._
 import ilc.feature.abelianGroups.Library._

@@ -1,4 +1,4 @@
-package bench
+package longRunning
 
 import ilc.examples.AbelianBagIntBenchData
 import ilc.examples.BenchmarkVerification

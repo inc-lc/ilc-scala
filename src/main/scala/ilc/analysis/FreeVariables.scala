@@ -7,12 +7,12 @@ trait FreeVariables
 extends functions.Context
 {
   implicit class FreeVariablesOfSubterms(subterm: Subterm) {
-    def freeVariables: Set[Variable] = subterm.toTerm.freeVariables
+    def freeVariables: Set[Var] = subterm.toTerm.freeVariables
   }
 
   implicit class FreeVariablesOfTerms(term: Term) {
-    def freeVariables: Set[Variable] = term match {
-      case variable: Variable =>
+    def freeVariables: Set[Var] = term match {
+      case variable: Var =>
         Set(variable)
 
       case Abs(variable, body) =>

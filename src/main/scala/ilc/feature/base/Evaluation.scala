@@ -11,7 +11,7 @@ trait Evaluation extends Syntax with functions.Pretty {
   //Recursive calls should be done only through wrapEval.
   def coreEval(t: Term, env: Env): Value =
     t match {
-      case variable: Variable => env(variable.getName)
+      case variable: Var => env(variable.getName)
       case _ => sys error s"cannot evaluate $t"
     }
 

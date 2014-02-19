@@ -16,7 +16,7 @@ trait Context extends base.Context with Syntax {
         super.getChildren(term)
     }
 
-  case class AbsBodyContext(parent: Context, variable: Variable)
+  case class AbsBodyContext(parent: Context, variable: Var)
   extends Context
   {
     // boilerplate clone of this.copy()

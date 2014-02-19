@@ -27,18 +27,16 @@ Please do not declare getType as an abstract `val`.
     }
   }
 
-  // Variable
   case class Var(getName: Name, getType: Type) extends Term
-  type Variable = Var
 
   // TYPING CONTEXT
 
-  case class TypingContext(toList: List[Variable]) {
-    def lookup(name: Name): Option[Variable] =
+  case class TypingContext(toList: List[Var]) {
+    def lookup(name: Name): Option[Var] =
       this.toList.find(_.getName == name)
 
     /** find the name, or die **/
-    def apply(name: Name): Variable =
+    def apply(name: Name): Var =
       lookup(name).fold(typeErrorNotDefined(name))(identity)
 
     /** membership test */
@@ -46,13 +44,13 @@ Please do not declare getType as an abstract `val`.
       lookup(name).fold(false)(_ => true)
 
     /** add a (typed) variable to the typing context */
-    def +: (variable: Variable): TypingContext =
+    def +: (variable: Var): TypingContext =
       TypingContext(variable :: this.toList)
   }
 
   object TypingContext {
     val empty: TypingContext = TypingContext(Nil)
-    def apply(variables: Variable*): TypingContext =
+    def apply(variables: Var*): TypingContext =
       TypingContext(List(variables: _*))
   }
 

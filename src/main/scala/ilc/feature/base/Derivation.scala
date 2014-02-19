@@ -26,7 +26,7 @@ extends Syntax
     throw IDontKnow(s"the diff-term for  type $tau")
 
   def derive(t: Term): Term = t match {
-    case v: Variable =>
+    case v: Var =>
       DVar(v)
 
     // For all terms we don't know how to derive,
@@ -50,7 +50,7 @@ extends Syntax
     *     ddx.getType == deltaType(deltaType(xType))
     */
   object DVar {
-    def apply(original: Variable) = Var(DeltaName(original.getName), deltaType(original.getType))
+    def apply(original: Var) = Var(DeltaName(original.getName), deltaType(original.getType))
   }
 
   object ChangeUpdate extends PolymorphicTerm {

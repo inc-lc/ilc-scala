@@ -31,7 +31,7 @@ object BuildUnit extends Build {
             lib.files,
             generatorMainClass,
             ForkOptions(
-              scalaJars = si.jars,
+              bootJars = si.jars,
               javaHome = javaHomeDir,
               connectInput = connectIn,
               outputStrategy = strategy,

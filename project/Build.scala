@@ -1,6 +1,7 @@
 import sbt._
 import Keys._
 import sbt.Defaults._
+import scala.language.postfixOps
 
 object BuildUnit extends Build {
   //Remove remaining files in target directory.
@@ -98,7 +99,7 @@ object BuildUnit extends Build {
     subproject: String,
     classpath: Seq[File],
     generatorMainClass: String,
-    config: ForkScalaRun)
+    config: ForkOptions)
   extends sbt.ScalaRun
   {
     def start(base: String): Seq[String] = {

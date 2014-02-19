@@ -1,15 +1,13 @@
 package ilc
 package examples
 
+import org.scalameter.{reporting, execution, Aggregator}
 import org.scalameter.api._
+import ilc.examples.bench.FastBenchmarksFlag
 
 trait ReplacementChangeData extends BenchData {
   def replacementChange(newInput: Data): Change
 }
-
-import org.scalameter.{reporting, api, execution, Aggregator}
-import org.scalameter.api._
-import ilc.examples.bench.FastBenchmarksFlag
 
 /**
   * A more customizable version of ScalaMeter's PerformanceTest.Regression.

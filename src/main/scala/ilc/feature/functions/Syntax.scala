@@ -159,21 +159,11 @@ trait Syntax extends base.Syntax {
         case string: String =>
           lambda(string)(body)
 
-        // if `parameter` is a `Type`, then the straightforward
-        //
-        //     case argumentType: Type =>
-        //       lambda(argumentType)(body)
-        //
-        // generates the warning
-        //
-        // > The outer reference in this type test cannot be checked
-        // > at run time.
-        case _ if parameter.isInstanceOf[Type] =>
-          lambda(parameter.asInstanceOf[Type])(body)
+        case t: Type @unchecked =>
+          lambda(t)(body)
 
-        // Ditto for variables
-        case _ if parameter.isInstanceOf[Var] =>
-          lambda(parameter.asInstanceOf[Var])(body)
+        case v: Var =>
+          lambda(v)(body)
       }
   }
 

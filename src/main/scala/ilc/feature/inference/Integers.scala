@@ -5,6 +5,7 @@ extends Inference
    with ilc.feature.integers.Syntax
 {
   override def collectConstraints(term: UntypedTerm, context: Context): (TypedTerm, Set[Constraint]) = term match {
+    case UTerm(t@PlusInt) => (TTerm(t, IntType =>: IntType =>: IntType), emptyConstraintSet)
     case UTerm(t@LiteralInt(_)) => (TTerm(t, IntType), emptyConstraintSet)
     case _ => super.collectConstraints(term, context)
   }
@@ -23,23 +24,6 @@ extends Inference
       - no constraints
       - always return the same inner term as a TTerm, with its getType as the type
         (maybe change TTerm then to just call getTerm? or extend Term to TypedTerm?)
-      - always false for occurs
       - identity substitution and no recursion in both cases
-
-
-    How do Ints work?
-    Shouldn't these have two and one children, respectively?
-
-  case object PlusInt extends Term {
-    override def getType: Type = IntType =>: IntType =>: IntType
-  }
-
-  case object NegateInt extends Term {
-    override def getType: Type = IntType =>: IntType
-  }
-
-    I'm consufed...
-    Has this to do with "prettier" syntax? With the TermBuilder and !-chaining and this kind of stuff?
-
     */
 }

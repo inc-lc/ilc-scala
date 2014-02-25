@@ -10,6 +10,7 @@ trait Inference
 extends base.Syntax
    with functions.Syntax
    with Reflection
+   with maps.Syntax
 {
   class UnificationFailure extends Exception("No unification possible")
 
@@ -19,6 +20,7 @@ extends base.Syntax
   case class UAbs(variable: UVar, body: UntypedTerm) extends UntypedTerm
   case class UApp(operator: UntypedTerm, operand: UntypedTerm) extends UntypedTerm
   case class UTerm(term: Term) extends UntypedTerm
+  case class UPConstant2(term: PolymorphicConstant) extends UntypedTerm
 
   // Only use this for pattern matching. Create new TypeVariables with freshTypeVariable.
   case class TypeVariable(name: Int) extends Type
@@ -55,6 +57,9 @@ extends base.Syntax
   case class TTerm(term: Term, typ: Type) extends TypedTerm {
     override def getType = typ
   }
+  case class TPConstant2(term: PolymorphicConstant, typ: Type) extends TypedTerm {
+    override def getType = typ
+  }
 
   def collectConstraints(term: UntypedTerm): (TypedTerm, Set[Constraint]) =
     collectConstraints(term, emptyContext)
@@ -76,6 +81,13 @@ extends base.Syntax
       val x = freshTypeVariable()
       val c = c1 ++ c2 + Constraint(tt1.getType, =>:(tt2.getType, x))
       (TApp(tt1, tt2, x), c)
+    // Untyped polymorphic constant with 2 type parameters
+    case UPConstant2(t) =>
+      // Instantiate type schema with fresh type variables
+      val tv1 = freshTypeVariable()
+      val tv2 = freshTypeVariable()
+      val typ = t.typeConstructor(Seq(tv1, tv2))
+      (TPConstant2(t, typ), emptyConstraintSet)
     case _ => sys error s"Cannot infer type for $term"
   }
 
@@ -106,6 +118,7 @@ extends base.Syntax
     // I guess it would be possible to statically guarantee this, but is it worth it?
     case TAbs(variable, body) => TAbs(substitute(variable, substitutions).asInstanceOf[TVar], substitute(body, substitutions))
     case TApp(t1, t2, typ) => TApp(substitute(t1, substitutions), substitute(t2, substitutions), substitute(substitutions)(typ))
+    case TPConstant2(term, typ) => TPConstant2(term, substitute(substitutions)(typ))
     case anythingElse => sys error s"implement substitute for $anythingElse"
   }
 
@@ -122,7 +135,9 @@ extends base.Syntax
         case Some((a, b)) if a == b => unificationHelper(remaining.tail, substitutions)
         case Some((tn@TypeVariable(n), a)) if !occurs(tn, a) => typeVariableAndAnythingElse(tn, a, remaining, substitutions)
         case Some((a, tn@TypeVariable(n))) if !occurs(tn, a) => typeVariableAndAnythingElse(tn, a, remaining, substitutions)
+        // TODO somehow abstract over type constructors so we do not have to do this for every new type.
         case Some((=>:(t1, t2), =>:(t3, t4))) => unificationHelper(remaining.tail + ((t1, t3)) + ((t2, t4)), substitutions)
+        case Some((MapType(t1, t2), MapType(t3, t4))) => unificationHelper(remaining.tail + ((t1, t3)) + ((t2, t4)), substitutions)
         case _ => throw new UnificationFailure()
       }
     }

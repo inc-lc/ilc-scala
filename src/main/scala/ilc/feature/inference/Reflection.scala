@@ -35,11 +35,15 @@ trait Reflection {
      */
     val clazz = t.getClass
     if (args.length == t.productArity) {
-      val copyMethodOpt = clazz.getMethods filter (_.getName == "copy") headOption
+      if (t.productArity == 0) {
+        return t
+      } else {
+        val copyMethodOpt = clazz.getMethods filter (_.getName == "copy") headOption
 
-      (copyMethodOpt getOrElse (
-        throw new RuntimeException(s"No 'copy' method found in reflectiveCopy for ${t} of type ${clazz}")) invoke (t,
-        args.toArray.asInstanceOf[Array[_ <: AnyRef]]: _*)).asInstanceOf[T]
+        (copyMethodOpt getOrElse (
+          throw new RuntimeException(s"No 'copy' method found in reflectiveCopy for ${t} of type ${clazz}")) invoke (t,
+          args.toArray.asInstanceOf[Array[_ <: AnyRef]]: _*)).asInstanceOf[T]
+      }
     } else {
       throw new IllegalArgumentException(s"${count(t.productArity, "argument")} expected but ${args.length} given")
     }

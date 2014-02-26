@@ -22,6 +22,9 @@ extends base.Syntax
   case class UTerm(term: Term) extends UntypedTerm
   case class UPConstant2(term: PolymorphicConstant) extends UntypedTerm
 
+  implicit def foo(x: PolymorphicConstant): UntypedTerm = UPConstant2(x)
+  implicit def bar(x: Term): UntypedTerm = UTerm(x)
+
   // Only use this for pattern matching. Create new TypeVariables with freshTypeVariable.
   case class TypeVariable(name: Int) extends Type
 

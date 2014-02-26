@@ -42,10 +42,10 @@ extends FlatSpec
   }
 
   it should "have the type Map Int Int when applied to two integers and the empty map" in {
-    val i42 = UTerm(LiteralInt(42))
-    val i43 = UTerm(LiteralInt(43))
-    val empty = UPConstant2(EmptyMap)
-    val update = UPConstant2(Update)
+    val i42 = LiteralInt(42)
+    val i43 = LiteralInt(43)
+    val empty = EmptyMap
+    val update = Update
     val (tt, c) = collectConstraints(UApp(UApp(UApp(update, i42), i43), empty))
     val solved = unification(c)
     val finalTerm = substitute(tt, solved)

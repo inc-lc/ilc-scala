@@ -10,7 +10,6 @@ trait Inference
 extends base.Syntax
    with functions.Syntax
    with Reflection
-   with maps.Syntax
 {
   class UnificationFailure extends Exception("No unification possible")
 
@@ -138,9 +137,8 @@ extends base.Syntax
         case Some((a, b)) if a == b => unificationHelper(remaining.tail, substitutions)
         case Some((tn@TypeVariable(n), a)) if !occurs(tn, a) => typeVariableAndAnythingElse(tn, a, remaining, substitutions)
         case Some((a, tn@TypeVariable(n))) if !occurs(tn, a) => typeVariableAndAnythingElse(tn, a, remaining, substitutions)
-        // TODO somehow abstract over type constructors so we do not have to do this for every new type.
-        case Some((=>:(t1, t2), =>:(t3, t4))) => unificationHelper(remaining.tail + ((t1, t3)) + ((t2, t4)), substitutions)
-        case Some((MapType(t1, t2), MapType(t3, t4))) => unificationHelper(remaining.tail + ((t1, t3)) + ((t2, t4)), substitutions)
+        // Need to be of the same type/use the same constructor/not so sure what exactly. Is this sane?
+        case Some((a, b)) if a.getClass == b.getClass =>  unificationHelper(remaining.tail ++ a.productIterator.zip(b.productIterator).toSet.asInstanceOf[Set[(Type, Type)]], substitutions)
         case _ => throw new UnificationFailure()
       }
     }

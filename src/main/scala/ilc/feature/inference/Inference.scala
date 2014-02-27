@@ -3,6 +3,7 @@ package ilc.feature.inference
 import ilc.feature._
 import java.util.concurrent.atomic.AtomicInteger
 import scala.annotation.tailrec
+import scala.language.implicitConversions
 
 /* Largely inspired by http://lampwww.epfl.ch/teaching/archive/type_systems/2010/exercises/5-inference/ */
 
@@ -19,10 +20,10 @@ extends base.Syntax
   case class UAbs(variable: UVar, body: UntypedTerm) extends UntypedTerm
   case class UApp(operator: UntypedTerm, operand: UntypedTerm) extends UntypedTerm
   case class UTerm(term: Term) extends UntypedTerm
-  case class UPConstant2(term: PolymorphicConstant) extends UntypedTerm
+  case class UPolymorphicConstant(term: PolymorphicConstant) extends UntypedTerm
 
-  implicit def foo(x: PolymorphicConstant): UntypedTerm = UPConstant2(x)
-  implicit def bar(x: Term): UntypedTerm = UTerm(x)
+  implicit def polymorphicConstantToUPolymorphicConstant(x: PolymorphicConstant): UntypedTerm = UPolymorphicConstant(x)
+  implicit def termToUTerm(x: Term): UntypedTerm = UTerm(x)
 
   // Only use this for pattern matching. Create new TypeVariables with freshTypeVariable.
   case class TypeVariable(name: Int) extends Type
@@ -59,7 +60,7 @@ extends base.Syntax
   case class TTerm(term: Term, typ: Type) extends TypedTerm {
     override def getType = typ
   }
-  case class TPConstant2(term: PolymorphicConstant, typ: Type) extends TypedTerm {
+  case class TPolymorphicConstant(term: PolymorphicConstant, typ: Type) extends TypedTerm {
     override def getType = typ
   }
 
@@ -83,13 +84,9 @@ extends base.Syntax
       val x = freshTypeVariable()
       val c = c1 ++ c2 + Constraint(tt1.getType, =>:(tt2.getType, x))
       (TApp(tt1, tt2, x), c)
-    // Untyped polymorphic constant with 2 type parameters
-    case UPConstant2(t) =>
-      // Instantiate type schema with fresh type variables
-      val tv1 = freshTypeVariable()
-      val tv2 = freshTypeVariable()
-      val typ = t.typeConstructor(Seq(tv1, tv2))
-      (TPConstant2(t, typ), emptyConstraintSet)
+    case UPolymorphicConstant(t) =>
+      val typ = t.typeConstructor((1 to t.typeConstructor.arity) map (_ => freshTypeVariable()))
+      (TPolymorphicConstant(t, typ), emptyConstraintSet)
     case _ => sys error s"Cannot infer type for $term"
   }
 
@@ -120,7 +117,7 @@ extends base.Syntax
     // I guess it would be possible to statically guarantee this, but is it worth it?
     case TAbs(variable, body) => TAbs(substitute(variable, substitutions).asInstanceOf[TVar], substitute(body, substitutions))
     case TApp(t1, t2, typ) => TApp(substitute(t1, substitutions), substitute(t2, substitutions), substitute(substitutions)(typ))
-    case TPConstant2(term, typ) => TPConstant2(term, substitute(substitutions)(typ))
+    case TPolymorphicConstant(term, typ) => TPolymorphicConstant(term, substitute(substitutions)(typ))
     case anythingElse => sys error s"implement substitute for $anythingElse"
   }
 

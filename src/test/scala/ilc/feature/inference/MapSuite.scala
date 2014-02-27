@@ -13,18 +13,18 @@ extends FlatSpec
   val (t0, t1, t2, t3, t4, t5, t6, t7, t8, t9) = (TypeVariable(0), TypeVariable(1), TypeVariable(2), TypeVariable(3), TypeVariable(4), TypeVariable(5), TypeVariable(6), TypeVariable(7), TypeVariable(8), TypeVariable(9))
 
   "Empty map" should "have type schema (Map k v)" in {
-    val empty = UPConstant2(EmptyMap)
-    assert(collectConstraints(empty) === ((TPConstant2(EmptyMap, MapType(t1, t2)), emptyConstraintSet)))
+    val empty = UPolymorphicConstant(EmptyMap)
+    assert(collectConstraints(empty) === ((TPolymorphicConstant(EmptyMap, MapType(t1, t2)), emptyConstraintSet)))
   }
 
   "Update" should "have type k → v → Map k v → Map k v" in {
-    val update = UPConstant2(Update)
-    assert(collectConstraints(update) === ((TPConstant2(Update, t3 =>: t4 =>: MapType(t3, t4) =>: MapType(t3, t4)), emptyConstraintSet)))
+    val update = UPolymorphicConstant(Update)
+    assert(collectConstraints(update) === ((TPolymorphicConstant(Update, t3 =>: t4 =>: MapType(t3, t4) =>: MapType(t3, t4)), emptyConstraintSet)))
   }
 
   it should "partially applied to one integer should have type a -> Map Int a -> Map Int a" in {
     val i42 = UTerm(LiteralInt(42))
-    val update = UPConstant2(Update)
+    val update = UPolymorphicConstant(Update)
     val (tt, c) = collectConstraints(UApp(update, i42))
     val solved = unification(c)
     val finalTerm = substitute(tt, solved)
@@ -34,7 +34,7 @@ extends FlatSpec
   it should "partially applied to two integers should have type Map Int Int -> Map Int Int" in {
     val i42 = UTerm(LiteralInt(42))
     val i43 = UTerm(LiteralInt(43))
-    val update = UPConstant2(Update)
+    val update = UPolymorphicConstant(Update)
     val (tt, c) = collectConstraints(UApp(UApp(update, i42), i43))
     val solved = unification(c)
     val finalTerm = substitute(tt, solved)

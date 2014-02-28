@@ -3,7 +3,6 @@ package ilc.feature.inference
 import ilc.feature._
 import java.util.concurrent.atomic.AtomicInteger
 import scala.annotation.tailrec
-import scala.language.implicitConversions
 
 /* Largely inspired by http://lampwww.epfl.ch/teaching/archive/type_systems/2010/exercises/5-inference/ */
 
@@ -14,7 +13,10 @@ extends base.Syntax
 {
   class UnificationFailure extends Exception("No unification possible")
 
-  trait UntypedTerm
+  trait UntypedTerm {
+    // TODO Can I somehow move this to inference.Pretty? Or maybe just put the stuff from Pretty back in here.
+    def apply(that: UntypedTerm): UntypedTerm = UApp(this, that)
+  }
 
   case class UVar(getName: String) extends UntypedTerm
   case class UAbs(variable: UVar, body: UntypedTerm) extends UntypedTerm
@@ -22,10 +24,7 @@ extends base.Syntax
   case class UTerm(term: Term) extends UntypedTerm
   case class UPolymorphicConstant(term: PolymorphicConstant) extends UntypedTerm
 
-  implicit def polymorphicConstantToUPolymorphicConstant(x: PolymorphicConstant): UntypedTerm = UPolymorphicConstant(x)
-  implicit def termToUTerm(x: Term): UntypedTerm = UTerm(x)
-
-  // Only use this for pattern matching. Create new TypeVariables with freshTypeVariable.
+    // Only use this for pattern matching. Create new TypeVariables with freshTypeVariable.
   case class TypeVariable(name: Int) extends Type
 
   val typeVariableCounter: AtomicInteger = new AtomicInteger()

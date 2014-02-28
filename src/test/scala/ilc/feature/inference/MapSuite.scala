@@ -7,6 +7,7 @@ class MapSuite
 extends FlatSpec
    with Matchers
    with Inference
+   with Pretty
    with ilc.feature.maps.Syntax
    with Integers
 {

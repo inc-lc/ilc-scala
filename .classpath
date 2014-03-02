@@ -9,7 +9,6 @@
 	<classpathentry kind="lib" path="/Users/pgiarrusso/.ivy2/cache/org.scala-lang/scala-reflect/jars/scala-reflect-2.10.3.jar"/>
 	<classpathentry kind="con" path="org.scala-ide.sdt.launching.SCALA_COMPILER_CONTAINER"/>
 	<classpathentry kind="lib" path="/Users/pgiarrusso/.ivy2/cache/com.github.axel22/scalameter_2.10/jars/scalameter_2.10-0.4-M2.jar"/>
-	<classpathentry kind="lib" path="/Users/pgiarrusso/.ivy2/cache/org.scalatest/scalatest_2.10/jars/scalatest_2.10-1.9.1.jar"/>
 	<classpathentry kind="lib" path="/Users/pgiarrusso/.ivy2/cache/org.scala-lang/scala-actors/jars/scala-actors-2.10.0.jar"/>
 	<classpathentry kind="lib" path="/Users/pgiarrusso/.ivy2/cache/jfree/jfreechart/jars/jfreechart-1.0.12.jar"/>
 	<classpathentry kind="lib" path="/Users/pgiarrusso/.ivy2/cache/jfree/jcommon/jars/jcommon-1.0.15.jar"/>

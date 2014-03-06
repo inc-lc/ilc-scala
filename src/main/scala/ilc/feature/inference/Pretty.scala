@@ -7,7 +7,13 @@ trait Pretty extends Inference {
   implicit def termToUTerm(x: Term): UntypedTerm = UTerm(x)
   implicit def symbolToUVar(x: Symbol): UVar = UVar(x.name)
 
-  implicit def pairSyntaxForAbstraction1(kv: (UVar, UntypedTerm)): UntypedTerm = UAbs(kv._1, kv._2)
-  implicit def pairSyntaxForAbstraction2(kv: (Symbol, UntypedTerm)): UntypedTerm = UAbs(UVar(kv._1.name), kv._2)
-  implicit def pairSyntaxForAbstraction3(kv: (Symbol, Symbol)): UntypedTerm = UAbs(UVar(kv._1.name), UVar(kv._2.name))
+  implicit class UTOps[T <% UntypedTerm](body: T) {
+    def ->:(arg: UVar): UntypedTerm = {
+      UAbs(arg, body)
+    }
+    // Require at least one argument.
+    def apply(that: UntypedTerm, more: UntypedTerm*): UApp = {
+      more.foldLeft(UApp(body, that))((acc: UApp, arg: UntypedTerm) => UApp(acc, arg))
+    }
+  }
 }

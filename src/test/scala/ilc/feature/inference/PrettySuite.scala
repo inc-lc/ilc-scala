@@ -10,18 +10,33 @@ extends FlatSpec
    with ilc.feature.maps.Syntax
    with Integers
 {
-  "Pair syntax" should "give untyped abstractions" in {
-    val id: UntypedTerm = 'x -> 'x
+  "Lambda with symbols and ->:" should "work" in {
+    val id: UntypedTerm = 'x ->: 'x
     val id2 = UAbs(UVar("x"), UVar("x"))
     assert(id === id2)
   }
 
+  it should "be right associative" in {
+    assert('x ->: 'x ->: 'x === 'x ->: ('x ->: 'x))
+  }
+
   "Application" should "work" in {
-    val id: UntypedTerm = 'x -> 'x
-    assert(UApp(id, id) === id(id))
+    val id: UntypedTerm = 'x ->: 'x
+    assert(id(id) === UApp(id, id))
+  }
+
+  it should "work for multiple parameters" in {
+    val f = 'a ->: 'b ->: 'c
+    assert(f('d, 'e) === UApp(UApp(f, 'd), 'e))
+  }
+
+  it should "work for many multiple parameters (lets hope I did not use the wrong fold)" in {
+    // Symbols apparently have an apply method. This is a bit unfortunate, because you cannot write 'f('c, 'd).
+    val f: UntypedTerm = 'f
+    assert(f('a, 'b, 'c, 'd) === UApp(UApp(UApp(UApp('f, 'a), 'b), 'c), 'd))
   }
 
   "Both" should "work together" in {
-    assert(UApp(UAbs(UVar("x"), UVar("x")), UAbs(UVar("x"), UVar("x"))) === ('x -> 'x)('x -> 'x))
+    assert(('x ->: 'x)('x ->: 'x) === UApp(UAbs(UVar("x"), UVar("x")), UAbs(UVar("x"), UVar("x"))))
   }
 }

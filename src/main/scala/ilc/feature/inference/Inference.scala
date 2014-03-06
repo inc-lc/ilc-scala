@@ -13,10 +13,7 @@ extends base.Syntax
 {
   class UnificationFailure extends Exception("No unification possible")
 
-  trait UntypedTerm {
-    // TODO Can I somehow move this to inference.Pretty? Or maybe just put the stuff from Pretty back in here.
-    def apply(that: UntypedTerm): UntypedTerm = UApp(this, that)
-  }
+  trait UntypedTerm
 
   case class UVar(getName: String) extends UntypedTerm
   case class UAbs(variable: UVar, body: UntypedTerm) extends UntypedTerm

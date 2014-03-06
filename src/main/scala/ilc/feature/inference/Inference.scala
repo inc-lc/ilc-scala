@@ -133,7 +133,6 @@ extends base.Syntax
         case Some((a, b)) if a == b => unificationHelper(remaining.tail, substitutions)
         case Some((tn@TypeVariable(n), a)) if !occurs(tn, a) => typeVariableAndAnythingElse(tn, a, remaining, substitutions)
         case Some((a, tn@TypeVariable(n))) if !occurs(tn, a) => typeVariableAndAnythingElse(tn, a, remaining, substitutions)
-        // Need to be of the same type/use the same constructor/not so sure what exactly. Is this sane?
         case Some((a, b)) if a.getClass == b.getClass =>  unificationHelper(remaining.tail ++ a.productIterator.zip(b.productIterator).toSet.asInstanceOf[Set[(Type, Type)]], substitutions)
         case _ => throw new UnificationFailure()
       }

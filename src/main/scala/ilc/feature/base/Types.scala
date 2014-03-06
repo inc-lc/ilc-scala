@@ -9,6 +9,9 @@ trait Types {
   // If subclass is not a case class/case object, then they
   // fail to instantiate at compile time (a good thing) with
   // an obscure error message (a necessary evil).
+  //
+  // In unification we use the product iterator to map over all fields and we expect those to be types themselves.
+  // If we ever want non-type fields we need to adapt ilc.feature.inference.Inference.unification
   trait Type extends Product
 
   // ERROR THROWERS

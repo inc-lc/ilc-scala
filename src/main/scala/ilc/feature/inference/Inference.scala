@@ -21,7 +21,7 @@ extends base.Syntax
   case class UMonomorphicConstant(term: Term) extends UntypedTerm
   case class UPolymorphicConstant(term: PolymorphicConstant) extends UntypedTerm
 
-    // Only use this for pattern matching. Create new TypeVariables with freshTypeVariable.
+  // Only use this for pattern matching. Create new TypeVariables with freshTypeVariable.
   case class TypeVariable(name: Int) extends Type
 
   val typeVariableCounter: AtomicInteger = new AtomicInteger()

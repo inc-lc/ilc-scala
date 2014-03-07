@@ -30,7 +30,6 @@ extends FlatSpec
   }
 
   it should "pass the Wand example" in {
-
     val ex = Set[(Type, Type)](
       (t0, =>:(t1, t2)),
       (t2, =>:(t3, t4)),
@@ -41,29 +40,6 @@ extends FlatSpec
       (t9, t5))
     val subst = unification(ex)
     assert(substitute(subst)(t0) === ((t5 =>: t7 =>: t6) =>: (t5 =>: t7) =>: (t5 =>: t6)))
-
-    /* We get:
-    Substitutions: Map(TypeVariable(0) -> =>:(TypeVariable(1),=>:(=>:(TypeVariable(9),TypeVariable(7)),=>:(TypeVariable(5),TypeVariable(6)))),
-                       TypeVariable(4) -> =>:(TypeVariable(5),TypeVariable(6)),
-                       TypeVariable(1) -> =>:(TypeVariable(5),=>:(TypeVariable(7),TypeVariable(6))),
-                       TypeVariable(3) -> =>:(TypeVariable(9),TypeVariable(7)),
-                       TypeVariable(8) -> TypeVariable(5),
-                       TypeVariable(9) -> TypeVariable(5),
-                       TypeVariable(2) -> =>:(=>:(TypeVariable(9),TypeVariable(7)),=>:(TypeVariable(5),TypeVariable(6))))
-
-      Substitutions applied to t0: =>:(TypeVariable(1),=>:(=>:(TypeVariable(9),TypeVariable(7)),=>:(TypeVariable(5),TypeVariable(6))))
-
-      Expected: doSubst s t0 @?= (t5 =:> t7 =:> t6) =:> (t5 =:> t7) =:> (t5 =:> t6)
-
-      It looks like we are almost correct, but missing some substitutions.
-      (t1 == t5 => t7 => t6, and t9 == t5)
-      Question is: is this a problem?
-      Probably yes, because more =>:s are more specific.
-      Is it a problem in practice?
-      We only use unification on constraints collected from the type checker. Maybe the example violates some implicit invariant. Though we should probably check for that.
-      Where does it come from, and how to fix it?
-      Something to do with ordering, perhaps? Should we use a list of constraints instead of a set?
-     */
   }
 
   it should "fail for inputs where no substitution is possible" in {

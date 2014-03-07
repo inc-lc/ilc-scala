@@ -23,7 +23,5 @@ extends FlatSpec
     val finalTerm = substitute(typedTerm, solved)
     assert(finalTerm.getType === =>:(TypeVariable(2), TypeVariable(2)))
   }
-
-
 }
 

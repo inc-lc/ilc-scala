@@ -23,5 +23,29 @@ extends FlatSpec
     val finalTerm = substitute(typedTerm, solved)
     assert(finalTerm.getType === =>:(TypeVariable(2), TypeVariable(2)))
   }
+
+  "Ascription" should "make the polymorphic identity function monomorphic" in {
+    val id: UntypedTerm = TypeAscription('x ->: 'x, IntType =>: IntType)
+    val (typedTerm, constraints) = collectConstraints(id, List())
+    val solved = unification(constraints)
+    val finalTerm = substitute(typedTerm, solved)
+    assert(finalTerm.getType === =>:(IntType, IntType))
+  }
+
+  it should "also work when only applied to the argument" in {
+    val id: UntypedTerm = TypeAscription('x, IntType) ->: 'x
+    val (typedTerm, constraints) = collectConstraints(id, List())
+    val solved = unification(constraints)
+    val finalTerm = substitute(typedTerm, solved)
+    assert(finalTerm.getType === =>:(IntType, IntType))
+  }
+
+  it should "also work when only applied to the body" in {
+    val id: UntypedTerm = 'x ->: TypeAscription('x, IntType)
+    val (typedTerm, constraints) = collectConstraints(id, List())
+    val solved = unification(constraints)
+    val finalTerm = substitute(typedTerm, solved)
+    assert(finalTerm.getType === =>:(IntType, IntType))
+  }
 }
 

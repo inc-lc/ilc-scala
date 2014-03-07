@@ -20,6 +20,7 @@ extends base.Syntax
   case class UApp(operator: UntypedTerm, operand: UntypedTerm) extends UntypedTerm
   case class UMonomorphicConstant(term: Term) extends UntypedTerm
   case class UPolymorphicConstant(term: PolymorphicConstant) extends UntypedTerm
+  case class TypeAscription(term: UntypedTerm, typ: Type) extends UntypedTerm
 
   // Only use this for pattern matching. Create new TypeVariables with freshTypeVariable.
   case class TypeVariable(name: Int) extends Type
@@ -85,6 +86,9 @@ extends base.Syntax
     case UPolymorphicConstant(t) =>
       val typ = t.typeConstructor((1 to t.typeConstructor.arity) map (_ => freshTypeVariable()))
       (TPolymorphicConstant(t, typ), emptyConstraintSet)
+    case TypeAscription(term, typ) =>
+      val (tt, c) = collectConstraints(term, context)
+      (tt, c + Constraint(tt.getType, typ))
     case _ => sys error s"Cannot infer type for $term"
   }
 

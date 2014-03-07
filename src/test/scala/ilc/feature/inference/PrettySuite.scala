@@ -39,4 +39,12 @@ extends FlatSpec
   "Both" should "work together" in {
     assert(('x ->: 'x)('x ->: 'x) === UApp(UAbs(UVar("x"), UVar("x")), UAbs(UVar("x"), UVar("x"))))
   }
+
+  "Type ascription" should "be prettier" in {
+    assert('x.ofType(IntType) ->: 'x === TypeAscription('x ->: 'x, IntType =>: TypeVariable(1)))
+  }
+
+  it should "be lucky with precedences so this works out" in {
+    assert(('x ->: 'x ofType IntType =>: IntType) === TypeAscription('x ->: 'x, IntType =>: IntType))
+  }
 }

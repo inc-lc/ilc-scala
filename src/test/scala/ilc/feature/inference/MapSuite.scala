@@ -9,7 +9,7 @@ extends FlatSpec
    with Inference
    with Pretty
    with ilc.feature.maps.Syntax
-   with Integers
+   with ilc.feature.integers.Syntax
 {
   val (t0, t1, t2, t3, t4, t5, t6, t7, t8, t9) = (TypeVariable(0), TypeVariable(1), TypeVariable(2), TypeVariable(3), TypeVariable(4), TypeVariable(5), TypeVariable(6), TypeVariable(7), TypeVariable(8), TypeVariable(9))
 
@@ -24,7 +24,7 @@ extends FlatSpec
   }
 
   it should "partially applied to one integer should have type a -> Map Int a -> Map Int a" in {
-    val i42 = UTerm(LiteralInt(42))
+    val i42 = UMonomorphicConstant(LiteralInt(42))
     val update = UPolymorphicConstant(Update)
     val (tt, c) = collectConstraints(UApp(update, i42))
     val solved = unification(c)
@@ -33,8 +33,8 @@ extends FlatSpec
   }
 
   it should "partially applied to two integers should have type Map Int Int -> Map Int Int" in {
-    val i42 = UTerm(LiteralInt(42))
-    val i43 = UTerm(LiteralInt(43))
+    val i42 = UMonomorphicConstant(LiteralInt(42))
+    val i43 = UMonomorphicConstant(LiteralInt(43))
     val update = UPolymorphicConstant(Update)
     val (tt, c) = collectConstraints(UApp(UApp(update, i42), i43))
     val solved = unification(c)

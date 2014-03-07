@@ -18,7 +18,7 @@ extends base.Syntax
   case class UVar(getName: String) extends UntypedTerm
   case class UAbs(variable: UVar, body: UntypedTerm) extends UntypedTerm
   case class UApp(operator: UntypedTerm, operand: UntypedTerm) extends UntypedTerm
-  case class UTerm(term: Term) extends UntypedTerm
+  case class UMonomorphicConstant(term: Term) extends UntypedTerm
   case class UPolymorphicConstant(term: PolymorphicConstant) extends UntypedTerm
 
     // Only use this for pattern matching. Create new TypeVariables with freshTypeVariable.
@@ -53,8 +53,8 @@ extends base.Syntax
   case class TApp(t1: TypedTerm, t2: TypedTerm, typ: Type) extends TypedTerm {
     override def getType = typ
   }
-  case class TTerm(term: Term, typ: Type) extends TypedTerm {
-    override def getType = typ
+  case class TMonomorphicConstant(term: Term) extends TypedTerm {
+    override def getType = term.getType
   }
   case class TPolymorphicConstant(term: PolymorphicConstant, typ: Type) extends TypedTerm {
     override def getType = typ
@@ -80,6 +80,8 @@ extends base.Syntax
       val x = freshTypeVariable()
       val c = c1 ++ c2 + Constraint(tt1.getType, =>:(tt2.getType, x))
       (TApp(tt1, tt2, x), c)
+    case UMonomorphicConstant(term) =>
+      (TMonomorphicConstant(term), emptyConstraintSet)
     case UPolymorphicConstant(t) =>
       val typ = t.typeConstructor((1 to t.typeConstructor.arity) map (_ => freshTypeVariable()))
       (TPolymorphicConstant(t, typ), emptyConstraintSet)
@@ -113,6 +115,7 @@ extends base.Syntax
     // I guess it would be possible to statically guarantee this, but is it worth it?
     case TAbs(variable, body) => TAbs(substitute(variable, substitutions).asInstanceOf[TVar], substitute(body, substitutions))
     case TApp(t1, t2, typ) => TApp(substitute(t1, substitutions), substitute(t2, substitutions), substitute(substitutions)(typ))
+    case t@TMonomorphicConstant(_) => t
     case TPolymorphicConstant(term, typ) => TPolymorphicConstant(term, substitute(substitutions)(typ))
     case anythingElse => sys error s"implement substitute for $anythingElse"
   }

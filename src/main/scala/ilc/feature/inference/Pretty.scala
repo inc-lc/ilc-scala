@@ -4,7 +4,7 @@ import scala.language.implicitConversions
 
 trait Pretty extends Inference {
   implicit def polymorphicConstantToUPolymorphicConstant(x: PolymorphicConstant): UntypedTerm = UPolymorphicConstant(x)
-  implicit def termToUTerm(x: Term): UntypedTerm = UTerm(x)
+  implicit def monomorphicConstantToUMonomorphicConstant(x: Term): UntypedTerm = UMonomorphicConstant(x)
   implicit def symbolToUVar(x: Symbol): UVar = UVar(x.name)
 
   implicit class UTOps[T <% UntypedTerm](body: T) {

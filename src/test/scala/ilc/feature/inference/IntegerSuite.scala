@@ -5,13 +5,14 @@ import scala.language.implicitConversions
 
 class IntegerSuite
 extends FlatSpec
+   with ilc.feature.integers.Syntax
+   with Pretty
    with Matchers
-   with Integers
 {
   "Type inference with integers" should "infer the correct type for literal integers" in {
-    val i42 = UTerm(LiteralInt(42))
+    val i42 = UMonomorphicConstant(LiteralInt(42))
     val (tterm, subst) = collectConstraints(i42)
-    assert(tterm === TTerm(LiteralInt(42), IntType))
+    assert(tterm === TMonomorphicConstant(LiteralInt(42)))
     assert(subst === emptyConstraintSet)
   }
 

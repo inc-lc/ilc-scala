@@ -8,7 +8,7 @@ extends FlatSpec
    with Matchers
    with Pretty
    with ilc.feature.maps.Syntax
-   with Integers
+   with ilc.feature.integers.Syntax
 {
   "Lambda with symbols and ->:" should "work" in {
     val id: UntypedTerm = 'x ->: 'x

@@ -29,10 +29,6 @@ trait Reflection {
    * @param t an instance of a case class
    */
   def reflectiveCopy[T <: Product](t: T, args: Any*): T = {
-    /* TODO Can we somehow extend this so we do not need to define a copy method?
-            Maybe provide a default 'copy' that is just the identity function.
-            See ilc.feature.integers.Types.IntType.copy
-     */
     val clazz = t.getClass
     if (args.length == t.productArity) {
       if (t.productArity == 0) {

@@ -29,7 +29,7 @@ extends FlatSpec
     assert(f('d, 'e) === UApp(UApp(f, 'd), 'e))
   }
 
-  it should "work for many multiple parameters (lets hope I did not use the wrong fold)" in {
+  it should "work for many multiple parameters (let's hope I did not use the wrong fold)" in {
     assert('f('a, 'b, 'c, 'd) === UApp(UApp(UApp(UApp('f, 'a), 'b), 'c), 'd))
   }
 

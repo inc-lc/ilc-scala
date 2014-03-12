@@ -123,8 +123,8 @@ trait BetaReduction extends Syntax with analysis.FreeVariables with analysis.Occ
             case nonFunVal =>
               AppVal(nonFunVal, arg)
           }
-        case variable: Var =>
-          env(variable.getName)
+        case Var(name, _) =>
+          env(name)
         case _ =>
           TermVal(t)
       }
@@ -160,8 +160,8 @@ trait BetaReduction extends Syntax with analysis.FreeVariables with analysis.Occ
 
   def betaNormalize2(t: Term, env: Map[Name, Term]): Term =
     t match {
-      case v: Var =>
-        env(v.getName)
+      case Var(name, _) =>
+        env(name)
       case App(fun, arg) =>
         //Capture is prevented by the freshening inside Abs.
         val normFun = betaNormalize2(fun, env)

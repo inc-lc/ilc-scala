@@ -1,16 +1,18 @@
-package ilc
-package feature
-package abelianMaps
+package longRunning.feature.abelianMaps
 
 import scala.language.implicitConversions
 import org.scalatest.FunSuite
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest.Matchers
+
+import ilc.feature._
 import ilc.feature.abelianMaps.Library._
+import ilc.feature.abelianMaps.Syntax
+import ilc.feature.abelianMaps.ToScala
 import ilc.util.EvalGenerated
 
 class AbelianMapSuite
 extends FunSuite
-   with ShouldMatchers
+   with Matchers
    with EvalGenerated
    with Syntax
    with ToScala
@@ -30,7 +32,7 @@ extends FunSuite
   // this is intToTerm actually
   override implicit def natToTerm(i: Int): Term = LiteralInt(i)
 
-  val empty = EmptyMap(ℤ, ℤ)
+  val myEmpty = EmptyMap(ℤ, ℤ)
   val singleton = SingletonMap ! 3 ! 5
   val _G_+ = additiveGroupOnIntegers
   val sumValues = FoldByHom ! _G_+ ! _G_+ ! snd%(ℤ, ℤ)
@@ -47,11 +49,11 @@ extends FunSuite
   }
 
   test("EmptyMap, SingletonMap, Delete, Lookup") {
-    evalGenerated(empty) should be(AbelianMap.empty)
+    evalGenerated(myEmpty) should be(AbelianMap.empty)
 
     evalGenerated(singleton) should be(AbelianMap(3 -> 5))
 
-    evalGenerated(Delete ! 5 ! empty) should be(AbelianMap.empty)
+    evalGenerated(Delete ! 5 ! myEmpty) should be(AbelianMap.empty)
 
     evalGenerated(Delete ! 5 ! singleton) should be(AbelianMap(3 -> 5))
 

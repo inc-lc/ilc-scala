@@ -79,7 +79,7 @@ trait TypeConstructor extends functions.Types with Names {
         case (name, index) => TypeVariable(index)
       }
 
-    private[this] val arity = typeVariables.size
+    val arity = typeVariables.size
 
     // necessary for inversion and force early failure if
     // typeFunction is specified with incorrect arity
@@ -168,7 +168,8 @@ trait TypeConstructor extends functions.Types with Names {
       typeInfo.zipWithIndex map {
         case (Nil, i) => {
           val typeVariableName = typeVariableNames(i)
-          sys error s"type variable $typeVariableName unused in given arguments"
+          throw new TypeError(
+            s"type variable $typeVariableName unused in given arguments")
         }
 
         case (candidate :: otherWitnesses, i) => {

@@ -1,14 +1,13 @@
 package ilc
 package examples
 
+import org.scalameter.{reporting, execution, Aggregator}
 import org.scalameter.api._
+import longRunning.FastBenchmarksFlag
 
 trait ReplacementChangeData extends BenchData {
   def replacementChange(newInput: Data): Change
 }
-
-import org.scalameter.{reporting, api, execution, Aggregator}
-import org.scalameter.api._
 
 /**
   * A more customizable version of ScalaMeter's PerformanceTest.Regression.
@@ -52,8 +51,26 @@ trait RegressionTesting extends PerformanceTest {
   * Our benchmarking settings.
   */
 trait BaseBenchmark extends RegressionTesting with Serializable {
+  import Executor.Measurer
+
   override def aggregator = QuickAndDirty.choose(Aggregator.min, super.aggregator)
   override def regressionTester = RegressionReporter.Tester.Accepter()
+
+  //Removes Measurer.RelativeNoise from the
+  //above default, since we're not really doing regression testing, hence we
+  //don't need to add noise to results.
+  //
+  //Measurer.PeriodicReinstantiation is in because it can change, by
+  //reinstantiation, the layout in which data is allocated, limiting the effects
+  //of bad allocation patterns.
+  override def measurer: Measurer =
+    new Measurer.IgnoringGC
+      //Comment it out, since it makes things so slow.
+      // with Measurer.PeriodicReinstantiation
+
+      //OutlierElimination is not described by the paper we're citing. However,
+      //it behaves well given enough initial warmup.
+      with Measurer.OutlierElimination
 
   override def reporters = baseReporters ++ QuickAndDirty.choose(Seq.empty, expensiveReporters)
 
@@ -75,6 +92,22 @@ trait BaseBenchmark extends RegressionTesting with Serializable {
 
   //Don't save QuickAndDirty results.
   override lazy val persistor = QuickAndDirty.choose(Persistor.None, new SerializationPersistor)
+
+  def minWarmupRuns: Int = 20
+  def maxWarmupRuns: Int = 100
+
+  def memorySizeMB: Int = FastBenchmarksFlag.choose(1024, 4096)
+  /* You need to use this explicitly when defining each test */
+  def testConfig =
+    Seq(
+      reports.regression.significance -> 0.01) ++ //Confidence level = 99 %
+    QuickAndDirty.choose(Seq.empty,
+      Seq(
+        exec.jvmflags -> s"-Xmx${memorySizeMB}m -Xms${memorySizeMB}m -XX:CompileThreshold=100",
+        exec.minWarmupRuns -> minWarmupRuns,
+        exec.warmupCovThreshold -> 0.05,
+        exec.reinstantiation.fullGC -> true,
+        exec.maxWarmupRuns -> maxWarmupRuns))
 }
 
 /**
@@ -93,7 +126,7 @@ abstract class ExampleToBenchmark(val benchData: BenchData) extends BaseBenchmar
   def verifyCorrectness(desc: String, derivative: InputType => DeltaInputType => DeltaOutputType) =
     performance of
     s"${className} (${desc}, verification)" in {
-      using(inputsOutputsChanges) in {
+      using(inputsOutputsChanges) config (testConfig: _*) in {
         case Datapack(oldInput, newInput, change, oldOutput) => {
           val newOutput = program(newInput)
           val derivedChange = derivative(oldInput)(change)
@@ -110,14 +143,17 @@ abstract class ExampleToBenchmark(val benchData: BenchData) extends BaseBenchmar
       }
     }
 
+  def iters: Int = 1
+
   def testSurgical(desc: String, derivative: InputType => DeltaInputType => DeltaOutputType) =
     performance of
     s"${className} (${desc}, surgical change)" in {
-      using(inputsOutputsChanges) in {
+      using(inputsOutputsChanges) config (testConfig: _*) in {
         case Datapack(oldInput, newInput, change, oldOutput) => {
           // we compute the result change with the derivative,
           // then apply it to the old value.
-          updateOutput(derivative(oldInput)(change))(oldOutput)
+          for (i <- 1 to iters)
+            updateOutput(derivative(oldInput)(change))(oldOutput)
         }
       }
     }
@@ -136,7 +172,7 @@ abstract class ExampleToBenchmark(val benchData: BenchData) extends BaseBenchmar
 
   def testRecomputation() =
     performance of s"${className} (recomputation)" in {
-      using(inputsOutputsChanges) in {
+      using(inputsOutputsChanges) config (testConfig: _*) in {
         case Datapack(oldInput, newInput, change, oldOutput) => {
           program(newInput)
         }
@@ -161,6 +197,17 @@ abstract class NonReplacementChangeBenchmark(benchData: BenchData) extends Examp
   sharedTests()
 }
 
+abstract class OnlyDerivativeBenchmark(benchData: BenchData) extends ExampleToBenchmark(benchData) {
+  override def minWarmupRuns = 10000
+  override def maxWarmupRuns = 10000
+
+  testSurgical()
+}
+
+abstract class OnlyRecomputationBenchmark(benchData: BenchData) extends ExampleToBenchmark(benchData) {
+  testRecomputation()
+}
+
 // This must be a class because one can't define tests in a trait.
 abstract class ReplacementChangeBenchmark(override val benchData: BenchData with ReplacementChangeData) extends ExampleToBenchmark(benchData) {
   import benchData._
@@ -170,7 +217,7 @@ abstract class ReplacementChangeBenchmark(override val benchData: BenchData with
 
   performance of
   s"${className} (derivative, replacement change)" in {
-    using(inputsOutputsChanges) in {
+    using(inputsOutputsChanges) config (testConfig: _*) in {
       case Datapack(oldInput, newInput, change, oldOutput) => {
         updateOutput(derivative(oldInput)(replacementChange(newInput)))(oldOutput)
       }

@@ -27,32 +27,18 @@ Please do not declare getType as an abstract `val`.
     }
   }
 
-  // Variable
-
-  /** The supertrait of all types of variables
-    */
-  trait Variable extends Term {
-    def getName: Name
-    val getType: Type
-  }
-
-  /** The variable that a user writes:
-    * x, y, z as opposed to dx, ddy, dddz
-    */
-  case class Var(getName: Name, _getType: Type) extends Variable {
-    lazy val getType = _getType
-  }
+  case class Var(getName: Name, getType: Type) extends Term
 
   import collection.immutable.HashMap
 
   // TYPING CONTEXT
   //This is a case class just to get equals generated.
-  case class TypingContext(private val vars: Map[Name, Variable]) {
-    def lookup(name: Name): Option[Variable] =
+  case class TypingContext(private val vars: Map[Name, Var]) {
+    def lookup(name: Name): Option[Var] =
       this.vars get name
 
     /** find the name, or die **/
-    def apply(name: Name): Variable =
+    def apply(name: Name): Var =
       lookup(name).fold(typeErrorNotDefined(name))(identity)
 
     /** membership test */
@@ -63,16 +49,16 @@ Please do not declare getType as an abstract `val`.
       v.getName -> v
 
     /** add a (typed) variable to the typing context */
-    def +: (variable: Variable): TypingContext =
+    def +: (variable: Var): TypingContext =
       TypingContext(this.vars + toEntry(variable))
 
-    def ++(variables: Traversable[Variable]): TypingContext =
+    def ++(variables: Traversable[Var]): TypingContext =
       TypingContext(this.vars ++ (variables map toEntry))
   }
 
   object TypingContext {
-    val empty: TypingContext = TypingContext(HashMap.empty[Name, Variable])
-    def apply(variables: Variable*): TypingContext =
+    val empty: TypingContext = TypingContext(HashMap.empty[Name, Var])
+    def apply(variables: Var*): TypingContext =
       TypingContext.empty ++ variables
   }
 

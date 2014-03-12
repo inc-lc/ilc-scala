@@ -3,11 +3,11 @@ package feature
 package functions
 
 import org.scalatest.FunSuite
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest.Matchers
 
 class PrettySuite
 extends FunSuite
-   with ShouldMatchers
+   with Matchers
    with Pretty
 {
   case object Bot extends Type

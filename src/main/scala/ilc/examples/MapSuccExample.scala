@@ -20,5 +20,7 @@ extends Example
    with products.ToScala
    with sums.ToScala
 {
+  // program : Bag ℤ → Bag ℤ
+  // program = map (plus 1)
   def program: Term = map ! (PlusInt ! LiteralInt(1))
 }

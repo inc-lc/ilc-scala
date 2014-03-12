@@ -9,7 +9,7 @@ extends functions.Context
 {
 
   case class Stability(
-    ofVariables: Map[Variable, Boolean],
+    ofVariables: Map[Var, Boolean],
     ofArguments: Stream[Boolean]
   )
 
@@ -55,7 +55,7 @@ extends functions.Context
         }
       }
 
-    def isStableGiven(pVarStability: Map[Variable, Boolean]): Boolean =
+    def isStableGiven(pVarStability: Map[Var, Boolean]): Boolean =
       (subterm.freeVariables map pVarStability).fold(true)(_ && _)
   }
 }

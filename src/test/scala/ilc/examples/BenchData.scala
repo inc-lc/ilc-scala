@@ -31,6 +31,7 @@ trait BenchData extends Serializable {
     * (XXX: should use an enum instead of a description for the key).
     */
   def lookupChange(description: String,
+                   inputSize: Int,
                    input: InputType,
                    output: OutputType): Change
 
@@ -52,7 +53,7 @@ trait BenchData extends Serializable {
   } yield {
     val oldInput = inputOfSize(n)
     val oldOutput = program(oldInput)
-    val change = lookupChange(description, oldInput, oldOutput)
+    val change = lookupChange(description, n, oldInput, oldOutput)
     val newInput = updateInput(change)(oldInput)
     Datapack(oldInput, newInput, change, oldOutput)
   }

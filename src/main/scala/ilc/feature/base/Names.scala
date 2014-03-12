@@ -10,6 +10,8 @@ package base
 import scala.language.implicitConversions
 
 trait Names {
+  /** The supertrait of all types of variable names.
+    */
   sealed trait Name {
     override def toString: String = ???
   }
@@ -19,21 +21,24 @@ trait Names {
 
   // NAME CLASSES IN ALPHABETIC ORDER
 
-  // Delta names ends with 'D'
+  // Delta names end with 'D'
   case class DeltaName(original: Name) extends Name
   {
     override def toString: String =
       original.toString + 'D'
   }
 
-  // Indexed names ends with """_\d+""".r
+  // Indexed names end with """_\d+""".r
   case class IndexedName(original: Name, index: Int) extends Name
   {
     override def toString: String =
       original.toString + "_" + index
   }
 
-  // Literal names ends with a lower-case letter.
+  /** The variable names that a user writes:
+    * x, y, z as opposed to dx, ddy, dddz
+    */
+  // Literal names end with a lower-case letter.
   case class LiteralName(literal: String) extends Name {
     override def toString =
       if (literal matches """.*[a-z]\z""")

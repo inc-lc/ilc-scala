@@ -1,13 +1,16 @@
-package ilc
-package examples
-package bench
+package longRunning
+
+import ilc.examples.AbelianBagIntBenchData
+import ilc.examples.BenchmarkVerification
+import ilc.examples.MapSuccGenerated
+import ilc.examples.NonReplacementChangeBenchmark
 
 /**
   * Benchmark generated derivative. This is what we can achieve by
   * improving our algorithms.
   */
 
-object MapSuccBenchmark extends NonReplacementChangeBenchmark(
+class MapSuccBenchmark extends NonReplacementChangeBenchmark(
   new AbelianBagIntBenchData(MapSuccGenerated) {
     override def base = 500
     override def last = 2500

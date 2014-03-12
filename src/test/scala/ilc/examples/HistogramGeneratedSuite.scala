@@ -2,14 +2,14 @@ package ilc
 package examples
 
 import org.scalatest.FunSuite
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest.Matchers
 import ilc.examples.HistogramGenerated._
 import ilc.feature.abelianMaps.Library._
 import ilc.feature.bags.Library._
 
 class HistogramGeneratedSuite
 extends FunSuite
-   with ShouldMatchers
+   with Matchers
 {
   val input: InputType =
     AbelianMap(

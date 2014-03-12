@@ -17,9 +17,9 @@ trait MapChanges {
           AbelianGroup[Int] => AbelianMap[Int, Int] =>
             ChangeToMaps[Int, Int]] =
     Map(
-      "no change" -> (grp => m =>
+      /*"no change" -> (grp => m =>
         mkAdditiveChange(grp)()
-      ),
+      ),*/
 
       "replace min by max + 1" -> (grp => m => {
         val keySet = m.keySet
@@ -28,7 +28,7 @@ trait MapChanges {
         mkAdditiveChange(grp)(
           min       -> (- multiplicity),
           (max + 1) -> multiplicity)
-      }),
+      })/*,
 
       "add max + 2" -> (grp => m =>
         mkAdditiveChange(grp)((m.keySet.max + 2) -> 1)
@@ -42,7 +42,7 @@ trait MapChanges {
       "remove max" -> (grp => m => {
         val max = m.keySet.max
         mkAdditiveChange(grp)(max -> (- m(max)))
-      }))
+      })*/)
 
   private def mkAdditiveChange[K]
                 (grp: AbelianGroup[Int])

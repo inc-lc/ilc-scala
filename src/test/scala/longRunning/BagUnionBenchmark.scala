@@ -1,16 +1,19 @@
-package ilc
-package examples
-package bench
+package longRunning
 
 import org.scalameter.api._
 import ilc.feature.abelianGroups.Library._
 import ilc.feature.bags.Library._
 import ilc.feature.bags.BagChanges
+import ilc.examples.BagUnionGenerated
+import ilc.examples.BenchData
+import ilc.examples.BenchmarkVerification
+import ilc.examples.ExampleGenerated
+import ilc.examples.NonReplacementChangeBenchmark
 
 /**
   * Benchmark bag union.
   */
-object BagUnionBenchmark extends NonReplacementChangeBenchmark(
+class BagUnionBenchmark extends NonReplacementChangeBenchmark(
   new BagPairBenchData(BagUnionGenerated) {
     override def base = 5000
     override def last = 25000
@@ -64,7 +67,7 @@ class BagPairBenchData(val example: ExampleGenerated {
     Gen.enumeration("change")(jointDescriptions: _*)
   }
 
-  def lookupChange(jointDescription: String, input: InputType, output: OutputType): Change = {
+  def lookupChange(jointDescription: String, inputSize: Int, input: InputType, output: OutputType): Change = {
     val (description1, description2) = unpack(jointDescription)
     ( changes(description1)(input._1.size),
       changes(description2)(input._2.size) )

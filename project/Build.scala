@@ -1,6 +1,7 @@
 import sbt._
 import Keys._
 import sbt.Defaults._
+import scala.language.postfixOps
 
 object BuildUnit extends Build {
   //Remove remaining files in target directory.
@@ -31,7 +32,7 @@ object BuildUnit extends Build {
             lib.files,
             generatorMainClass,
             ForkOptions(
-              scalaJars = si.jars,
+              bootJars = si.jars,
               javaHome = javaHomeDir,
               connectInput = connectIn,
               outputStrategy = strategy,
@@ -50,17 +51,7 @@ object BuildUnit extends Build {
         }
     )
 
-  val scalaMeterFramework = new TestFramework("org.scalameter.ScalaMeterFramework")
-
-  //XXX The type annotation is needed with SBT 0.12 to workaround a compiler
-  //crash, probably due to the Scala compiler. This cannot be reproduced with
-  //SBT 0.13, probably because Scala 2.10 does not suffer from this compiler
-  //crash; hence, remove it when switching to 0.13.
-  private val scalaMeterSettings: Seq[Setting[_]] = Seq(
-      testFrameworks += scalaMeterFramework
-    )
-
-  private val extraSettings = generationSettings ++ scalaMeterSettings
+  private val extraSettings = generationSettings
 
   // dummy project with default settings + extraSettings.
   // This has the same effect as putting extraSettings in build.sbt.
@@ -98,7 +89,7 @@ object BuildUnit extends Build {
     subproject: String,
     classpath: Seq[File],
     generatorMainClass: String,
-    config: ForkScalaRun)
+    config: ForkOptions)
   extends sbt.ScalaRun
   {
     def start(base: String): Seq[String] = {
@@ -116,15 +107,11 @@ object BuildUnit extends Build {
     override def run(mainClass: String, classpath: Seq[File],
       options: Seq[String], log: Logger): Option[String] =
     {
-      val javaOptions = classpathOption(classpath) :::
-        mainClass :: options.toList
+      val javaOptions = classpathOption(classpath)
+
       val strategy = config.outputStrategy getOrElse LoggedOutput(log)
-      val process =  Fork.java.fork(config.javaHome,
-        config.runJVMOptions ++ javaOptions,
-        config.workingDirectory,
-        Map.empty,
-        config.connectInput,
-        strategy)
+      val updConfig = config copy (runJVMOptions = config.runJVMOptions ++ javaOptions, envVars = Map.empty, outputStrategy = Some(strategy))
+      val process =  Fork.java.fork(updConfig, mainClass :: options.toList)
       def cancel() = {
         log.warn("Run canceled.")
         process.destroy()

@@ -1,15 +1,18 @@
-package ilc
-package feature
-package abelianMaps
+package longRunning.feature.abelianMaps
 
 import org.scalatest.FunSuite
-import org.scalatest.matchers.ShouldMatchers
+import org.scalatest.Matchers
 import ilc.util.EvalGenerated
-import Library._
+import ilc.feature._
+import ilc.feature.abelianGroups
+import ilc.feature.abelianMaps.AbelianDerivation
+import ilc.feature.abelianMaps.Library._
+import ilc.feature.abelianMaps.MapChanges
+import ilc.feature.abelianMaps.ToScala
 
 class DeltaAbelianMapSuite
 extends FunSuite
-   with ShouldMatchers
+   with Matchers
    with AbelianDerivation
    with integers.AbelianDerivation
    with MapChanges
@@ -30,7 +33,7 @@ extends FunSuite
     asInstanceOf[abelianGroups.Library.AbelianGroup[Int]]
 
   val updateInput = evalGenerated(updateTerm(MapType(IntType, IntType))).
-    asInstanceOf[Any => Any => Any]
+    asInstanceOf[(=>Any) => (=>Any) => Any]
 
   def expectToGetFrom
     (input: => AbelianMap[Int, Int])
@@ -39,12 +42,12 @@ extends FunSuite
   {
     val programCode: Term = lambda(AbelianGroupType(ℤ))(programBody)
     val program = evalGenerated(programCode).
-      asInstanceOf[Any => Any => Any](additiveIntegerGroup)
+      asInstanceOf[(=>Any) => (=>Any) => Any](additiveIntegerGroup)
     val derivative = evalGenerated(derive(programCode)).
-      asInstanceOf[Any => Any => Any => Any => Any](
+      asInstanceOf[(=>Any) => (=>Any) => (=>Any) => (=>Any) => Any](
         additiveIntegerGroup)(additiveIntegerGroup)
     val updateOutput = evalGenerated(updateTerm(oldResultCode.getType)).
-      asInstanceOf[Any => Any => Any]
+      asInstanceOf[(=>Any) => (=>Any) => Any]
     val oldResult = evalGenerated(oldResultCode)
     program(input) should be(oldResult)
     for (change <- getChanges(input)) {

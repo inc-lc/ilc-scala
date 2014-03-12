@@ -32,9 +32,10 @@ class MapIntIntBenchData(val example: ExampleGenerated {
   )
 
   def lookupChange(description: String,
+                   inputSize: Int,
                    input: InputType,
                    output: OutputType): Change = {
-    val n = input.size
+    val n = inputSize
     description match {
       case "no change" =>
         Left(Map.empty)
@@ -89,9 +90,10 @@ class BagIntBenchData(val example: ExampleGenerated {
     bagUnion(remove(a))(add(b))
 
   def lookupChange(description: String,
+                   inputSize: Int,
                    input: InputType,
                    output: OutputType): Change = {
-    val n = input.size
+    val n = inputSize
     description match {
       case "no change" =>
         bagEmpty
@@ -131,6 +133,6 @@ class AbelianBagIntBenchData(val example: ExampleGenerated {
   lazy val changeDescriptions: Gen[String] =
     Gen.enumeration("change")(changesToBagsOfIntegers.keySet.toSeq: _*)
 
-  def lookupChange(description: String, input: InputType, output: OutputType): Change =
-    changesToBagsOfIntegers(description)(input.size)
+  def lookupChange(description: String, inputSize: Int, input: InputType, output: OutputType): Change =
+    changesToBagsOfIntegers(description)(inputSize)
 }

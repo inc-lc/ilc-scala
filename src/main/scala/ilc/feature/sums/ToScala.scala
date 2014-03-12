@@ -9,14 +9,14 @@ trait ToScala extends base.ToScala with Syntax {
   override def toUntypedScala(t: Term): String = t match {
     case Either(aType, bType, cType) => {
       val c = toScala(cType)
-      scalaFunction("f", "g", "s")(s"s.fold[$c](f, g)")
+      scalaFunction("f", "g", "s")(s"s.fold[$c](x => f(x), y => g(y))")
     }
 
     case Inj1(aType, bType) =>
-      s"(Left.apply _)"
+      s"(x => Left(x))"
 
     case Inj2(aType, bType) =>
-      s"(Right.apply _)"
+      s"(y => Right(y))"
 
     case _ =>
       super.toUntypedScala(t)

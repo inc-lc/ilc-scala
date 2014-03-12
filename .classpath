@@ -9,13 +9,12 @@
 	<classpathentry kind="lib" path="/Users/pgiarrusso/.ivy2/cache/org.scala-lang/scala-reflect/jars/scala-reflect-2.10.3.jar"/>
 	<classpathentry kind="con" path="org.scala-ide.sdt.launching.SCALA_COMPILER_CONTAINER"/>
 	<classpathentry kind="lib" path="/Users/pgiarrusso/.ivy2/cache/com.github.axel22/scalameter_2.10/jars/scalameter_2.10-0.4-M2.jar"/>
-	<classpathentry kind="lib" path="/Users/pgiarrusso/.ivy2/cache/org.scalatest/scalatest_2.10/jars/scalatest_2.10-1.9.1.jar"/>
 	<classpathentry kind="lib" path="/Users/pgiarrusso/.ivy2/cache/org.scala-lang/scala-actors/jars/scala-actors-2.10.0.jar"/>
 	<classpathentry kind="lib" path="/Users/pgiarrusso/.ivy2/cache/jfree/jfreechart/jars/jfreechart-1.0.12.jar"/>
 	<classpathentry kind="lib" path="/Users/pgiarrusso/.ivy2/cache/jfree/jcommon/jars/jcommon-1.0.15.jar"/>
 	<classpathentry kind="lib" path="/Users/pgiarrusso/.ivy2/cache/org.apache.commons/commons-math3/jars/commons-math3-3.0.jar"/>
 	<classpathentry kind="lib" path="/Users/pgiarrusso/.ivy2/cache/org.scala-tools.testing/test-interface/jars/test-interface-0.5.jar"/>
-	<classpathentry kind="lib" path="/Users/pgiarrusso/.ivy2/cache/org.scalatest/scalatest_2.10/jars/scalatest_2.10-2.0.jar"/>
+	<classpathentry kind="lib" path="/Users/pgiarrusso/.ivy2/cache/org.scalatest/scalatest_2.10/jars/scalatest_2.10-2.0.jar" sourcepath="/Users/pgiarrusso/.m2/repository/org/scalatest/scalatest_2.10/2.0/scalatest_2.10-2.0-sources.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

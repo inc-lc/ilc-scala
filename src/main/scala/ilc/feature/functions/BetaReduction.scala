@@ -3,7 +3,7 @@ package feature
 package functions
 
 trait BetaReduction extends Syntax with analysis.FreeVariables with analysis.Occurrences {
-  val doNormalize = false
+  val doNormalize = true
 
   def subst(toReplace: Var, replacement: Term): (TypingContext, Term) => Term = {
     def go(typingContext: TypingContext, replaceIn: Term): Term =

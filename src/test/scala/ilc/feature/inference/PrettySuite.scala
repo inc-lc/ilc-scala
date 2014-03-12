@@ -5,7 +5,6 @@ import scala.language.implicitConversions
 
 class PrettySuite
 extends FlatSpec
-   with Matchers
    with Pretty
    with ilc.feature.maps.Syntax
    with ilc.feature.integers.Syntax
@@ -31,9 +30,7 @@ extends FlatSpec
   }
 
   it should "work for many multiple parameters (lets hope I did not use the wrong fold)" in {
-    // Symbols apparently have an apply method. This is a bit unfortunate, because you cannot write 'f('c, 'd).
-    val f: UntypedTerm = 'f
-    assert(f('a, 'b, 'c, 'd) === UApp(UApp(UApp(UApp('f, 'a), 'b), 'c), 'd))
+    assert('f('a, 'b, 'c, 'd) === UApp(UApp(UApp(UApp('f, 'a), 'b), 'c), 'd))
   }
 
   "Both" should "work together" in {

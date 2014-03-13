@@ -12,6 +12,15 @@ trait LetSyntax extends Syntax {
   }
 }
 
+trait FreeVariablesForLet extends analysis.FreeVariables with LetSyntax {
+  override def termFreeVariables(term: Term): Set[Var] = term match {
+    case Let(v, exp, body) =>
+      body.freeVariables ++ exp.freeVariables - v
+    case _ =>
+      super.termFreeVariables(term)
+  }
+}
+
 trait Traversals extends LetSyntax {
   type =?>:[A, B] = PartialFunction[A, B]
 
@@ -31,7 +40,7 @@ trait Traversals extends LetSyntax {
       })
 }
 
-trait BetaReduction extends Syntax with LetSyntax with analysis.FreeVariables with analysis.Occurrences with Traversals {
+trait BetaReduction extends Syntax with LetSyntax with FreeVariablesForLet with analysis.Occurrences with Traversals {
   val doNormalize = true
 
   def subst(toReplace: Var, replacement: Term): (TypingContext, Term) => Term = {

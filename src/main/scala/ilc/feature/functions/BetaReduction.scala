@@ -131,10 +131,10 @@ trait BetaReduction extends Syntax with LetSyntax with FreeVariablesForLet with 
     if (t == u)
       t
     else
-      betaNorm(u)
+      normalize(u)
   }
 
-  def betaNorm(t: Term) =
+  def normalize(t: Term) =
     if (doNormalize)
       doBetaNorm(t)
     else

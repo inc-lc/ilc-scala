@@ -122,15 +122,22 @@ trait BetaReduction extends Syntax with LetSyntax with FreeVariablesForLet with 
     case Let(v, arg, body) if !(body.freeVariables contains v) => body
   }
 
+  def desugarLetRule: Term =?>: Term = {
+    case Let(v, arg, body) => App(Abs(v, body), arg)
+  }
+
   val letBetaReduceRuleTotal = orIdentity(letBetaReduceRule)
 
   val letBetaReduceOneStep = everywhere(letBetaReduceRuleTotal)
 
   val dceOneStep = everywhere(orIdentity(dceRule))
 
+  val desugarLet = everywhere(orIdentity(desugarLetRule))
+
   def normalizeEverywhereOnce(t: Term) = {
-    import Normalize._
-    reify(eval(t, Map.empty))
+    //import Normalize._
+    desugarLet(dceOneStep(letBetaReduceOneStep(t)))
+    //reify(eval(t, Map.empty))
   }
 
   def doNormalize(t: Term): Term = {

@@ -2,7 +2,36 @@ package ilc
 package feature
 package functions
 
-trait BetaReduction extends Syntax with analysis.FreeVariables with analysis.Occurrences {
+trait LetSyntax extends Syntax {
+  //Argh! Most traversals are not ready for Let!
+  case class Let(variable: Var, exp: Term, body: Term) extends Term {
+    override lazy val getType = {
+      assert (variable.getType == exp.getType)
+      body.getType
+    }
+  }
+}
+
+trait Traversals extends LetSyntax {
+  type =?>:[A, B] = PartialFunction[A, B]
+
+  def orIdentity[T](f: T =?>: T): T => T =
+    x => f applyOrElse (x, identity[T])
+
+  //Switch to shapeless?
+  //Probably yes, since I had to debug this, and it needs to be extended for Let (as lots of existing code), and so on.
+  def everywhere: (Term => Term) => (Term => Term) =
+    transf => term =>
+      transf(term match {
+        case App(f, t) => App(everywhere(transf)(f), everywhere(transf)(t))
+        case Abs(v, body) => Abs(v, everywhere(transf)(body))
+        case Let(v, exp, body) => Let(v, everywhere(transf)(exp), everywhere(transf)(body))
+        case other =>
+          other
+      })
+}
+
+trait BetaReduction extends Syntax with LetSyntax with analysis.FreeVariables with analysis.Occurrences with Traversals {
   val doNormalize = true
 
   def subst(toReplace: Var, replacement: Term): (TypingContext, Term) => Term = {
@@ -62,6 +91,20 @@ trait BetaReduction extends Syntax with analysis.FreeVariables with analysis.Occ
         t
     }
   }
+
+  def letBetaReduceRule: Term =?>: Term = {
+    case App(Abs(v, body), arg) => Let(v, arg, body)
+  }
+
+  def dceRule: Term =?>: Term = {
+    case Let(v, arg, body) if !(body.freeVariables contains v) => body
+  }
+
+  val letBetaReduceRuleTotal = orIdentity(letBetaReduceRule)
+
+  val letBetaReduceOneStep = everywhere(letBetaReduceRuleTotal)
+
+  val dceOneStep = everywhere(orIdentity(dceRule))
 
   def betaNormOnce(t: Term) = {
     import Normalize._

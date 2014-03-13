@@ -41,7 +41,7 @@ trait Traversals extends LetSyntax {
 }
 
 trait BetaReduction extends Syntax with LetSyntax with FreeVariablesForLet with analysis.Occurrences with Traversals {
-  val doNormalize = true
+  val shouldNormalize = true
 
   def subst(toReplace: Var, replacement: Term): (TypingContext, Term) => Term = {
     def go(typingContext: TypingContext, replaceIn: Term): Term =
@@ -115,19 +115,19 @@ trait BetaReduction extends Syntax with LetSyntax with FreeVariablesForLet with 
 
   val dceOneStep = everywhere(orIdentity(dceRule))
 
-  def betaNormOnce(t: Term) = {
+  def normalizeEverywhereOnce(t: Term) = {
     import Normalize._
     reify(eval(t, Map.empty))
   }
 
-  def doBetaNorm(t: Term): Term = {
+  def doNormalize(t: Term): Term = {
     //Because of how usage counts are computed (before normalization), this is not idempotent.
     //That's also typical in shrinking reductions.
     //Let's run this to convergence.
     //Since I'm too lazy to implement alpha-equivalence testing, especially
     //in an efficient way, just reset the freshness index.
     resetIndex()
-    val u = betaNormOnce(t)
+    val u = normalizeEverywhereOnce(t)
     if (t == u)
       t
     else
@@ -135,8 +135,8 @@ trait BetaReduction extends Syntax with LetSyntax with FreeVariablesForLet with 
   }
 
   def normalize(t: Term) =
-    if (doNormalize)
-      doBetaNorm(t)
+    if (shouldNormalize)
+      doNormalize(t)
     else
       t
 

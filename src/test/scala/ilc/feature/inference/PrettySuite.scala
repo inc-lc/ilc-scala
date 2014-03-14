@@ -52,12 +52,12 @@ extends FlatSpec
 
   "Lambda with symbols and ->:" should "work" in {
     val id: UntypedTerm = 'x ->: 'x
-    val id2 = UAbs(UVar("x"), UVar("x"))
+    val id2 = UAbs("x", None, UVar("x"))
     assert(id === id2)
   }
 
   it should "be right associative" in {
-    assert('x ->: 'x ->: 'x === 'x ->: ('x ->: 'x))
+    assert('x ->: 'y ->: 'z === 'x ->: ('y ->: 'z))
   }
 
   "Application" should "work" in {
@@ -75,14 +75,14 @@ extends FlatSpec
   }
 
   "Both" should "work together" in {
-    assert(('x ->: 'x)('x ->: 'x) === UApp(UAbs(UVar("x"), UVar("x")), UAbs(UVar("x"), UVar("x"))))
+    assert(('x ->: 'x)('x ->: 'x) === UApp(UAbs("x", None, UVar("x")), UAbs("x", None, UVar("x"))))
   }
 
-  "Type ascription" should "be prettier" in {
-    assert('x.ofType(IntType) ->: 'x === TypeAscription('x ->: 'x, IntType =>: TypeVariable(1)))
+  "Type annotations" should "be pretty" in {
+    assert('x % IntType ->: 'y === UAbs("x", Some(IntType), UVar("y")))
   }
 
-  it should "be lucky with precedences so this works out" in {
+  "Type ascription" should "be lucky with precedences so this works out" in {
     assert(('x ->: 'x ofType IntType =>: IntType) === TypeAscription('x ->: 'x, IntType =>: IntType))
   }
 }

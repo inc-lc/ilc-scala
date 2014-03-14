@@ -16,7 +16,7 @@ extends base.Syntax
   trait UntypedTerm
 
   case class UVar(getName: String) extends UntypedTerm
-  case class UAbs(variable: UVar, body: UntypedTerm) extends UntypedTerm
+  case class UAbs(argumentName: String, typeAnnotation: Option[Type], body: UntypedTerm) extends UntypedTerm
   case class UApp(operator: UntypedTerm, operand: UntypedTerm) extends UntypedTerm
   case class UMonomorphicConstant(term: Term) extends UntypedTerm
   case class UPolymorphicConstant(term: PolymorphicConstant) extends UntypedTerm
@@ -48,8 +48,8 @@ extends base.Syntax
   case class TVar(name: String, typ: Type) extends TypedTerm {
     override def getType = typ
   }
-  case class TAbs(variable: TVar, body: TypedTerm) extends TypedTerm {
-    override def getType = =>:(variable.getType, body.getType)
+  case class TAbs(argumentName: String, argumentType: Type, body: TypedTerm) extends TypedTerm {
+    override def getType = =>:(argumentType, body.getType)
   }
   case class TApp(t1: TypedTerm, t2: TypedTerm, typ: Type) extends TypedTerm {
     override def getType = typ
@@ -70,11 +70,10 @@ extends base.Syntax
         case Some(typ) => (TVar(name, typ), emptyConstraintSet)
         case None => sys error s"Unbound variable ${UVar(name)}"
       }
-    case UAbs(UVar(name), body) =>
-      val alpha = freshTypeVariable()
-      val x = TVar(name, alpha)
-      val (typedBody, c) = collectConstraints(body, extend(context, name, alpha))
-      (TAbs(x, typedBody), c)
+    case UAbs(argumentName, annotatedArgumentType, body) =>
+      val argumentType = annotatedArgumentType.getOrElse(freshTypeVariable())
+      val (typedBody, c) = collectConstraints(body, extend(context, argumentName, argumentType))
+      (TAbs(argumentName, argumentType, typedBody), c)
     case UApp(t1, t2) =>
       val (tt1, c1) = collectConstraints(t1, context)
       val (tt2, c2) = collectConstraints(t2, context)
@@ -115,9 +114,8 @@ extends base.Syntax
 
   def substitute(term: TypedTerm, substitutions: Map[TypeVariable, Type]): TypedTerm = term match {
     case TVar(name, typ: TypeVariable) => TVar(name, substitutions.getOrElse(typ, typ))
-    // NOTE: We know (by contract) that substitution on a TVar should produce a TVar.
-    // I guess it would be possible to statically guarantee this, but is it worth it?
-    case TAbs(variable, body) => TAbs(substitute(variable, substitutions).asInstanceOf[TVar], substitute(body, substitutions))
+    case TVar(name, typ) => TVar(name, typ)
+    case TAbs(argumentName, argumentType, body) => TAbs(argumentName, substitute(substitutions)(argumentType), substitute(body, substitutions))
     case TApp(t1, t2, typ) => TApp(substitute(t1, substitutions), substitute(t2, substitutions), substitute(substitutions)(typ))
     case t@TMonomorphicConstant(_) => t
     case TPolymorphicConstant(term, typ) => TPolymorphicConstant(term, substitute(substitutions)(typ))

@@ -49,7 +49,7 @@ extends FlatSpec
   }
 
   "Type inference" should "infer α -> α for (id id)" in {
-    val id: UntypedTerm = UAbs(UVar("x"), UVar("x"))
+    val id: UntypedTerm = UAbs("x", None, UVar("x"))
     val (typedTerm, constraints) = collectConstraints(UApp(id, id), List())
     val solved = unification(constraints)
     val finalTerm = substitute(typedTerm, solved)

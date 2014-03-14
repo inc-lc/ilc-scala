@@ -17,7 +17,7 @@ extends FlatSpec
   }
 
   it should "not break type inference without integers" in {
-    val id: UntypedTerm = UAbs(UVar("x"), UVar("x"))
+    val id: UntypedTerm = 'x ->: 'x
     val (typedTerm, constraints) = collectConstraints(UApp(id, id), List())
     val solved = unification(constraints)
     val finalTerm = substitute(typedTerm, solved)
@@ -32,14 +32,6 @@ extends FlatSpec
     assert(finalTerm.getType === =>:(IntType, IntType))
   }
 
-  it should "also work when only applied to the argument" in {
-    val id: UntypedTerm = TypeAscription('x, IntType) ->: 'x
-    val (typedTerm, constraints) = collectConstraints(id, List())
-    val solved = unification(constraints)
-    val finalTerm = substitute(typedTerm, solved)
-    assert(finalTerm.getType === =>:(IntType, IntType))
-  }
-
   it should "also work when only applied to the body" in {
     val id: UntypedTerm = 'x ->: TypeAscription('x, IntType)
     val (typedTerm, constraints) = collectConstraints(id, List())
@@ -47,5 +39,12 @@ extends FlatSpec
     val finalTerm = substitute(typedTerm, solved)
     assert(finalTerm.getType === =>:(IntType, IntType))
   }
-}
 
+  "Type annotation" should "result in the same type" in {
+    val id: UntypedTerm = 'x % IntType ->: 'x
+    val (typedTerm, constraints) = collectConstraints(id, List())
+    val solved = unification(constraints)
+    val finalTerm = substitute(typedTerm, solved)
+    assert(finalTerm.getType === =>:(IntType, IntType))
+  }
+}

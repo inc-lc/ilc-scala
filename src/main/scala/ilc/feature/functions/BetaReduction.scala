@@ -196,7 +196,7 @@ trait BetaReduction extends Syntax with LetSyntax with FreeVariablesForLet with 
     def eval(t: Term, env: Map[Name, Value]): Value =
       t match {
         case Abs(x, t) =>
-          FunVal((arg: Value) => eval(t, env.updated(x.getName, arg)), x, precomputeDoInline(x, t))
+          FunVal(arg => eval(t, env.updated(x.getName, arg)), x, precomputeDoInline(x, t))
         case App(s, t) =>
           val arg = eval(t, env)
           eval(s, env) match {

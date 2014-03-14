@@ -173,7 +173,7 @@ trait BetaReduction extends Syntax with LetSyntax with FreeVariablesForLet with 
 
   object Normalize {
     sealed trait Value
-    case class FunVal(fun: Value => Value, varName: Name, varType: Type, doInline: Boolean) extends Value
+    case class FunVal(fun: Value => Value, v: Var, doInline: Boolean) extends Value
     case class TermVal(term: Term) extends Value
     case class AppVal(fun: Value, arg: Value) extends Value
 
@@ -196,11 +196,11 @@ trait BetaReduction extends Syntax with LetSyntax with FreeVariablesForLet with 
     def eval(t: Term, env: Map[Name, Value]): Value =
       t match {
         case Abs(x, t) =>
-          FunVal((arg: Value) => eval(t, env.updated(x.getName, arg)), x.getName, x.getType, precomputeDoInline(x, t))
+          FunVal((arg: Value) => eval(t, env.updated(x.getName, arg)), x, precomputeDoInline(x, t))
         case App(s, t) =>
           val arg = eval(t, env)
           eval(s, env) match {
-            case fv @ FunVal(f, _, _, _) if doInlineHeuristics(fv, arg) =>
+            case fv @ FunVal(f, _, _) if doInlineHeuristics(fv, arg) =>
               f(arg)
             case nonFunVal =>
               AppVal(nonFunVal, arg)
@@ -213,8 +213,8 @@ trait BetaReduction extends Syntax with LetSyntax with FreeVariablesForLet with 
 
     def reify(t: Value): Term =
       t match {
-        case FunVal(f, varName, varType, _) => {
-          val x = fresh(varName, varType)
+        case FunVal(f, v, _) => {
+          val x = fresh(v)
           Abs(x, reify(f(TermVal(x))))
         }
         case TermVal(term) =>

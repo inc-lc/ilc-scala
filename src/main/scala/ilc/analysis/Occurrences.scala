@@ -3,8 +3,8 @@ package analysis
 
 import ilc.feature.functions
 
-trait Occurrences extends functions.Syntax {
-  case class UsageCount private(n: Option[Int]) {
+trait Occurrences extends functions.Syntax with functions.LetSyntax {
+  case class UsageCount private (n: Option[Int]) {
     def +(that: UsageCount): UsageCount = {
       UsageCount build (for {
         a <- this.n
@@ -49,6 +49,17 @@ trait Occurrences extends functions.Syntax {
         }
       case App(operator, operand) =>
         operator.occurrencesOf(soughtV) + operand.occurrencesOf(soughtV)
+      case Let(v, exp, body) =>
+        exp.occurrencesOf(soughtV) + {
+          if (v == soughtV)
+            zero
+          else
+            //In the body of a lambda, a single variable occurrence translates to many occurrences, because the lambda might be an argument to another function.
+            //Since a let can be desugared to lambda, it seems that its body should be handled the same way.
+            //However, a let corresponds to a lambda which is not an argument to another function, but which is immediately applied. In this case, we can propagate the occurrence count of the body without transforming it.
+            //In other words, we can easily increase the precision of the analysis (though maybe we could do the same without Let by handling lambdas nested in App nodes).
+            body.occurrencesOf(soughtV)
+        }
       case _ => zero
     }
   }

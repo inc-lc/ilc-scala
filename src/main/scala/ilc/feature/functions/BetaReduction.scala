@@ -129,7 +129,19 @@ trait BetaReduction extends Syntax with LetSyntax with FreeVariablesForLet with 
   }
 
   def letBetaReduceRule: Term =?>: Term = {
-    case App(Abs(v, body), arg) => Let(v, arg, body)
+    //case App(Abs(v, body), arg) => Let(v, arg, body)
+    case App(fun, arg) =>
+      def findFun(f: Term): Term =
+        f match {
+          case Abs(v, body) => Let(v, arg, body)
+//          case Let(v, nestedArg, nestedF) =>
+//            //This would work given enough renaming - here names are relevant,
+//            //but arg moves under the scope of v, so we need to freshen v.
+//            Let(v, nestedArg, findFun(nestedF))
+          case _ =>
+            App(f, arg)
+        }
+      findFun(fun)
   }
 
   def dceRule: Term =?>: Term = {

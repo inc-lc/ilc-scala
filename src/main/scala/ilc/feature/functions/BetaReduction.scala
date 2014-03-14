@@ -12,6 +12,19 @@ trait LetSyntax extends Syntax {
   }
 }
 
+trait LetToScala extends LetSyntax with ToScala {
+  override def toUntypedScala(t: Term) = {
+    t match {
+      case Let(v, exp, body) =>
+        s"""${openBrace()}
+        |${indentNoNl()}lazy val ${toUntypedScala(v)} = ${toScala(exp)}
+        |${indentNoNl()}${toScala(body)}
+        |${closeBrace()}""".stripMargin
+      case _ => super.toUntypedScala(t)
+    }
+  }
+}
+
 trait FreeVariablesForLet extends analysis.FreeVariables with LetSyntax {
   override def termFreeVariables(term: Term): Set[Var] = term match {
     case Let(v, exp, body) =>

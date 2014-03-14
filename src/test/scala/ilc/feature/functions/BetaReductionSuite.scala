@@ -2,14 +2,14 @@ package ilc
 package feature
 package functions
 
-import org.scalatest.FunSuite
 import org.scalatest.Matchers
 import org.scalatest.FlatSpec
+import ilc.util.EvalGenerated
 
 class BetaReductionSuite
 extends FlatSpec
    with Matchers
-   with BetaReduction with naturals.Syntax {
+   with BetaReduction with naturals.Syntax with LetToScala with naturals.ToScala with EvalGenerated {
 
   val x = Var("x", NatType)
   val y = Var("y", NatType)
@@ -54,5 +54,17 @@ extends FlatSpec
     dceOneStep(v) should be (v)
     dceOneStep(Let(x, 1, Let(y, x, x))) should be (Let(x, 1, x))
     dceOneStep(deadLets2) should be (3: Term)
+  }
+
+  val normalAppInLet = normalizeEverywhereOnce(appInLet)
+
+  "normalizeEverywhereOnce" should "work" in {
+    println(normalAppInLet)
+  }
+
+  "toScala" should "pretty-print working programs even with lets" in {
+    val exprGen = letBetaReduceOneStep(normalizeEverywhereOnce(normalAppInLet ! 2))
+    println(toScala(exprGen))
+    evalGenerated(exprGen) should be (4)
   }
 }

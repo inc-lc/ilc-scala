@@ -32,7 +32,10 @@ object Archive {
   * corresponding to the used language features, and with the appropriate
   * syntax.
   */
-abstract class Example extends feature.functions.Pretty with feature.functions.BetaReduction
+abstract class Example
+extends feature.functions.Pretty
+   with feature.functions.BetaReduction
+   with feature.functions.ProgramSize
 {
   this: feature.base.ToScala
    with feature.base.Derivation =>
@@ -66,6 +69,10 @@ abstract class Example extends feature.functions.Pretty with feature.functions.B
           |$imports
           |
           |object $objectName extends ExampleGenerated {
+          |  val programSize = ${termSize(program)}
+          |  val derivativeSize = ${termSize(derivative)}
+          |  val normalizedProgramSize = ${termSize(normalizedProgram)}
+          |  val normalizedDerivativeSize = ${termSize(normalizedDerivative)}
           |  override val programForHuman = "$programForHuman"
           |  override val derivativeForHuman = "$derivativeForHuman"
           |  override val normalizedProgrForHuman = "$normalizedProgrForHuman"

@@ -54,6 +54,15 @@ trait Traversals extends LetSyntax {
       })
 }
 
+trait ProgramSize extends LetSyntax {
+  def termSize: Term => Int = {
+    case App(f, t) => 1 + termSize(f) + termSize(t)
+    case Abs(v, body) => 1 + termSize(v) + termSize(body)
+    case Let(v, exp, body) => 1 + termSize(v) + termSize(exp) + termSize(body)
+    case _ => 1
+  }
+}
+
 trait BetaReduction extends Syntax with LetSyntax with FreeVariablesForLet with analysis.Occurrences with Traversals {
   val shouldNormalize = true
 

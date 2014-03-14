@@ -9,7 +9,7 @@ import ilc.util.EvalGenerated
 class BetaReductionSuite
 extends FlatSpec
    with Matchers
-   with BetaReduction with naturals.Syntax with LetToScala with naturals.ToScala with EvalGenerated {
+   with BetaReduction with naturals.Syntax with LetToScala with ProgramSize with naturals.ToScala with EvalGenerated {
 
   val x = Var("x", NatType)
   val y = Var("y", NatType)
@@ -66,5 +66,10 @@ extends FlatSpec
     val exprGen = letBetaReduceOneStep(normalizeEverywhereOnce(normalAppInLet ! 2))
     println(toScala(exprGen))
     evalGenerated(exprGen) should be (4)
+  }
+
+  "size" should "return correct results on simple programs" in {
+    termSize(deadLets) should be (7)
+    termSize(appInLet) should be (18)
   }
 }

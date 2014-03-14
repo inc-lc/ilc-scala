@@ -163,7 +163,7 @@ trait BetaReduction extends Syntax with LetSyntax with FreeVariablesForLet with 
   def normalizeEverywhereOnce(t: Term) = {
     import Normalize._
     //Reify can produce lets, so there's a point in desugaring them before calling eval.
-    reify(eval(desugarLet(t), Map.empty))
+    reify(eval(t, Map.empty))
 //    desugarLet(dceOneStep(letBetaReduceOneStep(t)))
   }
 
@@ -201,7 +201,7 @@ trait BetaReduction extends Syntax with LetSyntax with FreeVariablesForLet with 
     //
     //Must occurrencesOf handle also Let nodes? Strictly speaking no, because the input to eval cannot contain Let nodes.
     //However, occurrencesOf can easily be more precise after letBetaReduceOneStep(t), and this makes a difference in the output size.
-    def precomputeDoInline(x: Var, t: Term) = (letBetaReduceOneStep(t) occurrencesOf x) != UsageCount.more
+    def precomputeDoInline(x: Var, t: Term) = (t occurrencesOf x) != UsageCount.more
     def doInlineHeuristics(fv: FunVal, arg: Value) = fv.doInline || isTrivial(arg)
 
     //Move it to analysis to allow for more trivial terms.
@@ -241,9 +241,15 @@ trait BetaReduction extends Syntax with LetSyntax with FreeVariablesForLet with 
         case Var(name, _) =>
           env(name)
         case Let(v, varDef, body) =>
-          //This would perform full inlining for such lets. We could duplicate the complete logic for the App case, but it's easier to desugar lets before NbE.
+          //This would perform full inlining for such lets. So we don't do that.
           //eval(body, env.updated(v.getName, eval(varDef, env)))
-          throw new RuntimeException("Unexpected let node '${t}' inside Normalize.eval")
+          //throw new RuntimeException("Unexpected let node '${t}' inside Normalize.eval")
+          //We could duplicate the complete logic for the App case, but it's easier to just desugar lets.
+          //We could do that before NbE, but that makes the work of precomputeDoInline harder.
+          //Hence, instead, do *ONE* desugaring step just when needed.
+          //Technically, this makes eval syntactically non-compositional, but if call the correct function here,
+          //this will still be correct (also, this eval is already highly non-compositional).
+          eval(desugarLetRule(t), env)
         case _ =>
           TermVal(t)
       }

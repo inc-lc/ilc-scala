@@ -3,6 +3,7 @@ package feature
 package base
 
 trait ToScala extends Syntax with functions.Types {
+  //Contract for indentation: no indentation in the beginning
   final def toScala(t: Term): String =
     s"(${toUntypedScala(t)} : ${toScala(t.getType)})"
 
@@ -28,14 +29,23 @@ trait ToScala extends Syntax with functions.Types {
   // helper to create scala functions
   // subclasses should always call this helper to create scala
   // functions. CAUTION: supplied parameter names are binding.
+  // body: no indentation in the beginning.
+  private var indentDepth: Int = 2
+  protected def indentMore() = { indentDepth += 2 }
+  protected def indentLess() = { indentDepth -= 2 }
+  protected def indentNoNl(): String = " " * indentDepth
+  protected def indent(): String = "\n" + indentNoNl
+  protected def openBrace() = { indentMore(); "{" }
+  protected def closeBrace() = { indentLess(); s"$indent}" }
+
   def scalaFunction(parameterNames: String*)(body: => String): String = {
     def toParam(name: String) = name + "_param"
-    val declarations = parameterNames.map { name =>
-      s"lazy val $name = ${toParam(name)}"
-    } mkString ";"
+    def declarations = parameterNames map { name =>
+      s"${indent}lazy val $name = ${toParam(name)}"
+    } mkString ""
     def loop(names: Seq[String]): String =
       if (names.isEmpty)
-        s"{$declarations; $body}"
+        s"${openBrace()}${declarations}${indent}${body}${closeBrace()}"
       else
         s"${toParam(names.head)} => ${loop(names.tail)}"
     s"(${loop(parameterNames)})"

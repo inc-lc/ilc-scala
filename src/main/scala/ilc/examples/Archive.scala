@@ -39,12 +39,14 @@ abstract class Example extends feature.functions.Pretty with feature.functions.B
 
   def program: Term
   def derivative: Term = derive(program)
+  def normalizedProgram = normalize(program)
+  def normalizedDerivative = normalize(derivative)
 
   def toSource(name: String): Source = {
     val objectName = Archive.toGenName(name)
     val programCode = toScala(program)
     val derivativeCode = toScala(derivative)
-    val normalizedDerivCode = toScala(normalize(derivative))
+    val normalizedDerivCode = toScala(normalizedDerivative)
     val inputType =>: outputType = program.getType
     val updateInputCode = toScala(updateTerm(inputType))
     val updateOutputCode = toScala(updateTerm(outputType))
@@ -55,8 +57,8 @@ abstract class Example extends feature.functions.Pretty with feature.functions.B
 
     val programForHuman: String = pretty(program)
     val derivativeForHuman: String = pretty(derivative)
-    val normalizedProgrForHuman: String = pretty(normalize(program))
-    val normalizedDerivForHuman: String = pretty(normalize(derivative))
+    val normalizedProgrForHuman: String = pretty(normalizedProgram)
+    val normalizedDerivForHuman: String = pretty(normalizedDerivative)
 
     Source(objectName,
       s"""|package ilc.examples

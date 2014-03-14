@@ -27,19 +27,19 @@ extends FlatSpec
 
   val deadLets2 = Let(x, 1, Let(y, x, 3))
 
-  "letBetaReduceRule" should "work" in {
+  "letBetaReduceRule" should "turn redexes into lets" in {
     letBetaReduceRuleTotal(simpleApp) should be (simpleAppAsLet)
   }
 
-  it should "NOT work on nested terms" in {
+  it should "not turn redexes into lets inside nested terms" in {
     letBetaReduceRuleTotal(nestedApp) should be (nestedApp)
   }
 
-  "letBetaReduceOneStep" should "work" in {
+  "letBetaReduceOneStep" should "turn redexes into lets" in {
     letBetaReduceOneStep(simpleApp) should be (simpleAppAsLet)
   }
 
-  it should "work on nested terms" in {
+  it should "turn redexes into lets inside nested terms" in {
     letBetaReduceOneStep(nestedApp) should be (lambdaTerm(y) { Let(x, y, x) })
   }
 

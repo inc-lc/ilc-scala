@@ -28,7 +28,8 @@ trait LetToScala extends LetSyntax with ToScala {
 trait FreeVariablesForLet extends analysis.FreeVariables with LetSyntax {
   override def termFreeVariables(term: Term): Set[Var] = term match {
     case Let(v, exp, body) =>
-      body.freeVariables ++ exp.freeVariables - v
+      //If v is free in exp, it is indeed free in the overall let!
+      body.freeVariables - v ++ exp.freeVariables
     case _ =>
       super.termFreeVariables(term)
   }

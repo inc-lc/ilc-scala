@@ -186,9 +186,10 @@ trait BetaReduction extends Syntax with LetSyntax with FreeVariablesForLet with 
     //compute doInline by counting occurrences, turning this into shrinking reductions.
     //Note: t has not been normalized yet here, and when we do inlining we
     //don't get the actual value.
-    //XXX: use letBetaReduceOneStep(t) instead of t?
-    //XXX: must occurrencesOf handle also Let nodes? Strictly speaking no, because the input to eval cannot contain Let nodes.
-    def precomputeDoInline(x: Var, t: Term) = (t occurrencesOf x) != UsageCount.more
+    //
+    //Must occurrencesOf handle also Let nodes? Strictly speaking no, because the input to eval cannot contain Let nodes.
+    //However, occurrencesOf can easily be more precise after letBetaReduceOneStep(t), and this makes a difference in the output size.
+    def precomputeDoInline(x: Var, t: Term) = (letBetaReduceOneStep(t) occurrencesOf x) != UsageCount.more
     def doInlineHeuristics(fv: FunVal, arg: Value) = fv.doInline || isTrivial(arg)
 
     //Move it to analysis to allow for more trivial terms.

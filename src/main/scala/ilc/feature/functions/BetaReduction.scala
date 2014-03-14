@@ -16,6 +16,10 @@ trait LetToScala extends LetSyntax with ToScala {
   override def toUntypedScala(t: Term) = {
     t match {
       case Let(v, exp, body) =>
+        //This does not work when v shadows an existing variable that is used in exp.
+        //This shows up in one (1!) case in Histogram - that's it.
+        //However, normalization-by-evaluation freshens the variable, preventing this bug.
+        //XXX: document the exact interfaces, since we have an interaction between slightly different interfaces (nominal vs. something which I hope is Barendregt), in the area of binding.
         s"""${openBrace()}
         |${indentNoNl()}lazy val ${toUntypedScala(v)} = ${toScala(exp)}
         |${indentNoNl()}${toScala(body)}
@@ -63,7 +67,7 @@ trait ProgramSize extends LetSyntax {
   }
 }
 
-trait BetaReduction extends Syntax with LetSyntax with FreeVariablesForLet with analysis.Occurrences with Traversals {
+trait BetaReduction extends Syntax with LetSyntax with FreeVariablesForLet with analysis.Occurrences with Traversals with LetToScala {
   val shouldNormalize = true
 
   def subst(toReplace: Var, replacement: Term): (TypingContext, Term) => Term = {
@@ -146,7 +150,7 @@ trait BetaReduction extends Syntax with LetSyntax with FreeVariablesForLet with 
 
   def normalizeEverywhereOnce(t: Term) = {
     import Normalize._
-    reify(eval(t, Map.empty))
+    reify(eval(/*desugarLet*/(t), Map.empty))
 //    desugarLet(dceOneStep(letBetaReduceOneStep(t)))
   }
 
@@ -176,6 +180,7 @@ trait BetaReduction extends Syntax with LetSyntax with FreeVariablesForLet with 
     case class FunVal(fun: Value => Value, v: Var, doInline: Boolean) extends Value
     case class TermVal(term: Term) extends Value
     case class AppVal(fun: Value, arg: Value) extends Value
+    case class LetVal(v: Var, varDef: Value, body: Value => Value) extends Value
 
     //compute doInline by counting occurrences, turning this into shrinking reductions.
     //Note: t has not been normalized yet here, and when we do inlining we
@@ -200,13 +205,20 @@ trait BetaReduction extends Syntax with LetSyntax with FreeVariablesForLet with 
         case App(s, t) =>
           val arg = eval(t, env)
           eval(s, env) match {
-            case fv @ FunVal(f, _, _) if doInlineHeuristics(fv, arg) =>
-              f(arg)
+            case fv @ FunVal(f, v, _) =>
+              if (doInlineHeuristics(fv, arg))
+                f(arg)
+              else
+                LetVal(v, arg, f)
             case nonFunVal =>
               AppVal(nonFunVal, arg)
           }
         case Var(name, _) =>
           env(name)
+        case Let(v, varDef, body) =>
+          //This performs inlining.
+          eval(body, env.updated(v.getName, eval(varDef, env)))
+          //???
         case _ =>
           TermVal(t)
       }
@@ -221,6 +233,11 @@ trait BetaReduction extends Syntax with LetSyntax with FreeVariablesForLet with 
           term
         case AppVal(fun, arg) =>
           App(reify(fun), reify(arg))
+        //The behavior here can be deduced from the behavior for AppVal(FunVal(f, v, _), varDef)
+        case LetVal(v, varDef, f) => {
+          val x = fresh(v)
+          Let(x, reify(varDef), reify(f(TermVal(x))))
+        }
       }
   }
 

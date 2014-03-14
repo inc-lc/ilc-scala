@@ -211,6 +211,10 @@ trait BetaReduction extends Syntax with LetSyntax with FreeVariablesForLet with 
                   f(arg)
                 else
                   LetVal(v, arg, f)
+              case LetVal(v, arg, f) =>
+                //Names are decorations here, we are using HOAS: so we can reuse
+                //v without risk.
+                LetVal(v, arg, hoasArg => findFun(f(hoasArg)))
               case nonFunVal =>
                 AppVal(nonFunVal, arg)
             }

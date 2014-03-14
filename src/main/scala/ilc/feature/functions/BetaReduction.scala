@@ -150,7 +150,7 @@ trait BetaReduction extends Syntax with LetSyntax with FreeVariablesForLet with 
 
   def normalizeEverywhereOnce(t: Term) = {
     import Normalize._
-    reify(eval(/*desugarLet*/(t), Map.empty))
+    reify(eval(desugarLet(t), Map.empty))
 //    desugarLet(dceOneStep(letBetaReduceOneStep(t)))
   }
 
@@ -216,9 +216,9 @@ trait BetaReduction extends Syntax with LetSyntax with FreeVariablesForLet with 
         case Var(name, _) =>
           env(name)
         case Let(v, varDef, body) =>
-          //This performs inlining.
-          eval(body, env.updated(v.getName, eval(varDef, env)))
-          //???
+          //This would perform full inlining for such lets. We could duplicate the complete logic for the App case, but it's easier to desugar lets before NbE.
+          //eval(body, env.updated(v.getName, eval(varDef, env)))
+          throw new RuntimeException("Unexpected let node '${t}' inside Normalize.eval")
         case _ =>
           TermVal(t)
       }

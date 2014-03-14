@@ -150,6 +150,7 @@ trait BetaReduction extends Syntax with LetSyntax with FreeVariablesForLet with 
 
   def normalizeEverywhereOnce(t: Term) = {
     import Normalize._
+    //Reify can produce lets, so there's a point in desugaring them before calling eval.
     reify(eval(desugarLet(t), Map.empty))
 //    desugarLet(dceOneStep(letBetaReduceOneStep(t)))
   }
@@ -185,6 +186,8 @@ trait BetaReduction extends Syntax with LetSyntax with FreeVariablesForLet with 
     //compute doInline by counting occurrences, turning this into shrinking reductions.
     //Note: t has not been normalized yet here, and when we do inlining we
     //don't get the actual value.
+    //XXX: use letBetaReduceOneStep(t) instead of t?
+    //XXX: must occurrencesOf handle also Let nodes? Strictly speaking no, because the input to eval cannot contain Let nodes.
     def precomputeDoInline(x: Var, t: Term) = (t occurrencesOf x) != UsageCount.more
     def doInlineHeuristics(fv: FunVal, arg: Value) = fv.doInline || isTrivial(arg)
 
@@ -198,6 +201,7 @@ trait BetaReduction extends Syntax with LetSyntax with FreeVariablesForLet with 
         case _ => false
       }
 
+    //t cannot contain Let nodes.
     def eval(t: Term, env: Map[Name, Value]): Value =
       t match {
         case Abs(x, t) =>

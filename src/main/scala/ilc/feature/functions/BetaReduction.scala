@@ -204,15 +204,19 @@ trait BetaReduction extends Syntax with LetSyntax with FreeVariablesForLet with 
           FunVal(arg => eval(t, env.updated(x.getName, arg)), x, precomputeDoInline(x, t))
         case App(s, t) =>
           val arg = eval(t, env)
-          eval(s, env) match {
-            case fv @ FunVal(f, v, _) =>
-              if (doInlineHeuristics(fv, arg))
-                f(arg)
-              else
-                LetVal(v, arg, f)
-            case nonFunVal =>
-              AppVal(nonFunVal, arg)
-          }
+          def findFun(fun: Value): Value =
+            fun match {
+              case fv @ FunVal(f, v, _) =>
+                if (doInlineHeuristics(fv, arg))
+                  f(arg)
+                else
+                  LetVal(v, arg, f)
+              case nonFunVal =>
+                AppVal(nonFunVal, arg)
+            }
+
+          val fun = eval(s, env)
+          findFun(fun)
         case Var(name, _) =>
           env(name)
         case Let(v, varDef, body) =>

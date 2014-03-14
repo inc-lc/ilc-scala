@@ -193,7 +193,6 @@ trait BetaReduction extends Syntax with LetSyntax with FreeVariablesForLet with 
           App(reify(fun), reify(arg))
       }
   }
-  //XXX: check whether building Vars when freshening up arbitrary Variables is OK. 
 
   //Have a very simple and reliable fresh variable generator. Tracking free
   //variables might have been the performance killer of the other normalizer.

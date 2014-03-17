@@ -2,7 +2,7 @@ package ilc
 package feature
 package base
 
-trait ToScala extends Syntax with functions.Types {
+trait ToScala extends Syntax {
   //Contract for indentation: no indentation in the beginning
   final def toScala(t: Term): String =
     s"(${toUntypedScala(t)} : ${toScala(t.getType)})"
@@ -18,10 +18,6 @@ trait ToScala extends Syntax with functions.Types {
 
   // types
   def toScala(tau: Type): String = tau match {
-    case sigma0 =>: sigma1 => {
-      s"((=>${toScala(sigma0)}) => ${toScala(sigma1)})"
-    }
-
     case _ =>
       sys error s"Unknown type $tau"
   }

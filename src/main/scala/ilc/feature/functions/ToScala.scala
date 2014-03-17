@@ -15,4 +15,13 @@ trait ToScala extends base.ToScala with Syntax {
     case _ =>
       super.toUntypedScala(t)
   }
+
+  override def toScala(tau: Type): String = tau match {
+    case sigma0 =>: sigma1 => {
+      s"((=>${toScala(sigma0)}) => ${toScala(sigma1)})"
+    }
+
+    case _ =>
+      super.toScala(tau)
+  }
 }

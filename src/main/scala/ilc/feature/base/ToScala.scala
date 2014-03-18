@@ -4,7 +4,7 @@ package base
 
 trait ToScala extends Syntax {
   //Contract for indentation: no indentation in the beginning
-  final def toScala(t: Term): String =
+  def toScala(t: Term): String =
     s"(${toUntypedScala(t)} : ${toScala(t.getType)})"
 
   // subclasses should override this one without concern for types

@@ -18,6 +18,7 @@ trait ToScala extends base.ToScala with Syntax {
        * that is o(k * n^2). That's why it's important to save this space.
        */
       case App(f, x) => s"(${toUntypedScala(t)})"
+      case v: Var => toUntypedScala(t)
       case _ => super.toScala(t)
     }
 

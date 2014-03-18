@@ -29,6 +29,17 @@ trait LetToScala extends LetSyntax with ToScala {
   }
 }
 
+trait LetPretty extends functions.Pretty with LetSyntax {
+  override def pretty(t: Term, priority: Priority) = t match {
+    case Let(variable, exp, body) =>
+      template(priorityOfAbs, priority, "%s = %s; %s",
+               variable.getName.toString,
+               pretty(exp, outermostPriority),
+               pretty(body, outermostPriority))
+    case _ => super.pretty(t, priority)
+  }
+}
+
 trait FreeVariablesForLet extends analysis.FreeVariables with LetSyntax {
   override def termFreeVariables(term: Term): Set[Var] = term match {
     case Let(v, exp, body) =>
@@ -67,7 +78,7 @@ trait ProgramSize extends LetSyntax {
   }
 }
 
-trait BetaReduction extends Syntax with LetSyntax with FreeVariablesForLet with analysis.Occurrences with Traversals with LetToScala {
+trait BetaReduction extends Syntax with LetSyntax with FreeVariablesForLet with analysis.Occurrences with Traversals with LetToScala with LetPretty {
   val shouldNormalize = true
 
   def subst(toReplace: Var, replacement: Term): (TypingContext, Term) => Term = {

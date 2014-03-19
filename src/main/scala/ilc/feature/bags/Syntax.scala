@@ -53,6 +53,21 @@ extends base.Syntax
   }
 }
 
+trait StdLib
+extends Syntax
+   with inference.Pretty
+{
+  val foldGroup: UntypedTerm = FoldGroup
+  val singleton: UntypedTerm = Singleton
+  val freeAbelianGroup: UntypedTerm = FreeAbelianGroup
+
+  // flatMap : (v → Bag u) → Bag v → Bag u
+  val flatMap: UntypedTerm = foldGroup(freeAbelianGroup)
+
+  // map : (a -> b) -> Bag a -> Bag b
+  val map: UntypedTerm = 'f ->: flatMap('x ->: singleton('f('x)))
+}
+
 trait SyntaxSugar
 extends Syntax
    with functions.Syntax

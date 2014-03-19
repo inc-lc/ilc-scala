@@ -142,6 +142,25 @@ extends base.Syntax
     unificationHelper(constraints, Map())
   }
 
+  def typedTermToTerm(tt: TypedTerm): Term = tt match {
+    case TVar(name, typ) => Var(name, typ)
+    case TAbs(argumentName, argumentType, body) => Abs(Var(argumentName, argumentType), typedTermToTerm(body))
+    case TApp(t1, t2, _) => App(typedTermToTerm(t1), typedTermToTerm(t2))
+    case TMonomorphicConstant(term) => term
+    // TODO figure out how polymorphic constants work.
+    // We have a polymorphic constant thing and its type; how do we get a Term out of this?
+    // Maybe we need to do something different during substitution?
+    case TPolymorphicConstant(constant, typ) => constant.toTerm
+    case anythingElse => sys error s"implement typedTermToTerm for $anythingElse"
+  }
+
+  def untypedTermToTerm(t: UntypedTerm) = {
+    val (typedTerm, constraints) = collectConstraints(t)
+    val substitutions = unification(constraints)
+    val substitutedTypedTerm = substitute(typedTerm, substitutions)
+    typedTermToTerm(substitutedTypedTerm)
+  }
+
   /**
    * Take a transformer and a term, and apply transformer to each subterm of term. 
    * @param transformer

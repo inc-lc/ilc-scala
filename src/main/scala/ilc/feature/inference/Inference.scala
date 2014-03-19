@@ -154,11 +154,14 @@ extends base.Syntax
     case anythingElse => sys error s"implement typedTermToTerm for $anythingElse"
   }
 
-  def untypedTermToTerm(t: UntypedTerm) = {
+  def inferType(t: UntypedTerm): TypedTerm = {
     val (typedTerm, constraints) = collectConstraints(t)
     val substitutions = unification(constraints)
-    val substitutedTypedTerm = substitute(typedTerm, substitutions)
-    typedTermToTerm(substitutedTypedTerm)
+    substitute(typedTerm, substitutions)
+  }
+
+  def untypedTermToTerm(t: UntypedTerm) = {
+    typedTermToTerm(inferType(t))
   }
 
   /**

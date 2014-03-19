@@ -57,7 +57,7 @@ extends base.Syntax
   case class TMonomorphicConstant(term: Term) extends TypedTerm {
     override def getType = term.getType
   }
-  case class TPolymorphicConstant(term: PolymorphicConstant, typ: Type) extends TypedTerm {
+  case class TPolymorphicConstant(term: PolymorphicConstant, typ: Type, typeArguments: Seq[Type]) extends TypedTerm {
     override def getType = typ
   }
 
@@ -83,8 +83,9 @@ extends base.Syntax
     case UMonomorphicConstant(term) =>
       (TMonomorphicConstant(term), emptyConstraintSet)
     case UPolymorphicConstant(t) =>
-      val typ = t.typeConstructor((1 to t.typeConstructor.arity) map (_ => freshTypeVariable()))
-      (TPolymorphicConstant(t, typ), emptyConstraintSet)
+      val typeArguments = (1 to t.typeConstructor.arity) map (_ => freshTypeVariable())
+      val typ = t.typeConstructor(typeArguments)
+      (TPolymorphicConstant(t, typ, typeArguments), emptyConstraintSet)
     case TypeAscription(term, typ) =>
       val (tt, c) = collectConstraints(term, context)
       (tt, c + Constraint(tt.getType, typ))
@@ -118,7 +119,7 @@ extends base.Syntax
     case TAbs(argumentName, argumentType, body) => TAbs(argumentName, substitute(substitutions)(argumentType), substitute(body, substitutions))
     case TApp(t1, t2, typ) => TApp(substitute(t1, substitutions), substitute(t2, substitutions), substitute(substitutions)(typ))
     case t@TMonomorphicConstant(_) => t
-    case TPolymorphicConstant(term, typ) => TPolymorphicConstant(term, substitute(substitutions)(typ))
+    case TPolymorphicConstant(term, typ, typeArguments) => TPolymorphicConstant(term, substitute(substitutions)(typ), typeArguments map substitute(substitutions))
     case anythingElse => sys error s"implement substitute for $anythingElse"
   }
 
@@ -147,10 +148,7 @@ extends base.Syntax
     case TAbs(argumentName, argumentType, body) => Abs(Var(argumentName, argumentType), typedTermToTerm(body))
     case TApp(t1, t2, _) => App(typedTermToTerm(t1), typedTermToTerm(t2))
     case TMonomorphicConstant(term) => term
-    // TODO figure out how polymorphic constants work.
-    // We have a polymorphic constant thing and its type; how do we get a Term out of this?
-    // Maybe we need to do something different during substitution?
-    case TPolymorphicConstant(constant, typ) => constant.toTerm
+    case TPolymorphicConstant(constant, typ, typeArguments) => constant(typeArguments:_*)
     case anythingElse => sys error s"implement typedTermToTerm for $anythingElse"
   }
 

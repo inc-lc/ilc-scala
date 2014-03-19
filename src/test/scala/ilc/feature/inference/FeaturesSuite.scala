@@ -17,12 +17,12 @@ class FeaturesSuite
 
   "Empty map" should "have type schema (Map k v)" in {
     val empty = UPolymorphicConstant(EmptyMap)
-    assert(collectConstraints(empty) === ((TPolymorphicConstant(EmptyMap, MapType(t1, t2)), emptyConstraintSet)))
+    assert(collectConstraints(empty) === ((TPolymorphicConstant(EmptyMap, MapType(t1, t2), Seq(t1, t2)), emptyConstraintSet)))
   }
 
   "Update" should "have type k → v → Map k v → Map k v" in {
     val update = UPolymorphicConstant(Update)
-    assert(collectConstraints(update) === ((TPolymorphicConstant(Update, t3 =>: t4 =>: MapType(t3, t4) =>: MapType(t3, t4)), emptyConstraintSet)))
+    assert(collectConstraints(update) === ((TPolymorphicConstant(Update, t3 =>: t4 =>: MapType(t3, t4) =>: MapType(t3, t4), Seq(t3, t4)), emptyConstraintSet)))
   }
 
   it should "partially applied to one integer should have type a -> Map Int a -> Map Int a" in {

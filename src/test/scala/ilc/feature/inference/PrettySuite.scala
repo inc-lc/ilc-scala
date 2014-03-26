@@ -73,7 +73,7 @@ extends FlatSpec
   it should "work for many multiple parameters (let's hope I did not use the wrong fold)" in {
     assert('f('a, 'b, 'c, 'd) === UApp(UApp(UApp(UApp('f, 'a), 'b), 'c), 'd))
   }
-
+  
   "Both" should "work together" in {
     assert(('x ->: 'x)('x ->: 'x) === UApp(UAbs("x", None, UVar("x")), UAbs("x", None, UVar("x"))))
   }

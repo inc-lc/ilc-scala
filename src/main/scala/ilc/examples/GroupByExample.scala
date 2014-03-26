@@ -33,6 +33,8 @@ extends abelianMaps.AbelianDerivation
         liftGroup(FreeAbelianGroup),
         'e ->: singletonMap('f('e), singleton('g('e))))
 
+  System.err.println("groupByGen: " + groupByGen);
+
   private val singletonMap: UntypedTerm = SingletonMap
   private val liftGroup: UntypedTerm = LiftGroup
 }

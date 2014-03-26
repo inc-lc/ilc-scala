@@ -159,6 +159,8 @@ extends base.Syntax
   }
 
   def untypedTermToTerm(t: UntypedTerm) = {
+    System.err.println(t);
+    System.err.flush();
     typedTermToTerm(inferType(t))
   }
 

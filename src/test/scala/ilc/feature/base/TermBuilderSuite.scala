@@ -11,7 +11,7 @@ extends FunSuite
 {
   case object Bot extends Type { override def toString = "⊥" }
   case object Top extends Type { override def toString = "⊤" }
-  case object TT extends Term { def getType: Type = Top }
+  case object TT extends Term { lazy val getType: Type = Top }
 
   test("SpecializedTerm detects mismatched argument type") {
     val typeError = intercept[TypeError] {

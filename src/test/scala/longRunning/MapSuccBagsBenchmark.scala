@@ -1,6 +1,8 @@
-package ilc
-package examples
-package bench
+package longRunning
+
+import ilc.examples.BagIntBenchData
+import ilc.examples.MapSuccBagsGenerated
+import ilc.examples.NonReplacementChangeBenchmark
 
 /**
   * Benchmark generated derivative.

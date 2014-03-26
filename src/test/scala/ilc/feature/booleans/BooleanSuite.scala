@@ -5,7 +5,7 @@ package booleans
 import org.scalatest.FunSuite
 import ilc.util.EvalScala
 
-class BooleanSuite
+trait BooleanSuiteBase
 extends FunSuite
    with EvalScala
    with SyntaxSugar
@@ -18,10 +18,7 @@ extends FunSuite
 {
   val booleans = Seq(False, True)
 
-  def expectToGet(b: Boolean)(t: => Term) {
-    assert(eval(t) === BooleanValue(b))
-    assert(evalScala(toScala(t)) === b)
-  }
+  def expectToGet(b: Boolean)(t: => Term): Unit
 
   test("True, False, IfThenElse works as intended") {
     expectToGet(true )(True )
@@ -39,7 +36,7 @@ extends FunSuite
     }
   }
 
-  test("Derivatives are correct (takes minutes to run all 256 cases)") {
+  test("Derivatives are correct (takes minutes to run all 256 cases for BooleanSuiteCompile)") {
     val t: Term = lambda(BooleanType, BooleanType, BooleanType) {
       case Seq(condition, thenBranch, elseBranch) =>
         ifThenElse(condition, thenBranch, elseBranch)
@@ -85,5 +82,11 @@ extends FunSuite
           (curriedIf ! new0 ! new1 ! new2)
       }
     }
+  }
+}
+
+class BooleanSuiteInterp extends BooleanSuiteBase {
+  def expectToGet(b: Boolean)(t: => Term) {
+    assert(eval(t) === BooleanValue(b))
   }
 }

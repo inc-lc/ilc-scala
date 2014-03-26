@@ -1,11 +1,14 @@
-package ilc
-package feature
-package abelianMaps
+package longRunning.feature.abelianMaps
 
 import org.scalatest.FunSuite
 import org.scalatest.Matchers
 import ilc.util.EvalGenerated
-import Library._
+import ilc.feature._
+import ilc.feature.abelianGroups
+import ilc.feature.abelianMaps.AbelianDerivation
+import ilc.feature.abelianMaps.Library._
+import ilc.feature.abelianMaps.MapChanges
+import ilc.feature.abelianMaps.ToScala
 
 class DeltaAbelianMapSuite
 extends FunSuite

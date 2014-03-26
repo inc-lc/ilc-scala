@@ -1,6 +1,9 @@
-package ilc
-package examples
-package bench
+package longRunning
+
+import ilc.examples.AbelianBagIntBenchData
+import ilc.examples.BenchmarkVerification
+import ilc.examples.MapSuccGenerated
+import ilc.examples.NonReplacementChangeBenchmark
 
 /**
   * Benchmark generated derivative. This is what we can achieve by

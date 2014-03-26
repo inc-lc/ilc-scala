@@ -10,7 +10,7 @@ extends TypeConstructor
 {
   trait Typed {
     /** Returns type or fails horribly. */
-    def getType: Type
+    val getType: Type
   }
 
   trait Term extends Typed {
@@ -27,43 +27,39 @@ Please do not declare getType as an abstract `val`.
     }
   }
 
-  // Variable
+  case class Var(getName: Name, getType: Type) extends Term
 
-  /** The supertrait of all types of variables
-    */
-  trait Variable extends Term {
-    def getName: Name
-    def getType: Type
-  }
-
-  /** The variable that a user writes:
-    * x, y, z as opposed to dx, ddy, dddz
-    */
-  case class Var(getName: Name, getType: Type) extends Variable
+  import collection.immutable.HashMap
 
   // TYPING CONTEXT
-
-  case class TypingContext(toList: List[Variable]) {
-    def lookup(name: Name): Option[Variable] =
-      this.toList.find(_.getName == name)
+  //This is a case class just to get equals generated.
+  case class TypingContext(private val vars: Map[Name, Var]) {
+    def lookup(name: Name): Option[Var] =
+      this.vars get name
 
     /** find the name, or die **/
-    def apply(name: Name): Variable =
+    def apply(name: Name): Var =
       lookup(name).fold(typeErrorNotDefined(name))(identity)
 
     /** membership test */
     def contains(name: Name): Boolean =
       lookup(name).fold(false)(_ => true)
 
+    private def toEntry(v: Var) =
+      v.getName -> v
+
     /** add a (typed) variable to the typing context */
-    def +: (variable: Variable): TypingContext =
-      TypingContext(variable :: this.toList)
+    def +: (variable: Var): TypingContext =
+      TypingContext(this.vars + toEntry(variable))
+
+    def ++(variables: Traversable[Var]): TypingContext =
+      TypingContext(this.vars ++ (variables map toEntry))
   }
 
   object TypingContext {
-    val empty: TypingContext = TypingContext(Nil)
-    def apply(variables: Variable*): TypingContext =
-      TypingContext(List(variables: _*))
+    val empty: TypingContext = TypingContext(HashMap.empty[Name, Var])
+    def apply(variables: Var*): TypingContext =
+      TypingContext.empty ++ variables
   }
 
   /** Generate a name unbound in context
@@ -80,9 +76,15 @@ Please do not declare getType as an abstract `val`.
     * freshName(englishMonachs, "Elisabeth") = "Elizabeth_3"
     * }}}
     */
-  def freshName(context: TypingContext, default: Name): Name = {
+  def freshName(context: TypingContext, _default: Name): Name = {
+    val (default, startIdx) = _default match {
+        case IndexedName(orig, idx) =>
+          (orig, idx)
+        case _ =>
+          (_default, 0)
+      }
     var newName = default
-    var index = 0
+    var index = startIdx
     while (context contains newName) {
       index += 1
       newName = IndexedName(default, index)
@@ -175,7 +177,7 @@ Please do not declare getType as an abstract `val`.
     protected[this] case class Constant(typeArguments: Seq[Type])
     extends Term
     {
-      def getType: Type = typeConstructor(typeArguments)
+      lazy val getType: Type = typeConstructor(typeArguments)
 
       /** mimic the generated toString method of case classes */
       override def toString: String = {

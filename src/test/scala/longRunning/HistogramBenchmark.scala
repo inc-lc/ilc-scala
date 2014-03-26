@@ -1,12 +1,16 @@
-package ilc
-package examples
-package bench
+package longRunning
 
 import scala.util.Random
 import org.scalameter.api.Gen
 import ilc.feature.abelianMaps.Library._
 import ilc.feature.abelianGroups.Library._
 import ilc.feature.bags.Library._
+import ilc.examples.BenchData
+import ilc.examples.BenchmarkVerification
+import ilc.examples.ExampleGenerated
+import ilc.examples.HistogramGenerated
+import ilc.examples.OnlyDerivativeBenchmark
+import ilc.examples.OnlyRecomputationBenchmark
 
 class HistogramBenchmark extends OnlyDerivativeBenchmark(
   new WordCountBenchData(HistogramGenerated) {

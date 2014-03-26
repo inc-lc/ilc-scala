@@ -10,15 +10,15 @@ extends base.Syntax
    with functions.Types
 {
   case class LiteralInt(i: Int) extends Term {
-    override def getType: Type = IntType
+    override lazy val getType: Type = IntType
   }
 
   case object PlusInt extends Term {
-    override def getType: Type = IntType =>: IntType =>: IntType
+    override lazy val getType: Type = IntType =>: IntType =>: IntType
   }
 
   case object NegateInt extends Term {
-    override def getType: Type = IntType =>: IntType
+    override lazy val getType: Type = IntType =>: IntType
   }
 
   // ℤ can be folded over just like ℕ ⊎ ℕ.

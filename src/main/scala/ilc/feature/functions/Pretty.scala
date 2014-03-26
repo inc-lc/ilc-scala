@@ -45,7 +45,7 @@ trait Pretty extends Syntax {
      *   the priority of the context this term is printed in
      */
     def apply(t : Term, priority : Priority) : String = t match {
-      case variable: Variable =>
+      case variable: Var =>
         variable.getName.toString
 
       case App(operator, operand) =>

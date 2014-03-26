@@ -6,6 +6,10 @@ package ilc.examples
 trait ExampleGenerated extends Serializable {
   val programForHuman: String
   val derivativeForHuman: String
+  val normalizedProgrForHuman: String
+  val normalizedDerivForHuman: String
+
+  val normDerivative: (=> InputType) => (=> DeltaInputType) => DeltaOutputType
 
   type InputType
   type DeltaInputType

@@ -7,7 +7,7 @@ import scala.collection.GenTraversable
 
 trait Syntax extends base.Syntax {
   case class App(operator: Term, operand: Term) extends Term {
-    override def getType = (operator.getType, operand.getType) match {
+    override lazy val getType = (operator.getType, operand.getType) match {
       case (expectedDomain =>: range, actualDomain) =>
         if (expectedDomain == actualDomain)
           range
@@ -25,8 +25,8 @@ trait Syntax extends base.Syntax {
     }
   }
 
-  case class Abs(variable: Variable, body: Term) extends Term {
-    override def getType = variable.getType =>: body.getType
+  case class Abs(variable: Var, body: Term) extends Term {
+    override lazy val getType = variable.getType =>: body.getType
   }
 
   // HOW TO WRITE LAMBDA TERMS
@@ -39,7 +39,7 @@ trait Syntax extends base.Syntax {
     * derive(Abs(x, body)) = lambdaTerm(x, DVar(x)) { derive(body) }
     * }}}
     */
-  def lambdaTerm(parameters: Variable*)(body: => Term): Term =
+  def lambdaTerm(parameters: Var*)(body: => Term): Term =
     if (parameters.isEmpty)
       body
     else
@@ -74,7 +74,7 @@ trait Syntax extends base.Syntax {
     * val succ = lambda(Var("n", NatType)) {n => Plus ! n ! 1}
     * }}}
     */
-  def lambda(parameter: Variable)
+  def lambda(parameter: Var)
     (body: Name => TermBuilder): TermBuilder =
     mkLambda(parameter.getName, Some(parameter.getType))(body)
 
@@ -114,7 +114,7 @@ trait Syntax extends base.Syntax {
     * }
     * }}}
     */
-  def lambda[Parameter: Or4[Type, Name, String, Variable]#Type]
+  def lambda[Parameter: Or4[Type, Name, String, Var]#Type]
     (firstParameter: Parameter,
       secondParameter: Parameter,
       otherParameters: Parameter*)
@@ -123,7 +123,7 @@ trait Syntax extends base.Syntax {
       firstParameter :: secondParameter :: otherParameters.toList
     )(body)
 
-  def lambda[Parameter: Or4[Type, Name, String, Variable]#Type]
+  def lambda[Parameter: Or4[Type, Name, String, Var]#Type]
     (parameters: List[Parameter])
     (body: Seq[Name] => TermBuilder): TermBuilder =
     if (parameters.isEmpty)
@@ -148,7 +148,7 @@ trait Syntax extends base.Syntax {
     */
   private[this]
   implicit class ParameterOps
-    [Parameter: Or4[Type, Name, String, Variable]#Type]
+    [Parameter: Or4[Type, Name, String, Var]#Type]
     (parameter: Parameter)
   {
     def dispatchLambda(body: Name => TermBuilder): TermBuilder =
@@ -159,21 +159,11 @@ trait Syntax extends base.Syntax {
         case string: String =>
           lambda(string)(body)
 
-        // if `parameter` is a `Type`, then the straightforward
-        //
-        //     case argumentType: Type =>
-        //       lambda(argumentType)(body)
-        //
-        // generates the warning
-        //
-        // > The outer reference in this type test cannot be checked
-        // > at run time.
-        case _ if parameter.isInstanceOf[Type] =>
-          lambda(parameter.asInstanceOf[Type])(body)
+        case t: Type @unchecked =>
+          lambda(t)(body)
 
-        // Ditto for variables
-        case _ if parameter.isInstanceOf[Variable] =>
-          lambda(parameter.asInstanceOf[Variable])(body)
+        case v: Var =>
+          lambda(v)(body)
       }
   }
 

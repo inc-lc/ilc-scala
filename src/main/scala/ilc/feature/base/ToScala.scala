@@ -8,7 +8,7 @@ trait ToScala extends Syntax with functions.Types {
 
   // subclasses should override this one without concern for types
   def toUntypedScala(t: Term): String = t match {
-    case variable: Variable =>
+    case variable: Var =>
       variable.getName.toString
 
     case _ =>

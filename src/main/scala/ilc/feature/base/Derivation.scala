@@ -26,11 +26,8 @@ extends Syntax
     throw IDontKnow(s"the diff-term for  type $tau")
 
   def derive(t: Term): Term = t match {
-    case x: Var =>
-      DVar(x)
-
-    case dx: DVar =>
-      sys error "higher order derivatives are forbidden"
+    case v: Var =>
+      DVar(v)
 
     // For all terms we don't know how to derive,
     // we produce a derivative that does recomputation.
@@ -52,11 +49,8 @@ extends Syntax
     *
     *     ddx.getType == deltaType(deltaType(xType))
     */
-  case class DVar(original: Variable)
-  extends Variable
-  {
-    override def getName: Name = DeltaName(original.getName)
-    override def getType: Type = deltaType(original.getType)
+  object DVar {
+    def apply(original: Var) = Var(DeltaName(original.getName), deltaType(original.getType))
   }
 
   object ChangeUpdate extends PolymorphicTerm {

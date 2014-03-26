@@ -59,4 +59,9 @@ trait BenchData extends Serializable {
   }
 
   def className: String = example.getClass.getName.stripSuffix("$")
+
+  val derivatives =
+    Array(
+      ("derivative", derivative),
+      ("normalized derivative", normDerivative))
 }

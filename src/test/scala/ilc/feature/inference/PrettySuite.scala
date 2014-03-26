@@ -19,6 +19,8 @@ extends FlatSpec
    with ilc.feature.maps.Syntax
    with ilc.feature.integers.Syntax
    with ilc.util.EvalScala
+   with ilc.feature.bags.StdLib
+   with ilc.feature.abelianMaps.Syntax
 {
   "If a 3rd party implicit adding `apply` method to Symbols is in scope," ++
     " then it " should "fail to compile. Error messages:" in {
@@ -73,7 +75,35 @@ extends FlatSpec
   it should "work for many multiple parameters (let's hope I did not use the wrong fold)" in {
     assert('f('a, 'b, 'c, 'd) === UApp(UApp(UApp(UApp('f, 'a), 'b), 'c), 'd))
   }
-  
+
+  it should "work with locals" in {
+    val a: UntypedTerm = 'a
+    val b: UntypedTerm = 'b
+    val c: UntypedTerm = 'c
+    val d: UntypedTerm = 'd
+    assert(a(b, c, d) === 'a('b, 'c, 'd))
+  }
+
+  it should "work when even more complicated" in {
+    val foldGroup: UntypedTerm = FoldGroup // from bags
+    val liftGroup: UntypedTerm = LiftGroup // own apply // from abelianMaps
+    val singletonMap: UntypedTerm = SingletonMap // from abelianMaps
+
+    assert(
+      'f ->: 'g ->: foldGroup(liftGroup(freeAbelianGroup),
+        'e ->: singletonMap('f('e), singleton('g('e))))
+      ===
+      UAbs("f",None,
+        UAbs("g",None,
+          UApp(UApp(UPolymorphicConstant(FoldGroup),
+            UApp(UPolymorphicConstant(LiftGroup), // these two UPolymorphicConstants
+              UPolymorphicConstant(FreeAbelianGroup))),
+            UAbs("e",None,UApp(UApp(UPolymorphicConstant(SingletonMap), // seem to be null in the other branch. Why?
+              UApp(UVar("f"),UVar("e"))),
+              UApp(UPolymorphicConstant(Singleton),UApp(UVar("g"),UVar("e"))))))))
+    )
+  }
+
   "Both" should "work together" in {
     assert(('x ->: 'x)('x ->: 'x) === UApp(UAbs("x", None, UVar("x")), UAbs("x", None, UVar("x"))))
   }

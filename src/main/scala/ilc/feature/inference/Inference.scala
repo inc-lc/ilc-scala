@@ -33,11 +33,11 @@ extends base.Syntax
 
   def emptyConstraintSet = Set[Constraint]()
 
-  type Context = List[(String, Type)]
-  def lookup(context: Context, name: String): Option[Type] =
+  type InferenceContext = List[(String, Type)]
+  def lookup(context: InferenceContext, name: String): Option[Type] =
     context.find(p => p._1 == name).map(_._2)
 
-  def extend(context: Context, name: String, typ: Type): Context =
+  def extend(context: InferenceContext, name: String, typ: Type): InferenceContext =
     (name, typ) :: context
 
   def emptyContext = List()
@@ -64,7 +64,7 @@ extends base.Syntax
   def collectConstraints(term: UntypedTerm): (TypedTerm, Set[Constraint]) =
     collectConstraints(term, emptyContext)
 
-  def collectConstraints(term: UntypedTerm, context: Context): (TypedTerm, Set[Constraint]) = term match {
+  def collectConstraints(term: UntypedTerm, context: InferenceContext): (TypedTerm, Set[Constraint]) = term match {
     case UVar(name) =>
       lookup(context, name) match {
         case Some(typ) => (TVar(name, typ), emptyConstraintSet)

@@ -57,8 +57,21 @@ trait StdLib
 extends Syntax
    with inference.Pretty
 {
-  val foldGroup: UntypedTerm = FoldGroup
+  //  empty     : Bag v
+  val empty: UntypedTerm = EmptyBag
+
+  //  singleton : v → Bag v
   val singleton: UntypedTerm = Singleton
+
+  //  union     : Bag v → Bag v → Bag v
+  val union: UntypedTerm = Union
+
+  //  negate    : Bag v → Bag v
+  val negate: UntypedTerm = Negate
+
+  //  foldGroup : AbelianGroup b → (v → b) → Bag v → b
+  val foldGroup: UntypedTerm = FoldGroup
+
   val freeAbelianGroup: UntypedTerm = FreeAbelianGroup
 
   // flatMap : (v → Bag u) → Bag v → Bag u

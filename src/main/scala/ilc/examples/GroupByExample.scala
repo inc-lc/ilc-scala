@@ -28,15 +28,23 @@ extends abelianMaps.AbelianDerivation
     *   src/main/scala/ilc/feature/abelianMaps/Syntax.scala
     */
   val groupByGen: UntypedTerm =
-    'f ->: 'g ->:
-      foldGroup(
-        liftGroup(FreeAbelianGroup),
-        'e ->: singletonMap('f('e), singleton('g('e))))
+    UAbs("f",None,
+      UAbs("g",None,
+        UApp(UApp(UPolymorphicConstant(FoldGroup),
+          UApp(UPolymorphicConstant(LiftGroup), // these two UPolymorphicConstants
+            UPolymorphicConstant(FreeAbelianGroup))),
+          UAbs("e",None,UApp(UApp(UPolymorphicConstant(SingletonMap), // seem to be null in the other branch. Why?
+            UApp(UVar("f"),UVar("e"))),
+            UApp(UPolymorphicConstant(Singleton),UApp(UVar("g"),UVar("e"))))))))
+//    'f ->: 'g ->:
+//      foldGroup(
+//        liftGroup(freeAbelianGroup),
+//        'e ->: singletonMap('f('e), singleton('g('e))))
 
   System.err.println("groupByGen: " + groupByGen);
 
-  private val singletonMap: UntypedTerm = SingletonMap
-  private val liftGroup: UntypedTerm = LiftGroup
+  val singletonMap: UntypedTerm = SingletonMap
+  val liftGroup: UntypedTerm = LiftGroup
 }
 
 /**

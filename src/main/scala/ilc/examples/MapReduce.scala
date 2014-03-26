@@ -19,6 +19,13 @@ extends products.Derivation
    with sums.ToScala
    with GroupBy
 {
+  // TODO This type constructor apply method is really annoying (ilc.feature.base.TypeConstructor.TypeConstructor.apply)
+  // We could possibly rename it so that the PolymorphicConstant implicit conversion makes this kind of aliasing unnecessary.
+  val foldByHom: UntypedTerm = FoldByHom
+  //  val singletonMap: UntypedTerm = SingletonMap
+  //  val liftGroup: UntypedTerm = LiftGroup
+
+
   /** {{{
     * mapReduce : ∀ {k₁ v₁ k₂ v₂} →
     *   AbelianGroup v₁ →
@@ -59,10 +66,6 @@ extends products.Derivation
 //          }
 //      }
 //  }
-
-  val mapReduce: UntypedTerm =
-    'v1Group ->: 'v3Group ->: 'userMap ->: 'userReduce ->:
-      reducePerKey('v3Group, 'userReduce) composeWith (groupByKey composeWith mapPerKey('v1Group, 'userMap))
 
 
   /** {{{
@@ -159,9 +162,10 @@ extends products.Derivation
         liftGroup('v3Group),
         'key ->: 'bag ->: singletonMap('key, 'userReduce('key, 'bag)))
 
-  // TODO This type constructor apply method is really annoying (ilc.feature.base.TypeConstructor.TypeConstructor.apply)
-  // We could possibly rename it so that the PolymorphicConstant implicit conversion makes this kind of aliasing unnecessary.
-  private val foldByHom: UntypedTerm = FoldByHom
-  private val singletonMap: UntypedTerm = SingletonMap
-  private val liftGroup: UntypedTerm = LiftGroup
+  val mapReduce: UntypedTerm =
+    'v1Group ->: 'v3Group ->: 'userMap ->: 'userReduce ->:
+      'x ->:
+      reducePerKey('v3Group, 'userReduce)(groupByKey(mapPerKey('v1Group, 'userMap)('x)))
+
+
 }

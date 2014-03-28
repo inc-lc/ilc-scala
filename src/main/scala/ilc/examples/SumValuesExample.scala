@@ -10,9 +10,9 @@ extends Example
    with abelianMaps.AbelianDerivation
    with integers.AbelianDerivation
 
-   with functions.SyntaxSugar
+   with functions.Syntax
    with integers.SyntaxSugar
-   with products.SyntaxSugar
+   with products.StdLib
 
    with abelianMaps.ToScala
    with booleans.ToScala
@@ -36,10 +36,12 @@ extends Example
   //   let G+ = additiveGroupOnIntegers : AbelianGroup ℤ
   //    in λ inputMap : Map ℤ ℤ.
   //         pair (foldByHom G+ G+ snd inputMap) G+
-  val program: Term =
-    let_x_=(additiveGroupOnIntegers) { _G_+ =>
-      lambda(MapType(ℤ, ℤ)) { inputMap =>
-        Pair ! (FoldByHom ! _G_+ ! _G_+ ! snd%(ℤ, ℤ) ! inputMap) ! _G_+
-      }
-    }
+  val G: UntypedTerm = additiveGroupOnIntegers
+  val foldByHom: UntypedTerm = FoldByHom
+  // Need to annotate the first argument. It is not used, so type inference leaves it open, but code generation does not cope with type variables.
+  val second: UntypedTerm = 'first % ℤ ->: 'second ->: 'second
+
+  val program: Term = untypedTermToTerm(
+    'inputMap ->: pair(foldByHom(G, G, second, 'inputMap), G)
+  )
 }

@@ -10,6 +10,9 @@ extends abelianMaps.AbelianDerivation
    with bags.AbelianDerivation
    with bags.ToScala
 {
+  val singletonMap: UntypedTerm = SingletonMap
+  val liftGroup: UntypedTerm = LiftGroup
+
   /** `groupBy` operation on bags:
     *
     *   groupByGen : ∀t k v. (t → k) → (t → v) → Bag t → Map k (Bag v)
@@ -28,23 +31,10 @@ extends abelianMaps.AbelianDerivation
     *   src/main/scala/ilc/feature/abelianMaps/Syntax.scala
     */
   val groupByGen: UntypedTerm =
-    UAbs("f",None,
-      UAbs("g",None,
-        UApp(UApp(UPolymorphicConstant(FoldGroup),
-          UApp(UPolymorphicConstant(LiftGroup), // these two UPolymorphicConstants
-            UPolymorphicConstant(FreeAbelianGroup))),
-          UAbs("e",None,UApp(UApp(UPolymorphicConstant(SingletonMap), // seem to be null in the other branch. Why?
-            UApp(UVar("f"),UVar("e"))),
-            UApp(UPolymorphicConstant(Singleton),UApp(UVar("g"),UVar("e"))))))))
-//    'f ->: 'g ->:
-//      foldGroup(
-//        liftGroup(freeAbelianGroup),
-//        'e ->: singletonMap('f('e), singleton('g('e))))
-
-  System.err.println("groupByGen: " + groupByGen);
-
-  val singletonMap: UntypedTerm = SingletonMap
-  val liftGroup: UntypedTerm = LiftGroup
+    'f ->: 'g ->:
+      foldGroup(
+        liftGroup(freeAbelianGroup),
+        'e ->: singletonMap('f('e), singleton('g('e))))
 }
 
 /**

@@ -30,24 +30,18 @@ trait Pretty extends Inference {
   case class TypeAnnotation(name: String, typ: Type)
 
   implicit class UTOps[T <% UntypedTerm](body: T) {
-    def ->:(arg: Symbol): UntypedTerm = {
-      UAbs(arg.name, None, body)
-    }
-    // Maybe we want a different way to give the type of arguments. Or we just allow any UntypedTerm.
-    // I'm not so happy with this being in Pretty. Ascribing the parameter is not possible with plain UntypedTerms
-    // because UAbs only takes an UVar as its argument, not a TypeAscription or UTypedTerm.
-    def ->:(arg: TypeAnnotation): UntypedTerm = {
-      UAbs(arg.name, Some(arg.typ), body)
-    }
-    // Require at least one argument.
-    def apply(that: UntypedTerm, more: UntypedTerm*): UApp = {
-      more.foldLeft(UApp(body, that))((acc: UApp, arg: UntypedTerm) => UApp(acc, arg))
-    }
-    def ofType(typ: Type): TypeAscription = TypeAscription(body, typ)
 
-    // TODO This should work, right?
-    def composeWith(second: UntypedTerm): UntypedTerm =
-      'x ->: body(second('x))
+    def ->:(arg: Symbol): UntypedTerm =
+      UAbs(arg.name, None, body)
+
+    def ->:(arg: TypeAnnotation): UntypedTerm =
+      UAbs(arg.name, Some(arg.typ), body)
+
+    // Require at least one argument.
+    def apply(that: UntypedTerm, more: UntypedTerm*): UApp =
+      more.foldLeft(UApp(body, that))((acc: UApp, arg: UntypedTerm) => UApp(acc, arg))
+
+    def ofType(typ: Type): TypeAscription = TypeAscription(body, typ)
   }
 
   implicit class SymbolOps(name: Symbol) {

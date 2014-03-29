@@ -63,6 +63,9 @@ extends feature.functions.Pretty
     val normalizedProgrForHuman: String = pretty(normalizedProgram)
     val normalizedDerivForHuman: String = pretty(normalizedDerivative)
 
+    //The output below hardcodes this assumption.
+    assert(initialIndentDepth == 4)
+
     Source(objectName,
       s"""|package ilc.examples
           |

@@ -28,6 +28,7 @@ trait Pretty extends Syntax with util.IndentUtils {
        //openParen("(") + indent() + text + closeParen(")")
   }
 
+  protected val initialIndentDepth = 4
   /**
    * Print a closed term to human-readable syntax.
    *
@@ -36,7 +37,7 @@ trait Pretty extends Syntax with util.IndentUtils {
    */
   def pretty(t: Term): String = {
     //Set the initial indent
-    setIndentDepth(4)
+    setIndentDepth(initialIndentDepth)
     pretty(t, outermostPriority)
   }
 

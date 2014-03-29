@@ -56,11 +56,11 @@ trait Pretty extends Syntax with util.IndentUtils {
 
     case App(operator, operand) =>
       template(priorityOfApp, priority,
-        s"${pretty(operator, priorityOfApp + 1)} ${pretty(operand, priorityOfApp)}")
+        s"${pretty(operator, priorityOfApp + 1)}$indent${pretty(operand, priorityOfApp)}")
 
     case Abs(variable, body) =>
       template(priorityOfAbs, priority,
-        s"λ${variable.getName.toString}. ${pretty(body, priorityOfAbs + 1)}")
+        s"λ${variable.getName.toString}.$indent${pretty(body, priorityOfAbs + 1)}")
 
     // other operations would throw "unknown term" error here.
     // the pretty printer defaults to calling `toString`.

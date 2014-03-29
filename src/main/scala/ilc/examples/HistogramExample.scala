@@ -16,15 +16,15 @@ extends Example
   // userMap = λ ignoredDocumentID : ℤ.
   //   foldGroup freeAbelianGroup
   //     (λ number : ℤ. singleton (pair number 1))
-  val userMap = lambda(ℤ) { ignoredDocumentID =>
+  val userMap = lambda(Var("ignoredDocumentId", ℤ)) { ignoredDocumentId =>
     FoldGroup ! FreeAbelianGroup(ProductType(ℤ, ℤ)) !
-      lambda(ℤ) { number => Singleton ! (Pair ! number ! LiteralInt(1)) }
+      lambda(Var("number", ℤ)) { number => Singleton ! (Pair ! number ! LiteralInt(1)) }
   }
 
   // userReduce : ℤ → Bag ℤ → ℤ
   // userReduce = λ ignoredKey : ℤ.
   //   foldGroup additiveGroupOnIntegers (λx : ℤ. x)
-  val userReduce = lambda(ℤ) { ignoredKey =>
+  val userReduce = lambda(Var("ignoredKey", ℤ)) { ignoredKey =>
     FoldGroup ! additiveGroupOnIntegers ! lambda(ℤ) { x => x }
   }
 

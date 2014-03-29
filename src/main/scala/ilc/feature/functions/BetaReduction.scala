@@ -173,9 +173,8 @@ trait BetaReduction extends Syntax with LetSyntax with FreeVariablesForLet with 
 
   def normalizeEverywhereOnce(t: Term) = {
     import Normalize._
-    //Reify can produce lets, so there's a point in desugaring them before calling eval.
+    //Reify can produce lets, so they can be passed to eval.
     reify(eval(t, Map.empty))
-//    desugarLet(dceOneStep(letBetaReduceOneStep(t)))
   }
 
   def doNormalize(t: Term): Term = {
@@ -199,16 +198,40 @@ trait BetaReduction extends Syntax with LetSyntax with FreeVariablesForLet with 
       t
 
 
+  /**
+   * A "custom" implementation of normalization by evaluation.
+   * The initial code was written and tested based on a faint recollection of the basic algorithm,
+   * but it worked surprisingly well.
+   *
+   * Unusual features:
+   * - instead of producing standard normal forms, it performs let conversion and shrinking reductions.
+   *   In other words, beta-redexes are converted to lets, lets which are used at most once are inlined.
+   * - Constants are simply preserved in values and in the output.
+   * - Therefore, instead of using an evaluator, we use a home-grown *partial* evaluator which residualizes
+   *   lots of the original structure.
+   */
   object Normalize {
+    /**
+     * Representation of residual values for our partial evaluator.
+     */
     sealed trait Value
 
+    /**
+     * Functions are represented using HOAS; they also remember the name of the original variable (which is used, when possible,
+     * instead of generating a fresh variable, or as a basis for variable renaming), and they cache a flag @param doInline
+     * specifying whether this function uses its argument only once.
+     */
     case class FunVal(fun: Value => Value, v: Var, doInline: Boolean) extends Value
 
     /**
-     * A neutral term is a normal form which is not a lambda abstraction.
+     * A neutral term is a normal form which is not a lambda abstraction: that is, usually, a variable or an application.
+     * We use the same concept in our values.
      */
     sealed trait NeutralValue extends Value
     case class TermVal(term: Term) extends NeutralValue
+    /**
+     * Residualized application. It can only contain a neutral residual term in the function position.
+     */
     case class AppVal(fun: NeutralValue, arg: Value) extends NeutralValue
     case class LetVal(v: Var, varDef: Value, body: Value => Value) extends NeutralValue
 
@@ -216,12 +239,12 @@ trait BetaReduction extends Syntax with LetSyntax with FreeVariablesForLet with 
     //Note: t has not been normalized yet here, and when we do inlining we
     //don't get the actual value.
     //
-    //Must occurrencesOf handle also Let nodes? Strictly speaking no, because the input to eval cannot contain Let nodes.
-    //However, occurrencesOf can easily be more precise after letBetaReduceOneStep(t), and this makes a difference in the output size.
+    //occurrencesOf handles also Let nodes. We could desugar them before,
+    //but occurrencesOf can easily be more precise if redexes are transformed into lets before, and this makes a difference in the output size.
     def precomputeDoInline(x: Var, t: Term) = (t occurrencesOf x) != UsageCount.more
     def doInlineHeuristics(fv: FunVal, arg: Value) = fv.doInline || isTrivial(arg)
 
-    //Move it to analysis to allow for more trivial terms.
+    //TODO: Move it to analysis to allow for more trivial terms. In particular, to allow (x + 1) we'd need a "trivialConstant" predicate.
     def isTrivial(arg: Value): Boolean =
       arg match {
         case TermVal(Abs(_, _)) => false
@@ -231,13 +254,19 @@ trait BetaReduction extends Syntax with LetSyntax with FreeVariablesForLet with 
         case _ => false
       }
 
-    //t cannot contain Let nodes.
+    /**
+     * Evaluate a term @param t to a value given an environment @param env.
+     * This started out as a mostly standard evaluator — see the case for abstractions.
+     * However, the case for application
+     */
+    //t can contain Let nodes.
     def eval(t: Term, env: Map[Name, Value]): Value =
       t match {
         case Abs(x, t) =>
           FunVal(arg => eval(t, env.updated(x.getName, arg)), x, precomputeDoInline(x, t))
         case App(s, t) =>
           val arg = eval(t, env)
+
           def findFun(fun: Value): Value =
             fun match {
               case fv @ FunVal(f, v, _) =>
@@ -245,24 +274,28 @@ trait BetaReduction extends Syntax with LetSyntax with FreeVariablesForLet with 
                   f(arg)
                 else
                   LetVal(v, arg, f)
+
               case LetVal(v, arg, f) =>
                 //Names are decorations here, we are using HOAS: so we can reuse
                 //v without risk.
                 LetVal(v, arg, hoasArg => findFun(f(hoasArg)))
+
               case nonFunVal: NeutralValue =>
                 AppVal(nonFunVal, arg)
             }
 
-          val fun = eval(s, env)
-          findFun(fun)
+          findFun(eval(s, env))
+
         case Var(name, _) =>
           env(name)
+
         case Let(v, varDef, body) =>
           //This would perform full inlining for such lets. So we don't do that.
           //eval(body, env.updated(v.getName, eval(varDef, env)))
-          //throw new RuntimeException("Unexpected let node '${t}' inside Normalize.eval")
+
           //We could duplicate the complete logic for the App case, but it's easier to just desugar lets.
           //We could do that before NbE, but that makes the work of precomputeDoInline harder.
+
           //Hence, instead, do *ONE* desugaring step just when needed.
           //Technically, this makes eval syntactically non-compositional, but if call the correct function here,
           //this will still be correct (also, this eval is already highly non-compositional).

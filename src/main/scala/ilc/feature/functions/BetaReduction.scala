@@ -209,7 +209,7 @@ trait BetaReduction extends Syntax with LetSyntax with FreeVariablesForLet with 
      */
     sealed trait NeutralValue extends Value
     case class TermVal(term: Term) extends NeutralValue
-    case class AppVal(fun: Value, arg: Value) extends NeutralValue
+    case class AppVal(fun: NeutralValue, arg: Value) extends NeutralValue
     case class LetVal(v: Var, varDef: Value, body: Value => Value) extends NeutralValue
 
     //compute doInline by counting occurrences, turning this into shrinking reductions.
@@ -249,7 +249,7 @@ trait BetaReduction extends Syntax with LetSyntax with FreeVariablesForLet with 
                 //Names are decorations here, we are using HOAS: so we can reuse
                 //v without risk.
                 LetVal(v, arg, hoasArg => findFun(f(hoasArg)))
-              case nonFunVal =>
+              case nonFunVal: NeutralValue =>
                 AppVal(nonFunVal, arg)
             }
 

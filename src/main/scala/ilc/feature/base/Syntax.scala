@@ -67,12 +67,12 @@ Please do not declare getType as an abstract `val`.
    * This is useful to prevent creating nested indexed names - they easily get
    * nested enough to cause StackOverflowExceptions with recursive algorithms.
    */
-  def decomposeName(n: Name) =
+  def decomposeName(n: Name): (NonIndexedName, Int) =
     n match {
       case IndexedName(orig, idx) =>
         (orig, idx)
-      case _ =>
-        (n, 0)
+      case nin: NonIndexedName =>
+        (nin, 0)
     }
 
   /** Generate a name unbound in context
@@ -91,7 +91,7 @@ Please do not declare getType as an abstract `val`.
     */
   def freshName(context: TypingContext, _default: Name): Name = {
     val (default, startIdx) = decomposeName(_default)
-    var newName = default
+    var newName: Name = default
     var index = startIdx
     while (context contains newName) {
       index += 1

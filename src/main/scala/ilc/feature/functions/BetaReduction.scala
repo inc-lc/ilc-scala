@@ -339,7 +339,7 @@ trait BetaReduction extends Syntax with LetSyntax with FreeVariablesForLet with 
     val compress = false
     val baseName =
       if (compress)
-        "z": Name
+        "z": NonIndexedName
       else
         //Keep names, for extra readability.
         decomposeName(varName)._1

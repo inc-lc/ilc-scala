@@ -62,6 +62,19 @@ Please do not declare getType as an abstract `val`.
       TypingContext.empty ++ variables
   }
 
+  /**
+   * Extract the base name from an indexed one.
+   * This is useful to prevent creating nested indexed names - they easily get
+   * nested enough to cause StackOverflowExceptions with recursive algorithms.
+   */
+  def decomposeName(n: Name) =
+    n match {
+      case IndexedName(orig, idx) =>
+        (orig, idx)
+      case _ =>
+        (n, 0)
+    }
+
   /** Generate a name unbound in context
     *
     * @param context the typing context whose bound names are
@@ -77,12 +90,7 @@ Please do not declare getType as an abstract `val`.
     * }}}
     */
   def freshName(context: TypingContext, _default: Name): Name = {
-    val (default, startIdx) = _default match {
-        case IndexedName(orig, idx) =>
-          (orig, idx)
-        case _ =>
-          (_default, 0)
-      }
+    val (default, startIdx) = decomposeName(_default)
     var newName = default
     var index = startIdx
     while (context contains newName) {
@@ -267,7 +275,7 @@ Please do not declare getType as an abstract `val`.
       *
       * Give enough argument type to fully specialize
       * a polymorphic term builder.
-      * 
+      *
       * In general, it needs to get *all* argument types,
       * but this requirement is relaxed for polymorphic
       * constants. See documentation of

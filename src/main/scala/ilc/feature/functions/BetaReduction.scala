@@ -332,11 +332,18 @@ trait BetaReduction extends Syntax with LetSyntax with FreeVariablesForLet with 
   def resetIndex() {
     index = 0
   }
+
   def fresh(varName: Name, varType: Type): Var = {
     index += 1
-    Var(IndexedName("z", index), varType)
-    //For extra readability, during debugging. This increases the output size (by around 2%).
-    //Var(IndexedName(varName, index), varType)
+    //Var(IndexedName("z", index), varType)
+    val compress = false
+    val baseName =
+      if (compress)
+        "z": Name
+      else
+        //Keep names, for extra readability.
+        decomposeName(varName)._1
+    Var(IndexedName(baseName, index), varType)
   }
 
   def fresh(v: Var): Var = fresh(v.getName, v.getType)

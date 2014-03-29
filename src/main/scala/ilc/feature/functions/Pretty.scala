@@ -22,7 +22,7 @@ trait Pretty extends Syntax with util.IndentUtils {
    *   arguments to be put into the placeholders
    */
   def template(inner : Priority, outer : Priority, text : => String) = {
-    if (inner < outer)
+    if (bindsStronger(inner, outer))
       text
      else
        openParen("(") + text + closeParenNoIndent(")")
@@ -103,4 +103,6 @@ trait Pretty extends Syntax with util.IndentUtils {
    * that is not a term itself.
    */
   val outermostPriority : Priority = 3
+
+  private def bindsStronger(a: Priority, b: Priority): Boolean = a < b
 }

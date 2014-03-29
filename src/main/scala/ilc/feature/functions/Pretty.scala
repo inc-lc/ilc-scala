@@ -23,7 +23,7 @@ trait Pretty extends Syntax with util.IndentUtils {
     if (bindsStronger(inner, outer))
       text
      else
-       "(" + text + ")"
+       s"(${deeper(text, 1)})"
        //Alternative: have body on separate lines as the parens
        //openParen("(") + indent() + text + closeParen(")")
   }
@@ -62,16 +62,13 @@ trait Pretty extends Syntax with util.IndentUtils {
       //Break lines before the body.
 
       //How much should the body be indented, for perfect visual alignment? That's tricky.
-      val outputStartsWithParen = !bindsStronger(priorityOfAbs, priority)
       val isBodyNestedAbs = body match {
         case Abs(_, _) => true
         case _ => false
       }
       val increaseInnerIndent =
         //Nested abstractions should align with the first one.
-        (if (isBodyNestedAbs) 0 else indentDiff) +
-        //If the output starts with a parenthesis, indent the content by one column.
-        (if (outputStartsWithParen) 1 else 0)
+        (if (isBodyNestedAbs) 0 else indentDiff)
 
       template(priorityOfAbs, priority,
         s"λ${variable.getName.toString}.${deeper(s"$indent${pretty(body, priorityOfAbs + 1)}", increaseInnerIndent)}")

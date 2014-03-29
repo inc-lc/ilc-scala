@@ -7,6 +7,9 @@ trait IndentUtils {
   protected def indentLess() = { indentDepth -= 2 }
   protected def indentNoNl(): String = " " * indentDepth
   protected def indent(): String = "\n" + indentNoNl
-  protected def openBrace() = { indentMore(); "{" }
-  protected def closeBrace() = { indentLess(); s"$indent}" }
+  protected def openParen(delim: String) = { indentMore(); delim }
+  protected def closeParen(delim: String) = { indentLess(); s"$indent$delim" }
+
+  protected def openBrace() = openParen("{")
+  protected def closeBrace() = closeParen("}")
 }

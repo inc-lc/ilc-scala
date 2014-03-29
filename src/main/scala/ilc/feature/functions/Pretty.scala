@@ -33,7 +33,7 @@ trait Pretty extends Syntax with util.IndentUtils {
    */
   def pretty(t: Term): String = {
     //Set the initial indent
-    indentDepth = 4
+    setIndentDepth(4)
     pretty(t, outermostPriority)
   }
 

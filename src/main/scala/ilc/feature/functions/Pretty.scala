@@ -32,10 +32,9 @@ trait Pretty extends Syntax with util.IndentUtils {
    *   the term to print
    */
   def pretty(t: Term): String = {
-    indentMore()
-    val ret = pretty(t, outermostPriority)
-    indentLess()
-    ret
+    //Set the initial indent
+    indentDepth = 4
+    pretty(t, outermostPriority)
   }
 
   /**

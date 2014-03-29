@@ -247,8 +247,12 @@ trait BetaReduction extends Syntax with LetSyntax with FreeVariablesForLet with 
     //TODO: Move it to analysis to allow for more trivial terms. In particular, to allow (x + 1) we'd need a "trivialConstant" predicate.
     def isTrivial(arg: Value): Boolean =
       arg match {
-        case TermVal(Abs(_, _)) => false
-        case TermVal(App(_, _)) => false
+        case TermVal(Abs(_, _)) =>
+          assert(false)
+          false
+        case TermVal(App(_, _)) =>
+          assert(false)
+          false
         //Variables or constants.
         case TermVal(_) => true
         case _ => false

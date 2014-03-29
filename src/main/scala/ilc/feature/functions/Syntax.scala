@@ -78,7 +78,7 @@ trait Syntax extends base.Syntax {
     (body: Name => TermBuilder): TermBuilder =
     mkLambda(parameter.getName, Some(parameter.getType))(body)
 
-  /** Basic factory of labmda abstraction term builders.
+  /** Basic factory of lambda abstraction term builders.
     * The name to bind is just a suggestion.
     * The argument type is optional.
     */

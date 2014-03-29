@@ -23,7 +23,7 @@ trait Pretty extends Syntax with util.IndentUtils {
     if (bindsStronger(inner, outer))
       text
      else
-       openParen("(") + text + closeParenNoIndent(")")
+       "(" + text + ")"
        //Alternative: have body on separate lines as the parens
        //openParen("(") + indent() + text + closeParen(")")
   }
@@ -54,11 +54,26 @@ trait Pretty extends Syntax with util.IndentUtils {
 
     case App(operator, operand) =>
       template(priorityOfApp, priority,
-        s"${pretty(operator, priorityOfApp + 1)}$indent${pretty(operand, priorityOfApp)}")
+        //Increase indentation and break line before each argument.
+        s"${pretty(operator, priorityOfApp + 1)}${deeper(s"$indent${pretty(operand, priorityOfApp)}")}")
 
     case Abs(variable, body) =>
+      //Break lines before the body.
+
+      //How much should the body be indented, for perfect visual alignment? That's tricky.
+      val outputStartsWithParen = !bindsStronger(priorityOfAbs, priority)
+      val isBodyNestedAbs = body match {
+        case Abs(_, _) => true
+        case _ => false
+      }
+      val increaseInnerIndent =
+        //Nested abstractions should align with the first one.
+        (if (isBodyNestedAbs) 0 else indentDiff) +
+        //If the output starts with a parenthesis, indent the content by one column.
+        (if (outputStartsWithParen) 1 else 0)
+
       template(priorityOfAbs, priority,
-        s"λ${variable.getName.toString}.$indent${pretty(body, priorityOfAbs + 1)}")
+        s"λ${variable.getName.toString}.${deeper(s"$indent${pretty(body, priorityOfAbs + 1)}", increaseInnerIndent)}")
 
     // other operations would throw "unknown term" error here.
     // the pretty printer defaults to calling `toString`.

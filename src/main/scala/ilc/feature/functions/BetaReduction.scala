@@ -32,10 +32,8 @@ trait LetToScala extends LetSyntax with ToScala {
 trait LetPretty extends functions.Pretty with LetSyntax {
   override def pretty(t: Term, priority: Priority) = t match {
     case Let(variable, exp, body) =>
-      template(priorityOfAbs, priority, "%s = %s; %s",
-               variable.getName.toString,
-               pretty(exp, outermostPriority),
-               pretty(body, outermostPriority))
+      template(priorityOfAbs, priority,
+               s"${variable.getName.toString} = ${pretty(exp, outermostPriority)}; ${pretty(body, outermostPriority)}")
     case _ => super.pretty(t, priority)
   }
 }

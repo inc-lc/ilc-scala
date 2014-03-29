@@ -18,8 +18,7 @@ trait Pretty extends Syntax {
    * @param args
    *   arguments to be put into the placeholders
    */
-  def template(inner : Priority, outer : Priority, format : String, args : String*) = {
-    val text = format.format(args : _*)
+  def template(inner : Priority, outer : Priority, text : => String) = {
     if (inner < outer)
       text
      else
@@ -47,14 +46,12 @@ trait Pretty extends Syntax {
       variable.getName.toString
 
     case App(operator, operand) =>
-      template(priorityOfApp, priority, "%s %s",
-               pretty(operator, priorityOfApp + 1),
-               pretty(operand, priorityOfApp))
+      template(priorityOfApp, priority,
+        s"${pretty(operator, priorityOfApp + 1)} ${pretty(operand, priorityOfApp)}")
 
     case Abs(variable, body) =>
-      template(priorityOfAbs, priority, "λ%s. %s",
-               variable.getName.toString,
-               pretty(body, priorityOfAbs + 1))
+      template(priorityOfAbs, priority,
+        s"λ${variable.getName.toString}. ${pretty(body, priorityOfAbs + 1)}")
 
     // other operations would throw "unknown term" error here.
     // the pretty printer defaults to calling `toString`.

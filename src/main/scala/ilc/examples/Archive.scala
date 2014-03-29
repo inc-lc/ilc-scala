@@ -74,14 +74,17 @@ extends feature.functions.Pretty
           |  val normalizedProgramSize = ${termSize(normalizedProgram)}
           |  val normalizedDerivativeSize = ${termSize(normalizedDerivative)}
           |  /*
-          |   programForHuman =
-          |$programForHuman
-          |   derivativeForHuman =
-          |$derivativeForHuman
-          |   normalizedProgrForHuman =
-          |$normalizedProgrForHuman
-          |   normalizedDerivForHuman =
-          |$normalizedDerivForHuman
+          |  programForHuman:
+          |    $programForHuman
+          |
+          |  derivativeForHuman:
+          |    $derivativeForHuman
+          |
+          |  normalizedProgrForHuman:
+          |    $normalizedProgrForHuman
+          |
+          |  normalizedDerivForHuman:
+          |    $normalizedDerivForHuman
           |  */
           |
           |  override val program = $programCode

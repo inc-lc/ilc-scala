@@ -31,7 +31,12 @@ trait Pretty extends Syntax with util.IndentUtils {
    * @param t
    *   the term to print
    */
-  def pretty(t: Term): String = pretty(t, outermostPriority)
+  def pretty(t: Term): String = {
+    indentMore()
+    val ret = pretty(t, outermostPriority)
+    indentLess()
+    ret
+  }
 
   /**
    * Print a term to human-readable syntax.

@@ -5,7 +5,7 @@ package feature.functions
  * Pretty printing for first-class functions.
  */
 
-trait Pretty extends Syntax {
+trait Pretty extends Syntax with util.IndentUtils {
   /**
    * Pretty print an expression according to a template.
    *
@@ -22,7 +22,7 @@ trait Pretty extends Syntax {
     if (inner < outer)
       text
      else
-       "(" + text + ")"
+       openParen("(") + indent() + text + closeParen(")")
   }
 
   /**

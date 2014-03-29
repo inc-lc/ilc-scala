@@ -33,7 +33,7 @@ trait LetPretty extends functions.Pretty with LetSyntax {
   override def pretty(t: Term, priority: Priority) = t match {
     case Let(variable, exp, body) =>
       template(priorityOfAbs, priority,
-               s"${variable.getName.toString} = ${pretty(exp, outermostPriority)}; ${pretty(body, outermostPriority)}")
+               s"${variable.getName.toString} = ${pretty(exp, outermostPriority)};${indent}${pretty(body, outermostPriority)}")
     case _ => super.pretty(t, priority)
   }
 }

@@ -31,8 +31,6 @@ libraryDependencies += "org.scala-lang" % "scala-reflect" % scalaVersion.value
 
 libraryDependencies += "org.scala-lang" % "scala-compiler" % scalaVersion.value
 
-libraryDependencies += "com.chuusai" % "shapeless_2.10.2" % "2.0.0-M1"
-
 // SCALA METER BEGINS
 // http://axel22.github.io/scalameter//2013/06/14/release_0_4_M2.html
 

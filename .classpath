@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" output="target/scala-2.10/classes" path="src/main/scala"/>
-	<classpathentry kind="src" output="target/scala-2.10/classes" path="src/main/java"/>
 	<classpathentry kind="src" output="target/scala-2.10/test-classes" path="src/test/scala"/>
-	<classpathentry kind="src" output="target/scala-2.10/test-classes" path="src/test/java"/>
 	<classpathentry kind="src" output="target/scala-2.10/test-classes" path="target/scala-2.10/src_managed/test"/>
 	<classpathentry kind="con" path="org.scala-ide.sdt.launching.SCALA_CONTAINER"/>
 	<classpathentry kind="lib" path="/Users/pgiarrusso/.ivy2/cache/org.scala-lang/scala-reflect/jars/scala-reflect-2.10.3.jar"/>

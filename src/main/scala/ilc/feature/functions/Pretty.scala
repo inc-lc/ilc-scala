@@ -6,6 +6,9 @@ package feature.functions
  */
 
 trait Pretty extends Syntax with util.IndentUtils {
+  //Local-only addition to IndentUtils
+  protected def closeParenNoIndent(delim: String) = { indentLess(); delim }
+
   /**
    * Pretty print an expression according to a template.
    *
@@ -22,7 +25,9 @@ trait Pretty extends Syntax with util.IndentUtils {
     if (inner < outer)
       text
      else
-       openParen("(") + indent() + text + closeParen(")")
+       openParen("(") + text + closeParenNoIndent(")")
+       //Alternative: have body on separate lines as the parens
+       //openParen("(") + indent() + text + closeParen(")")
   }
 
   /**

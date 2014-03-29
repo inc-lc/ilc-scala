@@ -16,10 +16,8 @@ trait Pretty extends Syntax with util.IndentUtils {
    *   priority of the language construct to be printed
    * @param outer
    *   priority of the context to be printed in
-   * @param format
-   *   format string, use @code{%s} as placeholder
-   * @param args
-   *   arguments to be put into the placeholders
+   * @param text
+   *   by-name argument with content to print.
    */
   def template(inner : Priority, outer : Priority, text : => String) = {
     if (bindsStronger(inner, outer))

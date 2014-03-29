@@ -2,7 +2,9 @@ package ilc
 package feature
 package base
 
-trait ToScala extends Syntax {
+import util.IndentUtils
+
+trait ToScala extends Syntax with IndentUtils {
   //Contract for indentation: no indentation in the beginning
   def toScala(t: Term): String =
     s"(${toUntypedScala(t)} : ${toScala(t.getType)})"
@@ -26,14 +28,6 @@ trait ToScala extends Syntax {
   // subclasses should always call this helper to create scala
   // functions. CAUTION: supplied parameter names are binding.
   // body: no indentation in the beginning.
-  private var indentDepth: Int = 2
-  protected def indentMore() = { indentDepth += 2 }
-  protected def indentLess() = { indentDepth -= 2 }
-  protected def indentNoNl(): String = " " * indentDepth
-  protected def indent(): String = "\n" + indentNoNl
-  protected def openBrace() = { indentMore(); "{" }
-  protected def closeBrace() = { indentLess(); s"$indent}" }
-
   def scalaFunction(parameterNames: String*)(body: => String): String = {
     def toParam(name: String) = name + "_param"
     def declarations = parameterNames map { name =>

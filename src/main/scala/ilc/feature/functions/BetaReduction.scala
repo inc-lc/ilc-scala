@@ -201,10 +201,16 @@ trait BetaReduction extends Syntax with LetSyntax with FreeVariablesForLet with 
 
   object Normalize {
     sealed trait Value
+
     case class FunVal(fun: Value => Value, v: Var, doInline: Boolean) extends Value
-    case class TermVal(term: Term) extends Value
-    case class AppVal(fun: Value, arg: Value) extends Value
-    case class LetVal(v: Var, varDef: Value, body: Value => Value) extends Value
+
+    /**
+     * A neutral term is a normal form which is not a lambda abstraction.
+     */
+    sealed trait NeutralValue extends Value
+    case class TermVal(term: Term) extends NeutralValue
+    case class AppVal(fun: Value, arg: Value) extends NeutralValue
+    case class LetVal(v: Var, varDef: Value, body: Value => Value) extends NeutralValue
 
     //compute doInline by counting occurrences, turning this into shrinking reductions.
     //Note: t has not been normalized yet here, and when we do inlining we

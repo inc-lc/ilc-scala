@@ -72,4 +72,26 @@ extends FlatSpec
     termSize(deadLets) should be (7)
     termSize(appInLet) should be (18)
   }
+
+  val t =
+    lambda(Var("param", NatType)) { param =>
+      lambda(Var("expensive", NatType)) { expensive =>
+        lambda(NatType) { _ =>
+          expensive }
+      } }
+  val u = t ! 1 ! (Plus ! 42 ! 84)
+  val duplicating = lambda(Var("f", NatType =>: NatType), Var("expensive", NatType)) {
+    case Seq(arg, expensive) => Plus ! (arg ! expensive) ! (arg ! expensive)
+  } ! u ! (Plus ! 42 ! 84)
+  pretty(duplicating)
+  pretty(normalize(duplicating))
+  /*
+  val t =
+    lambda(Var("param", NatType)) { param =>
+      lambda(Var("expensive", NatType)) { expensive =>
+        lambda(NatType) { _ => expensive }
+      } ! (Plus ! param ! param) }
+  val u = t ! 1
+  val duplicating = lambda(Var("f", NatType =>: NatType)) { arg => Plus ! (arg ! z) ! (arg ! z) } ! u
+   */
 }

@@ -239,7 +239,9 @@ trait BetaReduction extends Syntax with LetSyntax with FreeVariablesForLet with 
     //
     //occurrencesOf handles also Let nodes. We could desugar them before,
     //but occurrencesOf can easily be more precise if redexes are transformed into lets before, and this makes a difference in the output size.
+    //TODO: if x is only used in the function position of an application, and is a lambda, we can still inline it.
     def precomputeDoInline(x: Var, t: Term) = (t occurrencesOf x) != UsageCount.more
+    //Requirement: this can only return true for something which is safe to inline - in particular, its cost must be bounded.
     def doInlineHeuristics(fv: FunVal, arg: Value) = fv.doInline || isTrivial(arg)
 
     //TODO: Move it to analysis to allow for more trivial terms. In particular, to allow (x + 1) we'd need a "trivialConstant" predicate.
@@ -259,12 +261,14 @@ trait BetaReduction extends Syntax with LetSyntax with FreeVariablesForLet with 
     /**
      * Evaluate a term @param t to a value given an environment @param env.
      * This started out as a mostly standard evaluator — see the case for abstractions.
-     * However, the case for application
+     * However, it became a partial evaluator.
      */
     //t can contain Let nodes.
     def eval(t: Term, env: Map[Name, Value]): Value =
       t match {
         case Abs(x, t) =>
+          //This is the only creator of functions used in FunVal. We could defunctionalize it!
+          //The argument to function is placed in the environment; this is used to implement closures.
           FunVal(arg => eval(t, env.updated(x.getName, arg)), x, precomputeDoInline(x, t))
         case App(s, t) =>
           val arg = eval(t, env)
@@ -272,13 +276,18 @@ trait BetaReduction extends Syntax with LetSyntax with FreeVariablesForLet with 
           def findFun(fun: Value): Value =
             fun match {
               case fv @ FunVal(f, v, _) =>
+                //If the argument does not get duplicated, or can be duplicated without penalty, we call f, which will place it into the environment and
+                //allow inlining it.
                 if (doInlineHeuristics(fv, arg))
                   f(arg)
                 else
+                  //Otherwise, we create a let binding which prevents duplicating the argument.
+                  //Instead of placing arg into the environment, we residualize the environment into a let binding, preserving sharing.
+                  //In other words, closures are implemented through let bindings.
                   LetVal(v, arg, f)
 
               case LetVal(v, arg, f) =>
-                //Names are decorations here, we are using HOAS: so we can reuse
+                //Names are decorations here, because we are using HOAS: so we can reuse
                 //v without risk.
                 LetVal(v, arg, hoasArg => findFun(f(hoasArg)))
 
@@ -289,6 +298,7 @@ trait BetaReduction extends Syntax with LetSyntax with FreeVariablesForLet with 
           findFun(eval(s, env))
 
         case Var(name, _) =>
+          //This inlines values from the environment.
           env(name)
 
         case Let(v, varDef, body) =>
@@ -317,6 +327,7 @@ trait BetaReduction extends Syntax with LetSyntax with FreeVariablesForLet with 
         case AppVal(fun, arg) =>
           App(reify(fun), reify(arg))
         //The behavior here can be deduced from the behavior for AppVal(FunVal(f, v, _), varDef)
+        //Note that this preserves the sharing created when residualizing let bindings.
         case LetVal(v, varDef, f) => {
           val x = fresh(v)
           Let(x, reify(varDef), reify(f(TermVal(x))))

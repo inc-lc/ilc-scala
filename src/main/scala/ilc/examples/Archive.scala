@@ -46,6 +46,9 @@ extends feature.functions.Pretty
   def normalizedDerivative = normalize(derivative)
 
   def toSource(name: String): Source = {
+    assert(indentDiff == 2)
+    setIndentDepth(2)
+
     val objectName = Archive.toGenName(name)
     val programCode = toScala(program)
     val derivativeCode = toScala(derivative)
@@ -58,13 +61,14 @@ extends feature.functions.Pretty
     val deltaInputTypeCode = toScala(deltaType(inputType))
     val deltaOutputTypeCode = toScala(deltaType(outputType))
 
+    //The output template in toSource relies on this value.
+    setIndentDepth(4)
+
     val programForHuman: String = pretty(program)
     val derivativeForHuman: String = pretty(derivative)
     val normalizedProgrForHuman: String = pretty(normalizedProgram)
     val normalizedDerivForHuman: String = pretty(normalizedDerivative)
 
-    //The output below hardcodes this assumption.
-    assert(initialIndentDepth == 4)
 
     Source(objectName,
       s"""|package ilc.examples
@@ -78,16 +82,16 @@ extends feature.functions.Pretty
           |  val normalizedDerivativeSize = ${termSize(normalizedDerivative)}
           |  /*
           |  programForHuman:
-          |    $programForHuman
+          |$programForHuman
           |
           |  derivativeForHuman:
-          |    $derivativeForHuman
+          |$derivativeForHuman
           |
           |  normalizedProgrForHuman:
-          |    $normalizedProgrForHuman
+          |$normalizedProgrForHuman
           |
           |  normalizedDerivForHuman:
-          |    $normalizedDerivForHuman
+          |$normalizedDerivForHuman
           |  */
           |
           |  override val program = $programCode

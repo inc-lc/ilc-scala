@@ -16,7 +16,7 @@ extends FunSuite
   val id3 = id ! id%(Bot =>: Bot) ! id%Bot
 
   //Avoid extra indentation in output, to ease writing correct expected output.
-  override protected val initialIndentDepth = 0
+  override protected def initialIndentDepth = 0
 
   test("The identity function prints λx. x") {
     val printout = pretty(id%Bot)

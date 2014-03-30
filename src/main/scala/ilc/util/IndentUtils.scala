@@ -3,7 +3,8 @@ package util
 
 trait IndentUtils {
   protected val indentDiff: Int = 2
-  private var indentDepth: Int = indentDiff
+  protected def initialIndentDepth: Int = 0
+  private var indentDepth: Int = initialIndentDepth
 
   protected def setIndentDepth(i: Int): Unit = { indentDepth = i }
 

@@ -1,9 +1,9 @@
 package ilc
 package analysis
 
-import ilc.feature.functions
+import ilc.feature._
 
-trait Occurrences extends functions.Syntax with functions.LetSyntax {
+trait Occurrences extends functions.Syntax with let.Syntax {
   case class UsageCount private (n: Option[Int]) {
     def +(that: UsageCount): UsageCount = {
       UsageCount build (for {

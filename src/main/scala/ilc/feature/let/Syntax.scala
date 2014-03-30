@@ -1,8 +1,8 @@
 package ilc
 package feature
-package functions
+package let
 
-trait LetSyntax extends Syntax {
+trait Syntax extends functions.Syntax {
   case class Let(variable: Var, exp: Term, body: Term) extends Term {
     override lazy val getType = {
       assert (variable.getType == exp.getType)
@@ -11,7 +11,7 @@ trait LetSyntax extends Syntax {
   }
 }
 
-trait LetToScala extends LetSyntax with ToScala {
+trait ToScala extends Syntax with functions.ToScala {
   override def toUntypedScala(t: Term) = {
     t match {
       case Let(v, exp, body) =>
@@ -28,7 +28,7 @@ trait LetToScala extends LetSyntax with ToScala {
   }
 }
 
-trait LetPretty extends functions.Pretty with LetSyntax {
+trait Pretty extends functions.Pretty with Syntax {
   override def pretty(t: Term, priority: Priority) = t match {
     case Let(variable, exp, body) =>
       template(priorityOfAbs, priority,
@@ -37,7 +37,7 @@ trait LetPretty extends functions.Pretty with LetSyntax {
   }
 }
 
-trait FreeVariablesForLet extends analysis.FreeVariables with LetSyntax {
+trait FreeVariables extends analysis.FreeVariables with Syntax {
   override def termFreeVariables(term: Term): Set[Var] = term match {
     case Let(v, exp, body) =>
       //If v is free in exp, it is indeed free in the overall let!
@@ -47,7 +47,7 @@ trait FreeVariablesForLet extends analysis.FreeVariables with LetSyntax {
   }
 }
 
-trait Traversals extends LetSyntax {
+trait Traversals extends Syntax {
   type =?>:[A, B] = PartialFunction[A, B]
 
   def orIdentity[T](f: T =?>: T): T => T =
@@ -66,7 +66,7 @@ trait Traversals extends LetSyntax {
       })
 }
 
-trait ProgramSize extends LetSyntax {
+trait ProgramSize extends Syntax {
   def termSize: Term => Int = {
     case App(f, t) => 1 + termSize(f) + termSize(t)
     case Abs(v, body) => 1 + termSize(v) + termSize(body)
@@ -75,7 +75,7 @@ trait ProgramSize extends LetSyntax {
   }
 }
 
-trait BetaReduction extends Syntax with LetSyntax with FreeVariablesForLet with analysis.Occurrences with Traversals with LetToScala with LetPretty {
+trait BetaReduction extends Syntax with FreeVariables with analysis.Occurrences with Traversals with ToScala with Pretty {
   val shouldNormalize = true
 
   def letBetaReduceRule: Term =?>: Term = {

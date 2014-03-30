@@ -1,6 +1,6 @@
 package ilc
 package feature
-package functions
+package let
 
 import org.scalatest.Matchers
 import org.scalatest.FlatSpec
@@ -9,7 +9,7 @@ import ilc.util.EvalGenerated
 class BetaReductionSuite
 extends FlatSpec
    with Matchers
-   with BetaReduction with naturals.Syntax with LetToScala with ProgramSize with naturals.ToScala with EvalGenerated {
+   with BetaReduction with naturals.Syntax with ToScala with ProgramSize with naturals.ToScala with EvalGenerated {
 
   val x = Var("x", NatType)
   val y = Var("y", NatType)

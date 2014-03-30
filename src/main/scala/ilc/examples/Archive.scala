@@ -34,8 +34,8 @@ object Archive {
   */
 abstract class Example
 extends feature.functions.Pretty
-   with feature.functions.BetaReduction
-   with feature.functions.ProgramSize
+   with feature.let.BetaReduction
+   with feature.let.ProgramSize
 {
   this: feature.base.ToScala
    with feature.base.Derivation =>

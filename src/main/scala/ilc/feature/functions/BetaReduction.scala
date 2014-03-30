@@ -239,11 +239,14 @@ trait BetaReduction extends Syntax with LetSyntax with FreeVariablesForLet with 
     //
     //occurrencesOf handles also Let nodes. We could desugar them before,
     //but occurrencesOf can easily be more precise if redexes are transformed into lets before, and this makes a difference in the output size.
-    //TODO: if x is only used in the function position of an application, and is a lambda, we can still inline it.
     def precomputeDoInline(x: Var, t: Term) = (t occurrencesOf x) != UsageCount.more
     //Requirement: this can only return true for something which is safe to inline - in particular, its cost must be bounded.
     def doInlineHeuristics(fv: FunVal, arg: Value) = fv.doInline || isTrivial(arg)
+    //Possible TODO: inline arg if it is a lambda and it is only/sometimes used in the function position of an application.
+    //Right now, we unconditionally inline lambdas, which is not necessarily helpful.
 
+    //This flag can be altered without affecting correctness, only performance/code size of the output.
+    private val inlineLambdaAbstractions = true
     //TODO: Move it to analysis to allow for more trivial terms. In particular, to allow (x + 1) we'd need a "trivialConstant" predicate.
     def isTrivial(arg: Value): Boolean =
       arg match {
@@ -255,6 +258,17 @@ trait BetaReduction extends Syntax with LetSyntax with FreeVariablesForLet with 
           false
         //Variables or constants.
         case TermVal(_) => true
+        //Duplicating a function value can increase code size, but will not
+        //duplicate work, because evaluating a closure requires only packaging
+        //the code pointer and the environment.
+
+        //Since the environment only ever contains values which can be inlined
+        //safely, we need not fear that duplicating the environment and then
+        //reifying it will duplicate computation. (When applying a function to
+        //an expensive computation, we create a Let node, and the environment
+        //will only ever contain a residualized variable.
+
+        case fv: FunVal => inlineLambdaAbstractions
         case _ => false
       }
 

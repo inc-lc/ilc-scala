@@ -3,7 +3,6 @@ package feature
 package functions
 
 trait LetSyntax extends Syntax {
-  //Argh! Most traversals are not ready for Let!
   case class Let(variable: Var, exp: Term, body: Term) extends Term {
     override lazy val getType = {
       assert (variable.getType == exp.getType)
@@ -79,78 +78,8 @@ trait ProgramSize extends LetSyntax {
 trait BetaReduction extends Syntax with LetSyntax with FreeVariablesForLet with analysis.Occurrences with Traversals with LetToScala with LetPretty {
   val shouldNormalize = true
 
-  def subst(toReplace: Var, replacement: Term): (TypingContext, Term) => Term = {
-    def go(typingContext: TypingContext, replaceIn: Term): Term =
-      replaceIn match {
-        case v: Var =>
-          if (toReplace == v)
-            replacement
-          else
-            replaceIn
-        case Abs(v, body) =>
-          if (toReplace == v) //toReplace is shadowed
-            replaceIn
-          else { // (toReplace != v)
-            val freeVars = replacement.freeVariables
-            val extendedTypingContext = v +: (typingContext ++ freeVars)
-            val vPrime = Var(freshName(extendedTypingContext, v.getName), v.getType)
-            ////XXX this might be bigger than needed.
-            //val extContext = vPrime +: extendedTypingContext
-
-            //This typing context needs to be bigger than usual, since we're
-            //moving the term to a different lambda context.
-            val extContext = vPrime +: v +: typingContext
-            val alphaRenamedBody = subst(v, vPrime)(extContext, body)
-            Abs(vPrime, go(extContext, alphaRenamedBody))
-          }
-        case App(fun, arg) =>
-          App(go(typingContext, fun), go(typingContext, arg))
-        case _ => replaceIn
-      }
-    go _
-  }
-  //Use base.Syntax#Term ?
-
-  def betaNormSubst(t: Term) = betaNormalize(t, TypingContext.empty)
-
-  //Should this prevent code/work duplication?
-  def betaNormalize(t: Term, typingContext: TypingContext): Term = {
-    t match {
-      case Abs(v, body) =>
-        Abs(v, betaNormalize(body, v +: typingContext))
-      case App(fun, arg) =>
-        val funNorm = betaNormalize(fun, typingContext)
-        //Normalizing the argument is not necessary. As long as the object
-        //language is strongly normalizing, this step makes no difference.
-        //If the object language is not strongly normalizing
-        val argNorm = betaNormalize(arg, typingContext)
-        funNorm match {
-          case Abs(v, body) =>
-            subst(v, argNorm)(typingContext, body)
-            //XXX: if argNorm is a function, this produces new redexes!
-          case _ =>
-            App(funNorm, argNorm)
-        }
-      case _ =>
-        //We need to assume this is a constant or a variable.
-        t
-    }
-  }
-
   def letBetaReduceRule: Term =?>: Term = {
     case App(Abs(v, body), arg) => Let(v, arg, body)
-//    case App(fun, arg) =>
-//      def findFun(f: Term): Term =
-//        f match {
-//          case Abs(v, body) => Let(v, arg, body)
-////          case Let(v, nestedArg, nestedF) =>
-////            //This would work given enough renaming - here names are relevant,
-////            //but arg moves under the scope of v, so we need to freshen v.
-////            Let(v, nestedArg, findFun(nestedF))
-//          case _ =>
-//            App(f, arg)
-//        }
-//      findFun(fun)
   }
 
   def dceRule: Term =?>: Term = {
@@ -370,28 +299,4 @@ trait BetaReduction extends Syntax with LetSyntax with FreeVariablesForLet with 
   }
 
   def fresh(v: Var): Var = fresh(v.getName, v.getType)
-
-  def betaNormalize2(t: Term, env: Map[Name, Term]): Term =
-    t match {
-      case Var(name, _) =>
-        env(name)
-      case App(fun, arg) =>
-        //Capture is prevented by the freshening inside Abs.
-        val normFun = betaNormalize2(fun, env)
-        val normArg = betaNormalize2(arg, env)
-        normFun match {
-          case Abs(v, body) =>
-            //Here capture is possible.
-            betaNormalize2(body, env + (v.getName -> normArg))
-          case _ =>
-            App(normFun, normArg)
-        }
-      case Abs(v, body) =>
-        //Implement shadowing.
-        //Freshen the variable, to prevent capture in the case for application. Thanks @Toxaris for the hint.
-        val w = fresh(v)
-        Abs(w, betaNormalize2(body, env + (v.getName -> w)))
-      case _ =>
-        t
-    }
 }

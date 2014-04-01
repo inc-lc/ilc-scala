@@ -43,7 +43,10 @@ trait Pretty extends Inference {
       more.foldLeft(UApp(untypedTerm, that))((acc: UApp, arg: UntypedTerm) => UApp(acc, arg))
 
     def ofType(typ: Type): TypeAscription = TypeAscription(untypedTerm, typ)
-  }
+
+    def composeWith(second: UntypedTerm): UntypedTerm =
+      'x ->: untypedTerm(second('x))
+}
 
   implicit class SymbolOps(name: Symbol) {
     def %(typ: Type): TypeAnnotation = TypeAnnotation(name.name, typ)

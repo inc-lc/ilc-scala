@@ -82,6 +82,5 @@ extends products.Derivation
     */
   val mapReduce: UntypedTerm =
     'v1Group ->: 'v3Group ->: 'userMap ->: 'userReduce ->:
-      'x ->:
-      reducePerKey('v3Group, 'userReduce)(groupByKey(mapPerKey('v1Group, 'userMap)('x)))
+      (reducePerKey('v3Group, 'userReduce) composeWith groupByKey composeWith mapPerKey('v1Group, 'userMap))
 }

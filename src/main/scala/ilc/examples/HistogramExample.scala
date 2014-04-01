@@ -16,17 +16,13 @@ extends Example
   // userMap = λ ignoredDocumentID : ℤ.
   //   foldGroup freeAbelianGroup
   //     (λ number : ℤ. singleton (pair number 1))
-  val userMap = lambda(Var("ignoredDocumentId", ℤ)) { ignoredDocumentId =>
-    FoldGroup ! FreeAbelianGroup(ProductType(ℤ, ℤ)) !
-      lambda(Var("number", ℤ)) { number => Singleton ! (Pair ! number ! LiteralInt(1)) }
-  }
+  val userMap: UntypedTerm = 'ignoredDocumentId ->: foldGroup(freeAbelianGroup,
+    'number ->: singleton(pair('number, LiteralInt(1))))
 
   // userReduce : ℤ → Bag ℤ → ℤ
   // userReduce = λ ignoredKey : ℤ.
   //   foldGroup additiveGroupOnIntegers (λx : ℤ. x)
-  val userReduce = lambda(Var("ignoredKey", ℤ)) { ignoredKey =>
-    FoldGroup ! additiveGroupOnIntegers ! lambda(ℤ) { x => x }
-  }
+  val userReduce = 'ignoredKey ->: foldGroup(additiveGroupOnIntegers, 'x ->: 'x)
 
   // program : Map ℤ (Bag ℤ) → Map ℤ ℤ
   // program =
@@ -35,11 +31,12 @@ extends Example
   //     additiveGroupOnIntegers
   //     userMap
   //     userReduce
-  val program: Term =
-    (mapReduce !
-      FreeAbelianGroup(ℤ) !
-      additiveGroupOnIntegers !
-      userMap !
-      userReduce) ofType
-    MapType(ℤ, BagType(ℤ)) =>: MapType(ℤ, ℤ)
+  val untypedProgram: UntypedTerm =
+    mapReduce(
+      freeAbelianGroup,
+      additiveGroupOnIntegers,
+      userMap,
+      userReduce) ofType MapType(ℤ, BagType(ℤ)) =>: MapType(ℤ, ℤ)
+
+  val program: Term = untypedTermToTerm(untypedProgram)
 }

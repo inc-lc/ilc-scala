@@ -9,6 +9,10 @@ import feature._
 class BagUnionExample
 extends Example
    with functions.Pretty
+   with inference.Pretty
+
+   with bags.StdLib
+   with products.StdLib
 
    // context-free derivations
    with products.Derivation
@@ -29,8 +33,9 @@ extends Example
 
   //   λ pair : inputType.
   //      union (proj₁ pair) (proj₂ pair)
-  def program: Term =
-    lambda(inputType) { pair =>
-      Union ! (Proj1 ! pair) ! (Proj2 ! pair)
-    }
+  def untypedProgram: UntypedTerm =
+    'pair % inputType ->: union(proj1('pair), proj2('pair))
+
+  def program: Term = untypedTermToTerm(untypedProgram)
+
 }

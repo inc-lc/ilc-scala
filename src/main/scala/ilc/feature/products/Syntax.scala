@@ -29,6 +29,12 @@ extends base.Syntax
   }
 }
 
+trait StdLib extends Syntax with inference.Pretty {
+  val pair: UntypedTerm = Pair
+  val proj1: UntypedTerm = Proj1
+  val proj2: UntypedTerm = Proj2
+}
+
 trait SyntaxSugar extends Syntax with functions.Syntax
 {
   def tuple(n: Int): TermBuilder = {

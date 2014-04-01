@@ -6,7 +6,7 @@ import feature._
 //Example 3: mapping over the values
 class MapSuccExample
 extends Example
-   with bags.SyntaxSugar
+   with bags.StdLib
 
    // context-sensitive derivations
    with bags.AbelianDerivation
@@ -20,7 +20,9 @@ extends Example
    with products.ToScala
    with sums.ToScala
 {
+  val inc: UntypedTerm = (PlusInt:UntypedTerm)(LiteralInt(1))
+
   // program : Bag ℤ → Bag ℤ
   // program = map (plus 1)
-  def program: Term = map ! (PlusInt ! LiteralInt(1))
+  def program: Term = untypedTermToTerm(map(inc))
 }

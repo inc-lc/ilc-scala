@@ -2,11 +2,16 @@ package ilc
 package feature
 package base
 
+import ilc.feature.inference.Reflection
+
 trait Types {
   // We want subclasses of Type to be case classes.
   // If subclass is not a case class/case object, then they
-  // fail to intantiate at compile time (a good thing) with
+  // fail to instantiate at compile time (a good thing) with
   // an obscure error message (a necessary evil).
+  //
+  // In unification we use the product iterator to map over all fields and we expect those to be types themselves.
+  // If we ever want non-type fields we need to adapt ilc.feature.inference.Inference.unification
   trait Type extends Product
 
   // ERROR THROWERS

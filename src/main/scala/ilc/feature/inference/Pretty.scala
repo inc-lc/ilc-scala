@@ -32,11 +32,11 @@ trait Pretty extends Inference {
   implicit class UTOps[T <% UntypedTerm](untypedTerm: T) {
 
     //->: is right-associative, so untypedTerm is the right-hand side argument.
-    def ->:(arg: Symbol): UntypedTerm =
-      UAbs(arg.name, None, untypedTerm)
+    def ->:(param: Symbol): UntypedTerm =
+      UAbs(param.name, None, untypedTerm)
 
-    def ->:(arg: TypeAnnotation): UntypedTerm =
-      UAbs(arg.name, Some(arg.typ), untypedTerm)
+    def ->:(param: TypeAnnotation): UntypedTerm =
+      UAbs(param.name, Some(param.typ), untypedTerm)
 
     // Require at least one argument.
     def apply(that: UntypedTerm, more: UntypedTerm*): UApp =

@@ -29,19 +29,20 @@ trait Pretty extends Inference {
 
   case class TypeAnnotation(name: String, typ: Type)
 
-  implicit class UTOps[T <% UntypedTerm](body: T) {
+  implicit class UTOps[T <% UntypedTerm](untypedTerm: T) {
 
+    //->: is right-associative, so untypedTerm is the right-hand side argument.
     def ->:(arg: Symbol): UntypedTerm =
-      UAbs(arg.name, None, body)
+      UAbs(arg.name, None, untypedTerm)
 
     def ->:(arg: TypeAnnotation): UntypedTerm =
-      UAbs(arg.name, Some(arg.typ), body)
+      UAbs(arg.name, Some(arg.typ), untypedTerm)
 
     // Require at least one argument.
     def apply(that: UntypedTerm, more: UntypedTerm*): UApp =
-      more.foldLeft(UApp(body, that))((acc: UApp, arg: UntypedTerm) => UApp(acc, arg))
+      more.foldLeft(UApp(untypedTerm, that))((acc: UApp, arg: UntypedTerm) => UApp(acc, arg))
 
-    def ofType(typ: Type): TypeAscription = TypeAscription(body, typ)
+    def ofType(typ: Type): TypeAscription = TypeAscription(untypedTerm, typ)
   }
 
   implicit class SymbolOps(name: Symbol) {

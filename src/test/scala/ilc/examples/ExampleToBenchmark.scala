@@ -102,7 +102,7 @@ trait BaseBenchmark extends RegressionTesting with Serializable {
     Seq(
       reports.regression.significance -> 0.01) ++ //Confidence level = 99 %
     QuickAndDirty.choose(Seq.empty,
-      Seq(
+      Seq[org.scalameter.KeyValue](
         exec.jvmflags -> s"-Xmx${memorySizeMB}m -Xms${memorySizeMB}m -XX:CompileThreshold=100",
         exec.minWarmupRuns -> minWarmupRuns,
         exec.warmupCovThreshold -> 0.05,

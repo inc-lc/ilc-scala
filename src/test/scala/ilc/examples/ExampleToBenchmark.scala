@@ -17,7 +17,7 @@ trait RegressionTesting extends PerformanceTest {
   import reporting._
 
   def warmer = Executor.Warmer.Default()
-  def aggregator: Aggregator = Aggregator.complete(Aggregator.average)
+  def aggregator: Aggregator = Aggregator.average
   def measurer: Measurer = new Measurer.IgnoringGC with Measurer.PeriodicReinstantiation with Measurer.OutlierElimination with Measurer.RelativeNoise
   def regressionTester: RegressionReporter.Tester = RegressionReporter.Tester.OverlapIntervals()
   def historian: RegressionReporter.Historian = RegressionReporter.Historian.ExponentialBackoff()

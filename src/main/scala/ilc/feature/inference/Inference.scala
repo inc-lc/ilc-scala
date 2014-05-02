@@ -12,7 +12,11 @@ extends base.Syntax
    with functions.Syntax
    with Reflection
 {
-  class UnificationFailure extends Exception("No unification possible")
+  case class UnificationFailureDetails(remaining: Set[Constraint], substitutions: Map[TypeVariable, Type]) {
+    override def toString = s"remaining constraints: ${remaining.mkString("\n")}\n\nsubstitutions: ${substitutions.mkString("\n")}"
+  }
+  class UnificationFailure(val details: UnificationFailureDetails) extends Exception("No unification possible")
+  def UnificationFailure(remaining: Set[Constraint], substitutions: Map[TypeVariable, Type]) = new UnificationFailure(UnificationFailureDetails(remaining, substitutions))
 
   trait UntypedTerm
 
@@ -138,7 +142,7 @@ extends base.Syntax
         case Some((tn: TypeVariable, a)) if !occurs(tn, a) => typeVariableAndAnythingElse(tn, a, remaining, substitutions)
         case Some((a, tn: TypeVariable)) if !occurs(tn, a) => typeVariableAndAnythingElse(tn, a, remaining, substitutions)
         case Some((a, b)) if a.getClass == b.getClass =>  unificationHelper(remaining.tail ++ a.productIterator.zip(b.productIterator).toSet.asInstanceOf[Set[(Type, Type)]], substitutions)
-        case _ => throw new UnificationFailure()
+        case _ => throw UnificationFailure(remaining, substitutions)
       }
     }
     unificationHelper(constraints, Map())

@@ -31,14 +31,17 @@ libraryDependencies += "org.scala-lang" % "scala-reflect" % scalaVersion.value
 
 libraryDependencies += "org.scala-lang" % "scala-compiler" % scalaVersion.value
 
+libraryDependencies +=
+  //"com.chuusai" %% "shapeless" % "2.0.0" //for 2.11
+  "com.chuusai" % "shapeless_2.10.2" % "2.0.0"
+
 initialCommands := "import ilc.examples._"
 
 // SCALA METER BEGINS
 // http://axel22.github.io/scalameter//2013/06/14/release_0_4_M2.html
 
 // resolver for ScalaMeter
-resolvers += "Sonatype OSS Snapshots" at
-  "https://oss.sonatype.org/content/repositories/snapshots"
+resolvers ++= Seq(Resolver.sonatypeRepo("releases"), Resolver.sonatypeRepo("snapshots"))
 
 // ScalaMeter
 libraryDependencies += "com.github.axel22" %% "scalameter" % "0.4"

@@ -37,6 +37,13 @@ libraryDependencies +=
 
 initialCommands := "import ilc.examples._"
 
+initialCommands in (Test, Keys.console) := """
+  import ilc.feature.inference._
+  val h = new Helper {}
+  import h._
+  import shapeless._
+"""
+
 // SCALA METER BEGINS
 // http://axel22.github.io/scalameter//2013/06/14/release_0_4_M2.html
 

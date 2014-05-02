@@ -15,7 +15,7 @@ trait ClashingImplicitConversion {
 
 class PrettySuite
 extends FlatSpec
-   with Pretty
+   with PrettySyntax
    with ilc.feature.maps.Syntax
    with ilc.feature.integers.Syntax
    with ilc.util.EvalScala

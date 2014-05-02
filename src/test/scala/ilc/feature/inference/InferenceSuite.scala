@@ -10,7 +10,7 @@ extends FlatSpec
    with Inference
 
 // Stuff for testing old inference
-with Pretty
+with PrettySyntax
 with bags.Syntax
 with integers.Syntax
 {

@@ -9,7 +9,7 @@ import feature._
 class BagUnionExample
 extends Example
    with functions.Pretty
-   with inference.Pretty
+   with inference.PrettySyntax
 
    with bags.StdLib
    with products.StdLib

@@ -7,7 +7,7 @@ import ilc.feature._
 class FeaturesSuite
   extends FlatSpec
   with Inference
-  with Pretty
+  with PrettySyntax
 
   with bags.Syntax
   with integers.Syntax

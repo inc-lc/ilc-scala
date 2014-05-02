@@ -55,7 +55,7 @@ extends base.Syntax
 
 trait StdLib
 extends Syntax
-   with inference.Pretty
+   with inference.PrettySyntax
 {
   //  empty     : Bag v
   val empty: UntypedTerm = EmptyBag

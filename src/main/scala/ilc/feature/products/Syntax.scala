@@ -29,7 +29,7 @@ extends base.Syntax
   }
 }
 
-trait StdLib extends Syntax with inference.Pretty {
+trait StdLib extends Syntax with inference.PrettySyntax {
   val pair: UntypedTerm = Pair
   val proj1: UntypedTerm = Proj1
   val proj2: UntypedTerm = Proj2

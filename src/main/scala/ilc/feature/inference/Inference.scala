@@ -66,10 +66,7 @@ extends base.Syntax
     override def getType = typ
   }
 
-  def collectConstraints(term: UntypedTerm): (TypedTerm, Set[Constraint]) =
-    collectConstraints(term, emptyContext)
-
-  def collectConstraints(term: UntypedTerm, context: InferenceContext): (TypedTerm, Set[Constraint]) = term match {
+  def collectConstraints(term: UntypedTerm, context: InferenceContext = emptyContext): (TypedTerm, Set[Constraint]) = term match {
     case UVar(name) =>
       lookup(context, name) match {
         case Some(typ) => (TVar(name, typ), emptyConstraintSet)

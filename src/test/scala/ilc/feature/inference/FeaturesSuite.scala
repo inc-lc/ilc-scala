@@ -4,6 +4,9 @@ import org.scalatest._
 import scala.language.implicitConversions
 import ilc.feature._
 
+import shapeless._
+import poly._
+
 class FeaturesSuite
   extends FlatSpec
   with Inference
@@ -14,6 +17,10 @@ class FeaturesSuite
   with maps.Syntax
 {
   val (t0, t1, t2, t3, t4, t5, t6, t7, t8, t9) = (TypeVariable(0), TypeVariable(1), TypeVariable(2), TypeVariable(3), TypeVariable(4), TypeVariable(5), TypeVariable(6), TypeVariable(7), TypeVariable(8), TypeVariable(9))
+
+  object dropSourceInfoBase extends ->((t: TypeVariable) => t copy (uterm = None))
+  def dropSourceInfo = everywhere(dropSourceInfoBase)
+  def collectConstraintsForTest(term: UntypedTerm): (TypedTerm, Set[Constraint]) = dropSourceInfo(collectConstraints(term))
 
   "Empty map" should "have type schema (Map k v)" in {
     val empty = UPolymorphicConstant(EmptyMap)

@@ -40,7 +40,7 @@ extends DBToasterExample
   //All of this is missing aggregation.
   def untypedProgram0 = 'r ->: 's ->: join('r, 's, 'rEl ->: 'sEl ->: eqq(proj1('rEl), proj1('sEl)), pair)
   def untypedProgram =
-    'r ->: groupByGen('r, proj1, proj2)
+    'r ->: groupByGen(proj1, proj2, 'r)
     /*'r ->: 's ->: {
     letS (
       ('idxR, groupByGen('r, proj1, proj2)),

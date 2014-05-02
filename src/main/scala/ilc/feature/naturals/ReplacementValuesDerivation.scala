@@ -35,8 +35,8 @@ extends base.Derivation
     case Nat(n) =>
       Nat(n)
 
-    case Plus =>
-      lambdaDelta(t) { case Seq(x, dx, y, dy) => Plus ! dx ! dy }
+    case PlusNat =>
+      lambdaDelta(t) { case Seq(x, dx, y, dy) => PlusNat ! dx ! dy }
 
     // case FoldNat => ... // we will use the default FoldNat ⊖ FoldNat
     case _ =>

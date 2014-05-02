@@ -13,7 +13,7 @@ import feature._
   */
 trait Prelude extends bacchus.Syntax with functions.SyntaxSugar
 {
-  def succ: Term = Plus ! 1
+  def succ: Term = PlusNat ! 1
 
   // alias
   val ℕ = NatType

@@ -10,7 +10,7 @@ trait ToScala extends base.ToScala with Syntax {
     case Nat(n) =>
       n.toString
 
-    case Plus =>
+    case PlusNat =>
       scalaFunction("x", "y")("x + y")
 
     case FoldNat(r) =>

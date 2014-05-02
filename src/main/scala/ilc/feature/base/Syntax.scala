@@ -6,7 +6,7 @@ import scala.language.implicitConversions
 import scala.language.postfixOps
 
 trait Syntax
-extends TypeConstructor
+extends TypeConstructors
 {
   trait Typed {
     /** Returns type or fails horribly. */

@@ -2,10 +2,10 @@ package ilc
 package feature
 package base
 
-//XXX Should be TypeConstructors to clarify the difference (I took this
-//convention from the Scala compiler, which uses the same pattern).
+//Called TypeConstructors to clarify the difference from TypeConstructor. I took
+//this convention from the Scala compiler, which uses the same pattern.
 
-trait TypeConstructor extends functions.Types with Names {
+trait TypeConstructors extends functions.Types with Names {
   /** description of a type constructor with enough
     * details at the level of scala values to compute
     * its own inverse
@@ -18,7 +18,7 @@ trait TypeConstructor extends functions.Types with Names {
     *     r =>: (r =>: r) =>: NatType =>: r
     *   }
     * }
-    * 
+    *
     * object Lookup extends ConstantWith2TypeParameters {
     *   val typeConstructor = TypeConstructor("k", "v") {
     *     case Seq(k, v) =>

@@ -7,21 +7,21 @@ extends base.Syntax
    with Types
    with functions.Types
 {
-  object Pair extends ConstantWith2TypeParameters {
+  case object Pair extends ConstantWith2TypeParameters {
     val typeConstructor = TypeConstructor("leftType", "rightType") {
       case Seq(leftType, rightType) =>
         leftType =>: rightType =>: ProductType(leftType, rightType)
     }
   }
 
-  object Proj1 extends ConstantWith2TypeParameters {
+  case object Proj1 extends ConstantWith2TypeParameters {
     val typeConstructor = TypeConstructor("leftType", "rightType") {
       case Seq(leftType, rightType) =>
         ProductType(leftType, rightType) =>: leftType
     }
   }
 
-  object Proj2 extends ConstantWith2TypeParameters {
+  case object Proj2 extends ConstantWith2TypeParameters {
     val typeConstructor = TypeConstructor("leftType", "rightType") {
       case Seq(leftType, rightType) =>
         ProductType(leftType, rightType) =>: rightType

@@ -35,7 +35,7 @@ extends FunSuite
   val myEmpty = EmptyMap(ℤ, ℤ)
   val singleton = SingletonMap ! 3 ! 5
   val _G_+ = additiveGroupOnIntegers
-  val sumValues = FoldByHom ! _G_+ ! _G_+ ! snd%(ℤ, ℤ)
+  val sumValues = FoldByHom ! _G_+ ! _G_+ ! (flipConst % (ℤ, ℤ))
 
   val getSize = FoldByHom ! _G_+ ! _G_+ ! (const ! (const ! 1)%ℤ)%ℤ
 

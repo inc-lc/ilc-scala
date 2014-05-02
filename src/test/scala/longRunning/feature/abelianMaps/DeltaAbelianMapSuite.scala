@@ -66,7 +66,7 @@ extends FunSuite
     expectToGetFrom(AbelianMap((1 to 100) map {i => (i, i)}: _*)) {
       LiteralInt(5050)
     } { _Gi =>
-      FoldByHom ! _Gi ! _Gi ! snd%(ℤ, ℤ)
+      FoldByHom ! _Gi ! _Gi ! (flipConst % (ℤ, ℤ))
     }
   }
 }

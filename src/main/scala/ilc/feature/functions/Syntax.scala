@@ -317,12 +317,9 @@ trait SyntaxSugar extends Syntax {
     * }}}
     */
   val const: TermBuilder =
-    lambda { x => lambda("ignored") { ignored => x } }
-
-  val fst: TermBuilder =
     lambda("fstArgument", "sndArgument") { case Seq(x, y) => x }
 
-  val snd: TermBuilder =
+  val flipConst: TermBuilder =
     lambda("fstArgument", "sndArgument") { case Seq(x, y) => y }
 
   /** Usage:

@@ -62,5 +62,5 @@ extends Example
       ((ProductType(ℤ, ℤ) =>: ℤ) =>: (ProductType(ℤ, ℤ) =>: ℤ)
         =>: BagType(ProductType(ℤ, ℤ)) =>: MapType(ℤ, BagType(ℤ)))
 
-  val program: Term = untypedTermToTerm(untypedProgram)
+  val program: Term = untypedProgram
 }

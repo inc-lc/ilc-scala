@@ -3,6 +3,7 @@ package ilc.feature.inference
 import ilc.feature._
 import java.util.concurrent.atomic.AtomicInteger
 import scala.annotation.tailrec
+import scala.language.implicitConversions
 
 /* Largely inspired by http://lampwww.epfl.ch/teaching/archive/type_systems/2010/exercises/5-inference/ */
 
@@ -158,9 +159,8 @@ extends base.Syntax
     substitute(typedTerm, substitutions)
   }
 
-  def untypedTermToTerm(t: UntypedTerm) = {
+  implicit def untypedTermToTerm(t: UntypedTerm) =
     typedTermToTerm(inferType(t))
-  }
 
   /**
    * Take a transformer and a term, and apply transformer to each subterm of term.

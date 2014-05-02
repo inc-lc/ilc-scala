@@ -139,12 +139,12 @@ extends base.Syntax
       if (remaining.isEmpty)
         substitutions
       else
-        Some(remaining.head) match {
-        case Some((a, b)) if a == b => unificationHelper(remaining.tail, substitutions)
-        case Some((tn: TypeVariable, a)) if !occurs(tn, a) => typeVariableAndAnythingElse(tn, a, remaining, substitutions)
-        case Some((a, tn: TypeVariable)) if !occurs(tn, a) => typeVariableAndAnythingElse(tn, a, remaining, substitutions)
-        case Some((a, b)) if a.getClass == b.getClass =>  unificationHelper(remaining.tail ++ a.productIterator.zip(b.productIterator).toSet.asInstanceOf[Set[(Type, Type)]], substitutions)
-        case _ => throw UnificationFailure(remaining, substitutions)
+        remaining.head match {
+          case (a, b) if a == b => unificationHelper(remaining.tail, substitutions)
+          case (tn: TypeVariable, a) if !occurs(tn, a) => typeVariableAndAnythingElse(tn, a, remaining, substitutions)
+          case (a, tn: TypeVariable) if !occurs(tn, a) => typeVariableAndAnythingElse(tn, a, remaining, substitutions)
+          case (a, b) if a.getClass == b.getClass =>  unificationHelper(remaining.tail ++ a.productIterator.zip(b.productIterator).toSet.asInstanceOf[Set[(Type, Type)]], substitutions)
+          case _ => throw UnificationFailure(remaining, substitutions)
         }
     }
     unificationHelper(constraints, Map())

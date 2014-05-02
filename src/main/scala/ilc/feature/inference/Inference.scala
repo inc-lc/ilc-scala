@@ -136,14 +136,16 @@ extends base.Syntax
     }
     @tailrec
     def unificationHelper(remaining: Set[Constraint], substitutions: Map[TypeVariable, Type]): Map[TypeVariable, Type] = {
-      remaining.headOption match {
-        case None => substitutions
+      if (remaining.isEmpty)
+        substitutions
+      else
+        Some(remaining.head) match {
         case Some((a, b)) if a == b => unificationHelper(remaining.tail, substitutions)
         case Some((tn: TypeVariable, a)) if !occurs(tn, a) => typeVariableAndAnythingElse(tn, a, remaining, substitutions)
         case Some((a, tn: TypeVariable)) if !occurs(tn, a) => typeVariableAndAnythingElse(tn, a, remaining, substitutions)
         case Some((a, b)) if a.getClass == b.getClass =>  unificationHelper(remaining.tail ++ a.productIterator.zip(b.productIterator).toSet.asInstanceOf[Set[(Type, Type)]], substitutions)
         case _ => throw UnificationFailure(remaining, substitutions)
-      }
+        }
     }
     unificationHelper(constraints, Map())
   }

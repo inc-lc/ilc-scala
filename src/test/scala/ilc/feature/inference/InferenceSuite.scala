@@ -10,7 +10,7 @@ extends FlatSpec
    with Inference
 
 // Stuff for testing old inference
-with PrettySyntax
+with InferenceTestHelper
 with bags.Syntax
 with integers.Syntax
 {
@@ -59,7 +59,7 @@ with integers.Syntax
     val (typedTerm, constraints) = collectConstraints(UApp(id, id), List())
     val solved = unification(constraints)
     val finalTerm = substitute(typedTerm, solved)
-    assert(finalTerm.getType === =>:(TypeVariable(2), TypeVariable(2)))
+    assert(dropSourceInfo(finalTerm.getType) === =>:(TypeVariable(2), TypeVariable(2)))
   }
 }
 

@@ -47,7 +47,7 @@ extends base.Syntax
 
   def emptyContext = List()
 
-  trait TypedTerm {
+  sealed trait TypedTerm extends Product {
     def getType: Type
   }
   case class TVar(name: String, typ: Type) extends TypedTerm {
@@ -65,6 +65,11 @@ extends base.Syntax
   case class TPolymorphicConstant(term: PolymorphicConstant, typ: Type, typeArguments: Seq[Type]) extends TypedTerm {
     override def getType = typ
   }
+
+  import shapeless._
+
+  //This line must be after all case classes subtypes of TypedTerm, because it uses macros, so all expectations for equational reasoning are lost.
+  //implicit def GenericTypedTerm = Generic[TypedTerm]
 
   def collectConstraints(term: UntypedTerm, context: InferenceContext = emptyContext): (TypedTerm, Set[Constraint]) = term match {
     case UVar(name) =>
@@ -166,18 +171,22 @@ extends base.Syntax
   implicit def untypedTermToTerm(t: UntypedTerm) =
     typedTermToTerm(inferType(t))
 
+  def onTypes[T](transformer: Type => Type): T => T = {
+    //The pattern matching cannot distinguish this.Type from (something else).Type.
+    //Won't be a problem as long as you don't mix different Types in the same tree.
+    case subType: Type @unchecked => transformer(subType).asInstanceOf[T]
+    case notType: Product => mapSubtrees(transformer)(notType).asInstanceOf[T]
+    case v: Traversable[u] => (v map onTypes(transformer)).asInstanceOf[T]
+    case notProduct => notProduct
+  }
+
   /**
    * Take a transformer and a term, and apply transformer to each subterm of term.
    * @param transformer
    */
-  def mapSubtrees(transformer: Type => Type): Type => Type =
+  def mapSubtrees[T <: Product](transformer: Type => Type): T => T =
     typ => {
-      val subTypes = typ.productIterator.toList map {
-        //The pattern matching cannot distinguish this.Type from (something else).Type.
-        //Won't be a problem as long as you don't mix different Types in the same tree.
-        case subType: Type @unchecked => transformer(subType)
-        case notType => notType
-      }
+      val subTypes = typ.productIterator.toList map onTypes(transformer)
       reflectiveCopy(typ, subTypes: _*)
     }
 
@@ -194,7 +203,7 @@ extends base.Syntax
    *
    * Beta-reduction is a typical example of a rule needing fixpoint iteration.
    */
-  def traverse(transformer: Type => Type): Type => Type =
+  def traverse[T <: Product](transformer: Type => Type): T => T =
     typ =>
-      transformer(mapSubtrees(traverse(transformer))(typ))
+      onTypes(transformer)(mapSubtrees(traverse(transformer))(typ))
 }

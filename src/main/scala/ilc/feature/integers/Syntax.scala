@@ -45,3 +45,9 @@ extends Syntax
     AbelianGroup ! LiteralInt(additionCode) !
       PlusInt ! NegateInt ! LiteralInt(0)
 }
+
+trait ImplicitSyntaxSugar
+extends SyntaxSugar
+{
+  implicit def intToTerm(n: Int): Term = LiteralInt(n)
+}

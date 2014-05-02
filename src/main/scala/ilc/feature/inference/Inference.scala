@@ -163,7 +163,7 @@ extends base.Syntax
   }
 
   /**
-   * Take a transformer and a term, and apply transformer to each subterm of term. 
+   * Take a transformer and a term, and apply transformer to each subterm of term.
    * @param transformer
    */
   def mapSubtrees(transformer: Type => Type): Type => Type =
@@ -188,7 +188,7 @@ extends base.Syntax
    * applied more than once in the same position. Since in my experience most
    * rules must be applied at most once, this is left to the rules themselves.
    *
-   * Beta-reduction is a typical example of a rule needing fixpoint iteration.  
+   * Beta-reduction is a typical example of a rule needing fixpoint iteration.
    */
   def traverse(transformer: Type => Type): Type => Type =
     Type =>

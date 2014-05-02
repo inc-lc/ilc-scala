@@ -104,7 +104,7 @@ trait Syntax extends base.Syntax {
     * val fst1 = lambda(NatType, NatType) {
     *   case Seq(x, y) => x
     * }
-    * 
+    *
     * val fst2 = lambda("firstParameter", "secondParameter") {
     *   case Seq(firstParameter, secondParameter) => firstParameter
     * }

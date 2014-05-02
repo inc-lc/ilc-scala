@@ -134,6 +134,7 @@ extends base.Syntax
       val nextSubstitutions = substitutions.mapValues(substitute(Map(tn -> a))) + (tn -> a)
       unificationHelper(substitute(nextRemaining, nextSubstitutions), nextSubstitutions)
     }
+    def getTypes(p: Product) = p.productIterator.asInstanceOf[Iterator[Type]]
     @tailrec
     def unificationHelper(remaining: Set[Constraint], substitutions: Map[TypeVariable, Type]): Map[TypeVariable, Type] = {
       if (remaining.isEmpty)
@@ -143,7 +144,7 @@ extends base.Syntax
           case (a, b) if a == b => unificationHelper(remaining.tail, substitutions)
           case (tn: TypeVariable, a) if !occurs(tn, a) => typeVariableAndAnythingElse(tn, a, remaining, substitutions)
           case (a, tn: TypeVariable) if !occurs(tn, a) => typeVariableAndAnythingElse(tn, a, remaining, substitutions)
-          case (a, b) if a.getClass == b.getClass =>  unificationHelper(remaining.tail ++ a.productIterator.zip(b.productIterator).toSet.asInstanceOf[Set[(Type, Type)]], substitutions)
+          case (a, b) if a.getClass == b.getClass =>  unificationHelper(remaining.tail ++ getTypes(a).zip(getTypes(b)).toSet, substitutions)
           case _ => throw UnificationFailure(remaining, substitutions)
         }
     }

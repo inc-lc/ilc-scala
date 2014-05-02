@@ -28,10 +28,10 @@ extends base.Syntax
   case class TypeAscription(term: UntypedTerm, typ: Type) extends UntypedTerm
 
   // Only use this for pattern matching. Create new TypeVariables with freshTypeVariable.
-  case class TypeVariable(name: Int, uterm: UntypedTerm) extends Type
+  case class TypeVariable(name: Int, uterm: Option[UntypedTerm] = None) extends Type
 
   val typeVariableCounter: AtomicInteger = new AtomicInteger()
-  def freshTypeVariable(uterm: UntypedTerm): TypeVariable = TypeVariable(typeVariableCounter.incrementAndGet(), uterm)
+  def freshTypeVariable(uterm: UntypedTerm): TypeVariable = TypeVariable(typeVariableCounter.incrementAndGet(), Some(uterm))
 
   type Constraint = (Type, Type)
   def Constraint(a: Type, b: Type): Constraint = (a, b)

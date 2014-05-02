@@ -15,6 +15,10 @@ package functions
   * calculus with ContextSensitiveDerivation is the one defined
   * in base.ContextSensitiveDerivation for sure, who delegates
   * its duties to `deriveSubterm` immediately.
+  *
+  * The base deriveSubterm will then default to context-free derivation
+  * in the superclass - ignoring code of context-free derivation traits
+  * in subtraits.
   */
 
 trait ContextSensitiveDerivation

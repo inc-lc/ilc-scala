@@ -28,10 +28,10 @@ extends base.Syntax
   case class TypeAscription(term: UntypedTerm, typ: Type) extends UntypedTerm
 
   // Only use this for pattern matching. Create new TypeVariables with freshTypeVariable.
-  case class TypeVariable(name: Int) extends Type
+  case class TypeVariable(name: Int, uterm: UntypedTerm) extends Type
 
   val typeVariableCounter: AtomicInteger = new AtomicInteger()
-  def freshTypeVariable(): TypeVariable = TypeVariable(typeVariableCounter.incrementAndGet())
+  def freshTypeVariable(uterm: UntypedTerm): TypeVariable = TypeVariable(typeVariableCounter.incrementAndGet(), uterm)
 
   type Constraint = (Type, Type)
   def Constraint(a: Type, b: Type): Constraint = (a, b)
@@ -76,19 +76,19 @@ extends base.Syntax
         case None => sys error s"Unbound variable ${UVar(name)}"
       }
     case UAbs(argumentName, annotatedArgumentType, body) =>
-      val argumentType = annotatedArgumentType.getOrElse(freshTypeVariable())
+      val argumentType = annotatedArgumentType.getOrElse(freshTypeVariable(term))
       val (typedBody, c) = collectConstraints(body, extend(context, argumentName, argumentType))
       (TAbs(argumentName, argumentType, typedBody), c)
     case UApp(t1, t2) =>
       val (tt1, c1) = collectConstraints(t1, context)
       val (tt2, c2) = collectConstraints(t2, context)
-      val x = freshTypeVariable()
+      val x = freshTypeVariable(term)
       val c = c1 ++ c2 + Constraint(tt1.getType, =>:(tt2.getType, x))
       (TApp(tt1, tt2, x), c)
     case UMonomorphicConstant(term) =>
       (TMonomorphicConstant(term), emptyConstraintSet)
     case UPolymorphicConstant(t) =>
-      val typeArguments = (1 to t.typeConstructor.arity) map (_ => freshTypeVariable())
+      val typeArguments = (1 to t.typeConstructor.arity) map (_ => freshTypeVariable(term))
       val typ = t.typeConstructor(typeArguments)
       (TPolymorphicConstant(t, typ, typeArguments), emptyConstraintSet)
     case TypeAscription(term, typ) =>

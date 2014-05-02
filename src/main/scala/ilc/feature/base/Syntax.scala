@@ -37,7 +37,7 @@ Please do not declare getType as an abstract `val`.
 
     /** find the name, or die **/
     def apply(name: Name): Var =
-      lookup(name).fold(typeErrorNotDefined(name))(identity)
+      lookup(name).fold(typeErrorNotInContext(name))(identity)
 
     /** membership test */
     def contains(name: Name): Boolean =

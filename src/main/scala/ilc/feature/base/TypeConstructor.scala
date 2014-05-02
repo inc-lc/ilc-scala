@@ -2,6 +2,9 @@ package ilc
 package feature
 package base
 
+//XXX Should be TypeConstructors to clarify the difference (I took this
+//convention from the Scala compiler, which uses the same pattern).
+
 trait TypeConstructor extends functions.Types with Names {
   /** description of a type constructor with enough
     * details at the level of scala values to compute

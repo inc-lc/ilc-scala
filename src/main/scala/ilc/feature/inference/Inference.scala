@@ -171,14 +171,14 @@ extends base.Syntax
    * @param transformer
    */
   def mapSubtrees(transformer: Type => Type): Type => Type =
-    Type => {
-      val subTypes = Type.productIterator.toList map {
+    typ => {
+      val subTypes = typ.productIterator.toList map {
         //The pattern matching cannot distinguish this.Type from (something else).Type.
         //Won't be a problem as long as you don't mix different Types in the same tree.
         case subType: Type @unchecked => transformer(subType)
         case notType => notType
       }
-      reflectiveCopy(Type, subTypes: _*)
+      reflectiveCopy(typ, subTypes: _*)
     }
 
   /**
@@ -195,6 +195,6 @@ extends base.Syntax
    * Beta-reduction is a typical example of a rule needing fixpoint iteration.
    */
   def traverse(transformer: Type => Type): Type => Type =
-    Type =>
-      transformer(mapSubtrees(traverse(transformer))(Type))
+    typ =>
+      transformer(mapSubtrees(traverse(transformer))(typ))
 }

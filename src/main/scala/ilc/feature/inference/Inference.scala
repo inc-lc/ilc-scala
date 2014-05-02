@@ -103,7 +103,7 @@ extends base.Syntax
 
   def substitute(substitutions: Map[TypeVariable, Type]): Type => Type =
     traverse {
-      case tv@TypeVariable(n) => substitutions.getOrElse(tv, tv)
+      case tv: TypeVariable => substitutions.getOrElse(tv, tv)
       case typ => typ
     }
 
@@ -135,8 +135,8 @@ extends base.Syntax
       remaining.headOption match {
         case None => substitutions
         case Some((a, b)) if a == b => unificationHelper(remaining.tail, substitutions)
-        case Some((tn@TypeVariable(n), a)) if !occurs(tn, a) => typeVariableAndAnythingElse(tn, a, remaining, substitutions)
-        case Some((a, tn@TypeVariable(n))) if !occurs(tn, a) => typeVariableAndAnythingElse(tn, a, remaining, substitutions)
+        case Some((tn: TypeVariable, a)) if !occurs(tn, a) => typeVariableAndAnythingElse(tn, a, remaining, substitutions)
+        case Some((a, tn: TypeVariable)) if !occurs(tn, a) => typeVariableAndAnythingElse(tn, a, remaining, substitutions)
         case Some((a, b)) if a.getClass == b.getClass =>  unificationHelper(remaining.tail ++ a.productIterator.zip(b.productIterator).toSet.asInstanceOf[Set[(Type, Type)]], substitutions)
         case _ => throw new UnificationFailure()
       }

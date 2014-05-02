@@ -40,18 +40,17 @@ extends DBToasterExample
   //All of this is missing aggregation.
   def untypedProgram0 = 'r ->: 's ->: join('r, 's, 'rEl ->: 'sEl ->: eqq(proj1('rEl), proj1('sEl)), pair)
   def untypedProgram =
-    'r ->: groupByGen(proj1, proj2, 'r)
-    /*'r ->: 's ->: {
+    'r ->: 's ->: {
     letS (
-      ('idxR, groupByGen('r, proj1, proj2)),
-      ('idxS, groupByGen('s, proj1, proj2))
+      ('idxR, groupByGen(proj1, proj2, 'r)),
+      ('idxS, groupByGen(proj1, proj2, 's))
     ) {
       'idxR
       //filter (proj1('r) == proj1('s)) ...
       //dictFlatMap('k ->: 'v ->: bagDictKeyFilter('k2 ->: eqq('k, 'k2), 'idxS))('idxR)
     }
     //mapFlatMap apply ('k ->: 'v ->: mapFilter('k2 ->: 'v2 ->: eqq('k, 'k2), groupByGen('s, proj1, proj2))) apply groupByGen('r, proj1, proj2)
-  }*/
+  }
   override val program: Term = 'x ->: 'x //untypedProgram
 
   def fooMethod() = try {
@@ -60,4 +59,6 @@ extends DBToasterExample
     println(e.details)
   }
 
+  //XXX to call in tests:
+  //(new DBToasterExample2).fooMethod
 }

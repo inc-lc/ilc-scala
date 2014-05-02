@@ -33,8 +33,7 @@ extends base.Syntax
   val typeVariableCounter: AtomicInteger = new AtomicInteger()
   def freshTypeVariable(uterm: UntypedTerm): TypeVariable = TypeVariable(typeVariableCounter.incrementAndGet(), Some(uterm))
 
-  type Constraint = (Type, Type)
-  def Constraint(a: Type, b: Type): Constraint = (a, b)
+  case class Constraint(_1: Type, _2: Type, term: Option[UntypedTerm] = None)
 
   def emptyConstraintSet = Set[Constraint]()
 
@@ -85,7 +84,7 @@ extends base.Syntax
       val (tt1, c1) = collectConstraints(t1, context)
       val (tt2, c2) = collectConstraints(t2, context)
       val x = freshTypeVariable(term)
-      val c = c1 ++ c2 + Constraint(tt1.getType, =>:(tt2.getType, x))
+      val c = c1 ++ c2 + Constraint(tt1.getType, =>:(tt2.getType, x), Some(term))
       (TApp(tt1, tt2, x), c)
     case UMonomorphicConstant(term) =>
       (TMonomorphicConstant(term), emptyConstraintSet)
@@ -95,7 +94,7 @@ extends base.Syntax
       (TPolymorphicConstant(t, typ, typeArguments), emptyConstraintSet)
     case TypeAscription(term, typ) =>
       val (tt, c) = collectConstraints(term, context)
-      (tt, c + Constraint(tt.getType, typ))
+      (tt, c + Constraint(tt.getType, typ, Some(term)))
     case _ => sys error s"Cannot infer type for $term"
   }
 
@@ -114,8 +113,8 @@ extends base.Syntax
     }
 
   def substituteInConstraint(substitutions: Map[TypeVariable, Type])(constraint: Constraint): Constraint =
-    (substitute(substitutions)(constraint._1),
-     substitute(substitutions)(constraint._2))
+    Constraint(substitute(substitutions)(constraint._1),
+     substitute(substitutions)(constraint._2), constraint.term)
 
   def substitute(constraints: Set[Constraint], substitutions: Map[TypeVariable, Type]): Set[Constraint] =
     constraints.map(substituteInConstraint(substitutions))
@@ -136,17 +135,17 @@ extends base.Syntax
       val nextSubstitutions = substitutions.mapValues(substitute(Map(tn -> a))) + (tn -> a)
       unificationHelper(substitute(nextRemaining, nextSubstitutions), nextSubstitutions)
     }
-    def getTypes(p: Product) = p.productIterator.asInstanceOf[Iterator[Type]]
+    def getTypes(p: Product) = p.productIterator.asInstanceOf[Iterator[Type]].toStream
     @tailrec
     def unificationHelper(remaining: Set[Constraint], substitutions: Map[TypeVariable, Type]): Map[TypeVariable, Type] = {
       if (remaining.isEmpty)
         substitutions
       else
         remaining.head match {
-          case (a, b) if a == b => unificationHelper(remaining.tail, substitutions)
-          case (tn: TypeVariable, a) if !occurs(tn, a) => typeVariableAndAnythingElse(tn, a, remaining, substitutions)
-          case (a, tn: TypeVariable) if !occurs(tn, a) => typeVariableAndAnythingElse(tn, a, remaining, substitutions)
-          case (a, b) if a.getClass == b.getClass =>  unificationHelper(remaining.tail ++ getTypes(a).zip(getTypes(b)).toSet, substitutions)
+          case Constraint(a, b, _) if a == b => unificationHelper(remaining.tail, substitutions)
+          case Constraint(tn: TypeVariable, a, _) if !occurs(tn, a) => typeVariableAndAnythingElse(tn, a, remaining, substitutions)
+          case Constraint(a, tn: TypeVariable, _) if !occurs(tn, a) => typeVariableAndAnythingElse(tn, a, remaining, substitutions)
+          case Constraint(a, b, term) if a.getClass == b.getClass =>  unificationHelper(remaining.tail ++ (getTypes(a), getTypes(b)).zipped.map(Constraint(_, _, term)).toSet, substitutions)
           case _ => throw UnificationFailure(remaining, substitutions)
         }
     }

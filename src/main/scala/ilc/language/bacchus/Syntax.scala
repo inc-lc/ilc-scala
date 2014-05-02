@@ -14,3 +14,4 @@ extends functions.Pretty
    with equality.Syntax
    with abelianGroups.Syntax
    with products.Syntax
+   with booleans.SyntaxSugar

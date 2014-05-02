@@ -14,3 +14,4 @@ extends functions.ToScala
    with equality.ToScala
    with abelianGroups.ToScala
    with products.ToScala
+   with booleans.ToScala

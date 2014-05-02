@@ -13,3 +13,4 @@ extends functions.Derivation
    with sums.ReplacementValuesDerivation
    with abelianGroups.Derivation
    with products.Derivation
+   with booleans.Derivation

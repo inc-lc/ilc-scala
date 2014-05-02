@@ -13,9 +13,6 @@ import scala.language.implicitConversions
 class FixpointSuite
 extends FunSuite
     with Matchers
-    with booleans.SyntaxSugar //Should be in bacchus.
-    with booleans.ToScala
-    with booleans.Derivation
     with bacchus.Syntax
     with bacchus.ToScala
     with bacchus.BasicDerivation

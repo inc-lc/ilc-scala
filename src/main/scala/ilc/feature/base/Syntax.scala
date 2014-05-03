@@ -240,11 +240,9 @@ Please do not declare getType as an abstract `val`.
 
         val term = toTerm.toString
         val actual = toTerm.getType
-        val expected = argumentTypes.foldRight(Underscore: Type)(_ =>: _) toString
+        val expected = argumentTypes.foldRight(Underscore: Type)(_ =>: _).toString
 
-        // This used typeErrorNotTheSame, but the error text was confusing.
-        // TODO: encapsulate the new error text for reuse?
-        throw TypeError(s"$term has type $actual but should have type $expected")
+        typeErrorWrongType(term, actual, expected)
       }
     }
   }

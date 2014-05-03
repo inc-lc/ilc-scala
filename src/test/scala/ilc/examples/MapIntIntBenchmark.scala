@@ -4,6 +4,8 @@ package examples
 import scala.collection.breakOut
 import org.scalameter.api.Gen
 
+import feature.abelianGroups.Library._
+
 /**
   * A template for benchmarking derivatives of generated programs transforming
   * Map[Int, Int] into Map[Int, Int].
@@ -11,8 +13,8 @@ import org.scalameter.api.Gen
 class MapIntIntBenchData(val example: ExampleGenerated {
   type InputType = Map[Int, Int]
   type OutputType = Map[Int, Int]
-  type DeltaInputType = Either[Map[Int, Either[Option[Int], Int]], Map[Int, Int]]
-  type DeltaOutputType = Either[Map[Int, Either[Option[Int], Int]], Map[Int, Int]]
+  type DeltaInputType = Either[Map[Int, Either[Option[Int], Either[(AbelianGroup[Int], Int), Int]]], Map[Int, Int]]
+  type DeltaOutputType = Either[Map[Int, Either[Option[Int], Either[(AbelianGroup[Int], Int), Int]]], Map[Int, Int]]
 }) extends BenchData with ReplacementChangeData
 {
   import example._
@@ -31,6 +33,7 @@ class MapIntIntBenchData(val example: ExampleGenerated {
     "remove n"
   )
 
+  //XXX abstract more?
   def lookupChange(description: String,
                    inputSize: Int,
                    input: InputType,
@@ -41,7 +44,9 @@ class MapIntIntBenchData(val example: ExampleGenerated {
         Left(Map.empty)
 
       case "replace 1 by n + 1" =>
-        Left(Map(1 -> Right(n + 1)))
+        //Compare with DeltaInputType above to understand.
+        //But basically, this is the integer change Right(n + 1) applied to the value for 1.
+        Left(Map(1 -> Right(Right(n + 1))))
 
       case "add n + 2" =>
         Left(Map(n + 2 -> Left(Some(n + 2))))

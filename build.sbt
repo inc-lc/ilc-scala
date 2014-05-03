@@ -35,14 +35,20 @@ libraryDependencies +=
   //"com.chuusai" %% "shapeless" % "2.0.0" //for 2.11
   "com.chuusai" % "shapeless_2.10.2" % "2.0.0"
 
-initialCommands := "import ilc.examples._"
+initialCommands in console := "import ilc.examples._"
 
-initialCommands in (Test, Keys.console) := """
+initialCommands in (Test, console) := """
   import ilc.feature.inference._
   val h = new Helper {}
   import h._
   import shapeless._
 """
+
+//By default, initialCommands in console is also used for consoleQuick [1],
+//where however we can't reference the project code! So disable this default by
+//setting empty initialCommands.
+//[1] http://www.scala-sbt.org/0.13.1/docs/Howto/scala.html#initial
+initialCommands in consoleQuick := ""
 
 // SCALA METER BEGINS
 // http://axel22.github.io/scalameter//2013/06/14/release_0_4_M2.html

@@ -9,8 +9,9 @@ extends FunSuite
    with ReplacementValuesDerivation
    with SyntaxSugar
    with Evaluation
-   with naturals.ReplacementValuesDerivation
-   with naturals.Evaluation
+   with integers.AbelianDerivation
+   with integers.Evaluation
+   with integers.ImplicitSyntaxSugar
    with sums.Evaluation
    with functions.Pretty // for debugging
 {
@@ -21,8 +22,8 @@ extends FunSuite
   /** surgical change from `oldMap` to `newMap` */
   val surgery: Term = {
     import MapSurgery._
-    mkSurgicalMapChange(NatType, NatType)(
-      MODIFY(2, 400),
+    mkSurgicalMapChange(IntType, IntType)(
+      MODIFY(2, replacementChange ! 400),
       DELETE(3),
       INSERT(5, 500)
     )

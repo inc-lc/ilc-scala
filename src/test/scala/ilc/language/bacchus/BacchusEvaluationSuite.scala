@@ -19,7 +19,7 @@ extends FunSuite
 
   // Plus
   expectToGet(10) {
-    Plus ! (Plus ! 1 ! 2) ! (Plus ! 3 ! 4)
+    PlusNat ! (PlusNat ! 1 ! 2) ! (PlusNat ! 3 ! 4)
   }
 
   // Plus FoldNat
@@ -28,7 +28,7 @@ extends FunSuite
   // Plus Inj1 Inj2 Either
   expectToGet(123) {
     def add(n: Int) = lambda(ℕ, ℕ) {
-      case Seq(x, y) => Plus ! (Plus ! x ! y) ! n
+      case Seq(x, y) => PlusNat ! (PlusNat ! x ! y) ! n
     }
     case4(Inj2(ℕ) ! 100, Inj1(ℕ) ! 20,
       add(1), add(2), add(3), add(4))

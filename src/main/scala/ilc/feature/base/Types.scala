@@ -19,8 +19,8 @@ trait Types {
   def typeErrorNotTheSame(context: String, expected: Any, actual: Any) =
     throw TypeError(s"expected $expected instead of $actual in $context")
 
-  def typeErrorNotDefined(name : Any) =
-    throw TypeError("undefined identifier " + name)
+  def typeErrorNotInContext(name : Any) =
+    throw TypeError(s"identifier ${name} not found in typing context")
 }
 
 case class TypeError(msg: String)

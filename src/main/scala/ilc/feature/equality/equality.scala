@@ -11,12 +11,17 @@ trait Syntax extends base.Syntax with booleans.Types {
   }
 }
 
-trait Library {
-  def equal[T](a: T, b: T): Boolean =
-    a == b
+object Library extends base.Library {
+  //def equal[T](a: T, b: T): Boolean =
+  def equal[T]: (=> T) => ((=> T) => Boolean) =
+    a => b =>
+      a == b
+
 }
 
 trait ToScala extends base.ToScala with Syntax {
+  addLibrary("equality")
+
   //This accepts arbitrary instances of Type, not just ours; see pattern match
   //below for rationale.
   private[this] def containsFunctions(t: base.Types#Type): Boolean =
@@ -38,7 +43,7 @@ trait ToScala extends base.ToScala with Syntax {
   override def toUntypedScala(t: Term): String =
     t match {
       case Eq(v) if !containsFunctions(v) =>
-        "equal[${toScala(v)] _"
+        s"equal[${toScala(v)}]"
       case Eq(v) =>
         sys.error(s"Cannot implement equality on type $v containing a function type")
       case _ =>

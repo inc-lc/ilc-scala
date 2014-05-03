@@ -24,10 +24,11 @@ trait DerivativeTests
 extends CorrectnessAssertion
    with Subjects
    with Evaluation
+   with naturals.ImplicitSyntaxSugar
 {
   test("diff and apply works on functions") {
-    val f = Plus ! 25
-    val g = Plus ! 100
+    val f = PlusNat ! 25
+    val g = PlusNat ! 100
     assert(eval(ChangeUpdate ! (Diff ! g ! f) ! f ! 20).toNat === 120)
   }
 
@@ -67,12 +68,12 @@ extends CorrectnessAssertion
   test("the derivative of Plus is correct") {
     (natPairs, natPairs.reverse).zipped.foreach { (p1, p2) =>
       val ((x, xNew), (yNew, y)) = (p1, p2)
-      assertCorrect(Plus, x ↦ xNew, y ↦ yNew)
+      assertCorrect(PlusNat, x ↦ xNew, y ↦ yNew)
     }
   }
 
   test("the derivative of FoldNat is correct") {
-    val args2 = List(5 ↦ 1997, (Plus ! 25) ↦ (Plus ! 100))
+    val args2 = List(5 ↦ 1997, (PlusNat ! 25) ↦ (PlusNat ! 100))
     val args3 = args2 ++ List(40 ↦ 5)
 
     assertCorrect(FoldNat(ℕ), args3: _*)
@@ -120,7 +121,7 @@ extends CorrectnessAssertion
   }
 
   test("the derivative of Fold is correct") {
-    val plusValue = lambda(ℕ) { x => Plus }
+    val plusValue = lambda(ℕ) { x => PlusNat }
 
     // constant f z
     assertCorrect(Fold ! plusValue ! 0, oldMap ↦ newMap)
@@ -131,7 +132,7 @@ extends CorrectnessAssertion
     // changing everything
     assertCorrect(Fold(ℕ, ℕ, ℕ),
       plusValue ↦ lambda(ℕ, ℕ, ℕ) {
-        case Seq(k, x, y) => Plus ! (Plus ! 2000 ! x) ! y
+        case Seq(k, x, y) => PlusNat ! (PlusNat ! 2000 ! x) ! y
       },
       0 ↦ 100,
       oldMap ↦ newMap)

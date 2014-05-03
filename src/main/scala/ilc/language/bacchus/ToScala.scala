@@ -10,7 +10,9 @@ extends functions.ToScala
    with maps.ToScala
    with maybe.ToScala
    with naturals.ToScala
+   with integers.ToScala
    with sums.ToScala
    with equality.ToScala
    with abelianGroups.ToScala
    with products.ToScala
+   with booleans.ToScala

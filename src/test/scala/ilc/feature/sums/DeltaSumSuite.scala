@@ -8,23 +8,24 @@ class DeltaSumSuite
 extends FunSuite
    with ReplacementValuesDerivation
    with Evaluation
-   with naturals.ReplacementValuesDerivation
-   with naturals.Evaluation
+   with integers.AbelianDerivation
+   with integers.Evaluation
+   with integers.ImplicitSyntaxSugar
 {
-  val ℕ = NatType
   implicit class SumTypeOps(sigma: Type) {
     def ⊎ (tau: Type): Type =
       SumType(sigma, tau)
   }
 
-  val oldSum = Inj1(ℕ) ! 5
-  val swapped = Inj2(ℕ) ! 7
-  val operated = Inj1(ℕ) ! 9
+  //XXX abstract more
+  val oldSum = Inj1(ℤ) ! 5
+  val swapped = Inj2(ℤ) ! 7
+  val operated = Inj1(ℤ) ! 9
 
-  val replace = Inj2(ℕ ⊎ ℕ)
+  val replace = Inj2(deltaType(ℤ) ⊎ deltaType(ℤ))
 
   val replacement = replace ! swapped
-  val surgery = Inj1(ℕ ⊎ ℕ) ! (Inj1(ℕ) ! 9)
+  val surgery = Inj1(ℤ ⊎ ℤ) ! (Inj1(deltaType(ℤ)) ! (replacementChange ! 9))
 
   test("updateTerm behaves as expected") {
     assert(eval(ChangeUpdate ! replacement ! oldSum) === eval(swapped))

@@ -21,11 +21,12 @@ trait Syntax extends base.Syntax with Types {
     override def toString = n.toString
   }
 
-  case object Plus extends Term {
+  case object PlusNat extends Term {
     override lazy val getType: Type =
       NatType =>: NatType =>: NatType
   }
+}
 
-  // implicit conversions
+trait ImplicitSyntaxSugar extends Syntax {
   implicit def natToTerm(n: Int): Term = Nat(n)
 }

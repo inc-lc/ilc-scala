@@ -48,8 +48,6 @@ extends Example
    with integers.AbelianDerivation
    with integers.ToScala
 {
-  val ℤ = IntType
-
   /** An ascription of `groupByGen`, instantiating it to a simply
     * typed term.
     *

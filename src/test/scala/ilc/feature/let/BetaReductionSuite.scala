@@ -9,7 +9,7 @@ import ilc.util.EvalGenerated
 class BetaReductionSuite
 extends FlatSpec
    with Matchers
-   with BetaReduction with naturals.Syntax with ToScala with ProgramSize with naturals.ToScala with EvalGenerated {
+   with BetaReduction with naturals.ImplicitSyntaxSugar with ToScala with ProgramSize with naturals.ToScala with EvalGenerated {
 
   val x = Var("x", NatType)
   val y = Var("y", NatType)
@@ -21,7 +21,7 @@ extends FlatSpec
 
   val nestedApp = lambdaTerm(y) { App(lambdaTerm(x) { x }, y) }
 
-  val appInLet = Let(f, lambdaTerm(z) { z }, lambdaTerm(y) { Plus ! (f ! y) ! (lambdaTerm(x) { x } ! y) })
+  val appInLet = Let(f, lambdaTerm(z) { z }, lambdaTerm(y) { PlusNat ! (f ! y) ! (lambdaTerm(x) { x } ! y) })
 
   val deadLets = Let(x, 1, Let(y, 2, 3))
 
@@ -44,7 +44,7 @@ extends FlatSpec
   }
 
   it should "reduce terms inside lets" in {
-    letBetaReduceOneStep(appInLet) should be (Let(f, lambdaTerm(z) { z }, lambdaTerm(y) {Plus ! (f ! y) ! Let(x, y, x) }))
+    letBetaReduceOneStep(appInLet) should be (Let(f, lambdaTerm(z) { z }, lambdaTerm(y) {PlusNat ! (f ! y) ! Let(x, y, x) }))
   }
 
   "dce" should "remove dead variables" in {
@@ -79,10 +79,10 @@ extends FlatSpec
         lambda(NatType) { _ =>
           expensive }
       } }
-  val u = t ! 1 ! (Plus ! 42 ! 84)
+  val u = t ! 1 ! (PlusNat ! 42 ! 84)
   val duplicating = lambda(Var("f", NatType =>: NatType), Var("expensive", NatType)) {
-    case Seq(arg, expensive) => Plus ! (arg ! expensive) ! (arg ! expensive)
-  } ! u ! (Plus ! 42 ! 84)
+    case Seq(arg, expensive) => PlusNat ! (arg ! expensive) ! (arg ! expensive)
+  } ! u ! (PlusNat ! 42 ! 84)
   pretty(duplicating)
   pretty(normalize(duplicating))
   /*
@@ -90,8 +90,8 @@ extends FlatSpec
     lambda(Var("param", NatType)) { param =>
       lambda(Var("expensive", NatType)) { expensive =>
         lambda(NatType) { _ => expensive }
-      } ! (Plus ! param ! param) }
+      } ! (PlusNat ! param ! param) }
   val u = t ! 1
-  val duplicating = lambda(Var("f", NatType =>: NatType)) { arg => Plus ! (arg ! z) ! (arg ! z) } ! u
+  val duplicating = lambda(Var("f", NatType =>: NatType)) { arg => PlusNat ! (arg ! z) ! (arg ! z) } ! u
    */
 }

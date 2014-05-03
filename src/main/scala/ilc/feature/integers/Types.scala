@@ -6,4 +6,6 @@ trait Types extends base.Types {
   case object IntType extends Type {
     override def toString = "ℤ"
   }
+
+  val ℤ = IntType
 }

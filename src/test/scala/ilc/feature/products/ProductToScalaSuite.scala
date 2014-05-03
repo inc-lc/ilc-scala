@@ -10,10 +10,11 @@ class ProductToScalaSuite
 extends FunSuite
    with Matchers
    with ToScala
-   with naturals.ToScala
+   with integers.ToScala
    with functions.ToScala
    with EvalScala
    with SyntaxSugar
+   with integers.ImplicitSyntaxSugar
 {
   def run(t: Term): Any = evalScala(toScala(t))
 

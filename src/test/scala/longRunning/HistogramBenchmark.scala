@@ -34,7 +34,7 @@ class HistogramRecomputeBenchmark extends OnlyRecomputationBenchmark(
       //Gen.single("n")(last)
   })
 
-object HistogramVerification extends BenchmarkVerification(
+class HistogramVerification extends BenchmarkVerification(
   new WordCountBenchData(HistogramGenerated) {
     override def base = 2
     override def last = 2

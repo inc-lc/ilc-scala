@@ -42,7 +42,7 @@ extends EvaluationBase
         loop(n.toNat)
       }
 
-    case Plus =>
+    case PlusNat =>
       (x: Value) => (y: Value) => x.toNat + y.toNat
 
     case _ =>

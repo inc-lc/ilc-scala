@@ -9,8 +9,10 @@ extends functions.Pretty
    with bags.SyntaxSugar
    with maps.SyntaxSugar
    with maybe.Syntax
+   with integers.SyntaxSugar
    with naturals.Syntax
    with sums.SyntaxSugar
    with equality.Syntax
    with abelianGroups.Syntax
    with products.Syntax
+   with booleans.SyntaxSugar

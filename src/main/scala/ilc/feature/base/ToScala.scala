@@ -11,8 +11,8 @@ trait ToScala extends Syntax with IndentUtils {
 
   // subclasses should override this one without concern for types
   def toUntypedScala(t: Term): String = t match {
-    case variable: Var =>
-      variable.getName.toString
+    case Var(name, _) =>
+      name.toString
 
     case _ =>
       sys error s"Unknown term $t"

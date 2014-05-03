@@ -42,8 +42,8 @@ object BuildUnit extends Build {
           //Note: this removes stale generated files, assuming no other
           //generator targets the same directory.
           for (staleFile <- (descendants(PathFinder(genSrcDir)) --- PathFinder(genFiles)).get) {
-            console.warn("Removing stale file " + staleFile)
-            console.warn("Look at project/Build.scala if this is not intended")
+            consoleLogger.warn("Removing stale file " + staleFile)
+            consoleLogger.warn("Look at project/Build.scala if this is not intended")
             staleFile.delete()
           }
 
@@ -72,16 +72,16 @@ object BuildUnit extends Build {
   //
   def generateExamples(base: File, generator: ExamplesRunner): Seq[File] =
   {
-    console.info("Generating examples into:")
-    console.info(base.toString)
+    consoleLogger.info("Generating examples into:")
+    consoleLogger.info(base.toString)
     generator.start(base.getCanonicalPath).map(path => {
       val file = new File(path)
-      console.info("- " ++ file.getName)
+      consoleLogger.info("- " ++ file.getName)
       file
     })
   }
 
-  val console = ConsoleLogger()
+  val consoleLogger = ConsoleLogger()
 
   // Adapted from:
   // http://stackoverflow.com/a/10286201
@@ -138,11 +138,11 @@ object BuildUnit extends Build {
     def log(level: Level.Value, message: => String): Unit = level match {
       // we echo warnings
       case Level.Warn =>
-        console.warn(message)
+        consoleLogger.warn(message)
 
       // we echo things printed to stderr as info
       case Level.Error =>
-        console.info(message)
+        consoleLogger.info(message)
 
       case _ =>
         accumulator = message :: accumulator

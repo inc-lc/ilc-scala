@@ -19,7 +19,6 @@ extends FunSuite
    with functions.Pretty
    with AbelianDerivation
 {
-  private val ℤ = IntType
   implicit def intToTerm(i: Int): Term = LiteralInt(i)
 
   def expectToGet(i: Int)(t: => Term) {

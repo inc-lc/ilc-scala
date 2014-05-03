@@ -11,7 +11,6 @@ extends FunSuite
    with naturals.ReplacementValuesDerivation
    with naturals.Evaluation
 {
-  val ℕ = NatType
   implicit class SumTypeOps(sigma: Type) {
     def ⊎ (tau: Type): Type =
       SumType(sigma, tau)

@@ -10,8 +10,6 @@ extends Example
    with integers.AbelianDerivation
    with integers.ToScala
 {
-  val ℤ = IntType
-
   // userMap : ℤ → Bag ℤ → Bag (ℤ × ℤ)
   // userMap = λ ignoredDocumentID : ℤ.
   //   foldGroup freeAbelianGroup

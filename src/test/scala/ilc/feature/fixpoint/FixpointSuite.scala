@@ -22,8 +22,6 @@ extends FunSuite
     with integers.ToScala
     with bacchus.BasicDerivation
     with EvalGenerated {
-  val ℤ = IntType
-
   // this is intToTerm actually
   override implicit def natToTerm(n: Int): Term = LiteralInt(n)
 

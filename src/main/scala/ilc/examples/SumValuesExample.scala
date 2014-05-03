@@ -21,8 +21,6 @@ extends Example
    with products.ToScala
    with sums.ToScala
 {
-  private val ℤ = IntType
-
   // snd : ℤ → ℤ → ℤ
   // snd = λx : ℤ. λy : ℤ. y
   //

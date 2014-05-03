@@ -10,8 +10,6 @@ extends FunSuite
    with functions.Pretty
    with naturals.Syntax
 {
-  val ℕ = NatType
-
   val app = lambda("f", "x") { case Seq(f, x) => f ! x }
 
   val appType = (ℕ =>: ℕ) =>: ℕ =>: ℕ

@@ -12,7 +12,6 @@ extends FunSuite
    with functions.Evaluation
    with functions.Pretty
 {
-  val ℕ = NatType
   val quadruple: Term = tuple(4) ! 1 ! 2 ! 3 ! 4
 
   test("tuple(n) creates a term of tupleType(n)") {

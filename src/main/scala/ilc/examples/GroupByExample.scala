@@ -70,8 +70,6 @@ extends Example
    with integers.AbelianDerivation
    with integers.ToScala
 {
-  val ℤ = IntType
-
   //Implement groupBy in the meta-language.
   def groupByMeta[T, K](b: Bag[T], f: T => K): AbelianMap[K, Bag[T]] = {
     //XXX: names of singletonMap and bagSingleton are inconsistent.

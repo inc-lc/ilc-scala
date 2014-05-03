@@ -27,8 +27,6 @@ extends FunSuite
    with naturals.ToScala
    with maybe.ToScala
 {
-  val ℤ = IntType
-
   // this is intToTerm actually
   override implicit def natToTerm(i: Int): Term = LiteralInt(i)
 

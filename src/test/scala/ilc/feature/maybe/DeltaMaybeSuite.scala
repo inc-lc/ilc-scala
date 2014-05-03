@@ -12,7 +12,6 @@ extends FunSuite
    with naturals.Evaluation
    with sums.Evaluation
 {
-  val ℕ = NatType
 
   val toNope = Inj2(ℕ) ! Nope(ℕ)
 

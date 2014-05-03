@@ -27,8 +27,6 @@ extends FunSuite
    with sums.ToScala
    with EvalGenerated
 {
-  val ℤ = IntType
-
   val additiveIntegerGroup = evalGenerated(additiveGroupOnIntegers).
     asInstanceOf[abelianGroups.Library.AbelianGroup[Int]]
 

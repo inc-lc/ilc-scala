@@ -4,7 +4,7 @@ package examples
 // the storage aspect of an examples generator
 trait Archive {
   import scala.collection.mutable
-  val archive: mutable.Map[String, Example] = mutable.Map.empty
+  val archive: mutable.Map[String, Example] = mutable.LinkedHashMap.empty
 
   def get(exampleWithName: String): Example =
     archive(exampleWithName)
@@ -32,18 +32,27 @@ object Archive {
   * corresponding to the used language features, and with the appropriate
   * syntax.
   */
-abstract class Example extends feature.functions.Pretty
+abstract class Example
+extends feature.functions.Pretty
+   with feature.let.BetaReduction
+   with feature.let.ProgramSize
 {
   this: feature.base.ToScala
    with feature.base.Derivation =>
 
   def program: Term
   def derivative: Term = derive(program)
+  def normalizedProgram = normalize(program)
+  def normalizedDerivative = normalize(derivative)
 
   def toSource(name: String): Source = {
+    assert(indentDiff == 2)
+    setIndentDepth(2)
+
     val objectName = Archive.toGenName(name)
     val programCode = toScala(program)
     val derivativeCode = toScala(derivative)
+    val normalizedDerivCode = toScala(normalizedDerivative)
     val inputType =>: outputType = program.getType
     val updateInputCode = toScala(updateTerm(inputType))
     val updateOutputCode = toScala(updateTerm(outputType))
@@ -52,8 +61,14 @@ abstract class Example extends feature.functions.Pretty
     val deltaInputTypeCode = toScala(deltaType(inputType))
     val deltaOutputTypeCode = toScala(deltaType(outputType))
 
+    //The output template in toSource relies on this value.
+    setIndentDepth(4)
+
     val programForHuman: String = pretty(program)
     val derivativeForHuman: String = pretty(derivative)
+    val normalizedProgrForHuman: String = pretty(normalizedProgram)
+    val normalizedDerivForHuman: String = pretty(normalizedDerivative)
+
 
     Source(objectName,
       s"""|package ilc.examples
@@ -61,11 +76,27 @@ abstract class Example extends feature.functions.Pretty
           |$imports
           |
           |object $objectName extends ExampleGenerated {
-          |  override val programForHuman = "$programForHuman"
-          |  override val derivativeForHuman = "$derivativeForHuman"
+          |  val programSize = ${termSize(program)}
+          |  val derivativeSize = ${termSize(derivative)}
+          |  val normalizedProgramSize = ${termSize(normalizedProgram)}
+          |  val normalizedDerivativeSize = ${termSize(normalizedDerivative)}
+          |  /*
+          |  programForHuman:
+          |$programForHuman
+          |
+          |  derivativeForHuman:
+          |$derivativeForHuman
+          |
+          |  normalizedProgrForHuman:
+          |$normalizedProgrForHuman
+          |
+          |  normalizedDerivForHuman:
+          |$normalizedDerivForHuman
+          |  */
           |
           |  override val program = $programCode
           |  override val derivative = $derivativeCode
+          |  override val normDerivative = $normalizedDerivCode
           |  override val updateInput = $updateInputCode
           |  override val updateOutput = $updateOutputCode
           |

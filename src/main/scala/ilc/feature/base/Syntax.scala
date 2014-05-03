@@ -29,11 +29,13 @@ Please do not declare getType as an abstract `val`.
 
   case class Var(getName: Name, getType: Type) extends Term
 
-  // TYPING CONTEXT
+  import collection.immutable.HashMap
 
-  case class TypingContext(toList: List[Var]) {
+  // TYPING CONTEXT
+  //This is a case class just to get equals generated.
+  case class TypingContext(private val vars: Map[Name, Var]) {
     def lookup(name: Name): Option[Var] =
-      this.toList.find(_.getName == name)
+      this.vars get name
 
     /** find the name, or die **/
     def apply(name: Name): Var =
@@ -43,16 +45,35 @@ Please do not declare getType as an abstract `val`.
     def contains(name: Name): Boolean =
       lookup(name).fold(false)(_ => true)
 
+    private def toEntry(v: Var) =
+      v.getName -> v
+
     /** add a (typed) variable to the typing context */
     def +: (variable: Var): TypingContext =
-      TypingContext(variable :: this.toList)
+      TypingContext(this.vars + toEntry(variable))
+
+    def ++(variables: Traversable[Var]): TypingContext =
+      TypingContext(this.vars ++ (variables map toEntry))
   }
 
   object TypingContext {
-    val empty: TypingContext = TypingContext(Nil)
+    val empty: TypingContext = TypingContext(HashMap.empty[Name, Var])
     def apply(variables: Var*): TypingContext =
-      TypingContext(List(variables: _*))
+      TypingContext.empty ++ variables
   }
+
+  /**
+   * Extract the base name from an indexed one.
+   * This is useful to prevent creating nested indexed names - they easily get
+   * nested enough to cause StackOverflowExceptions with recursive algorithms.
+   */
+  def decomposeName(n: Name): (NonIndexedName, Int) =
+    n match {
+      case IndexedName(orig, idx) =>
+        (orig, idx)
+      case nin: NonIndexedName =>
+        (nin, 0)
+    }
 
   /** Generate a name unbound in context
     *
@@ -68,9 +89,10 @@ Please do not declare getType as an abstract `val`.
     * freshName(englishMonachs, "Elisabeth") = "Elizabeth_3"
     * }}}
     */
-  def freshName(context: TypingContext, default: Name): Name = {
-    var newName = default
-    var index = 0
+  def freshName(context: TypingContext, _default: Name): Name = {
+    val (default, startIdx) = decomposeName(_default)
+    var newName: Name = default
+    var index = startIdx
     while (context contains newName) {
       index += 1
       newName = IndexedName(default, index)
@@ -253,7 +275,7 @@ Please do not declare getType as an abstract `val`.
       *
       * Give enough argument type to fully specialize
       * a polymorphic term builder.
-      * 
+      *
       * In general, it needs to get *all* argument types,
       * but this requirement is relaxed for polymorphic
       * constants. See documentation of

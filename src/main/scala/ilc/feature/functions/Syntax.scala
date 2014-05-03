@@ -78,7 +78,7 @@ trait Syntax extends base.Syntax {
     (body: Name => TermBuilder): TermBuilder =
     mkLambda(parameter.getName, Some(parameter.getType))(body)
 
-  /** Basic factory of labmda abstraction term builders.
+  /** Basic factory of lambda abstraction term builders.
     * The name to bind is just a suggestion.
     * The argument type is optional.
     */
@@ -104,7 +104,7 @@ trait Syntax extends base.Syntax {
     * val fst1 = lambda(NatType, NatType) {
     *   case Seq(x, y) => x
     * }
-    * 
+    *
     * val fst2 = lambda("firstParameter", "secondParameter") {
     *   case Seq(firstParameter, secondParameter) => firstParameter
     * }
@@ -297,7 +297,7 @@ trait Syntax extends base.Syntax {
               wrongType)
         }
         val t0Term = t0(context).specialize(intermediateType)
-        (lambda(domain) { x => t0Term ! (t1Term ! x) })(TypingContext.empty)
+        (lambda(Var("hole", domain)) { x => t0Term ! (t1Term ! x) })(TypingContext.empty)
       }
 
     def composeWithBuilder(t1: TermBuilder): TermBuilder =
@@ -317,12 +317,9 @@ trait SyntaxSugar extends Syntax {
     * }}}
     */
   val const: TermBuilder =
-    lambda { x => lambda("ignored") { ignored => x } }
-
-  val fst: TermBuilder =
     lambda("fstArgument", "sndArgument") { case Seq(x, y) => x }
 
-  val snd: TermBuilder =
+  val flipConst: TermBuilder =
     lambda("fstArgument", "sndArgument") { case Seq(x, y) => y }
 
   /** Usage:

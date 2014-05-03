@@ -4,8 +4,7 @@ package ilc.examples
   * Interface for generated example programs.
   */
 trait ExampleGenerated extends Serializable {
-  val programForHuman: String
-  val derivativeForHuman: String
+  val normDerivative: (=> InputType) => (=> DeltaInputType) => DeltaOutputType
 
   type InputType
   type DeltaInputType

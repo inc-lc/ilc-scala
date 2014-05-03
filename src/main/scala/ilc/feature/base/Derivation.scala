@@ -50,7 +50,15 @@ extends Syntax
     *     ddx.getType == deltaType(deltaType(xType))
     */
   object DVar {
-    def apply(original: Var) = Var(DeltaName(original.getName), deltaType(original.getType))
+    def apply(original: Var) = {
+      val deltaName = original.getName match {
+        case IndexedName(n, idx) =>
+          IndexedName(DeltaName(n), idx)
+        case n: NonIndexedName =>
+          DeltaName(n)
+      }
+      Var(deltaName, deltaType(original.getType))
+    }
   }
 
   object ChangeUpdate extends PolymorphicTerm {

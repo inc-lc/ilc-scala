@@ -2,11 +2,14 @@ package ilc
 package feature
 package integers
 
+import scala.language.implicitConversions
+
 trait Evaluation extends functions.Evaluation with Syntax
 {
   case class IntValue(i: Int) extends Value {
     override def toString = i.toString
   }
+  implicit def liftIntValue(n: Int): Value = IntValue(n)
 
   implicit class intValueOps(value: Value) {
     def toInt: Int = value match {

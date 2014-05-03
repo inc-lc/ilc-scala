@@ -18,13 +18,10 @@ extends FunSuite
     with Syntax
     with Derivation
     with ToScala
-    with integers.SyntaxSugar
+    with integers.ImplicitSyntaxSugar
     with integers.ToScala
     with bacchus.BasicDerivation
     with EvalGenerated {
-  // this is intToTerm actually
-  override implicit def natToTerm(n: Int): Term = LiteralInt(n)
-
   def multBase(m: Int, n: Int): Int =
     if (n == 0)
       0

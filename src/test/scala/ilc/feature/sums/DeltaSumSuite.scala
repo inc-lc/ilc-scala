@@ -10,6 +10,7 @@ extends FunSuite
    with Evaluation
    with naturals.ReplacementValuesDerivation
    with naturals.Evaluation
+   with naturals.ImplicitSyntaxSugar
 {
   implicit class SumTypeOps(sigma: Type) {
     def ⊎ (tau: Type): Type =

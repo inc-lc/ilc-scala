@@ -25,7 +25,8 @@ trait Syntax extends base.Syntax with Types {
     override lazy val getType: Type =
       NatType =>: NatType =>: NatType
   }
+}
 
-  // implicit conversions
+trait ImplicitSyntaxSugar extends Syntax {
   implicit def natToTerm(n: Int): Term = Nat(n)
 }

@@ -11,6 +11,7 @@ extends FunSuite
    with naturals.Evaluation
    with functions.Evaluation
    with functions.Pretty
+   with naturals.ImplicitSyntaxSugar
 {
   val quadruple: Term = tuple(4) ! 1 ! 2 ! 3 ! 4
 

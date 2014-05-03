@@ -2,8 +2,12 @@ package ilc
 package language
 package bacchus
 
+import feature._
+
 trait Subjects
-extends bacchus.Syntax with bacchus.Prelude with ChangingTerms {
+extends bacchus.Syntax with bacchus.Prelude with ChangingTerms
+   with naturals.ImplicitSyntaxSugar
+{
   // shorthand for types
   implicit class MapTypeOps(sigma: Type) {
     def ↦ (tau: Type): Type = MapType(sigma, tau)

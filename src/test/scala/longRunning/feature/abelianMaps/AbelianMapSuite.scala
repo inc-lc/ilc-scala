@@ -21,15 +21,12 @@ extends FunSuite
    with abelianGroups.ToScala
    with functions.SyntaxSugar
    with functions.ToScala
-   with integers.SyntaxSugar
+   with integers.ImplicitSyntaxSugar
    with integers.ToScala
    with naturals.Syntax
    with naturals.ToScala
    with maybe.ToScala
 {
-  // this is intToTerm actually
-  override implicit def natToTerm(i: Int): Term = LiteralInt(i)
-
   val myEmpty = EmptyMap(ℤ, ℤ)
   val singleton = SingletonMap ! 3 ! 5
   val _G_+ = additiveGroupOnIntegers

@@ -9,7 +9,7 @@ import scala.language.implicitConversions
 
 class IntegerSuite
 extends FunSuite
-   with SyntaxSugar
+   with ImplicitSyntaxSugar
    with Evaluation
    with ToScala
    with bacchus.Evaluation
@@ -19,8 +19,6 @@ extends FunSuite
    with functions.Pretty
    with AbelianDerivation
 {
-  implicit def intToTerm(i: Int): Term = LiteralInt(i)
-
   def expectToGet(i: Int)(t: => Term) {
     assert(eval(t) === IntValue(i))
     try { assert(evalGenerated(t) === i) }

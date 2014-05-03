@@ -24,6 +24,7 @@ trait DerivativeTests
 extends CorrectnessAssertion
    with Subjects
    with Evaluation
+   with naturals.ImplicitSyntaxSugar
 {
   test("diff and apply works on functions") {
     val f = PlusNat ! 25

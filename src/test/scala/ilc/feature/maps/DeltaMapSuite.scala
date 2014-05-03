@@ -11,6 +11,7 @@ extends FunSuite
    with Evaluation
    with naturals.ReplacementValuesDerivation
    with naturals.Evaluation
+   with naturals.ImplicitSyntaxSugar
    with sums.Evaluation
    with functions.Pretty // for debugging
 {

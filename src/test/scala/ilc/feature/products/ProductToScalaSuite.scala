@@ -14,6 +14,7 @@ extends FunSuite
    with functions.ToScala
    with EvalScala
    with SyntaxSugar
+   with naturals.ImplicitSyntaxSugar
 {
   def run(t: Term): Any = evalScala(toScala(t))
 

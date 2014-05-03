@@ -15,13 +15,12 @@ extends FunSuite
     with Matchers
     with bacchus.Syntax
     with bacchus.ToScala
-    with bacchus.BasicDerivation
     with Syntax
     with Derivation
     with ToScala
     with integers.SyntaxSugar
     with integers.ToScala
-    with integers.AbelianDerivation
+    with bacchus.BasicDerivation
     with EvalGenerated {
   val ℤ = IntType
 

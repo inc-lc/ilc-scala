@@ -14,3 +14,4 @@ extends functions.Derivation
    with abelianGroups.Derivation
    with products.Derivation
    with booleans.Derivation
+   with integers.AbelianDerivation

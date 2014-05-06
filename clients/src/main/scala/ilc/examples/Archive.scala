@@ -52,7 +52,7 @@ extends feature.functions.Pretty
   lazy val normalizedDerivative = normalize(derivative)
 
   def toSource(base: File) = {
-    Seq(Source(this, base, () => {
+    Seq(Source(this, new File(base, Archive.toGenName(name) + ".scala"), () => {
       assert(indentDiff == 2)
       setIndentDepth(2)
 
@@ -92,7 +92,7 @@ extends feature.functions.Pretty
           |  type DeltaOutputType = $deltaOutputTypeCode
           |}
           |""".stripMargin
-    }), Source(this, base, () => {
+    }), Source(this, new File(base, Archive.toGenName(name) + ".scala"), () => {
       val programForHuman: String = pretty(program)
       val derivativeForHuman: String = pretty(derivative)
       val normalizedProgrForHuman: String = pretty(normalizedProgram)
@@ -115,10 +115,8 @@ extends feature.functions.Pretty
   }
 }
 
-case class Source(example: Example, base: File, codeGen: () => String) {
+case class Source(example: Example, outFile: File, codeGen: () => String) {
   import example.name
-  def outFile = new File(base, Archive.toGenName(name) + ".scala")
-
   //Careful with inlining this, it might avoid lots of dup. work!
   lazy val code = codeGen()
 

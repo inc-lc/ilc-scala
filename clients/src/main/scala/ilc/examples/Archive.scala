@@ -111,10 +111,12 @@ extends feature.functions.Pretty
 
 case class Source(objectName: String, code: String) {
   import java.io.{ File, FileWriter }
-  def save(base: File): Unit = {
-    val outFile = new File(base, objectName ++ ".scala")
+  def outName = objectName + ".scala"
+  def save(base: File): File = {
+    val outFile = new File(base, outName)
     val writer = new FileWriter(outFile)
     writer.write(code)
     writer.close
+    outFile
   }
 }

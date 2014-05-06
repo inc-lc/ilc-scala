@@ -181,8 +181,8 @@ case class Source(example: Example, outFile: File, codeGen: () => String) {
     writer.close
   }
 
-  def saveIfNeeded(): File = {
-    if (rebuildNeeded()) {
+  def saveIfNeeded(classOutput: File): File = {
+    if (rebuildNeeded(classOutput)) {
       Console.err.println(s"Generating ${outFile.getName}")
       save()
     } else {
@@ -192,13 +192,11 @@ case class Source(example: Example, outFile: File, codeGen: () => String) {
     outFile
   }
 
-  def rebuildNeeded(): Boolean = {
+  def rebuildNeeded(classOutput: File): Boolean = {
     val exampleFileName = example.getClass.
       getName stripSuffix "$" replaceAll ("\\.", java.io.File.separator)
 
-    val fsep = File.separator
-    //XXX hardcodes the Scala version.
-    val exampleOutput = new File(s"target${fsep}scala-2.10${fsep}classes${fsep}${exampleFileName}.class")
+    val exampleOutput = new File(classOutput, s"${exampleFileName}.class")
 
     //In debug mode, use a very simplified dependency checking. But this does not account for all dependencies.
     //If exampleOutput does not exist, or lastModified fails on it, we get 0

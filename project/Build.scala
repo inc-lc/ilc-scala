@@ -15,6 +15,7 @@ object BuildUnit extends Build {
       // usage described in ./src/main/scala/Examples.scala
       sourceGenerators in Test <+=
         (sourceManaged in Test,
+          classDirectory in Compile,
           fullClasspath in Compile,
           thisProject in Compile,
           taskTemporaryDirectory in Compile,
@@ -25,7 +26,7 @@ object BuildUnit extends Build {
           javaHome in Compile,
           connectInput in Compile
             in Compile) map {
-          (genSrcDir, lib,
+          (genSrcDir, classDir, lib,
             tp, tmp, si, base, options, strategy, javaHomeDir, connectIn
           ) =>
           console.info("Generating examples into:")
@@ -34,7 +35,7 @@ object BuildUnit extends Build {
             tp.id,
             lib.files,
             generatorMainClass,
-            Seq(genSrcDir.getCanonicalPath),
+            Seq(genSrcDir, classDir) map (_.getCanonicalPath),
             ForkOptions(
               bootJars = si.jars,
               javaHome = javaHomeDir,

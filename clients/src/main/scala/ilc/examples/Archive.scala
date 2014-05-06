@@ -92,7 +92,7 @@ extends feature.functions.Pretty
           |  type DeltaOutputType = $deltaOutputTypeCode
           |}
           |""".stripMargin
-    }), Source(this, new File(base, Archive.toGenName(name) + ".scala"), () => {
+    }), Source(this, new File(base, Archive.toGenName(name) + ".txt"), () => {
       val programForHuman: String = pretty(program)
       val derivativeForHuman: String = pretty(derivative)
       val normalizedProgrForHuman: String = pretty(normalizedProgram)

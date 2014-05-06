@@ -1,6 +1,8 @@
 package ilc
 package examples
 
+import java.io.{ File, FileWriter }
+
 // the storage aspect of an examples generator
 trait Archive {
   import scala.collection.mutable
@@ -11,7 +13,8 @@ trait Archive {
 
   // if name is "CoolExample", then the generated class will
   // be "CoolExampleGenerated"
-  def addExample(name: String, example: Example) {
+  def addExample(example: Example) {
+    val name = example.name
     archive.get(name) match {
       case Some(example) =>
         sys error s"example name clash: $name"
@@ -40,14 +43,16 @@ extends feature.functions.Pretty
   this: feature.base.ToScala
    with feature.base.Derivation =>
 
+  def name =
+    this.getClass().getSimpleName().stripSuffix("Example")
+
   def program: Term
   def derivative: Term = derive(program)
   def normalizedProgram = normalize(program)
   def normalizedDerivative = normalize(derivative)
 
-  def toSource(name: String) = {
-    val objectName = Archive.toGenName(name)
-    Seq(Source(objectName, () => {
+  def toSource(base: File) = {
+    Seq(Source(this, base, name, () => {
       assert(indentDiff == 2)
       setIndentDepth(2)
 
@@ -74,7 +79,7 @@ extends feature.functions.Pretty
           |
           |$imports
           |
-          |object $objectName extends ExampleGenerated {
+          |object ${Archive.toGenName(name)} extends ExampleGenerated {
           |  val programSize = ${termSize(program)}
           |  val derivativeSize = ${termSize(derivative)}
           |  val normalizedProgramSize = ${termSize(normalizedProgram)}
@@ -109,15 +114,38 @@ extends feature.functions.Pretty
   }
 }
 
-case class Source(objectName: String, codeGen: () => String) {
-  import java.io.{ File, FileWriter }
-  def outName = objectName + ".scala"
+case class Source(example: Example, base: File, name: String, codeGen: () => String) {
+  def outFile = new File(base, Archive.toGenName(name) + ".scala")
+
+  //Careful with inlining this, it might avoid lots of dup. work!
   lazy val code = codeGen()
-  def save(base: File): File = {
-    val outFile = new File(base, outName)
+
+  def save(): Unit = {
     val writer = new FileWriter(outFile)
     writer.write(code)
     writer.close
+  }
+
+  def saveIfNeeded(): File = {
+    if (rebuildNeeded()) {
+      Console.err.println(s"Generating ${name}")
+      save()
+    } else {
+      Console.err.println(s"Skipping ${name}, it *seems* to be up-to-date.")
+    }
+
     outFile
+  }
+
+  def rebuildNeeded(): Boolean = {
+    val exampleFileName = example.getClass.
+      getName stripSuffix "$" replaceAll ("\\.", java.io.File.separator)
+
+    val fsep = File.separator
+    //XXX hardcodes the Scala version.
+    val exampleOutput = new File(s"target${fsep}scala-2.10${fsep}classes${fsep}${exampleFileName}.class")
+
+    //In debug mode, use a very simplified dependency checking. But this does not account for all dependencies.
+    QuickAndDirty choose (exampleOutput.lastModified > outFile.lastModified, true)
   }
 }

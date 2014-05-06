@@ -26,9 +26,9 @@ extends Archive
 
   def exportExamples(base: File) {
     for {
-      (name, example) <- archive
+      example <- archive.values
     } {
-      exportSource(base, name, example)
+      exportSource(base, example)
     }
   }
 
@@ -42,37 +42,13 @@ extends Archive
     export(path)
   }
 
-  /*
-  def rebuildNeeded(example: Example, name: String, base: File) = {
-    val outFile = new File(base, Archive.toGenName(name) ++ ".scala")
-
-    val exampleFileName = example.getClass.
-      getName stripSuffix "$" replaceAll ("\\.", java.io.File.separator)
-
-    val fsep = File.separator
-    //XXX hardcodes the Scala version.
-    val exampleOutput = new File(s"target${fsep}scala-2.10${fsep}classes${fsep}${exampleFileName}.class")
-
-    //In debug mode, use a very simplified dependency checking. But this does not account for all dependencies.
-    QuickAndDirty choose (exampleOutput.lastModified > outFile.lastModified, true)
-  }
-  */
-
-  def exportSource(base: File, name: String, example: Example) {
+  def exportSource(base: File, example: Example) {
     for {
-      src <- example.toSource(name)
-      out = src.save(base)
+      src <- example.toSource(base)
+      out = src.saveIfNeeded()
     } {
+      //Ensure this file is tracked by SBT.
       export(out.getCanonicalPath)
     }
-    /*
-    if (rebuildNeeded(example, name, base)) {
-      Console.err.println(s"Generating ${name}")
-    } else {
-      Console.err.println(s"Skipping ${name}, it *seems* to be up-to-date.")
-    }
-
-    //Ensure this file is tracked by SBT anyway.
-    export(outFile.getCanonicalPath)*/
   }
 }

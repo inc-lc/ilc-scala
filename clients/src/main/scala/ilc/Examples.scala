@@ -14,19 +14,19 @@ object Examples
 extends Generator {
   // the compiled object is "MapSuccGenerated"
   // the benchmarking object is "MapSuccBenchmark"
-  addExample("MapSucc", new MapSuccExample)
+  addExample(new MapSuccExample)
 
   //Ditto
-  addExample("BagUnion", new BagUnionExample)
+  addExample(new BagUnionExample)
 
-  addExample("MapSuccBase", new MapSuccBaseExample)
+  addExample(new MapSuccBaseExample)
 
-  addExample("MapSuccBags", new MapSuccBagsExample)
+  addExample(new MapSuccBagsExample)
 
-  addExample("SumValues", new SumValuesExample)
+  addExample(new SumValuesExample)
 
-  addExample("Histogram", new HistogramExample)
+  addExample(new HistogramExample)
 
-  addExample("GroupBy", new GroupByExample)
+  addExample(new GroupByExample)
 }
    // idea for speeding up lookup/update: memoizing algorithms

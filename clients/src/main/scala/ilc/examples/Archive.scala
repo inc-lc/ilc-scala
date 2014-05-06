@@ -109,4 +109,12 @@ extends feature.functions.Pretty
   }
 }
 
-case class Source(objectName: String, code: String)
+case class Source(objectName: String, code: String) {
+  import java.io.{ File, FileWriter }
+  def save(base: File): Unit = {
+    val outFile = new File(base, objectName ++ ".scala")
+    val writer = new FileWriter(outFile)
+    writer.write(code)
+    writer.close
+  }
+}

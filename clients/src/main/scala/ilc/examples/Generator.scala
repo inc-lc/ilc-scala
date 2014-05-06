@@ -59,11 +59,7 @@ extends Archive
 
     if (rebuildNeeded(base, name, example, outFile)) {
       Console.err.println(s"Generating ${name}")
-      val source = example.toSource(name)
-      import java.io.FileWriter
-      val writer = new FileWriter(outFile)
-      writer.write(source.code)
-      writer.close
+      example.toSource(name).save(base)
     } else {
       Console.err.println(s"Skipping ${name}, it *seems* to be up-to-date.")
     }

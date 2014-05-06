@@ -201,6 +201,9 @@ case class Source(example: Example, outFile: File, codeGen: () => String) {
     val exampleOutput = new File(s"target${fsep}scala-2.10${fsep}classes${fsep}${exampleFileName}.class")
 
     //In debug mode, use a very simplified dependency checking. But this does not account for all dependencies.
-    QuickAndDirty choose (exampleOutput.lastModified > outFile.lastModified, true)
+    //If exampleOutput does not exist, or lastModified fails on it, we get 0
+    //(which fails the test) but we should rebuild anyway, so we need a special
+    //case.
+    QuickAndDirty choose (exampleOutput.lastModified() == 0 || exampleOutput.lastModified() > outFile.lastModified(), true)
   }
 }

@@ -47,7 +47,7 @@ extends feature.functions.Pretty
 
   def toSource(name: String) = {
     val objectName = Archive.toGenName(name)
-    Source(objectName, () => {
+    Seq(Source(objectName, () => {
       assert(indentDiff == 2)
       setIndentDepth(2)
 
@@ -105,7 +105,7 @@ extends feature.functions.Pretty
           |  type DeltaOutputType = $deltaOutputTypeCode
           |}
           |""".stripMargin
-    })
+    }))
   }
 }
 

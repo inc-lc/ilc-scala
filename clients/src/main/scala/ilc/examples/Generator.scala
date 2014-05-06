@@ -59,9 +59,12 @@ extends Archive
   */
 
   def exportSource(base: File, name: String, example: Example) {
-    val src = example.toSource(name)
-    val out = src.save(base)
-    export(out.getCanonicalPath)
+    for {
+      src <- example.toSource(name)
+      out = src.save(base)
+    } {
+      export(out.getCanonicalPath)
+    }
     /*
     if (rebuildNeeded(example, name, base)) {
       Console.err.println(s"Generating ${name}")

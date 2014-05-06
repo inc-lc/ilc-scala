@@ -70,11 +70,6 @@ extends feature.functions.Pretty
       //The output template in toSource relies on this value.
       setIndentDepth(4)
 
-      val programForHuman: String = pretty(program)
-      val derivativeForHuman: String = pretty(derivative)
-      val normalizedProgrForHuman: String = pretty(normalizedProgram)
-      val normalizedDerivForHuman: String = pretty(normalizedDerivative)
-
       s"""|package ilc.examples
           |
           |$imports
@@ -84,19 +79,6 @@ extends feature.functions.Pretty
           |  val derivativeSize = ${termSize(derivative)}
           |  val normalizedProgramSize = ${termSize(normalizedProgram)}
           |  val normalizedDerivativeSize = ${termSize(normalizedDerivative)}
-          |  /*
-          |  programForHuman:
-          |$programForHuman
-          |
-          |  derivativeForHuman:
-          |$derivativeForHuman
-          |
-          |  normalizedProgrForHuman:
-          |$normalizedProgrForHuman
-          |
-          |  normalizedDerivForHuman:
-          |$normalizedDerivForHuman
-          |  */
           |
           |  override val program = $programCode
           |  override val derivative = $derivativeCode
@@ -109,6 +91,25 @@ extends feature.functions.Pretty
           |  type DeltaInputType = $deltaInputTypeCode
           |  type DeltaOutputType = $deltaOutputTypeCode
           |}
+          |""".stripMargin
+    }), Source(this, base, () => {
+      val programForHuman: String = pretty(program)
+      val derivativeForHuman: String = pretty(derivative)
+      val normalizedProgrForHuman: String = pretty(normalizedProgram)
+      val normalizedDerivForHuman: String = pretty(normalizedDerivative)
+      s"""|  /*
+          |  programForHuman:
+          |$programForHuman
+          |
+          |  derivativeForHuman:
+          |$derivativeForHuman
+          |
+          |  normalizedProgrForHuman:
+          |$normalizedProgrForHuman
+          |
+          |  normalizedDerivForHuman:
+          |$normalizedDerivForHuman
+          |  */
           |""".stripMargin
     }))
   }

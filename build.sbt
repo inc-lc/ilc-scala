@@ -75,3 +75,6 @@ scalacOptions in (Test, compile) <+= baseDirectory map { base =>
   val linkFile = base / "sxr.links"
   "-P:sxr:link-file:" + linkFile.getAbsolutePath
 }
+
+// Also enable access to source files for navigation.
+EclipseKeys.withSource in ThisBuild := true

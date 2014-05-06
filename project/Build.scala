@@ -28,10 +28,13 @@ object BuildUnit extends Build {
           (genSrcDir, lib,
             tp, tmp, si, base, options, strategy, javaHomeDir, connectIn
           ) =>
-          val genFiles = generateExamples(genSrcDir, new ExamplesRunner(
+          console.info("Generating examples into:")
+          console.info(genSrcDir.toString)
+          val genFiles = generateExamples(new ExamplesRunner(
             tp.id,
             lib.files,
             generatorMainClass,
+            Seq(genSrcDir.getCanonicalPath),
             ForkOptions(
               bootJars = si.jars,
               javaHome = javaHomeDir,
@@ -61,11 +64,9 @@ object BuildUnit extends Build {
   // 3. read stdout of ilc.Examples.main fork, convert lines to a list of dirs
   // 4. return those dirs as files
   //
-  def generateExamples(base: File, generator: ExamplesRunner): Seq[File] =
+  def generateExamples(generator: ExamplesRunner): Seq[File] =
   {
-    console.info("Generating examples into:")
-    console.info(base.toString)
-    generator.start(base.getCanonicalPath).map(path => {
+    generator.start().map(path => {
       val file = new File(path)
       console.info("- " ++ file.getName)
       file
@@ -80,12 +81,13 @@ object BuildUnit extends Build {
     subproject: String,
     classpath: Seq[File],
     generatorMainClass: String,
+    args: Seq[String],
     config: ForkOptions)
   extends sbt.ScalaRun
   {
-    def start(base: String): Seq[String] = {
+    def start(): Seq[String] = {
       val acc = new Accumulogger
-      run(generatorMainClass, classpath, Seq(base), acc) match {
+      run(generatorMainClass, classpath, args, acc) match {
         case Some(error) =>
           sys.error("found some error: " ++ error)
 

@@ -51,22 +51,16 @@ extends feature.functions.Pretty
   lazy val normalizedProgram = normalize(program)
   lazy val normalizedDerivative = normalize(derivative)
 
+  private lazy val inputType =>: outputType = program.getType
+
   def toSource(base: File) = {
-    Seq(Source(this, new File(base, Archive.toGenName(name) + ".scala"), () => {
+    Seq(Source(this, new File(base, Archive.toGenName(name) + "ProgBase.scala"), () => {
       assert(indentDiff == 2)
       setIndentDepth(2)
 
       val programCode = toScala(program)
-      val inputType =>: outputType = program.getType
-      val updateInputCode = toScala(updateTerm(inputType))
-      val updateOutputCode = toScala(updateTerm(outputType))
       val inputTypeCode = toScala(inputType)
       val outputTypeCode = toScala(outputType)
-
-      val derivativeCode = toScala(derivative)
-      val normalizedDerivCode = toScala(normalizedDerivative)
-      val deltaInputTypeCode = toScala(deltaType(inputType))
-      val deltaOutputTypeCode = toScala(deltaType(outputType))
 
       //The output template in toSource relies on this value.
       setIndentDepth(4)
@@ -75,24 +69,84 @@ extends feature.functions.Pretty
           |
           |$imports
           |
-          |object ${Archive.toGenName(name)} extends ExampleGenerated {
+          |trait ${Archive.toGenName(name)}ProgBase extends ExampleGenerated {
           |  override val program = $programCode
-          |  override val derivative = $derivativeCode
-          |  override val normDerivative = $normalizedDerivCode
-          |  override val updateInput = $updateInputCode
-          |  override val updateOutput = $updateOutputCode
           |
           |  type InputType = $inputTypeCode
           |  type OutputType = $outputTypeCode
+          |}
+          |""".stripMargin
+    }), Source(this, new File(base, Archive.toGenName(name) + "UtilBase.scala"), () => {
+      assert(indentDiff == 2)
+      setIndentDepth(2)
+
+      val deltaInputTypeCode = toScala(deltaType(inputType))
+      val deltaOutputTypeCode = toScala(deltaType(outputType))
+
+      val updateInputCode = toScala(updateTerm(inputType))
+      val updateOutputCode = toScala(updateTerm(outputType))
+
+      //The output template in toSource relies on this value.
+      setIndentDepth(4)
+
+      s"""|package ilc.examples
+          |
+          |$imports
+          |
+          |trait ${Archive.toGenName(name)}UtilBase extends ${Archive.toGenName(name)}ProgBase {
+          |  override val updateInput = $updateInputCode
+          |  override val updateOutput = $updateOutputCode
+          |
           |  type DeltaInputType = $deltaInputTypeCode
           |  type DeltaOutputType = $deltaOutputTypeCode
           |}
           |""".stripMargin
+    }), Source(this, new File(base, Archive.toGenName(name) + "DerivBase.scala"), () => {
+      assert(indentDiff == 2)
+      setIndentDepth(2)
+
+      val derivativeCode = toScala(derivative)
+
+      //The output template in toSource relies on this value.
+      setIndentDepth(4)
+
+      s"""|package ilc.examples
+          |
+          |$imports
+          |
+          |trait ${Archive.toGenName(name)}DerivBase extends ${Archive.toGenName(name)}UtilBase {
+          |  override val derivative = $derivativeCode
+          |}
+          |""".stripMargin
+    }), Source(this, new File(base, Archive.toGenName(name) + ".scala"), () => {
+      assert(indentDiff == 2)
+      setIndentDepth(2)
+
+      val normalizedDerivCode = toScala(normalizedDerivative)
+
+      //The output template in toSource relies on this value.
+      setIndentDepth(4)
+
+      s"""|package ilc.examples
+          |
+          |$imports
+          |
+          |object ${Archive.toGenName(name)} extends ${Archive.toGenName(name)}DerivBase {
+          |  override val normDerivative = $normalizedDerivCode
+          |}
+          |""".stripMargin
     }), Source(this, new File(base, Archive.toGenName(name) + ".txt"), () => {
+      assert(indentDiff == 2)
+      setIndentDepth(2)
+
       val programForHuman: String = pretty(program)
       val derivativeForHuman: String = pretty(derivative)
       val normalizedProgrForHuman: String = pretty(normalizedProgram)
       val normalizedDerivForHuman: String = pretty(normalizedDerivative)
+
+      //The output template in toSource relies on this value.
+      setIndentDepth(4)
+
       s"""|  /*
           |  val programSize = ${termSize(program)}
           |  val derivativeSize = ${termSize(derivative)}
@@ -129,10 +183,10 @@ case class Source(example: Example, outFile: File, codeGen: () => String) {
 
   def saveIfNeeded(): File = {
     if (rebuildNeeded()) {
-      Console.err.println(s"Generating ${name}")
+      Console.err.println(s"Generating ${outFile.getName}")
       save()
     } else {
-      Console.err.println(s"Skipping ${name}, it *seems* to be up-to-date.")
+      Console.err.println(s"Skipping ${outFile.getName}, it *seems* to be up-to-date.")
     }
 
     outFile

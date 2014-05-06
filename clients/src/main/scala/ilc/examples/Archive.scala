@@ -47,9 +47,9 @@ extends feature.functions.Pretty
     this.getClass().getSimpleName().stripSuffix("Example")
 
   def program: Term
-  def derivative: Term = derive(program)
-  def normalizedProgram = normalize(program)
-  def normalizedDerivative = normalize(derivative)
+  lazy val derivative: Term = derive(program)
+  lazy val normalizedProgram = normalize(program)
+  lazy val normalizedDerivative = normalize(derivative)
 
   def toSource(base: File) = {
     Seq(Source(this, base, () => {

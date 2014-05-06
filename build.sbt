@@ -2,32 +2,32 @@ lazy val ilc = project in file(".")
 
 lazy val clients = project in file("clients") dependsOn (ilc % "test->test;compile->test")
 
-scalaVersion := "2.10.4"
+scalaVersion in ThisBuild := "2.10.4"
 
-scalacOptions := Seq("-deprecation", "-feature", "-unchecked", "-Xlint")
+scalacOptions in ThisBuild := Seq("-deprecation", "-feature", "-unchecked", "-Xlint")
 
-scalacOptions ++= Seq("-optimize")
+scalacOptions in ThisBuild ++= Seq("-optimize")
 
 //Link to the Scala standard library. See http://stackoverflow.com/a/18747266/53974.
 //For Scaladoc, requires SBT 0.13.
-autoAPIMappings := true
+autoAPIMappings in ThisBuild := true
 // However, this might not work for the standard library due to stale caches.
 // To fix, remove ~/.ivy2/cache/org.scala-lang/scala-library/ivy-2.10.2.xml
 
 //Add a manual mapping for the standard library,
-apiMappings += (scalaInstance.value.libraryJar -> url(s"http://www.scala-lang.org/api/${scalaVersion.value}/"))
+apiMappings in ThisBuild += (scalaInstance.value.libraryJar -> url(s"http://www.scala-lang.org/api/${scalaVersion.value}/"))
 //More explicit variant:
 //scalacOptions in doc += s"-doc-external-doc:${scalaInstance.value.libraryJar}#http://www.scala-lang.org/api/${scalaVersion.value}/"
 
-scalacOptions in doc ++= Seq("-implicits",
+scalacOptions in doc in ThisBuild ++= Seq("-implicits",
   "-diagrams",
   "-doc-title", "ILC",
   "-doc-source-url", "file:€{FILE_PATH}.scala")
 
 //0.13 syntax:
-scalacOptions in (Compile, doc) := (scalacOptions in doc).value
+scalacOptions in (Compile, doc) in ThisBuild := (scalacOptions in doc).value
 
-scalacOptions in (Test, doc) := (scalacOptions in doc).value
+scalacOptions in (Test, doc) in ThisBuild := (scalacOptions in doc).value
 
 libraryDependencies += "org.scalatest" %% "scalatest" % "2.0" % "test"
 
@@ -45,19 +45,19 @@ resolvers += "Sonatype OSS Snapshots" at
 // ScalaMeter
 libraryDependencies += "com.github.axel22" %% "scalameter" % "0.5-M2" % "test"
 
-logBuffered := false
+logBuffered in ThisBuild := false
 
 val scalaMeterFramework = new TestFramework("org.scalameter.ScalaMeterFramework")
 
-testFrameworks += scalaMeterFramework
+testFrameworks in ThisBuild += scalaMeterFramework
 
 // Allow ScalaMeter to run on JDK 6 ─ see
 // http://axel22.github.io/scalameter/2013/02/14/release_0_3.html
-testOptions += Tests.Argument(scalaMeterFramework, "-preJDK7")
+testOptions in ThisBuild += Tests.Argument(scalaMeterFramework, "-preJDK7")
 
-testOptions += Tests.Argument(scalaMeterFramework, "-CresultDir testOutput")
+testOptions in ThisBuild += Tests.Argument(scalaMeterFramework, "-CresultDir testOutput")
 
-parallelExecution in Test := false
+parallelExecution in Test in ThisBuild := false
 
 //SCALA METER ENDS
 
@@ -67,11 +67,11 @@ resolvers += Resolver.url("Typesafe Releases", url("http://repo.typesafe.com/typ
 
 addCompilerPlugin("org.scala-sbt.sxr" %% "sxr" % "0.3.0")
 
-scalacOptions in (Compile, compile) <+= scalaSource in Compile map { "-P:sxr:base-directory:" + _.getAbsolutePath }
+scalacOptions in (Compile, compile) in ThisBuild <+= scalaSource in Compile map { "-P:sxr:base-directory:" + _.getAbsolutePath }
 
-scalacOptions in (Test, compile) <+= scalaSource in Test map { "-P:sxr:base-directory:" + _.getAbsolutePath }
+scalacOptions in (Test, compile) in ThisBuild <+= scalaSource in Test map { "-P:sxr:base-directory:" + _.getAbsolutePath }
 
-scalacOptions in (Test, compile) <+= baseDirectory map { base =>
+scalacOptions in (Test, compile) in ThisBuild <+= baseDirectory map { base =>
   val linkFile = base / "sxr.links"
   "-P:sxr:link-file:" + linkFile.getAbsolutePath
 }

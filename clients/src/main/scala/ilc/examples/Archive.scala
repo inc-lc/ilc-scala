@@ -45,32 +45,31 @@ extends feature.functions.Pretty
   def normalizedProgram = normalize(program)
   def normalizedDerivative = normalize(derivative)
 
-  def toSource(name: String): Source = {
-    assert(indentDiff == 2)
-    setIndentDepth(2)
-
+  def toSource(name: String) = {
     val objectName = Archive.toGenName(name)
-    val programCode = toScala(program)
-    val derivativeCode = toScala(derivative)
-    val normalizedDerivCode = toScala(normalizedDerivative)
-    val inputType =>: outputType = program.getType
-    val updateInputCode = toScala(updateTerm(inputType))
-    val updateOutputCode = toScala(updateTerm(outputType))
-    val inputTypeCode = toScala(inputType)
-    val outputTypeCode = toScala(outputType)
-    val deltaInputTypeCode = toScala(deltaType(inputType))
-    val deltaOutputTypeCode = toScala(deltaType(outputType))
+    Source(objectName, () => {
+      assert(indentDiff == 2)
+      setIndentDepth(2)
 
-    //The output template in toSource relies on this value.
-    setIndentDepth(4)
+      val programCode = toScala(program)
+      val derivativeCode = toScala(derivative)
+      val normalizedDerivCode = toScala(normalizedDerivative)
+      val inputType =>: outputType = program.getType
+      val updateInputCode = toScala(updateTerm(inputType))
+      val updateOutputCode = toScala(updateTerm(outputType))
+      val inputTypeCode = toScala(inputType)
+      val outputTypeCode = toScala(outputType)
+      val deltaInputTypeCode = toScala(deltaType(inputType))
+      val deltaOutputTypeCode = toScala(deltaType(outputType))
 
-    val programForHuman: String = pretty(program)
-    val derivativeForHuman: String = pretty(derivative)
-    val normalizedProgrForHuman: String = pretty(normalizedProgram)
-    val normalizedDerivForHuman: String = pretty(normalizedDerivative)
+      //The output template in toSource relies on this value.
+      setIndentDepth(4)
 
+      val programForHuman: String = pretty(program)
+      val derivativeForHuman: String = pretty(derivative)
+      val normalizedProgrForHuman: String = pretty(normalizedProgram)
+      val normalizedDerivForHuman: String = pretty(normalizedDerivative)
 
-    Source(objectName,
       s"""|package ilc.examples
           |
           |$imports
@@ -105,13 +104,15 @@ extends feature.functions.Pretty
           |  type DeltaInputType = $deltaInputTypeCode
           |  type DeltaOutputType = $deltaOutputTypeCode
           |}
-          |""".stripMargin)
+          |""".stripMargin
+    })
   }
 }
 
-case class Source(objectName: String, code: String) {
+case class Source(objectName: String, codeGen: () => String) {
   import java.io.{ File, FileWriter }
   def outName = objectName + ".scala"
+  lazy val code = codeGen()
   def save(base: File): File = {
     val outFile = new File(base, outName)
     val writer = new FileWriter(outFile)

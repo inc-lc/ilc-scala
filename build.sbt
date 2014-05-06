@@ -61,20 +61,20 @@ parallelExecution in Test in ThisBuild := false
 
 //SCALA METER ENDS
 
-//Also generate HTML during compilation. We might want to move this later to a
-//separate task.
-resolvers += Resolver.url("Typesafe Releases", url("http://repo.typesafe.com/typesafe/ivy-releases"))(Resolver.ivyStylePatterns)
-
-addCompilerPlugin("org.scala-sbt.sxr" %% "sxr" % "0.3.0")
-
-scalacOptions in (Compile, compile) in ThisBuild <+= scalaSource in Compile map { "-P:sxr:base-directory:" + _.getAbsolutePath }
-
-scalacOptions in (Test, compile) in ThisBuild <+= scalaSource in Test map { "-P:sxr:base-directory:" + _.getAbsolutePath }
-
-scalacOptions in (Test, compile) in ThisBuild <+= baseDirectory map { base =>
-  val linkFile = base / "sxr.links"
-  "-P:sxr:link-file:" + linkFile.getAbsolutePath
-}
+////Also generate HTML during compilation. We might want to move this later to a
+////separate task.
+//resolvers += Resolver.url("Typesafe Releases", url("http://repo.typesafe.com/typesafe/ivy-releases"))(Resolver.ivyStylePatterns)
+//
+//addCompilerPlugin("org.scala-sbt.sxr" %% "sxr" % "0.3.0")
+//
+//scalacOptions in (Compile, compile) in ThisBuild <+= scalaSource in Compile map { "-P:sxr:base-directory:" + _.getAbsolutePath }
+//
+//scalacOptions in (Test, compile) in ThisBuild <+= scalaSource in Test map { "-P:sxr:base-directory:" + _.getAbsolutePath }
+//
+//scalacOptions in (Test, compile) in ThisBuild <+= baseDirectory map { base =>
+//  val linkFile = base / "sxr.links"
+//  "-P:sxr:link-file:" + linkFile.getAbsolutePath
+//}
 
 // Also enable access to source files for navigation.
 EclipseKeys.withSource in ThisBuild := true

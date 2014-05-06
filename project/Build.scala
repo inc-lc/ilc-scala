@@ -9,7 +9,8 @@ object BuildUnit extends Build {
 
   private val generatorMainClass = "ilc.Examples"
 
-  private val generationSettings = Seq(
+  //Exposed to build.sbt
+  val generationSettings = Seq(
       // code to generate examples at stage `test`
       // usage described in ./src/main/scala/Examples.scala
       sourceGenerators in Test <+=
@@ -50,16 +51,6 @@ object BuildUnit extends Build {
           genFiles
         }
     )
-
-  private val extraSettings = generationSettings
-
-  // dummy project with default settings + extraSettings.
-  // This has the same effect as putting extraSettings in build.sbt.
-  lazy val ilcProject = Project (
-    "ilc",
-    file("."),
-    settings = defaultSettings ++ extraSettings
-  )
 
   // Generate .class files from ilc.Examples during test:compile
   //

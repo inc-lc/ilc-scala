@@ -2,9 +2,6 @@ lazy val ilc = project in file(".")
 
 lazy val clients = project in file("clients") dependsOn (ilc % "test->test;compile->test")
 
-//Imported from Build.scala
-generationSettings
-
 scalaVersion := "2.10.4"
 
 scalacOptions := Seq("-deprecation", "-feature", "-unchecked", "-Xlint")

@@ -10,6 +10,7 @@ extends Archive
 {
   def main(args: Array[String]) {
     // base is the directory to generate in
+    Console.err.println("Generator started")
     val base = new File(args.head)
     base.mkdirs()
     exportDummy(base)

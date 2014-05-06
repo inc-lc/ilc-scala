@@ -52,7 +52,7 @@ extends feature.functions.Pretty
   def normalizedDerivative = normalize(derivative)
 
   def toSource(base: File) = {
-    Seq(Source(this, base, name, () => {
+    Seq(Source(this, base, () => {
       assert(indentDiff == 2)
       setIndentDepth(2)
 
@@ -114,7 +114,8 @@ extends feature.functions.Pretty
   }
 }
 
-case class Source(example: Example, base: File, name: String, codeGen: () => String) {
+case class Source(example: Example, base: File, codeGen: () => String) {
+  import example.name
   def outFile = new File(base, Archive.toGenName(name) + ".scala")
 
   //Careful with inlining this, it might avoid lots of dup. work!

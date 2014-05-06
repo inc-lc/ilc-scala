@@ -57,13 +57,14 @@ extends feature.functions.Pretty
       setIndentDepth(2)
 
       val programCode = toScala(program)
-      val derivativeCode = toScala(derivative)
-      val normalizedDerivCode = toScala(normalizedDerivative)
       val inputType =>: outputType = program.getType
       val updateInputCode = toScala(updateTerm(inputType))
       val updateOutputCode = toScala(updateTerm(outputType))
       val inputTypeCode = toScala(inputType)
       val outputTypeCode = toScala(outputType)
+
+      val derivativeCode = toScala(derivative)
+      val normalizedDerivCode = toScala(normalizedDerivative)
       val deltaInputTypeCode = toScala(deltaType(inputType))
       val deltaOutputTypeCode = toScala(deltaType(outputType))
 
@@ -75,11 +76,6 @@ extends feature.functions.Pretty
           |$imports
           |
           |object ${Archive.toGenName(name)} extends ExampleGenerated {
-          |  val programSize = ${termSize(program)}
-          |  val derivativeSize = ${termSize(derivative)}
-          |  val normalizedProgramSize = ${termSize(normalizedProgram)}
-          |  val normalizedDerivativeSize = ${termSize(normalizedDerivative)}
-          |
           |  override val program = $programCode
           |  override val derivative = $derivativeCode
           |  override val normDerivative = $normalizedDerivCode
@@ -98,6 +94,11 @@ extends feature.functions.Pretty
       val normalizedProgrForHuman: String = pretty(normalizedProgram)
       val normalizedDerivForHuman: String = pretty(normalizedDerivative)
       s"""|  /*
+          |  val programSize = ${termSize(program)}
+          |  val derivativeSize = ${termSize(derivative)}
+          |  val normalizedProgramSize = ${termSize(normalizedProgram)}
+          |  val normalizedDerivativeSize = ${termSize(normalizedDerivative)}
+          |
           |  programForHuman:
           |$programForHuman
           |

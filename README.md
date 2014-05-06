@@ -25,9 +25,10 @@ Start sbt **inside this folder** with
 ```
 $ sbt
 ```
-and give the command
+and give the commands
 ```
-test-only ilc.examples.bench.BenchSuite
+project clients
+test-only longRunning.BenchSuite
 ```
 
 This will fetch any needed dependencies, compile everything and start running

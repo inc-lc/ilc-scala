@@ -26,8 +26,7 @@ object BuildUnit extends Build {
             ForkOptions(
               bootJars = (scalaInstance in Compile value) jars,
               javaHome = javaHome in Compile value,
-              connectInput = connectInput in Compile
-            in Compile value,
+              connectInput = connectInput in Compile value,
               outputStrategy = outputStrategy in Compile value,
               runJVMOptions = javaOptions in Compile value,
               workingDirectory = Some(baseDirectory in Compile value))))

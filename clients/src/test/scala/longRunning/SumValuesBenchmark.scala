@@ -17,13 +17,6 @@ class SumValuesBenchmark extends NonReplacementChangeBenchmark(
     override def step = 5000
   })
 
-object SumValuesVerification extends BenchmarkVerification(
-  new AdditiveMapBenchData(SumValuesGenerated) {
-    override def base = 5
-    override def last = 25
-    override def step = 5
-  })
-
 // Input: Map[Int, Int] with LiftedMapGroup(additiveIntegerGroup)
 class AdditiveMapBenchData(val example: ExampleGenerated {
   type InputType =

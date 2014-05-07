@@ -20,13 +20,6 @@ class BagUnionBenchmark extends NonReplacementChangeBenchmark(
     override def step = 5000
   })
 
-object BagUnionVerification extends BenchmarkVerification(
-  new BagPairBenchData(BagUnionGenerated) {
-    override def base = 5
-    override def last = 15
-    override def step = 5
-  })
-
 class BagPairBenchData(val example: ExampleGenerated {
   type InputType = (OutputType, OutputType)
   type DeltaInputType = (DeltaOutputType, DeltaOutputType)

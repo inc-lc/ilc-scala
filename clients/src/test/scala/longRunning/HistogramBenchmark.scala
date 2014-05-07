@@ -34,14 +34,6 @@ class HistogramRecomputeBenchmark extends OnlyRecomputationBenchmark(
       //Gen.single("n")(last)
   })
 
-class HistogramVerification extends BenchmarkVerification(
-  new WordCountBenchData(HistogramGenerated) {
-    override def base = 2
-    override def last = 2
-    override def step = 10
-  })
-
-
 class WordCountBenchData(val example: ExampleGenerated {
   type InputType = AbelianMap[Int, Bag[Int]]
   type DeltaInputType =

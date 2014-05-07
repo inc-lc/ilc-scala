@@ -4,6 +4,7 @@ package examples
 import org.scalameter.{reporting, execution, Aggregator, Context}
 import org.scalameter.api._
 import longRunning.FastBenchmarksFlag
+import Executor.Measurer
 
 trait ReplacementChangeData extends BenchData {
   def replacementChange(newInput: Data): Change
@@ -13,7 +14,6 @@ trait ReplacementChangeData extends BenchData {
   * A more customizable version of ScalaMeter's PerformanceTest.Regression.
   */
 trait RegressionTesting extends PerformanceTest {
-  import Executor.Measurer
   import reporting._
 
   def warmer = Executor.Warmer.Default()
@@ -24,7 +24,9 @@ trait RegressionTesting extends PerformanceTest {
   def regressionReporter =
     new RegressionReporter(regressionTester, historian)
 
-  def buildExecutor: Executor = new execution.SeparateJvmsExecutor(warmer, aggregator, measurer)
+  protected def separateExecutor = new execution.SeparateJvmsExecutor(warmer, aggregator, measurer)
+  protected def localExecutor = new execution.LocalExecutor(warmer, aggregator, measurer)
+  def buildExecutor: Executor = separateExecutor
   def reporters: Seq[Reporter]
 
   /* The methods below are part of the interface to the superclass.
@@ -87,8 +89,8 @@ trait BaseBenchmark extends RegressionTesting with Serializable {
     )
 
   override def buildExecutor: Executor = QuickAndDirty.choose(
-      new execution.LocalExecutor(warmer, aggregator, measurer),
-      super.buildExecutor)
+      localExecutor,
+      separateExecutor)
 
   //Don't save QuickAndDirty results.
   override lazy val persistor = QuickAndDirty.choose(Persistor.None, new SerializationPersistor)
@@ -108,6 +110,17 @@ trait BaseBenchmark extends RegressionTesting with Serializable {
         exec.warmupCovThreshold -> 0.05,
         exec.reinstantiation.fullGC -> true,
         exec.maxWarmupRuns -> maxWarmupRuns))
+
+  //To make verification fast.
+  def verificationConfig =
+    Context(
+      exec.minWarmupRuns -> 1,
+      exec.maxWarmupRuns -> 1,
+      exec.warmupCovThreshold -> 1.0,
+      exec.benchRuns -> 1,
+      exec.independentSamples -> 1,
+      exec.reinstantiation.fullGC -> false,
+      verbose -> false)
 }
 
 /**
@@ -126,7 +139,7 @@ abstract class ExampleToBenchmark(val benchData: BenchData) extends BaseBenchmar
   def verifyCorrectness(desc: String, derivative: (=> InputType) => (=> DeltaInputType) => DeltaOutputType) =
     performance of
     s"${className} (${desc}, verification)" in {
-      using(inputsOutputsChanges) config testConfig in {
+      using(inputsOutputsChanges) config verificationConfig in {
         case Datapack(oldInput, newInput, change, oldOutput) => {
           val newOutput = program(newInput)
           val derivedChange = derivative(oldInput)(change)
@@ -190,6 +203,10 @@ abstract class ExampleToBenchmark(val benchData: BenchData) extends BaseBenchmar
 
 abstract class BenchmarkVerification(benchData: BenchData)
 extends ExampleToBenchmark(benchData) {
+  override def reporters = Seq(LoggingReporter())
+  override def measurer: Measurer = new Measurer.Default
+  override def buildExecutor = localExecutor
+
   verifyCorrectness()
 }
 

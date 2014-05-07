@@ -13,36 +13,24 @@ object BuildUnit extends Build {
   val generationSettings = Seq(
       // code to generate examples at stage `test`
       // usage described in ./src/main/scala/Examples.scala
-      sourceGenerators in Test <+=
-        (sourceManaged in Test,
-          classDirectory in Compile,
-          fullClasspath in Compile,
-          thisProject in Compile,
-          taskTemporaryDirectory in Compile,
-          scalaInstance in Compile,
-          baseDirectory in Compile,
-          javaOptions in Compile,
-          outputStrategy in Compile,
-          javaHome in Compile,
-          connectInput in Compile
-            in Compile) map {
-          (genSrcDir, classDir, lib,
-            tp, tmp, si, base, options, strategy, javaHomeDir, connectIn
-          ) =>
+      sourceGenerators in Test += Def.task {
+          val genSrcDir = sourceManaged in Test value
+          val tmp = (taskTemporaryDirectory in Compile value)
           console.info("Generating examples into:")
           console.info(genSrcDir.toString)
           val genFiles = generateExamples(new ExamplesRunner(
-            tp.id,
-            lib.files,
+            (thisProject in Compile value) id,
+            (fullClasspath in Compile value) files,
             generatorMainClass,
-            Seq(genSrcDir, classDir) map (_.getCanonicalPath),
+            Seq(genSrcDir, classDirectory in Compile value) map (_ getCanonicalPath),
             ForkOptions(
-              bootJars = si.jars,
-              javaHome = javaHomeDir,
-              connectInput = connectIn,
-              outputStrategy = strategy,
-              runJVMOptions = options,
-              workingDirectory = Some(base))))
+              bootJars = (scalaInstance in Compile value) jars,
+              javaHome = javaHome in Compile value,
+              connectInput = connectInput in Compile
+            in Compile value,
+              outputStrategy = outputStrategy in Compile value,
+              runJVMOptions = javaOptions in Compile value,
+              workingDirectory = Some(baseDirectory in Compile value))))
 
           //Note: this removes stale generated files, assuming no other
           //generator targets the same directory.
@@ -53,7 +41,7 @@ object BuildUnit extends Build {
           }
 
           genFiles
-        }
+      }.taskValue
     )
 
   // Generate .class files from ilc.Examples during test:compile

@@ -25,8 +25,6 @@ extends Generator {
 
   addExample(new SumValuesExample)
 
-  addExample(new HistogramExample)
-
   addExample(new GroupByExample)
 }
    // idea for speeding up lookup/update: memoizing algorithms

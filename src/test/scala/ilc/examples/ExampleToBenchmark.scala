@@ -3,7 +3,6 @@ package examples
 
 import org.scalameter.{reporting, execution, Aggregator, Context}
 import org.scalameter.api._
-import longRunning.FastBenchmarksFlag
 import Executor.Measurer
 
 trait ReplacementChangeData extends BenchData {

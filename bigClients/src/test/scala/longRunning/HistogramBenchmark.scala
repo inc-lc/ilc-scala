@@ -10,6 +10,7 @@ import ilc.examples.ExampleGenerated
 import ilc.examples.HistogramGenerated
 import ilc.examples.OnlyDerivativeBenchmark
 import ilc.examples.OnlyRecomputationBenchmark
+import ilc.examples.FastBenchmarksFlag
 
 class HistogramBenchmark extends OnlyDerivativeBenchmark(
   new WordCountBenchData(HistogramGenerated) {

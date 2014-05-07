@@ -1,8 +1,7 @@
 package ilc
 package examples
 
-import java.io.File
-import ilc.feature.base.Syntax
+import java.io.{ File, FileWriter }
 
 trait Generator
 extends Archive
@@ -36,7 +35,6 @@ extends Archive
   // dummy code
   def exportDummy(base: File) {
     val path = new File(base, "DummyGenerated.scala").getCanonicalPath
-    import java.io.FileWriter
     val file = new FileWriter(path)
     file.write(scalaMeterDummyCode)
     file.close

@@ -43,6 +43,7 @@ libraryDependencies +=
 
 initialCommands in console in ThisBuild := "import ilc.examples._"
 
+//XXX rather local, feel free to clobber the content.
 initialCommands in (Test, console) in ThisBuild := """
   import ilc.feature.inference._
   val h = new InferenceTestHelper {}

@@ -53,11 +53,9 @@ val scalaMeterFramework = new TestFramework("org.scalameter.ScalaMeterFramework"
 
 testFrameworks in ThisBuild += scalaMeterFramework
 
-// Allow ScalaMeter to run on JDK 6 ─ see
+// -preJDK7 allows ScalaMeter to run on JDK 6 ─ see
 // http://axel22.github.io/scalameter/2013/02/14/release_0_3.html
-testOptions in ThisBuild += Tests.Argument(scalaMeterFramework, "-preJDK7")
-
-testOptions in ThisBuild += Tests.Argument(scalaMeterFramework, "-CresultDir testOutput")
+testOptions in ThisBuild += Tests.Argument(scalaMeterFramework, "-preJDK7 -CresultDir testOutput")
 
 parallelExecution in Test in ThisBuild := false
 

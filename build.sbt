@@ -31,7 +31,7 @@ scalacOptions in (Compile, doc) in ThisBuild := (scalacOptions in doc).value
 
 scalacOptions in (Test, doc) in ThisBuild := (scalacOptions in doc).value
 
-libraryDependencies += "org.scalatest" %% "scalatest" % "2.0" % "test"
+libraryDependencies += "org.scalatest" %% "scalatest" % "2.1.3" % "test"
 
 libraryDependencies += "org.scala-lang" % "scala-reflect" % scalaVersion.value
 

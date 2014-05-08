@@ -38,8 +38,7 @@ libraryDependencies += "org.scala-lang" % "scala-reflect" % scalaVersion.value
 libraryDependencies += "org.scala-lang" % "scala-compiler" % scalaVersion.value
 
 libraryDependencies +=
-  //"com.chuusai" %% "shapeless" % "2.0.0" //for 2.11
-  "com.chuusai" % "shapeless_2.10.2" % "2.0.0"
+  "com.chuusai" %% "shapeless" % "2.0.0"
 
 initialCommands in console in ThisBuild := "import ilc.examples._"
 

@@ -207,11 +207,13 @@ case class Source(example: Example, outFile: File, codeGen: () => String) {
 
     //Locate the class of the compiled generator in a best-effort way.
     //This is only invoked from SBT during build, so it does not need to be very general.
-    val GetUri = extractor((_: Option[URL]).map(_.toURI()))
+    //GetResource can return null!
     val exampleOutputURI = Option(example.getClass.getResource(new File(exampleFileName).getName()))
+    //Do the conversion during pattern matching.
+    val GetUri = extractor((x: URL) => Some(x.toURI()))
     val exampleOutput =
       exampleOutputURI match {
-        case GetUri(uri) if uri.getScheme() == "file" =>
+        case Some(GetUri(uri)) if uri.getScheme() == "file" =>
           new File(uri.getPath())
         case _ =>
           Console.err.println("rebuildNeeded: Classpath loading failed, falling back on dumber strategy")

@@ -3,6 +3,9 @@ package examples
 
 import java.io.{ File, FileWriter }
 
+import util.Extractors._
+import java.net.URL
+
 // the storage aspect of an examples generator
 trait Archive {
   import scala.collection.mutable
@@ -192,11 +195,28 @@ case class Source(example: Example, outFile: File, codeGen: () => String) {
     outFile
   }
 
+  /**
+   * Checks if the compiled generator is newer than its output.
+   *
+   * If that's true, then we should update the output.
+   * If that's false, we don't update the output, though we might still need to — so this check is disabled by default.
+   */
   def rebuildNeeded(classOutput: File): Boolean = {
-    val exampleFileName = example.getClass.
-      getName stripSuffix "$" replaceAll ("\\.", java.io.File.separator)
+    val exampleFileName = (example.getClass.
+      getName stripSuffix "$" replaceAll ("\\.", java.io.File.separator)) + ".class"
 
-    val exampleOutput = new File(classOutput, s"${exampleFileName}.class")
+    //Locate the class of the compiled generator in a best-effort way.
+    //This is only invoked from SBT during build, so it does not need to be very general.
+    val GetUri = extractor((_: Option[URL]).map(_.toURI()))
+    val exampleOutputURI = Option(example.getClass.getResource(new File(exampleFileName).getName()))
+    val exampleOutput =
+      exampleOutputURI match {
+        case GetUri(uri) if uri.getScheme() == "file" =>
+          new File(uri.getPath())
+        case _ =>
+          Console.err.println("rebuildNeeded: Classpath loading failed, falling back on dumber strategy")
+          new File(classOutput, exampleFileName)
+      }
 
     //In debug mode, use a very simplified dependency checking. But this does not account for all dependencies.
     //If exampleOutput does not exist, or lastModified fails on it, we get 0

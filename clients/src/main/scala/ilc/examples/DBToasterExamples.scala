@@ -3,6 +3,11 @@ package examples
 
 import feature._
 
+/**
+  * Experiments related to Koch's paper[1]. XXX currently ***VERY*** experimental.
+  *
+  * [1] Koch et al. (2014), *DBToaster: higher-order delta processing for dynamic, frequently fresh views*.
+  */
 trait DBToasterExample extends Example
    with MapReduce
    with GroupBy
@@ -16,9 +21,8 @@ trait DBToasterExample extends Example
 }
 
 /**
- * See Koch et al. (2014), *DBToaster: higher-order delta processing for dynamic, frequently fresh views*.
- * This is related to example 2.
- */
+  * This is related to example 2 in Koch's paper.
+  */
 class DBToasterExample2
 extends DBToasterExample
 {

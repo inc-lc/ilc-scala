@@ -41,11 +41,11 @@ libraryDependencies +=
   //"com.chuusai" %% "shapeless" % "2.0.0" //for 2.11
   "com.chuusai" % "shapeless_2.10.2" % "2.0.0"
 
-initialCommands in console := "import ilc.examples._"
+initialCommands in console in ThisBuild := "import ilc.examples._"
 
-initialCommands in (Test, console) := """
+initialCommands in (Test, console) in ThisBuild := """
   import ilc.feature.inference._
-  val h = new Helper {}
+  val h = new InferenceTestHelper {}
   import h._
   import shapeless._
 """

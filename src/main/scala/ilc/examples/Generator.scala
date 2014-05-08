@@ -1,8 +1,7 @@
 package ilc
 package examples
 
-import java.io.File
-import ilc.feature.base.Syntax
+import java.io.{ File, FileWriter }
 
 trait Generator
 extends Archive
@@ -10,10 +9,11 @@ extends Archive
 {
   def main(args: Array[String]) {
     // base is the directory to generate in
-    val base = new File(args.head)
+    Console.err.println("Generator started")
+    val Array(base, classOutput) = args take 2 map (new File(_))
     base.mkdirs()
     exportDummy(base)
-    exportExamples(base)
+    exportExamples(base, classOutput)
   }
 
   // stdout is exported as paths
@@ -24,51 +24,30 @@ extends Archive
   def info(message: String): Unit =
     Console.err.println(message)
 
-  def exportExamples(base: File) {
+  def exportExamples(base: File, classOutput: File) {
     for {
-      (name, example) <- archive
+      example <- archive.values
     } {
-      exportSource(base, name, example)
+      exportSource(base, classOutput, example)
     }
   }
 
   // dummy code
   def exportDummy(base: File) {
     val path = new File(base, "DummyGenerated.scala").getCanonicalPath
-    import java.io.FileWriter
     val file = new FileWriter(path)
     file.write(scalaMeterDummyCode)
     file.close
     export(path)
   }
 
-  def rebuildNeeded(base: File, name: String, example: Example, outFile: File) = {
-    val exampleFileName = example.getClass.
-      getName stripSuffix "$" replaceAll ("\\.", java.io.File.separator)
-
-    val fsep = File.separator
-    //XXX hardcodes the Scala version.
-    val exampleOutput = new File(s"target${fsep}scala-2.10${fsep}classes${fsep}${exampleFileName}.class")
-
-    //In debug mode, use a very simplified dependency checking. But this does not account for all dependencies.
-    QuickAndDirty choose (exampleOutput.lastModified > outFile.lastModified, true)
-  }
-
-  def exportSource(base: File, name: String, example: Example) {
-    val outFile = new File(base, Archive.toGenName(name) ++ ".scala")
-
-    if (rebuildNeeded(base, name, example, outFile)) {
-      Console.err.println(s"Generating ${name}")
-      val source = example.toSource(name)
-      import java.io.FileWriter
-      val writer = new FileWriter(outFile)
-      writer.write(source.code)
-      writer.close
-    } else {
-      Console.err.println(s"Skipping ${name}, it *seems* to be up-to-date.")
+  def exportSource(base: File, classOutput: File, example: Example) {
+    for {
+      src <- example.toSource(base)
+      out = src.saveIfNeeded(classOutput)
+    } {
+      //Ensure this file is tracked by SBT.
+      export(out.getCanonicalPath)
     }
-
-    //Ensure this file is tracked by SBT anyway.
-    export(outFile.getCanonicalPath)
   }
 }

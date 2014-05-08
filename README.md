@@ -1,8 +1,22 @@
 Scala implementation of incremental lambda calculus
 ===================================================
 
-This code can be compiled using SBT. Development should follow the style guide
-available at http://docs.scala-lang.org/style/.
+This code can be compiled using [SBT](http://www.scala-sbt.org/). Development
+should follow the style guide available at http://docs.scala-lang.org/style/.
+
+How to load inside Eclipse
+==========================
+
+Run `sbt eclipse` to generate the project files. This will download all required
+libraries, including their sources for easier navigation.
+
+Customizing the Eclipse project (advanced)
+------------------------------------------
+
+The generated output hardcodes paths on the specific machines, so try to not
+commit the files. If you need to change the project, try to do so by changing
+the build definition itself, including the sbteclipse setup
+[as documented by them](https://github.com/typesafehub/sbteclipse/wiki/Using-sbteclipse).
 
 How to run the evaluation from the paper
 ========================================
@@ -11,9 +25,10 @@ Start sbt **inside this folder** with
 ```
 $ sbt
 ```
-and give the command
+and give the commands
 ```
-test-only ilc.examples.bench.BenchSuite
+project clients
+test-only longRunning.BenchSuite
 ```
 
 This will fetch any needed dependencies, compile everything and start running

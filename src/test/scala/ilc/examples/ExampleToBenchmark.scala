@@ -1,9 +1,9 @@
 package ilc
 package examples
 
-import org.scalameter.{reporting, execution, Aggregator}
+import org.scalameter.{reporting, execution, Aggregator, Context}
 import org.scalameter.api._
-import longRunning.FastBenchmarksFlag
+import Executor.Measurer
 
 trait ReplacementChangeData extends BenchData {
   def replacementChange(newInput: Data): Change
@@ -13,18 +13,19 @@ trait ReplacementChangeData extends BenchData {
   * A more customizable version of ScalaMeter's PerformanceTest.Regression.
   */
 trait RegressionTesting extends PerformanceTest {
-  import Executor.Measurer
   import reporting._
 
   def warmer = Executor.Warmer.Default()
-  def aggregator: Aggregator = Aggregator.complete(Aggregator.average)
+  def aggregator: Aggregator = Aggregator.average
   def measurer: Measurer = new Measurer.IgnoringGC with Measurer.PeriodicReinstantiation with Measurer.OutlierElimination with Measurer.RelativeNoise
   def regressionTester: RegressionReporter.Tester = RegressionReporter.Tester.OverlapIntervals()
   def historian: RegressionReporter.Historian = RegressionReporter.Historian.ExponentialBackoff()
   def regressionReporter =
     new RegressionReporter(regressionTester, historian)
 
-  def buildExecutor: Executor = new execution.SeparateJvmsExecutor(warmer, aggregator, measurer)
+  protected def separateExecutor = new execution.SeparateJvmsExecutor(warmer, aggregator, measurer)
+  protected def localExecutor = new execution.LocalExecutor(warmer, aggregator, measurer)
+  def buildExecutor: Executor = separateExecutor
   def reporters: Seq[Reporter]
 
   /* The methods below are part of the interface to the superclass.
@@ -87,8 +88,8 @@ trait BaseBenchmark extends RegressionTesting with Serializable {
     )
 
   override def buildExecutor: Executor = QuickAndDirty.choose(
-      new execution.LocalExecutor(warmer, aggregator, measurer),
-      super.buildExecutor)
+      localExecutor,
+      separateExecutor)
 
   //Don't save QuickAndDirty results.
   override lazy val persistor = QuickAndDirty.choose(Persistor.None, new SerializationPersistor)
@@ -99,15 +100,26 @@ trait BaseBenchmark extends RegressionTesting with Serializable {
   def memorySizeMB: Int = FastBenchmarksFlag.choose(1024, 4096)
   /* You need to use this explicitly when defining each test */
   def testConfig =
-    Seq(
+    Context(
       reports.regression.significance -> 0.01) ++ //Confidence level = 99 %
-    QuickAndDirty.choose(Seq.empty,
-      Seq(
+    QuickAndDirty.choose(Context.empty,
+      Context(
         exec.jvmflags -> s"-Xmx${memorySizeMB}m -Xms${memorySizeMB}m -XX:CompileThreshold=100",
         exec.minWarmupRuns -> minWarmupRuns,
         exec.warmupCovThreshold -> 0.05,
         exec.reinstantiation.fullGC -> true,
         exec.maxWarmupRuns -> maxWarmupRuns))
+
+  //To make verification fast.
+  def verificationConfig =
+    Context(
+      exec.minWarmupRuns -> 1,
+      exec.maxWarmupRuns -> 1,
+      exec.warmupCovThreshold -> 1.0,
+      exec.benchRuns -> 1,
+      exec.independentSamples -> 1,
+      exec.reinstantiation.fullGC -> false,
+      verbose -> false)
 }
 
 /**
@@ -126,7 +138,7 @@ abstract class ExampleToBenchmark(val benchData: BenchData) extends BaseBenchmar
   def verifyCorrectness(desc: String, derivative: (=> InputType) => (=> DeltaInputType) => DeltaOutputType) =
     performance of
     s"${className} (${desc}, verification)" in {
-      using(inputsOutputsChanges) config (testConfig: _*) in {
+      using(inputsOutputsChanges) config verificationConfig in {
         case Datapack(oldInput, newInput, change, oldOutput) => {
           val newOutput = program(newInput)
           val derivedChange = derivative(oldInput)(change)
@@ -148,7 +160,7 @@ abstract class ExampleToBenchmark(val benchData: BenchData) extends BaseBenchmar
   def testSurgical(desc: String, derivative: (=> InputType) => (=> DeltaInputType) => DeltaOutputType) =
     performance of
     s"${className} (${desc}, surgical change)" in {
-      using(inputsOutputsChanges) config (testConfig: _*) in {
+      using(inputsOutputsChanges) config testConfig in {
         case Datapack(oldInput, newInput, change, oldOutput) => {
           // we compute the result change with the derivative,
           // then apply it to the old value.
@@ -172,7 +184,7 @@ abstract class ExampleToBenchmark(val benchData: BenchData) extends BaseBenchmar
 
   def testRecomputation() =
     performance of s"${className} (recomputation)" in {
-      using(inputsOutputsChanges) config (testConfig: _*) in {
+      using(inputsOutputsChanges) config testConfig in {
         case Datapack(oldInput, newInput, change, oldOutput) => {
           program(newInput)
         }
@@ -190,6 +202,10 @@ abstract class ExampleToBenchmark(val benchData: BenchData) extends BaseBenchmar
 
 abstract class BenchmarkVerification(benchData: BenchData)
 extends ExampleToBenchmark(benchData) {
+  override def reporters = Seq(LoggingReporter())
+  override def measurer: Measurer = new Measurer.Default
+  override def buildExecutor = localExecutor
+
   verifyCorrectness()
 }
 
@@ -217,7 +233,7 @@ abstract class ReplacementChangeBenchmark(override val benchData: BenchData with
 
   performance of
   s"${className} (derivative, replacement change)" in {
-    using(inputsOutputsChanges) config (testConfig: _*) in {
+    using(inputsOutputsChanges) config testConfig in {
       case Datapack(oldInput, newInput, change, oldOutput) => {
         updateOutput(derivative(oldInput)(replacementChange(newInput)))(oldOutput)
       }

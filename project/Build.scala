@@ -9,35 +9,27 @@ object BuildUnit extends Build {
 
   private val generatorMainClass = "ilc.Examples"
 
-  private val generationSettings = Seq(
+  //Exposed to build.sbt
+  val generationSettings = Seq(
       // code to generate examples at stage `test`
       // usage described in ./src/main/scala/Examples.scala
-      sourceGenerators in Test <+=
-        (sourceManaged in Test,
-          fullClasspath in Compile,
-          thisProject in Compile,
-          taskTemporaryDirectory in Compile,
-          scalaInstance in Compile,
-          baseDirectory in Compile,
-          javaOptions in Compile,
-          outputStrategy in Compile,
-          javaHome in Compile,
-          connectInput in Compile
-            in Compile) map {
-          (genSrcDir, lib,
-            tp, tmp, si, base, options, strategy, javaHomeDir, connectIn
-          ) =>
-          val genFiles = generateExamples(genSrcDir, new ExamplesRunner(
-            tp.id,
-            lib.files,
+      sourceGenerators in Test += Def.task {
+          val genSrcDir = sourceManaged in Test value
+          val tmp = (taskTemporaryDirectory in Compile value)
+          consoleLogger.info("Generating examples into:")
+          consoleLogger.info(genSrcDir.toString)
+          val genFiles = generateExamples(new ExamplesRunner(
+            (thisProject in Compile value) id,
+            (fullClasspath in Compile value) files,
             generatorMainClass,
+            Seq(genSrcDir, classDirectory in Compile value) map (_ getCanonicalPath),
             ForkOptions(
-              bootJars = si.jars,
-              javaHome = javaHomeDir,
-              connectInput = connectIn,
-              outputStrategy = strategy,
-              runJVMOptions = options,
-              workingDirectory = Some(base))))
+              bootJars = (scalaInstance in Compile value) jars,
+              javaHome = javaHome in Compile value,
+              connectInput = connectInput in Compile value,
+              outputStrategy = outputStrategy in Compile value,
+              runJVMOptions = javaOptions in Compile value,
+              workingDirectory = Some(baseDirectory in Compile value))))
 
           //Note: this removes stale generated files, assuming no other
           //generator targets the same directory.
@@ -48,18 +40,8 @@ object BuildUnit extends Build {
           }
 
           genFiles
-        }
+      }.taskValue
     )
-
-  private val extraSettings = generationSettings
-
-  // dummy project with default settings + extraSettings.
-  // This has the same effect as putting extraSettings in build.sbt.
-  lazy val ilcProject = Project (
-    "ilc",
-    file("."),
-    settings = defaultSettings ++ extraSettings
-  )
 
   // Generate .class files from ilc.Examples during test:compile
   //
@@ -70,11 +52,9 @@ object BuildUnit extends Build {
   // 3. read stdout of ilc.Examples.main fork, convert lines to a list of dirs
   // 4. return those dirs as files
   //
-  def generateExamples(base: File, generator: ExamplesRunner): Seq[File] =
+  def generateExamples(generator: ExamplesRunner): Seq[File] =
   {
-    consoleLogger.info("Generating examples into:")
-    consoleLogger.info(base.toString)
-    generator.start(base.getCanonicalPath).map(path => {
+    generator.start().map(path => {
       val file = new File(path)
       consoleLogger.info("- " ++ file.getName)
       file
@@ -89,12 +69,13 @@ object BuildUnit extends Build {
     subproject: String,
     classpath: Seq[File],
     generatorMainClass: String,
+    args: Seq[String],
     config: ForkOptions)
   extends sbt.ScalaRun
   {
-    def start(base: String): Seq[String] = {
+    def start(): Seq[String] = {
       val acc = new Accumulogger
-      run(generatorMainClass, classpath, Seq(base), acc) match {
+      run(generatorMainClass, classpath, args, acc) match {
         case Some(error) =>
           sys.error("found some error: " ++ error)
 

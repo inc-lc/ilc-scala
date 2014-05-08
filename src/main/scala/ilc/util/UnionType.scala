@@ -4,7 +4,7 @@ package util
 // Union type for scala
 //
 // Source (search for Miles Sabin):
-// http://stackoverflow.com/questions/3508077/
+// http://stackoverflow.com/a/6312508
 //
 // Usage:
 //

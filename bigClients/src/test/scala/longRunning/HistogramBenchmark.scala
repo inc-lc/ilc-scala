@@ -6,11 +6,11 @@ import ilc.feature.abelianMaps.Library._
 import ilc.feature.abelianGroups.Library._
 import ilc.feature.bags.Library._
 import ilc.examples.BenchData
-import ilc.examples.BenchmarkVerification
 import ilc.examples.ExampleGenerated
 import ilc.examples.HistogramGenerated
 import ilc.examples.OnlyDerivativeBenchmark
 import ilc.examples.OnlyRecomputationBenchmark
+import ilc.examples.FastBenchmarksFlag
 
 class HistogramBenchmark extends OnlyDerivativeBenchmark(
   new WordCountBenchData(HistogramGenerated) {
@@ -33,14 +33,6 @@ class HistogramRecomputeBenchmark extends OnlyRecomputationBenchmark(
       // warmup). Great! Use single instead:
       //Gen.single("n")(last)
   })
-
-class HistogramVerification extends BenchmarkVerification(
-  new WordCountBenchData(HistogramGenerated) {
-    override def base = 2
-    override def last = 2
-    override def step = 10
-  })
-
 
 class WordCountBenchData(val example: ExampleGenerated {
   type InputType = AbelianMap[Int, Bag[Int]]

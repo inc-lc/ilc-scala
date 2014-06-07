@@ -148,78 +148,318 @@ Cross reference
 Example test output
 ===================
 
-(That's for a slightly older release.)
+This is an example output from the first run of SBT on a fresh checkout (as of 7 June 2014).
 ```
-> test-only ilc.examples.bench.BenchSuite
-[info] Compiling 111 Scala sources to /Users/pgiarrusso/Documents/Research/Sorgenti/ilc/scala-prototype/target/scala-2.10/classes...
-[warn] there were 1 inliner warning(s); re-run with -Yinline-warnings for details
+$ sbt
+[info] Loading global plugins from /Users/pgiarrusso/.sbt/0.13/plugins
+[info] Updating {file:/Users/pgiarrusso/.sbt/0.13/plugins/}global-plugins...
+[info] Resolving org.fusesource.jansi#jansi;1.4 ...
+[info] Done updating.
+[info] Loading project definition from /Users/pgiarrusso/Documents/Research/Sorgenti/ilc-scala/project
+[info] Updating {file:/Users/pgiarrusso/Documents/Research/Sorgenti/ilc-scala/project/}ilc-scala-build...
+[info] Resolving org.fusesource.jansi#jansi;1.4 ...
+[info] Done updating.
+[info] Compiling 1 Scala source to /Users/pgiarrusso/Documents/Research/Sorgenti/ilc-scala/project/target/scala-2.10/sbt-0.13/classes...
+[info] Set current project to ilc (in build file:/Users/pgiarrusso/Documents/Research/Sorgenti/ilc-scala/)
+> project bigClients
+[info] Set current project to bigClients (in build file:/Users/pgiarrusso/Documents/Research/Sorgenti/ilc-scala/)
+> test-only longRunning.BenchSuite
+[info] Updating {file:/Users/pgiarrusso/Documents/Research/Sorgenti/ilc-scala/}ilc...
+[info] Resolving jline#jline;2.11 ...
+[info] Done updating.
+[info] Updating {file:/Users/pgiarrusso/Documents/Research/Sorgenti/ilc-scala/}clients...
+[info] Resolving jline#jline;2.11 ...
+[info] Done updating.
+[info] Updating {file:/Users/pgiarrusso/Documents/Research/Sorgenti/ilc-scala/}bigClients...
+[info] Resolving jline#jline;2.11 ...
+[info] Done updating.
+[info] Compiling 118 Scala sources to /Users/pgiarrusso/Documents/Research/Sorgenti/ilc-scala/target/scala-2.11/classes...
+[info] Compiling 36 Scala sources to /Users/pgiarrusso/Documents/Research/Sorgenti/ilc-scala/target/scala-2.11/test-classes...
+[warn] /Users/pgiarrusso/Documents/Research/Sorgenti/ilc-scala/src/test/scala/ilc/examples/ExampleToBenchmark.scala:228: Selecting value benchData from class ExampleToBenchmark, which extends scala.DelayedInit, is likely to yield an uninitialized value
+[warn] abstract class ReplacementChangeBenchmark(override val benchData: BenchData with ReplacementChangeData) extends ExampleToBenchmark(benchData) {
+[warn]                                                        ^
 [warn] one warning found
+[info] Compiling 9 Scala sources to /Users/pgiarrusso/Documents/Research/Sorgenti/ilc-scala/clients/target/scala-2.11/classes...
 [info] Generating examples into:
-[info] /Users/pgiarrusso/Documents/Research/Sorgenti/ilc/scala-prototype/target/scala-2.10/src_managed/test
-[info] Generating GroupBy
-[info] Generating MapSucc
-[info] Generating SumValues
-[info] Generating Histogram
-[info] Generating MapSuccBags
-[info] Generating MapSuccBase
-[info] Generating BagUnion
+[info] /Users/pgiarrusso/Documents/Research/Sorgenti/ilc-scala/clients/target/scala-2.11/src_managed/test
+[info] Generator started
+[info] Generating MapSuccGeneratedProgBase.scala
+[info] Generating MapSuccGeneratedUtilBase.scala
+[info] Generating MapSuccGeneratedDerivBase.scala
+[info] Generating MapSuccGenerated.scala
+[info] Generating MapSuccGenerated.txt
+[info] Generating BagUnionGeneratedProgBase.scala
+[info] Generating BagUnionGeneratedUtilBase.scala
+[info] Generating BagUnionGeneratedDerivBase.scala
+[info] Generating BagUnionGenerated.scala
+[info] Generating BagUnionGenerated.txt
+[info] Generating MapSuccBaseGeneratedProgBase.scala
+[info] Generating MapSuccBaseGeneratedUtilBase.scala
+[info] Generating MapSuccBaseGeneratedDerivBase.scala
+[info] Generating MapSuccBaseGenerated.scala
+[info] Generating MapSuccBaseGenerated.txt
+[info] Generating MapSuccBagsGeneratedProgBase.scala
+[info] Generating MapSuccBagsGeneratedUtilBase.scala
+[info] Generating MapSuccBagsGeneratedDerivBase.scala
+[info] Generating MapSuccBagsGenerated.scala
+[info] Generating MapSuccBagsGenerated.txt
+[info] Generating SumValuesGeneratedProgBase.scala
+[info] Generating SumValuesGeneratedUtilBase.scala
+[info] Generating SumValuesGeneratedDerivBase.scala
+[info] Generating SumValuesGenerated.scala
+[info] Generating SumValuesGenerated.txt
+[info] Generating GroupByGeneratedProgBase.scala
+[info] Generating GroupByGeneratedUtilBase.scala
+[info] Generating GroupByGeneratedDerivBase.scala
+[info] Generating GroupByGenerated.scala
+[info] Generating GroupByGenerated.txt
 [info] - DummyGenerated.scala
-[info] - GroupByGenerated.scala
+[info] - MapSuccGeneratedProgBase.scala
+[info] - MapSuccGeneratedUtilBase.scala
+[info] - MapSuccGeneratedDerivBase.scala
 [info] - MapSuccGenerated.scala
-[info] - SumValuesGenerated.scala
-[info] - HistogramGenerated.scala
-[info] - MapSuccBagsGenerated.scala
-[info] - MapSuccBaseGenerated.scala
+[info] - MapSuccGenerated.txt
+[info] - BagUnionGeneratedProgBase.scala
+[info] - BagUnionGeneratedUtilBase.scala
+[info] - BagUnionGeneratedDerivBase.scala
 [info] - BagUnionGenerated.scala
+[info] - BagUnionGenerated.txt
+[info] - MapSuccBaseGeneratedProgBase.scala
+[info] - MapSuccBaseGeneratedUtilBase.scala
+[info] - MapSuccBaseGeneratedDerivBase.scala
+[info] - MapSuccBaseGenerated.scala
+[info] - MapSuccBaseGenerated.txt
+[info] - MapSuccBagsGeneratedProgBase.scala
+[info] - MapSuccBagsGeneratedUtilBase.scala
+[info] - MapSuccBagsGeneratedDerivBase.scala
+[info] - MapSuccBagsGenerated.scala
+[info] - MapSuccBagsGenerated.txt
+[info] - SumValuesGeneratedProgBase.scala
+[info] - SumValuesGeneratedUtilBase.scala
+[info] - SumValuesGeneratedDerivBase.scala
+[info] - SumValuesGenerated.scala
+[info] - SumValuesGenerated.txt
+[info] - GroupByGeneratedProgBase.scala
+[info] - GroupByGeneratedUtilBase.scala
+[info] - GroupByGeneratedDerivBase.scala
+[info] - GroupByGenerated.scala
+[info] - GroupByGenerated.txt
+[info] Compiling 44 Scala sources to /Users/pgiarrusso/Documents/Research/Sorgenti/ilc-scala/clients/target/scala-2.11/test-classes...
+[info] Compiling 1 Scala source to /Users/pgiarrusso/Documents/Research/Sorgenti/ilc-scala/bigClients/target/scala-2.11/classes...
+[info] Generating examples into:
+[info] /Users/pgiarrusso/Documents/Research/Sorgenti/ilc-scala/bigClients/target/scala-2.11/src_managed/test
+[info] Generator started
+[info] Generating HistogramGeneratedProgBase.scala
+[info] Generating HistogramGeneratedUtilBase.scala
+[info] Generating HistogramGeneratedDerivBase.scala
+[info] Generating HistogramGenerated.scala
+[info] Generating HistogramGenerated.txt
+[info] - DummyGenerated.scala
+[info] - HistogramGeneratedProgBase.scala
+[info] - HistogramGeneratedUtilBase.scala
+[info] - HistogramGeneratedDerivBase.scala
+[info] - HistogramGenerated.scala
+[info] - HistogramGenerated.txt
+[info] Compiling 10 Scala sources to /Users/pgiarrusso/Documents/Research/Sorgenti/ilc-scala/bigClients/target/scala-2.11/test-classes...
 [info] - ilc.examples.HistogramGenerated (derivative, surgical change).Test-0 measurements:
+[info]   - at n -> 1, change -> random changes: passed
+[info]     (mean = 2.24 ms, ci = <2.17 ms, 2.31 ms>, significance = 0.01)
+[info]   - at n -> 2, change -> random changes: passed
+[info]     (mean = 2.53 ms, ci = <2.34 ms, 2.72 ms>, significance = 0.01)
+[info]   - at n -> 4, change -> random changes: passed
+[info]     (mean = 2.08 ms, ci = <2.03 ms, 2.12 ms>, significance = 0.01)
+[info]   - at n -> 8, change -> random changes: passed
+[info]     (mean = 2.47 ms, ci = <2.32 ms, 2.62 ms>, significance = 0.01)
+[info]   - at n -> 16, change -> random changes: passed
+[info]     (mean = 1.83 ms, ci = <1.81 ms, 1.85 ms>, significance = 0.01)
+[info]   - at n -> 32, change -> random changes: passed
+[info]     (mean = 2.19 ms, ci = <1.97 ms, 2.41 ms>, significance = 0.01)
+[info]   - at n -> 64, change -> random changes: passed
+[info]     (mean = 2.16 ms, ci = <2.03 ms, 2.29 ms>, significance = 0.01)
+[info]   - at n -> 128, change -> random changes: passed
+[info]     (mean = 2.11 ms, ci = <2.08 ms, 2.15 ms>, significance = 0.01)
+[info]   - at n -> 256, change -> random changes: passed
+[info]     (mean = 2.09 ms, ci = <2.05 ms, 2.13 ms>, significance = 0.01)
+[info]   - at n -> 512, change -> random changes: passed
+[info]     (mean = 1.96 ms, ci = <1.93 ms, 1.99 ms>, significance = 0.01)
 [info] ::Benchmark ilc.examples.HistogramGenerated (derivative, surgical change)::
 [info] cores: 4
-[info] hostname: pc12281.mathematik.uni-marburg.de
+[info] hostname: BlueVelvet.local
 [info] jvm-name: Java HotSpot(TM) 64-Bit Server VM
 [info] jvm-vendor: Oracle Corporation
 [info] jvm-version: 24.51-b03
 [info] os-arch: x86_64
 [info] os-name: Mac OS X
-[info] Parameters(n -> 1, change -> random changes): 0.41252777777777777
-[info] Parameters(n -> 2, change -> random changes): 0.4160833333333334
-[info] Parameters(n -> 4, change -> random changes): 0.2881666666666666
-[info] Parameters(n -> 8, change -> random changes): 0.17052777777777772
-[info] Parameters(n -> 16, change -> random changes): 0.12133333333333332
-[info] Parameters(n -> 32, change -> random changes): 0.1375833333333333
-[info] Parameters(n -> 64, change -> random changes): 0.11105555555555556
-[info] Parameters(n -> 128, change -> random changes): 0.11627777777777776
-[info] Parameters(n -> 256, change -> random changes): 0.13955555555555554
-[info] Parameters(n -> 512, change -> random changes): 0.11416666666666668
+[info] Parameters(n -> 1, change -> random changes): 2.036
+[info] Parameters(n -> 2, change -> random changes): 1.956
+[info] Parameters(n -> 4, change -> random changes): 1.807
+[info] Parameters(n -> 8, change -> random changes): 1.864
+[info] Parameters(n -> 16, change -> random changes): 1.757
+[info] Parameters(n -> 32, change -> random changes): 1.748
+[info] Parameters(n -> 64, change -> random changes): 1.874
+[info] Parameters(n -> 128, change -> random changes): 1.977
+[info] Parameters(n -> 256, change -> random changes): 1.938
+[info] Parameters(n -> 512, change -> random changes): 1.851
 [info]
-[info] - ilc.examples.HistogramGenerated (recomputation).Test-1 measurements:
+[info] - ilc.examples.HistogramGenerated (normalized derivative, surgical change).Test-1 measurements:
+[info]   - at n -> 1, change -> random changes: passed
+[info]     (mean = 1.63 ms, ci = <1.59 ms, 1.67 ms>, significance = 0.01)
+[info]   - at n -> 2, change -> random changes: passed
+[info]     (mean = 1.19 ms, ci = <1.18 ms, 1.20 ms>, significance = 0.01)
+[info]   - at n -> 4, change -> random changes: passed
+[info]     (mean = 1.12 ms, ci = <1.10 ms, 1.13 ms>, significance = 0.01)
+[info]   - at n -> 8, change -> random changes: passed
+[info]     (mean = 1.11 ms, ci = <1.10 ms, 1.12 ms>, significance = 0.01)
+[info]   - at n -> 16, change -> random changes: passed
+[info]     (mean = 1.19 ms, ci = <1.18 ms, 1.20 ms>, significance = 0.01)
+[info]   - at n -> 32, change -> random changes: passed
+[info]     (mean = 1.11 ms, ci = <1.09 ms, 1.12 ms>, significance = 0.01)
+[info]   - at n -> 64, change -> random changes: passed
+[info]     (mean = 1.48 ms, ci = <1.36 ms, 1.61 ms>, significance = 0.01)
+[info]   - at n -> 128, change -> random changes: passed
+[info]     (mean = 1.22 ms, ci = <1.20 ms, 1.24 ms>, significance = 0.01)
+[info]   - at n -> 256, change -> random changes: passed
+[info]     (mean = 1.14 ms, ci = <1.13 ms, 1.16 ms>, significance = 0.01)
+[info]   - at n -> 512, change -> random changes: passed
+[info]     (mean = 1.31 ms, ci = <1.21 ms, 1.42 ms>, significance = 0.01)
+[info] ::Benchmark ilc.examples.HistogramGenerated (normalized derivative, surgical change)::
+[info] cores: 4
+[info] hostname: BlueVelvet.local
+[info] jvm-name: Java HotSpot(TM) 64-Bit Server VM
+[info] jvm-vendor: Oracle Corporation
+[info] jvm-version: 24.51-b03
+[info] os-arch: x86_64
+[info] os-name: Mac OS X
+[info] Parameters(n -> 1, change -> random changes): 1.481
+[info] Parameters(n -> 2, change -> random changes): 1.167
+[info] Parameters(n -> 4, change -> random changes): 1.09
+[info] Parameters(n -> 8, change -> random changes): 1.087
+[info] Parameters(n -> 16, change -> random changes): 1.167
+[info] Parameters(n -> 32, change -> random changes): 1.086
+[info] Parameters(n -> 64, change -> random changes): 1.206
+[info] Parameters(n -> 128, change -> random changes): 1.197
+[info] Parameters(n -> 256, change -> random changes): 1.07
+[info] Parameters(n -> 512, change -> random changes): 1.06
+[info]
+[info] - ilc.examples.HistogramGenerated (recomputation).Test-2 measurements:
+[info]   - at n -> 1, change -> random changes: passed
+[info]     (mean = 2.89 ms, ci = <2.87 ms, 2.91 ms>, significance = 0.01)
+[info]   - at n -> 2, change -> random changes: passed
+[info]     (mean = 6.65 ms, ci = <5.98 ms, 7.33 ms>, significance = 0.01)
+[info]   - at n -> 4, change -> random changes: passed
+[info]     (mean = 11.78 ms, ci = <10.32 ms, 13.24 ms>, significance = 0.01)
+[info]   - at n -> 8, change -> random changes: passed
+[info]     (mean = 20.53 ms, ci = <17.75 ms, 23.32 ms>, significance = 0.01)
+[info]   - at n -> 16, change -> random changes: passed
+[info]     (mean = 28.56 ms, ci = <28.04 ms, 29.09 ms>, significance = 0.01)
+[info]   - at n -> 32, change -> random changes: passed
+[info]     (mean = 61.04 ms, ci = <58.20 ms, 63.88 ms>, significance = 0.01)
+[info]   - at n -> 64, change -> random changes: passed
+[info]     (mean = 98.74 ms, ci = <97.69 ms, 99.78 ms>, significance = 0.01)
+[info]   - at n -> 128, change -> random changes: passed
+[info]     (mean = 194.67 ms, ci = <193.49 ms, 195.86 ms>, significance = 0.01)
+[info]   - at n -> 256, change -> random changes: passed
+[info]     (mean = 410.63 ms, ci = <399.49 ms, 421.78 ms>, significance = 0.01)
+[info]   - at n -> 512, change -> random changes: passed
+[info]     (mean = 828.06 ms, ci = <805.02 ms, 851.09 ms>, significance = 0.01)
 [info] ::Benchmark ilc.examples.HistogramGenerated (recomputation)::
 [info] cores: 4
-[info] hostname: pc12281.mathematik.uni-marburg.de
+[info] hostname: BlueVelvet.local
 [info] jvm-name: Java HotSpot(TM) 64-Bit Server VM
 [info] jvm-vendor: Oracle Corporation
 [info] jvm-version: 24.51-b03
 [info] os-arch: x86_64
 [info] os-name: Mac OS X
-[info] Parameters(n -> 1, change -> random changes): 4.712833333333333
-[info] Parameters(n -> 2, change -> random changes): 7.604833333333334
-[info] Parameters(n -> 4, change -> random changes): 8.933777777777777
-[info] Parameters(n -> 8, change -> random changes): 16.02652777777778
-[info] Parameters(n -> 16, change -> random changes): 28.632916666666674
-[info] Parameters(n -> 32, change -> random changes): 53.185166666666674
-[info] Parameters(n -> 64, change -> random changes): 97.8111111111111
-[info] Parameters(n -> 128, change -> random changes): 195.64419444444448
-[info] Parameters(n -> 256, change -> random changes): 411.4718888888889
-[info] Parameters(n -> 512, change -> random changes): 787.4827222222225
+[info] Parameters(n -> 1, change -> random changes): 2.786
+[info] Parameters(n -> 2, change -> random changes): 5.012
+[info] Parameters(n -> 4, change -> random changes): 8.423
+[info] Parameters(n -> 8, change -> random changes): 14.741
+[info] Parameters(n -> 16, change -> random changes): 27.234
+[info] Parameters(n -> 32, change -> random changes): 51.907
+[info] Parameters(n -> 64, change -> random changes): 97.071
+[info] Parameters(n -> 128, change -> random changes): 191.751
+[info] Parameters(n -> 256, change -> random changes): 380.414
+[info] Parameters(n -> 512, change -> random changes): 760.621
 [info]
 [info]
 [info] :::Summary of regression test results - Accepter():::
 [info] Test group: ilc.examples.HistogramGenerated (derivative, surgical change)
 [info] - ilc.examples.HistogramGenerated (derivative, surgical change).Test-0 measurements:
+[info]   - at n -> 1, change -> random changes: passed
+[info]     (mean = 2.24 ms, ci = <2.06 ms, 2.41 ms>, significance = 1.0E-10)
+[info]   - at n -> 2, change -> random changes: passed
+[info]     (mean = 2.53 ms, ci = <2.05 ms, 3.00 ms>, significance = 1.0E-10)
+[info]   - at n -> 4, change -> random changes: passed
+[info]     (mean = 2.08 ms, ci = <1.96 ms, 2.20 ms>, significance = 1.0E-10)
+[info]   - at n -> 8, change -> random changes: passed
+[info]     (mean = 2.47 ms, ci = <2.10 ms, 2.85 ms>, significance = 1.0E-10)
+[info]   - at n -> 16, change -> random changes: passed
+[info]     (mean = 1.83 ms, ci = <1.77 ms, 1.89 ms>, significance = 1.0E-10)
+[info]   - at n -> 32, change -> random changes: passed
+[info]     (mean = 2.19 ms, ci = <1.65 ms, 2.73 ms>, significance = 1.0E-10)
+[info]   - at n -> 64, change -> random changes: passed
+[info]     (mean = 2.16 ms, ci = <1.84 ms, 2.48 ms>, significance = 1.0E-10)
+[info]   - at n -> 128, change -> random changes: passed
+[info]     (mean = 2.11 ms, ci = <2.02 ms, 2.21 ms>, significance = 1.0E-10)
+[info]   - at n -> 256, change -> random changes: passed
+[info]     (mean = 2.09 ms, ci = <1.99 ms, 2.19 ms>, significance = 1.0E-10)
+[info]   - at n -> 512, change -> random changes: passed
+[info]     (mean = 1.96 ms, ci = <1.88 ms, 2.04 ms>, significance = 1.0E-10)
+[info]
+[info] Test group: ilc.examples.HistogramGenerated (normalized derivative, surgical change)
+[info] - ilc.examples.HistogramGenerated (normalized derivative, surgical change).Test-1 measurements:
+[info]   - at n -> 1, change -> random changes: passed
+[info]     (mean = 1.63 ms, ci = <1.53 ms, 1.74 ms>, significance = 1.0E-10)
+[info]   - at n -> 2, change -> random changes: passed
+[info]     (mean = 1.19 ms, ci = <1.16 ms, 1.22 ms>, significance = 1.0E-10)
+[info]   - at n -> 4, change -> random changes: passed
+[info]     (mean = 1.12 ms, ci = <1.08 ms, 1.15 ms>, significance = 1.0E-10)
+[info]   - at n -> 8, change -> random changes: passed
+[info]     (mean = 1.11 ms, ci = <1.09 ms, 1.14 ms>, significance = 1.0E-10)
+[info]   - at n -> 16, change -> random changes: passed
+[info]     (mean = 1.19 ms, ci = <1.17 ms, 1.21 ms>, significance = 1.0E-10)
+[info]   - at n -> 32, change -> random changes: passed
+[info]     (mean = 1.11 ms, ci = <1.07 ms, 1.15 ms>, significance = 1.0E-10)
+[info]   - at n -> 64, change -> random changes: passed
+[info]     (mean = 1.48 ms, ci = <1.17 ms, 1.80 ms>, significance = 1.0E-10)
+[info]   - at n -> 128, change -> random changes: passed
+[info]     (mean = 1.22 ms, ci = <1.18 ms, 1.26 ms>, significance = 1.0E-10)
+[info]   - at n -> 256, change -> random changes: passed
+[info]     (mean = 1.14 ms, ci = <1.11 ms, 1.18 ms>, significance = 1.0E-10)
+[info]   - at n -> 512, change -> random changes: passed
+[info]     (mean = 1.31 ms, ci = <1.06 ms, 1.57 ms>, significance = 1.0E-10)
 [info]
 [info] Test group: ilc.examples.HistogramGenerated (recomputation)
-[info] - ilc.examples.HistogramGenerated (recomputation).Test-1 measurements:
+[info] - ilc.examples.HistogramGenerated (recomputation).Test-2 measurements:
+[info]   - at n -> 1, change -> random changes: passed
+[info]     (mean = 2.89 ms, ci = <2.85 ms, 2.93 ms>, significance = 1.0E-10)
+[info]   - at n -> 2, change -> random changes: passed
+[info]     (mean = 6.65 ms, ci = <4.96 ms, 8.34 ms>, significance = 1.0E-10)
+[info]   - at n -> 4, change -> random changes: passed
+[info]     (mean = 11.78 ms, ci = <8.11 ms, 15.45 ms>, significance = 1.0E-10)
+[info]   - at n -> 8, change -> random changes: passed
+[info]     (mean = 20.53 ms, ci = <13.54 ms, 27.53 ms>, significance = 1.0E-10)
+[info]   - at n -> 16, change -> random changes: passed
+[info]     (mean = 28.56 ms, ci = <27.24 ms, 29.88 ms>, significance = 1.0E-10)
+[info]   - at n -> 32, change -> random changes: passed
+[info]     (mean = 61.04 ms, ci = <53.91 ms, 68.16 ms>, significance = 1.0E-10)
+[info]   - at n -> 64, change -> random changes: passed
+[info]     (mean = 98.74 ms, ci = <96.10 ms, 101.37 ms>, significance = 1.0E-10)
+[info]   - at n -> 128, change -> random changes: passed
+[info]     (mean = 194.67 ms, ci = <191.70 ms, 197.65 ms>, significance = 1.0E-10)
+[info]   - at n -> 256, change -> random changes: passed
+[info]     (mean = 410.63 ms, ci = <382.64 ms, 438.62 ms>, significance = 1.0E-10)
+[info]   - at n -> 512, change -> random changes: passed
+[info]     (mean = 828.06 ms, ci = <770.23 ms, 885.89 ms>, significance = 1.0E-10)
 [info]
-[info]  Summary: 2 tests passed, 0 tests failed.
-[info] Passed: : Total 2, Failed 0, Errors 0, Passed 2, Skipped 0
-[success] Total time: 612 s, completed Feb 10, 2014 7:10:09 PM
+[info]  Summary: 3 tests passed, 0 tests failed.
+[info] ScalaTest
+[info] Run completed in 2 minutes, 15 seconds.
+[info] Total number of tests run: 0
+[info] Suites: completed 0, aborted 0
+[info] Tests: succeeded 0, failed 0, canceled 0, ignored 0, pending 0
+[info] No tests were executed.
+[info] Passed: Total 3, Failed 0, Errors 0, Passed 3
+[success] Total time: 355 s, completed Jun 7, 2014 12:02:01 PM
+>
 ```

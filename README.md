@@ -27,7 +27,7 @@ $ sbt
 ```
 and give the commands
 ```
-project clients
+project bigClients
 test-only longRunning.BenchSuite
 ```
 
@@ -68,6 +68,7 @@ in `scala-prototype/src/test/scala/ilc/examples/bench/FastBenchmarksFlag.scala`
 Example test output
 ===================
 
+(That's for a slightly older release.)
 ```
 > test-only ilc.examples.bench.BenchSuite
 [info] Compiling 111 Scala sources to /Users/pgiarrusso/Documents/Research/Sorgenti/ilc/scala-prototype/target/scala-2.10/classes...

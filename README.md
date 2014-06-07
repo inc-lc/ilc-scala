@@ -161,7 +161,7 @@ Cross reference
 
 #### Case study
 
-* [src/main/scala/ilc/examples/MapReduce.scala](src/main/scala/ilc/examples/MapReduce.scala)
+* [clients/src/main/scala/ilc/examples/MapReduce.scala](clients/src/main/scala/ilc/examples/MapReduce.scala)
 
   The MapReduce
   library in the object language. `lambda` constructs
@@ -170,7 +170,7 @@ Cross reference
   `PolymorphicTerm` are boilerplates to reduce type
   annotation.
 
-* [src/main/scala/ilc/examples/HistogramExample.scala](src/main/scala/ilc/examples/HistogramExample.scala)
+* [clients/src/main/scala/ilc/examples/HistogramExample.scala](clients/src/main/scala/ilc/examples/HistogramExample.scala)
 
   The Histogram program written in terms of MapReduce.
 
@@ -182,7 +182,7 @@ Cross reference
   `diffTerm`, and the derivatives of primitives are to hide in
   the open method `derive`.
 
-* [src/test/scala/ilc/examples/bench/HistogramBenchmark.scala](src/test/scala/ilc/examples/bench/HistogramBenchmark.scala)
+* [bigClients/src/test/scala/longRunning/HistogramBenchmark.scala](bigClients/src/test/scala/longRunning/HistogramBenchmark.scala)
 
   Benchmark and verification classes of the case study,
   with clues about input and change generation.
@@ -190,7 +190,7 @@ Cross reference
 
 #### Figure 5
 
-* [src/main/scala/ilc/examples/HistogramExample.scala](src/main/scala/ilc/examples/HistogramExample.scala)
+* [clients/src/main/scala/ilc/examples/HistogramExample.scala](clients/src/main/scala/ilc/examples/HistogramExample.scala)
 
   Definitions of term `histogram` (here `program`), `histogramMap` (here `userMap`) and `histogramReduce` (here `userReduce`).
 
@@ -199,7 +199,7 @@ Cross reference
   The term `additiveGroupOnIntegers` is defined here in the trait `SyntaxSugar`.
 
 
-* [src/main/scala/ilc/examples/MapReduce.scala](src/main/scala/ilc/examples/MapReduce.scala)
+* [clients/src/main/scala/ilc/examples/MapReduce.scala](clients/src/main/scala/ilc/examples/MapReduce.scala)
 
   Definitions of `mapReduce`, `mapPerKey`, `groupByKey` and `reducePerKey`
 

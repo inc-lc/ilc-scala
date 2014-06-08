@@ -1,6 +1,15 @@
 Scala implementation of incremental lambda calculus
 ===================================================
 
+This code allows you to write programs in a small DSL and *automatically incrementalize* them, that is, produce their *derivatives*. A derivative of a program is a function which takes changes to the program input and maps them directly to changes to the program output, without reexecuting the original program. For big inputs and small changes, this can be much can be more efficient than rerunning the program from scratch.
+
+If you are not an academic, beware this is a research prototype, and further research is needed before this is more generally useful.
+
+To understand more what this is all about, see <http://inc-lc.github.io/> and the paper(s) there listed. This work was published at PLDI '14.
+
+Building
+========
+
 This code can be compiled using [SBT](http://www.scala-sbt.org/). Development
 should follow the style guide available at http://docs.scala-lang.org/style/.
 
@@ -20,8 +29,11 @@ commit the files. If you need to change the project, try to do so by changing
 the build definition itself, including the sbteclipse setup
 [as documented by them](https://github.com/typesafehub/sbteclipse/wiki/Using-sbteclipse).
 
-How to run the evaluation from the paper
+How to run the evaluation from the PLDI'14 paper
 ========================================
+
+For the original version of the evaluation (as submitted to the AEC), switch
+to the `pldi14-aec` tag and follow instructions there. For the current version, read on.
 
 Start sbt **inside this folder** with
 ```

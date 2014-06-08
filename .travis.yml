@@ -5,3 +5,4 @@ jdk:
   - openjdk6
   - openjdk7
   - oraclejdk7
+script: sbt ++$TRAVIS_SCALA_VERSION test "project clients" test "project bigClients" test "test-only longRunning.BenchSuite"

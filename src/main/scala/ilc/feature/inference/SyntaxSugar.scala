@@ -34,3 +34,10 @@ trait SyntaxSugar extends PrettySyntax with booleans.Syntax {
   //"Libraries"
   val const_ = asUntyped('a ->: 'b ->: 'a)
 }
+
+trait LetSyntaxSugar extends PrettySyntax with booleans.Syntax {
+  case class ULet(variable: String, exp: UntypedTerm, body: UntypedTerm) extends UntypedTerm
+  def let(v: Symbol, meaning: UntypedTerm)
+         (body: UntypedTerm): UntypedTerm =
+           ULet(v.name, meaning, body)
+}

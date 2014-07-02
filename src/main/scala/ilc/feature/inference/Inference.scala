@@ -1,6 +1,7 @@
-package ilc.feature.inference
+package ilc
+package feature
+package inference
 
-import ilc.feature._
 import java.util.concurrent.atomic.AtomicInteger
 import scala.annotation.tailrec
 import scala.language.implicitConversions
@@ -98,33 +99,30 @@ extends base.Syntax
       else false)
   }
 
-  def substitute(substitutions: Map[TypeVariable, Type]): Type => Type =
+  def substituteInType(substitutions: Map[TypeVariable, Type]): Type => Type =
     traverse {
       case tv: TypeVariable => substitutions.getOrElse(tv, tv)
       case typ => typ
     }
 
   def substituteInConstraint(substitutions: Map[TypeVariable, Type])(constraint: Constraint): Constraint =
-    Constraint(substitute(substitutions)(constraint._1),
-     substitute(substitutions)(constraint._2), constraint.term)
+    Constraint(substituteInType(substitutions)(constraint._1),
+     substituteInType(substitutions)(constraint._2), constraint.term)
 
-  def substitute(constraints: Set[Constraint], substitutions: Map[TypeVariable, Type]): Set[Constraint] =
-    constraints.map(substituteInConstraint(substitutions))
-
-  def substitute(term: TypedTerm, substitutions: Map[TypeVariable, Type]): TypedTerm = term match {
-    case TVar(name, typ) => TVar(name, substitute(substitutions)(typ))
-    case TAbs(argumentName, argumentType, body) => TAbs(argumentName, substitute(substitutions)(argumentType), substitute(body, substitutions))
-    case TApp(t1, t2, typ) => TApp(substitute(t1, substitutions), substitute(t2, substitutions), substitute(substitutions)(typ))
+  def substitute(substitutions: Map[TypeVariable, Type], term: TypedTerm): TypedTerm = term match {
+    case TVar(name, typ) => TVar(name, substituteInType(substitutions)(typ))
+    case TAbs(argumentName, argumentType, body) => TAbs(argumentName, substituteInType(substitutions)(argumentType), substitute(substitutions, body))
+    case TApp(t1, t2, typ) => TApp(substitute(substitutions, t1), substitute(substitutions, t2), substituteInType(substitutions)(typ))
     case t@TMonomorphicConstant(_) => t
-    case TPolymorphicConstant(term, typ, typeArguments) => TPolymorphicConstant(term, substitute(substitutions)(typ), typeArguments map substitute(substitutions))
+    case TPolymorphicConstant(term, typ, typeArguments) => TPolymorphicConstant(term, substituteInType(substitutions)(typ), typeArguments map substituteInType(substitutions))
     case anythingElse => sys error s"implement substitute for $anythingElse"
   }
 
   def unification(constraints: Set[Constraint]): Map[TypeVariable, Type] = {
     def typeVariableAndAnythingElse(tn: TypeVariable, a: Type, remaining: Set[Constraint], substitutions: Map[TypeVariable, Type]) = {
       val nextRemaining = remaining.tail
-      val nextSubstitutions = substitutions.mapValues(substitute(Map(tn -> a))) + (tn -> a)
-      unificationHelper(substitute(nextRemaining, nextSubstitutions), nextSubstitutions)
+      val nextSubstitutions = substitutions.mapValues(substituteInType(Map(tn -> a))) + (tn -> a)
+      unificationHelper(nextRemaining map substituteInConstraint(nextSubstitutions), nextSubstitutions)
     }
     def getTypes(p: Product) = p.productIterator.asInstanceOf[Iterator[Type]].toStream
     @tailrec
@@ -155,7 +153,7 @@ extends base.Syntax
   def inferType(t: UntypedTerm): TypedTerm = {
     val (typedTerm, constraints) = collectConstraints(t)
     val substitutions = unification(constraints)
-    substitute(typedTerm, substitutions)
+    substitute(substitutions, typedTerm)
   }
 
   def onTypes[T](transformer: Type => Type): T => T = {

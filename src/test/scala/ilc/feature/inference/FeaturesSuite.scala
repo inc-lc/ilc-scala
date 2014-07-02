@@ -92,7 +92,7 @@ class FeaturesSuite
     val update = UPolymorphicConstant(Update)
     val (tt, c) = collectConstraints(UApp(update, i42))
     val solved = unification(c)
-    val finalTerm = substitute(tt, solved)
+    val finalTerm = substitute(solved, tt)
     assert(dropSourceInfoT(finalTerm.getType) === (t6 =>: MapType(IntType, t6) =>: MapType(IntType, t6)))
   }
 
@@ -102,7 +102,7 @@ class FeaturesSuite
     val update = UPolymorphicConstant(Update)
     val (tt, c) = collectConstraints(UApp(UApp(update, i42), i43))
     val solved = unification(c)
-    val finalTerm = substitute(tt, solved)
+    val finalTerm = substitute(solved, tt)
     assert(finalTerm.getType === (MapType(IntType, IntType) =>: MapType(IntType, IntType)))
   }
 
@@ -113,7 +113,7 @@ class FeaturesSuite
     val update = Update
     val (tt, c) = collectConstraints(UApp(UApp(UApp(update, i42), i43), empty))
     val solved = unification(c)
-    val finalTerm = substitute(tt, solved)
+    val finalTerm = substitute(solved, tt)
     assert(finalTerm.getType === MapType(IntType, IntType))
   }
 
@@ -128,7 +128,7 @@ class FeaturesSuite
     val id: UntypedTerm = TypeAscription('x ->: 'x, IntType =>: IntType)
     val (typedTerm, constraints) = collectConstraints(id)
     val solved = unification(constraints)
-    val finalTerm = substitute(typedTerm, solved)
+    val finalTerm = substitute(solved, typedTerm)
     assert(finalTerm.getType === =>:(IntType, IntType))
   }
 
@@ -136,7 +136,7 @@ class FeaturesSuite
     val id: UntypedTerm = 'x ->: TypeAscription('x, IntType)
     val (typedTerm, constraints) = collectConstraints(id)
     val solved = unification(constraints)
-    val finalTerm = substitute(typedTerm, solved)
+    val finalTerm = substitute(solved, typedTerm)
     assert(finalTerm.getType === =>:(IntType, IntType))
   }
 
@@ -144,7 +144,7 @@ class FeaturesSuite
     val id: UntypedTerm = 'x % IntType ->: 'x
     val (typedTerm, constraints) = collectConstraintsForTest(id)
     val solved = unification(constraints)
-    val finalTerm = substitute(typedTerm, solved)
+    val finalTerm = substitute(solved, typedTerm)
     assert(finalTerm.getType === =>:(IntType, IntType))
   }
 

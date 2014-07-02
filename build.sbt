@@ -11,10 +11,8 @@ scalacOptions in ThisBuild := Seq("-deprecation", "-feature", "-unchecked", "-Xl
 scalacOptions in ThisBuild ++= Seq("-optimize")
 
 //Link to the Scala standard library. See http://stackoverflow.com/a/18747266/53974.
-//For Scaladoc, requires SBT 0.13.
+//For Scaladoc.
 autoAPIMappings in ThisBuild := true
-// However, this might not work for the standard library due to stale caches.
-// To fix, remove ~/.ivy2/cache/org.scala-lang/scala-library/ivy-2.10.2.xml
 
 //Add a manual mapping for the standard library,
 apiMappings in ThisBuild += (scalaInstance.value.libraryJar -> url(s"http://www.scala-lang.org/api/${scalaVersion.value}/"))
@@ -26,7 +24,6 @@ scalacOptions in doc in ThisBuild ++= Seq("-implicits",
   "-doc-title", "ILC",
   "-doc-source-url", "file:€{FILE_PATH}.scala")
 
-//0.13 syntax:
 scalacOptions in (Compile, doc) in ThisBuild := (scalacOptions in doc).value
 
 scalacOptions in (Test, doc) in ThisBuild := (scalacOptions in doc).value

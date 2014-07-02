@@ -158,9 +158,6 @@ extends base.Syntax
     substitute(typedTerm, substitutions)
   }
 
-  implicit def untypedTermToTerm(t: UntypedTerm) =
-    typedTermToTerm(inferType(t))
-
   def onTypes[T](transformer: Type => Type): T => T = {
     //The pattern matching cannot distinguish this.Type from (something else).Type.
     //Won't be a problem as long as you don't mix different Types in the same tree.

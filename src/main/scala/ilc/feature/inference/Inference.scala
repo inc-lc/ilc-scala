@@ -10,6 +10,7 @@ import scala.language.implicitConversions
 trait Inference
 extends base.Syntax
    with functions.Syntax
+   with UntypedSyntax
    with Reflection
 {
   case class UnificationFailureDetails(remaining: Set[Constraint], substitutions: Map[TypeVariable, Type]) {
@@ -17,15 +18,6 @@ extends base.Syntax
   }
   class UnificationFailure(val details: UnificationFailureDetails) extends Exception("No unification possible")
   def UnificationFailure(remaining: Set[Constraint], substitutions: Map[TypeVariable, Type]) = new UnificationFailure(UnificationFailureDetails(remaining, substitutions))
-
-  trait UntypedTerm
-
-  case class UVar(getName: String) extends UntypedTerm
-  case class UAbs(argumentName: String, typeAnnotation: Option[Type], body: UntypedTerm) extends UntypedTerm
-  case class UApp(operator: UntypedTerm, operand: UntypedTerm) extends UntypedTerm
-  case class UMonomorphicConstant(term: Term) extends UntypedTerm
-  case class UPolymorphicConstant(term: PolymorphicConstant) extends UntypedTerm
-  case class TypeAscription(term: UntypedTerm, typ: Type) extends UntypedTerm
 
   // Only use this for pattern matching. Create new TypeVariables with freshTypeVariable.
   case class TypeVariable(name: Int, uterm: Option[UntypedTerm] = None) extends Type

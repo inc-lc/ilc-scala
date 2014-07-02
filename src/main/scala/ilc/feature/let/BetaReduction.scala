@@ -12,7 +12,7 @@ trait ProgramSize extends Syntax {
 }
 
 //XXX ToScala and Pretty don't strictly belong in here.
-trait BetaReduction extends Syntax with FreeVariables with analysis.Occurrences with Traversals with ToScala with Pretty {
+trait BetaReduction extends Syntax with FreeVariables with analysis.Occurrences with Traversals with ToScala with Pretty with IsAtomic {
   outer =>
   val freshGen = new FreshGen {
     /*
@@ -103,11 +103,16 @@ trait BetaReduction extends Syntax with FreeVariables with analysis.Occurrences 
     case class FunVal(fun: Value => Value, v: Var, doInline: Boolean) extends Value
 
     /**
-     * A neutral term is a normal form which is not a lambda abstraction: that is, usually, a variable or an application.
+     * A neutral term is a normal form which is not a lambda abstraction: that
+     * is, usually, a variable, a constant or an application.
      * We use the same concept in our values.
      */
     sealed trait NeutralValue extends Value
-    case class TermVal(term: Term) extends NeutralValue
+
+    //Variables or constants.
+    case class TermVal(term: Term) extends NeutralValue {
+      require(isAtomic(term))
+    }
     /**
      * Residualized application. It can only contain a neutral residual term in the function position.
      */
@@ -131,13 +136,6 @@ trait BetaReduction extends Syntax with FreeVariables with analysis.Occurrences 
     //TODO: Move it to analysis to allow for more trivial terms. In particular, to allow (x + 1) we'd need a "trivialConstant" predicate.
     def isTrivial(arg: Value): Boolean =
       arg match {
-        case TermVal(Abs(_, _)) =>
-          assert(false)
-          false
-        case TermVal(App(_, _)) =>
-          assert(false)
-          false
-        //Variables or constants.
         case TermVal(_) => true
         //Duplicating a function value can increase code size, but will not
         //duplicate work, because evaluating a closure requires only packaging

@@ -34,7 +34,7 @@ trait ANormalForm extends Syntax with FreeVariables with analysis.Occurrences wi
       if (isAtomic(normalT))
         k(normalT)
       else {
-        val newV = fresh("Av", normalT.getType)
+        val newV = fresh("a", normalT.getType)
         Let(newV, normalT, k(newV))
       }
     }

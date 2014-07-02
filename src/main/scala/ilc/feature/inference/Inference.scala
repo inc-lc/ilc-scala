@@ -112,8 +112,7 @@ extends base.Syntax
     constraints.map(substituteInConstraint(substitutions))
 
   def substitute(term: TypedTerm, substitutions: Map[TypeVariable, Type]): TypedTerm = term match {
-    case TVar(name, typ: TypeVariable) => TVar(name, substitutions.getOrElse(typ, typ))
-    case TVar(name, typ) => TVar(name, typ)
+    case TVar(name, typ) => TVar(name, substitute(substitutions)(typ))
     case TAbs(argumentName, argumentType, body) => TAbs(argumentName, substitute(substitutions)(argumentType), substitute(body, substitutions))
     case TApp(t1, t2, typ) => TApp(substitute(t1, substitutions), substitute(t2, substitutions), substitute(substitutions)(typ))
     case t@TMonomorphicConstant(_) => t

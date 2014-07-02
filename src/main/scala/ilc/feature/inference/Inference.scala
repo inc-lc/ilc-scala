@@ -57,6 +57,11 @@ extends base.Syntax
   case class TPolymorphicConstant(term: PolymorphicConstant, typ: Type, typeArguments: Seq[Type]) extends TypedTerm {
     override def getType = typ
   }
+  //XXX this should be in LetInference, but let's not unseal stuff for now, that might break shapeless.
+  //However, the handling is only
+  case class TLet(variable: String, varType: Type, exp: TypedTerm, body: TypedTerm) extends TypedTerm {
+    override def getType = body.getType
+  }
 
   import shapeless._
 
@@ -191,4 +196,30 @@ extends base.Syntax
   def traverse[T <: Product](transformer: Type => Type): T => T =
     typ =>
       onTypes(transformer)(mapSubtrees(traverse(transformer))(typ))
+}
+
+trait LetInference extends Inference with LetUntypedSyntax with let.Syntax {
+  override def collectConstraints(term: UntypedTerm, context: InferenceContext = emptyContext): (TypedTerm, Set[Constraint]) = term match {
+    case ULet(variable, exp, body) =>
+      //collectConstraints( ... desugared node ...)
+      //desugaring result: UApp(UAbs(variable, body), exp)
+      val (typedExp, c1) = collectConstraints(exp, context)
+      val argType = freshTypeVariable(term)
+      val (typedBody, c2) = collectConstraints(body, extend(context, variable, argType))
+      val c = c1 ++ c2 + Constraint(argType, typedExp.getType, Some(term))
+      (TLet(variable, argType, typedExp, typedBody), c)
+    case _ => super.collectConstraints(term, context)
+  }
+
+  override def substitute(substitutions: Map[TypeVariable, Type], term: TypedTerm): TypedTerm = term match {
+    case TLet(variable, varType, exp, body) =>
+      TLet(variable, substituteInType(substitutions)(varType), substitute(substitutions, exp), substitute(substitutions, body))
+    case _ => super.substitute(substitutions, term)
+  }
+
+  override def typedTermToTerm(tt: TypedTerm): Term = tt match {
+    case TLet(variable, varType, exp, body) =>
+      Let(Var(variable, varType), typedTermToTerm(exp), typedTermToTerm(body))
+    case _ => super.typedTermToTerm(tt)
+  }
 }

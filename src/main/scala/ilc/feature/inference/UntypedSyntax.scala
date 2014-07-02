@@ -14,3 +14,9 @@ trait UntypedSyntax {
   case class UPolymorphicConstant(term: PolymorphicConstant) extends UntypedTerm
   case class TypeAscription(term: UntypedTerm, typ: Type) extends UntypedTerm
 }
+
+trait LetUntypedSyntax extends UntypedSyntax {
+  this: base.Syntax with functions.Syntax =>
+
+  case class ULet(variable: String, exp: UntypedTerm, body: UntypedTerm) extends UntypedTerm
+}

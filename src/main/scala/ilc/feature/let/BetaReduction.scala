@@ -17,10 +17,10 @@ trait BetaReduction extends Syntax with FreeVariables with analysis.Occurrences 
   val freshGen = new FreshGen {
     /*
      * The singleton type annotation encodes a "sharing constraint"*:
-     * freshGen.syntax.type =:= outer.type, thus
-     * freshGen.syntax.Term =:= outer.Term
+     * freshGen.syntax.type =:= outer.type. The typechecker can deduce then
+     * that freshGen.syntax.Term =:= outer.Term.
      *
-     * *In in the ML module system sense.
+     * * In the ML module system sense.
      */
     val syntax: outer.type = outer
   }

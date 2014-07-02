@@ -13,6 +13,21 @@ trait ProgramSize extends Syntax {
 
 //XXX ToScala and Pretty don't strictly belong in here.
 trait BetaReduction extends Syntax with FreeVariables with analysis.Occurrences with Traversals with ToScala with Pretty {
+  outer =>
+  val freshGen = new FreshGen {
+    /*
+     * The singleton type annotation encodes a "sharing constraint"*:
+     * freshGen.syntax.type =:= outer.type, thus
+     * freshGen.syntax.Term =:= outer.Term
+     *
+     * *In in the ML module system sense.
+     */
+    val syntax: outer.type = outer
+  }
+  implicitly[freshGen.syntax.type =:= outer.type] //A type equality assertion.
+  implicitly[freshGen.syntax.Term =:= outer.Term]
+  import freshGen._
+
   val shouldNormalize = true
 
   def letBetaReduceRule: Term =?>: Term = {
@@ -214,6 +229,15 @@ trait BetaReduction extends Syntax with FreeVariables with analysis.Occurrences 
         }
       }
   }
+}
+
+/**
+ * A reusable freshname generator. Since this contains mutable state, this module
+ * is designed to be imported via composition, not by mixing it in.
+ */
+trait FreshGen {
+  val syntax: Syntax
+  import syntax._
 
   //Have a very simple and reliable fresh variable generator. Tracking free
   //variables might have been the performance killer of the other normalizer.

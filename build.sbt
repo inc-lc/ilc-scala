@@ -37,7 +37,10 @@ libraryDependencies += "org.scala-lang" % "scala-compiler" % scalaVersion.value
 libraryDependencies +=
   "com.chuusai" %% "shapeless" % "2.0.0"
 
-initialCommands in console in ThisBuild := "import ilc.examples._"
+initialCommands in console in ThisBuild := """
+import ilc.examples._
+import ilc._; import language._; import feature._
+"""
 
 //XXX rather local, feel free to clobber the content.
 initialCommands in (Test, console) in ThisBuild := """

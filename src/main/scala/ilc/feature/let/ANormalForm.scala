@@ -9,9 +9,10 @@ package let
  */
 trait ANormalForm extends Syntax with FreeVariables with analysis.Occurrences with Traversals with ToScala with Pretty with IsAtomic {
   outer =>
-  val freshGen = new FreshGen { val syntax: outer.type = outer }
+  private val freshGen = new FreshGen { val syntax: outer.type = outer }
   import freshGen._
 
+  //XXX: Rename to avoid name clashes/confusion when importing (and also in ANormalFormStateful).
   def normalizeTerm(t: Term): Term = normalize(t)(identity)
   def normalize(t: Term)(k: Term => Term): Term = t match {
     case Abs(v, body) =>

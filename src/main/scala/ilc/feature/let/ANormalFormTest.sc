@@ -11,7 +11,7 @@ object ANormalFormTest {
     with inference.LetSyntaxSugar                 //> v  : ilc.language.Bacchus with ilc.feature.let.ANormalFormStateful with ilc.
                                                   //| feature.integers.ImplicitSyntaxSugar with ilc.feature.inference.LetInference
                                                   //|  with ilc.feature.let.BetaReduction with ilc.feature.inference.LetSyntaxSuga
-                                                  //| r = ilc.feature.let.ANormalFormTest$$anonfun$main$1$$anon$1@32137937
+                                                  //| r = ilc.feature.let.ANormalFormTest$$anonfun$main$1$$anon$1@5660d2d2
     //Both work, but the output is different.
 
   //def tests(v: Bacchus with feature.let.ANormalFormStateful with integers.ImplicitSyntaxSugar with inference.LetInference
@@ -163,6 +163,21 @@ object ANormalFormTest {
                                                   //|   a_9
                                                   //|     a_10;
                                                   //| x"
+  "\n" + pretty(normalizeTerm(normalize(test3)))  //> res10: String = "
+                                                  //| a_11 =
+                                                  //|   IfThenElse(ℤ)
+                                                  //|     True;
+                                                  //| a_12 =
+                                                  //|   λunit_1.
+                                                  //|     LiteralInt(1);
+                                                  //| a_13 =
+                                                  //|   a_11
+                                                  //|     a_12;
+                                                  //| a_14 =
+                                                  //|   λunit_2.
+                                                  //|     LiteralInt(2);
+                                                  //| a_13
+                                                  //|   a_14"
   //}
   //tests(v)
 }

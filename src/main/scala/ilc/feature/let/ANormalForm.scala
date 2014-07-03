@@ -78,7 +78,7 @@ trait ANormalFormStateful extends Syntax with FreeVariables with analysis.Occurr
     //So this works for both CSE and non-CSE.
     //In fact, we only need either bindings (for non-CSE) or a mutable map (for CSE).
     val bindings = if (doCSE) new CSEBindings else new NonCSEBindings
-    val normalT = normalize(t)(bindings)
+    val normalT = normalize(t, bindings)
     bindings.bindings.foldRight(normalT) {
       case ((term, variable), t) =>
         Let(variable, term, t)
@@ -90,7 +90,7 @@ trait ANormalFormStateful extends Syntax with FreeVariables with analysis.Occurr
    * and the mutable maps threaded through as parameters, initialized by calls
    * to normalizeTerm (at the top-level and inside each lambda).
    */
-  def normalize(t: Term)(bindings: Bindings): Term = t match {
+  def normalize(t: Term, bindings: Bindings): Term = t match {
     case Abs(v, body) =>
       Abs(v, normalizeTerm(body))
     case App(operator, operand) =>
@@ -99,14 +99,14 @@ trait ANormalFormStateful extends Syntax with FreeVariables with analysis.Occurr
       App(s, t)
     case Let(variable, exp, body) =>
       val normalExp = normalizeName(exp, Some(variable))(bindings)
-      normalize(body)(bindings)
+      normalize(body, bindings)
     case v: Var =>
       (bindings.substs get v) getOrElse v
     case _ if isAtomic(t) => t
   }
 
   def normalizeName(t: Term, boundVarOpt: Option[Var] = None)(bindings: Bindings): Term = {
-    val normalT = normalize(t)(bindings)
+    val normalT = normalize(t, bindings)
     def bind(): Var = {
       val newV = boundVarOpt getOrElse fresh("a", normalT.getType)
       bindings += normalT -> newV

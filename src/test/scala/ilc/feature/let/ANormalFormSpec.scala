@@ -8,7 +8,9 @@ import poly._
 
 class ANormalFormSpec extends FlatSpec {
   def tests(doCSE_ : Boolean, copyPropagation_ : Boolean) {
-    val v = new language.Bacchus with feature.let.ANormalFormStateful with integers.ImplicitSyntaxSugar with inference.LetInference
+    val v = new language.Bacchus with feature.let.ANormalFormStateful with integers.ImplicitSyntaxSugar
+      with integers.Evaluation with booleans.Evaluation with let.Evaluation
+      with inference.LetInference
       with BetaReduction with inference.LetSyntaxSugar with inference.InferenceTestHelper {
       override val doCSE = doCSE_
       override val copyPropagation = copyPropagation_
@@ -46,7 +48,7 @@ class ANormalFormSpec extends FlatSpec {
     val test3 =
       let('x, ifThenElse(True, 1, 2): Term)('x)
     try {
-      println(pretty(test1))
+      pretty(test1)
     } catch { case e: inference.Inference#UnificationFailure =>
       println(e.details)
     }
@@ -61,16 +63,23 @@ class ANormalFormSpec extends FlatSpec {
       }(normalizeTerm(test1))
       assert(contains_id_i2 === !doCSE)
     }
-    "\n" + pretty(normalizeTerm(test1))
-    "\n" + pretty(normalize(normalizeTerm(test1)))
-    "\n" + pretty(normalizeTerm(normalize(test1)))
-    "\n" + pretty(test2)
-    "\n" + pretty(normalizeTerm(test2))
-    "\n" + pretty(normalize(normalizeTerm(test2)))
-    "\n" + pretty(normalizeTerm(normalize(test2)))
-    "\n" + pretty(test3)
-    "\n" + pretty(normalizeTerm(test3))
-    "\n" + pretty(normalizeTerm(normalize(test3)))
+    "normalizeTerm(test2)" should s"be id_i2 iff copyPropagation, doCSE = $doCSE, copyPropagation = $copyPropagation" in {
+      assert((normalizeTerm(test2) == (20: Term)) === copyPropagation)
+    }
+    "normalizeTerm(test3)" should s"not crash, doCSE = $doCSE, copyPropagation = $copyPropagation" in {
+      normalizeTerm(test3)
+    }
+    for ((test, i_) <- Seq(test1, test2, test3).zipWithIndex) {
+      val i = i_ + 1
+      val testNorm = normalizeTerm(test)
+      s"normalizeTerm(test$i)" should s"not alter evaluation results, doCSE = $doCSE, copyPropagation = $copyPropagation" in {
+        assert(eval(testNorm) === eval(test))
+      }
+      s"normalizeTerm(test$i)" should s"produce a normalizable term, doCSE = $doCSE, copyPropagation = $copyPropagation" in {
+        val testNormNorm = normalize(testNorm)
+        assert(eval(testNormNorm) === eval(testNorm))
+      }
+    }
   }
   for {
     doCSE <- Seq(false, true)

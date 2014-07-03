@@ -9,7 +9,7 @@ import poly._
 class ANormalFormSpec extends FlatSpec {
   def tests(doCSE_ : Boolean, copyPropagation_ : Boolean) {
     val v = new language.Bacchus with feature.let.ANormalFormStateful with integers.ImplicitSyntaxSugar
-      with integers.Evaluation with booleans.Evaluation with let.Evaluation
+      with integers.Evaluation with let.Evaluation
       with inference.LetInference
       with BetaReduction with inference.LetSyntaxSugar with inference.InferenceTestHelper {
       override val doCSE = doCSE_

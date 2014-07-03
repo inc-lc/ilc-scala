@@ -40,6 +40,9 @@ libraryDependencies += "org.scala-lang" % "scala-compiler" % scalaVersion.value
 libraryDependencies +=
   "com.chuusai" %% "shapeless" % "2.0.0"
 
+libraryDependencies +=
+  "org.scalaz" %% "scalaz-core" % "7.0.6"
+
 initialCommands in console in ThisBuild := "import ilc.examples._"
 
 //XXX rather local, feel free to clobber the content.

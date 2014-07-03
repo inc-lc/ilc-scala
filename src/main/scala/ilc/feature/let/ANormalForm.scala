@@ -2,6 +2,8 @@ package ilc
 package feature
 package let
 
+import scalaz._
+
 /**
  * Implementation of A-normalization, based on http://matt.might.net/articles/a-normalization/.
  * Written in CPS, so stack usage might be a problem. Should that ever happen, trampolining is an alternative.
@@ -48,42 +50,70 @@ trait ANormalFormStateful extends Syntax with FreeVariables with analysis.Occurr
   import freshGen._
 
   import collection.mutable
-  //Test how well this works.
+
   val doCSE = true
+  val copyPropagation = true
+
   def normalizeTerm(t: Term): Term = {
-    val m = mutable.LinkedHashMap.empty[Term, Var]
-    val normalT = normalize(t)(m)
-    m.foldRight(normalT) {
+    //Stores all bindings in order & without auto-removing duplicates.
+    //So this works for both CSE and non-CSE.
+    //In fact, we only need either bindings (for non-CSE) or a mutable map (for CSE).
+    val bindings = mutable.ListBuffer.empty[(Term, Var)]
+    val normalT = normalize(t)(bindings, mutable.Map.empty, mutable.Map.empty)
+    bindings.foldRight(normalT) {
       case ((term, variable), t) =>
         Let(variable, term, t)
     }
   }
-  def normalize(t: Term)(map: mutable.Map[Term, Var]): Term = t match {
+
+  /*
+   * The only mutable state we use are the (global) fresh variable generator,
+   * and the mutable maps threaded through as parameters, initialized by calls
+   * to normalizeTerm (at the top-level and inside each lambda).
+   */
+  def normalize(t: Term)(bindings: mutable.ListBuffer[(Term, Var)], map: mutable.Map[Term, Var], substs: mutable.Map[Var, Term]): Term = t match {
     case Abs(v, body) =>
       Abs(v, normalizeTerm(body))
     case App(operator, operand) =>
-      val s = normalizeName(operator)(map)
-      val t = normalizeName(operand)(map)
+      val s = normalizeName(operator)(bindings, map, substs)
+      val t = normalizeName(operand)(bindings, map, substs)
       App(s, t)
     case Let(variable, exp, body) =>
-      val normalExp = normalizeName(exp, Some(variable))(map)
-      normalize(body)(map)
+      val normalExp = normalizeName(exp, Some(variable))(bindings, map, substs)
+      normalize(body)(bindings, map, substs)
+    case v: Var =>
+      (substs get v) getOrElse v
     case _ if isAtomic(t) => t
   }
 
-  def normalizeName(t: Term, boundVar: Option[Var] = None)(map: mutable.Map[Term, Var]) = {
-    val normalT = normalize(t)(map)
-    if (isAtomic(normalT)
-        //Needed, we can't just drop an existing binding.
-        && boundVar == None)
-      normalT
-    else {
-      val newV = boundVar getOrElse fresh("a", normalT.getType)
-      if (doCSE)
-        map getOrElseUpdate (normalT, newV)
-      else {
-        map += (normalT -> newV)
-        newV
+  def normalizeName(t: Term, boundVarOpt: Option[Var] = None)(bindings: mutable.ListBuffer[(Term, Var)], map: mutable.Map[Term, Var], substs: mutable.Map[Var, Term]): Term = {
+    val normalT = normalize(t)(bindings, map, substs)
+    def bind(): Var = {
+      val newV = boundVarOpt getOrElse fresh("a", normalT.getType)
+      map += normalT -> newV
+      bindings += normalT -> newV
+      newV
+    }
+    def reuse(existingTerm: Term): Term = {
+      boundVarOpt foreach { boundVar =>
+        //We can't just drop an existing binding.
+
+        //This implements copy propagation.
+        assert(isAtomic(normalT) && copyPropagation || doCSE) //Validate non-local reasoning: we only get here
+        //if copyPropagation is enabled, because of the if below.
+        substs += boundVar -> existingTerm
+      }
+      existingTerm
+    }
+    if (isAtomic(normalT) && (copyPropagation || boundVarOpt.isEmpty)) {
+      reuse(normalT)
+    } else {
+      if (doCSE) {
+        import std.option.optionSyntax._
+        //Prevents calling bind() for a new binding of the same body.
+        map get normalT some (reuse) none (bind())
+      } else {
+        bind()
       }
     }
   }

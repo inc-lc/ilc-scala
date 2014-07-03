@@ -1,3 +1,7 @@
 project/target
 target
 tmp
+.classpath
+.project
+.settings/
+/.worksheet

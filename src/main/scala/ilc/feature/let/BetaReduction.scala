@@ -2,6 +2,8 @@ package ilc
 package feature
 package let
 
+import base.TypeError
+
 trait ProgramSize extends Syntax {
   def termSize: Term => Int = {
     case App(f, t) => 1 + termSize(f) + termSize(t)
@@ -192,7 +194,7 @@ trait BetaReduction extends Syntax with FreeVariables with analysis.Occurrences 
 
         case Var(name, _) =>
           //This inlines values from the environment.
-          env(name)
+          env get name getOrElse (throw new TypeError(s"Variable $name not available in context $env, ill-scoped term"))
 
         case Let(v, varDef, body) =>
           //This would perform full inlining for such lets. So we don't do that.

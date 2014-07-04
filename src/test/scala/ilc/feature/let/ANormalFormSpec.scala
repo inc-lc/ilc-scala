@@ -45,13 +45,9 @@ class ANormalFormSpec extends FlatSpec {
   */
     val test3 =
       let('x, ifThenElse(True, 1, 2): Term)('x)
-    try {
-      pretty(test1)
-    } catch { case e: inference.Inference#UnificationFailure =>
-      println(e.details)
-    }
-    "\n" + pretty(test1)
-    "aNormalizeTerm(test1)" should s"contain id_i2 iff !doCSE, doCSE = $doCSE, copyPropagation = $copyPropagation" in {
+
+    val config = s"doCSE = $doCSE, copyPropagation = $copyPropagation"
+    "aNormalizeTerm(test1)" should s"contain id_i2 iff !doCSE, $config" in {
       var contains_id_i2: Boolean = false
       everywhere {
         case t@Var(LiteralName(name), _) =>
@@ -61,19 +57,19 @@ class ANormalFormSpec extends FlatSpec {
       }(aNormalizeTerm(test1))
       assert(contains_id_i2 === !doCSE)
     }
-    "aNormalizeTerm(test2)" should s"be id_i2 iff copyPropagation, doCSE = $doCSE, copyPropagation = $copyPropagation" in {
+    "aNormalizeTerm(test2)" should s"be id_i2 iff copyPropagation, $config" in {
       assert((aNormalizeTerm(test2) == (20: Term)) === copyPropagation)
     }
-    "aNormalizeTerm(test3)" should s"not crash, doCSE = $doCSE, copyPropagation = $copyPropagation" in {
+    "aNormalizeTerm(test3)" should s"not crash, $config" in {
       aNormalizeTerm(test3)
     }
     for ((test, i_) <- Seq(test1, test2, test3).zipWithIndex) {
       val i = i_ + 1
       val testNorm = aNormalizeTerm(test)
-      s"aNormalizeTerm(test$i)" should s"not alter evaluation results, doCSE = $doCSE, copyPropagation = $copyPropagation" in {
+      s"aNormalizeTerm(test$i)" should s"not alter evaluation results, $config" in {
         assert(eval(testNorm) === eval(test))
       }
-      s"aNormalizeTerm(test$i)" should s"produce a normalizable term, doCSE = $doCSE, copyPropagation = $copyPropagation" in {
+      s"aNormalizeTerm(test$i)" should s"produce a normalizable term, $config" in {
         val testNormNorm = normalize(testNorm)
         assert(eval(testNormNorm) === eval(testNorm))
       }

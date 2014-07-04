@@ -5,14 +5,20 @@ package let
 object ANormalFormTest {
   println("Welcome to the Scala worksheet")       //> Welcome to the Scala worksheet
   import language._
-  val v = new Bacchus with let.ANormalFormStateful with integers.ImplicitSyntaxSugar with inference.LetInference
-    with BetaReduction with Pretty with AddCaches
+  val v = new Bacchus with let.ANormalFormAdapter with integers.ImplicitSyntaxSugar with inference.LetInference
+    with BetaReduction with Pretty// with AddCaches
     //with inference.SyntaxSugar //Or with:
-    with inference.LetSyntaxSugar                 //> v  : ilc.language.Bacchus with ilc.feature.let.ANormalFormStateful with ilc.
-                                                  //| feature.integers.ImplicitSyntaxSugar with ilc.feature.inference.LetInference
-                                                  //|  with ilc.feature.let.BetaReduction with ilc.feature.let.Pretty with ilc.fea
-                                                  //| ture.let.AddCaches with ilc.feature.inference.LetSyntaxSugar = ilc.feature.l
-                                                  //| et.ANormalFormTest$$anonfun$main$1$$anon$1@7a2520fa
+    with inference.LetSyntaxSugar {
+      outer =>
+      val aNormalizer: feature.let.ANormalFormStateful { val mySyntax: outer.type } = new feature.let.ANormalFormStateful {
+        protected val mySyntax: outer.type = outer
+      }
+    }                                             //> v  : ilc.language.Bacchus with ilc.feature.let.ANormalFormAdapter with ilc.f
+                                                  //| eature.integers.ImplicitSyntaxSugar with ilc.feature.inference.LetInference 
+                                                  //| with ilc.feature.let.BetaReduction with ilc.feature.let.Pretty with ilc.feat
+                                                  //| ure.inference.LetSyntaxSugar{val aNormalizer: ilc.feature.let.ANormalFormSta
+                                                  //| teful{val mySyntax: ilc.feature.let.ANormalFormTest.<refinement>.type}} = il
+                                                  //| c.feature.let.ANormalFormTest$$anonfun$main$1$$anon$1@746ab811
     //Both work, but the output is different.
 
   //def tests(v: Bacchus with feature.let.ANormalFormStateful with integers.ImplicitSyntaxSugar with inference.LetInference

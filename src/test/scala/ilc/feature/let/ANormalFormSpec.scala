@@ -6,15 +6,25 @@ import org.scalatest._
 
 class ANormalFormSpec extends FlatSpec {
   def tests(doCSE_ : Boolean, copyPropagation_ : Boolean, partialApplicationsAreSpecial_ : Boolean) {
-    val v = new language.Bacchus with let.ANormalFormStateful with integers.ImplicitSyntaxSugar
+    val v =
+      new language.Bacchus with let.ANormalFormAdapter with integers.ImplicitSyntaxSugar
       with integers.Evaluation with let.Evaluation with let.Pretty
       with inference.LetInference
       with BetaReduction with inference.LetSyntaxSugar with inference.InferenceTestHelper {
-      override val doCSE = doCSE_
-      override val copyPropagation = copyPropagation_
-      override val partialApplicationsAreSpecial = partialApplicationsAreSpecial_
+        outer =>
+        val aNormalizer: ANormalFormStateful { val mySyntax: outer.type } = new ANormalFormStateful {
+          protected val mySyntax: outer.type = outer
+          override val doCSE = doCSE_
+          override val copyPropagation = copyPropagation_
+          override val partialApplicationsAreSpecial = partialApplicationsAreSpecial_
+        }
     }
     import v._
+    import aNormalizer.{doCSE, copyPropagation, partialApplicationsAreSpecial}
+    val v1: AddCaches { val mySyntax: v.type } = new AddCaches {
+      protected val mySyntax: v.type = v
+    }
+    import v1.addCaches
 
     //Taken from http://matt.might.net/articles/a-normalization/, but was ill-typed!
   /*
@@ -46,6 +56,7 @@ class ANormalFormSpec extends FlatSpec {
   */
     val test3 =
       let('x, ifThenElse(True, 1, 2): Term)('x)
+    pretty(addCaches(test3: Term))
 
     val config = s"doCSE = $doCSE, copyPropagation = $copyPropagation, partialApplicationsAreSpecial = $partialApplicationsAreSpecial"
     "aNormalizeTerm(test1)" should s"contain id_i2 iff !doCSE, $config" in {

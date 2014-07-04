@@ -6,17 +6,30 @@ import scalaz._
 import scala.collection.generic.Growable
 
 trait ANormalFormInterface {
-  this: Syntax =>
-  def aNormalizeTerm(t: Term): Term
+  type MySyntax <: Syntax
+  def aNormalizeTerm(t: MySyntax#Term): MySyntax#Term
 }
+
+// Delegates ANormalFormInterface to a nested instance of it.
+trait ANormalFormAdapter extends ANormalFormInterface {
+  outer: Syntax =>
+
+  type MySyntax = this.type
+  val aNormalizer: ANormalFormInterface { type MySyntax = outer.MySyntax }
+  def aNormalizeTerm(t: Term): Term = aNormalizer.aNormalizeTerm(t)
+}
+
 /**
  * Implementation of A-normalization, based on http://matt.might.net/articles/a-normalization/.
  * Written in CPS, so stack usage might be a problem. Should that ever happen, trampolining is an alternative.
  * Alternatively, one could implement this using a writer monad, as suggested by Tillmann.
  */
-trait ANormalForm extends Syntax with IsAtomic with ANormalFormInterface {
-  outer =>
-  private val freshGen = new FreshGen { val syntax: outer.type = outer }
+trait ANormalForm extends ANormalFormInterface {
+  protected val mySyntax: Syntax with IsAtomic
+  type MySyntax = mySyntax.type
+  import mySyntax._
+
+  private val freshGen = new FreshGen { lazy val syntax: mySyntax.type = mySyntax }
   import freshGen._
 
   override def aNormalizeTerm(t: Term): Term = aNormalize(t)(identity)
@@ -49,9 +62,15 @@ trait ANormalForm extends Syntax with IsAtomic with ANormalFormInterface {
 }
 
 //
-trait ANormalFormStateful extends Syntax with IsAtomic with ANormalFormInterface {
-  outer =>
-  private val freshGen = new FreshGen { val syntax: outer.type = outer }
+trait ANormalFormStateful extends ANormalFormInterface {
+  protected val mySyntax: Syntax with IsAtomic
+  type MySyntax = mySyntax.type
+  import mySyntax._
+
+  private val freshGen = new FreshGen {
+    //This must be lazy because at this time mySyntax is not initialized yet.
+    lazy val syntax: mySyntax.type = mySyntax
+  }
   import freshGen._
 
   import collection.mutable
@@ -169,9 +188,11 @@ trait ANormalFormStateful extends Syntax with IsAtomic with ANormalFormInterface
   * Other interesting differences between what I try to do and their alg. (in Fig. 3):
   * - we encode tuples as right-nested pairs, so their rst becomes snd.
   */
-trait AddCaches extends ANormalFormStateful with products.SyntaxSugar with Traversals {
-  outer =>
-  private val freshGen = new FreshGen { val syntax: outer.type = outer }
+trait AddCaches extends ANormalFormStateful {
+  override protected val mySyntax: Syntax with IsAtomic with products.SyntaxSugar with Traversals
+  import mySyntax._
+  //XXX remove soon!
+  private val freshGen = new FreshGen { val syntax: mySyntax.type = mySyntax }
   import freshGen._
 
   //This is not supported yet for this analysis — I think this would require a concept of arity to be type-safe.

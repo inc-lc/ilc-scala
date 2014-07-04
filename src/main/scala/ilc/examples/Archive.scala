@@ -43,13 +43,16 @@ object Archive {
 abstract class Example
 extends functions.Pretty with let.Pretty
    with let.BetaReduction
-   with let.ANormalFormStateful
+   with let.ANormalFormAdapter
    with let.ProgramSize
    with let.ToScala
 {
-  this: base.ToScala
-   with base.Derivation =>
+  outer: base.ToScala
+    with base.Derivation =>
 
+  val aNormalizer: let.ANormalFormStateful { val mySyntax: outer.type } = new let.ANormalFormStateful {
+    protected val mySyntax: outer.type = outer
+  }
   def name =
     this.getClass().getSimpleName().stripSuffix("Example")
 

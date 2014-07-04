@@ -28,6 +28,8 @@ trait Pretty extends Syntax with util.IndentUtils {
        //openParen("(") + indent() + text + closeParen(")")
   }
 
+  override protected def showTerm(t: Term): String = pretty(t)
+
   /**
    * Print a closed term to human-readable syntax.
    *

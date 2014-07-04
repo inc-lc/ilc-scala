@@ -7,6 +7,7 @@ import org.scalatest.FunSuite
 class BacchusEvaluationSuite
 extends FunSuite
    with Subjects
+   with Pretty
    with Evaluation
 {
   // `expect` is taken and deprecated

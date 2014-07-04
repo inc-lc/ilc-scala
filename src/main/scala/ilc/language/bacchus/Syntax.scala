@@ -5,7 +5,7 @@ package bacchus
 import feature._
 
 trait Syntax
-extends functions.Pretty
+extends functions.Syntax
    with bags.SyntaxSugar
    with maps.SyntaxSugar
    with maybe.Syntax

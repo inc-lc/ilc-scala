@@ -5,8 +5,12 @@ package let
 trait Traversals extends Syntax {
   type =?>:[A, B] = PartialFunction[A, B]
 
+  //Switch to Scalaz?
+  def or[T, U](f: T =?>: U)(g: T => U): T => U =
+    x => f applyOrElse (x, g)
+
   def orIdentity[T](f: T =?>: T): T => T =
-    x => f applyOrElse (x, identity[T])
+    or(f)(identity)
 
   //Switch to shapeless?
   //Probably yes, since I had to debug this, and it needs to be extended for Let (as lots of existing code), and so on.

@@ -5,13 +5,14 @@ package let
 import org.scalatest._
 
 class ANormalFormSpec extends FlatSpec {
-  def tests(doCSE_ : Boolean, copyPropagation_ : Boolean) {
+  def tests(doCSE_ : Boolean, copyPropagation_ : Boolean, partialApplicationsAreSpecial_ : Boolean) {
     val v = new language.Bacchus with let.ANormalFormStateful with integers.ImplicitSyntaxSugar
       with integers.Evaluation with let.Evaluation with let.Pretty
       with inference.LetInference
       with BetaReduction with inference.LetSyntaxSugar with inference.InferenceTestHelper {
       override val doCSE = doCSE_
       override val copyPropagation = copyPropagation_
+      override val partialApplicationsAreSpecial = partialApplicationsAreSpecial_
     }
     import v._
 
@@ -46,7 +47,7 @@ class ANormalFormSpec extends FlatSpec {
     val test3 =
       let('x, ifThenElse(True, 1, 2): Term)('x)
 
-    val config = s"doCSE = $doCSE, copyPropagation = $copyPropagation"
+    val config = s"doCSE = $doCSE, copyPropagation = $copyPropagation, partialApplicationsAreSpecial = $partialApplicationsAreSpecial"
     "aNormalizeTerm(test1)" should s"contain id_i2 iff !doCSE, $config" in {
       var contains_id_i2: Boolean = false
       everywhere {
@@ -78,7 +79,8 @@ class ANormalFormSpec extends FlatSpec {
   for {
     doCSE <- Seq(false, true)
     copyPropagation <- Seq(false, true)
+    partialApplicationsAreSpecial <- Seq(false, true)
   } {
-    tests(doCSE, copyPropagation)
+    tests(doCSE, copyPropagation, partialApplicationsAreSpecial)
   }
 }

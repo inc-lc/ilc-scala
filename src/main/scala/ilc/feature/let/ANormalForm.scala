@@ -80,6 +80,7 @@ trait ANormalFormStateful extends Syntax with IsAtomic with ANormalFormInterface
   }
   val doCSE = true
   val copyPropagation = true
+  val partialApplicationsAreSpecial = true
 
   override def aNormalizeTerm(t: Term): Term = {
     val bindings = if (doCSE) new CSEBindings else new NonCSEBindings
@@ -99,9 +100,22 @@ trait ANormalFormStateful extends Syntax with IsAtomic with ANormalFormInterface
     case Abs(v, body) =>
       Abs(v, aNormalizeTerm(body))
     case App(operator, operand) =>
-      val s = aNormalizeName(operator)(bindings)
-      val t = aNormalizeName(operand)(bindings)
-      App(s, t)
+      def collectApps(t: Term, acc: List[Term]): List[Term] = t match {
+        case App(s, t) => collectApps(s, t :: acc)
+        case _ => t :: acc
+      }
+      //(Conditional) special handling for nested applications: Don't save an intermediate result for each intermediate node.
+      //Note that this is very syntactic, and that's good: if the user already inserted a binding for a partial application, as in:
+      // val r1 = f arg1 arg2
+      // val r2 = r1 arg3
+      //we don't want to inline r1 into r2, because that might lead to work duplication.
+      //Here, we assume that the user inserted all needed sharing already.
+      val operands =
+        if (partialApplicationsAreSpecial)
+          collectApps(operator, operand :: Nil)
+        else
+          operator :: operand :: Nil
+      operands map (aNormalizeName(_)(bindings)) reduceLeft (App)
     case Let(variable, exp, body) =>
       val normalExp = aNormalizeName(exp, Some(variable))(bindings)
       aNormalize(body, bindings)

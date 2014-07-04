@@ -34,11 +34,11 @@ object ANormalFormTest {
       'apply -> ('f ->: 'x ->: 'f('x))
     ) {
         'id('apply, 'id_i, 'id_i2(3: Term))
-      }                                           //> test1  : ilc.feature.let.ANormalFormTest.v.UntypedTerm = ULet(id,UAbs(x,None
-                                                  //| ,UVar(x)),ULet(id_i,UAbs(x,None,UVar(x)),ULet(id_i2,UAbs(x,None,UVar(x)),ULe
-                                                  //| t(apply,UAbs(f,None,UAbs(x,None,UApp(UVar(f),UVar(x)))),UApp(UApp(UApp(UVar(
-                                                  //| id),UVar(apply)),UVar(id_i)),UApp(UVar(id_i2),UMonomorphicConstant(LiteralIn
-                                                  //| t(3))))))))
+      }                                           //> test1  : ilc.feature.let.ANormalFormTest.v.UntypedTerm = ULet(id,UAbs(x,Non
+                                                  //| e,UVar(x)),ULet(id_i,UAbs(x,None,UVar(x)),ULet(id_i2,UAbs(x,None,UVar(x)),U
+                                                  //| Let(apply,UAbs(f,None,UAbs(x,None,UApp(UVar(f),UVar(x)))),UApp(UApp(UApp(UV
+                                                  //| ar(id),UVar(apply)),UVar(id_i)),UApp(UVar(id_i2),UMonomorphicConstant(Liter
+                                                  //| alInt(3))))))))
 /*
 (define t2
   '(let ([x (let ([y 20]) y)])
@@ -109,15 +109,19 @@ object ANormalFormTest {
                                                   //| apply =
                                                   //|   λf.
                                                   //|   λx.
-                                                  //|     f
-                                                  //|       x;
-                                                  //| a_1 =
+                                                  //|     a_1 =
+                                                  //|       f
+                                                  //|         x;
+                                                  //|     a_1;
+                                                  //| a_2 =
                                                   //|   id_i
                                                   //|     LiteralInt(3);
-                                                  //| id
-                                                  //|   apply
-                                                  //|   id_i
-                                                  //|   a_1"
+                                                  //| a_3 =
+                                                  //|   id
+                                                  //|     apply
+                                                  //|     id_i
+                                                  //|     a_2;
+                                                  //| a_3"
   "\n" + pretty(normalize(aNormalizeTerm(test1))) //> res2: String = "
                                                   //| LiteralInt(3)"
   "\n" + pretty(aNormalizeTerm(normalize(test1))) //> res3: String = "
@@ -144,57 +148,33 @@ object ANormalFormTest {
                                                   //|        LiteralInt(2));
                                                   //| x"
   "\n" + pretty(aNormalizeTerm(test3))            //> res9: String = "
-                                                  //| a_3 =
-                                                  //|   λunit.
-                                                  //|     LiteralInt(1);
-                                                  //| a_4 =
-                                                  //|   λunit.
-                                                  //|     LiteralInt(2);
-                                                  //| x =
-                                                  //|   IfThenElse(ℤ)
-                                                  //|     True
-                                                  //|     a_3
-                                                  //|     a_4;
-                                                  //| x"
-  "\n" + pretty(aNormalizeTerm(normalize(test3))) //> res10: String = "
-                                                  //| a_5 =
-                                                  //|   λunit_1.
-                                                  //|     LiteralInt(1);
-                                                  //| a_6 =
-                                                  //|   λunit_2.
-                                                  //|     LiteralInt(2);
-                                                  //| IfThenElse(ℤ)
-                                                  //|   True
-                                                  //|   a_5
-                                                  //|   a_6"
-  "\n" + pretty(addCaches(test3))                 //> res11: String = "
                                                   //| a_7 =
                                                   //|   λunit.
                                                   //|     LiteralInt(1);
                                                   //| a_8 =
                                                   //|   λunit.
                                                   //|     LiteralInt(2);
-                                                  //| x =
+                                                  //| a_9 =
                                                   //|   IfThenElse(ℤ)
                                                   //|     True
                                                   //|     a_7
                                                   //|     a_8;
-                                                  //| (λx1lit.
-                                                  //|  λx2lit.
-                                                  //|  λx3lit.
-                                                  //|  λx4lit.
-                                                  //|    Pair(ℤ, ProductType(ℤ,ProductType(UnitType → ℤ,UnitType → ℤ)
-                                                  //| ))
-                                                  //|      x1lit
-                                                  //|      (Pair(ℤ, ProductType(UnitType → ℤ,UnitType → ℤ))
-                                                  //|         x2lit
-                                                  //|         (Pair(UnitType → ℤ, UnitType → ℤ)
-                                                  //|            x3lit
-                                                  //|            x4lit)))
-                                                  //|   x
-                                                  //|   x
-                                                  //|   a_8
-                                                  //|   a_7"
+                                                  //| a_9"
+  "\n" + pretty(aNormalizeTerm(normalize(test3))) //> res10: String = "
+                                                  //| a_10 =
+                                                  //|   λunit_1.
+                                                  //|     LiteralInt(1);
+                                                  //| a_11 =
+                                                  //|   λunit_2.
+                                                  //|     LiteralInt(2);
+                                                  //| a_12 =
+                                                  //|   IfThenElse(ℤ)
+                                                  //|     True
+                                                  //|     a_10
+                                                  //|     a_11;
+                                                  //| a_12"
+  //"\n" + pretty(addCaches(test3))
+  //"\n" + pretty(addCaches(test1))
   //}
   //tests(v)
 }

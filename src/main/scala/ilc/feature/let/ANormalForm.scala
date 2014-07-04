@@ -4,6 +4,7 @@ package let
 
 import scalaz._
 import scala.collection.generic.Growable
+import collection.mutable
 
 trait ANormalFormInterface {
   type MySyntax <: Syntax
@@ -73,9 +74,7 @@ trait ANormalFormStateful extends ANormalFormInterface {
   }
   import freshGen._
 
-  import collection.mutable
-
-  abstract class Bindings(val substs: mutable.Map[Var, Term] = mutable.Map.empty) {
+  abstract class Bindings(val substs: mutable.Map[Var, Term]) {
     val bindings: mutable.Traversable[(Term, Var)] with Growable[(Term, Var)]
     def += (p: (Term, Var)): Unit = {
       bindings += p
@@ -83,14 +82,14 @@ trait ANormalFormStateful extends ANormalFormInterface {
     def lookup(t: Term): Option[Var]
     def isCSE: Boolean
   }
-  class CSEBindings extends Bindings {
+  class CSEBindings(substs: mutable.Map[Var, Term]) extends Bindings(substs) {
     //Stores all bindings in order & prevent duplicates
     override val bindings = mutable.LinkedHashMap.empty[Term, Var]
     //Reuse bindings if needed.
     def lookup(t: Term): Option[Var] = bindings get t
     def isCSE = true
   }
-  class NonCSEBindings extends Bindings {
+  class NonCSEBindings(substs: mutable.Map[Var, Term]) extends Bindings(substs) {
     //Stores all bindings in order & keep duplicates.
     override val bindings = mutable.ListBuffer.empty[(Term, Var)]
     //Never reuse an existing binding.
@@ -101,16 +100,17 @@ trait ANormalFormStateful extends ANormalFormInterface {
   val copyPropagation = true
   val partialApplicationsAreSpecial = true
 
-  def createBindings() = if (doCSE) new CSEBindings else new NonCSEBindings
+  def createBindings(substs: mutable.Map[Var, Term]) = if (doCSE) new CSEBindings(substs) else new NonCSEBindings(substs)
 
   //Invoked at the top-level and for each lambda body.
   //That is, for each new scope.
-  override def aNormalizeTerm(t: Term): Term = {
-    val bindings = createBindings()
+  override def aNormalizeTerm(t: Term) = aNormalizeTerm(t, mutable.Map.empty)
+  def aNormalizeTerm(t: Term, substs: mutable.Map[Var, Term]): Term = {
+    val bindings = createBindings(substs)
     val normalT = aNormalize(t, bindings)
     bindings.bindings.foldRight(normalT) {
       case ((term, variable), t) =>
-        Let(variable, everywhere(orIdentity(substRule(bindings)))(term), t)
+        Let(variable, term, t)
     }
   }
 
@@ -132,7 +132,7 @@ trait ANormalFormStateful extends ANormalFormInterface {
 
   def aNormalizeMainCases(bindings: Bindings): Term =?>: Term = {
     case Abs(v, body) =>
-      Abs(v, aNormalizeTerm(body))
+      Abs(v, aNormalizeTerm(body, bindings.substs))
     case App(operator, operand) =>
       def collectApps(t: Term, acc: List[Term]): List[Term] = t match {
         case App(s, t) => collectApps(s, t :: acc)
@@ -213,8 +213,8 @@ trait AddCaches extends ANormalFormStateful {
   //Adapter...
   def addCaches(t: Term): Term = aNormalizeTerm(t)
 
-  override def aNormalizeTerm(t: Term): Term = {
-    val bindings = createBindings()
+  override def aNormalizeTerm(t: Term, substs: mutable.Map[Var, Term]): Term = {
+    val bindings = createBindings(substs)
     //XXX We need to also use adaptCallers.
     //And we need to use the full tuples when returning, and their first component in the rest of the computation.
     val normalT = aNormalize(t, bindings)

@@ -67,7 +67,7 @@ trait ANormalFormStateful extends ANormalFormInterface {
   type MySyntax = mySyntax.type
   import mySyntax._
 
-  private val freshGen = new FreshGen {
+  protected val freshGen = new FreshGen {
     //This must be lazy because at this time mySyntax is not initialized yet.
     lazy val syntax: mySyntax.type = mySyntax
   }
@@ -188,52 +188,24 @@ trait ANormalFormStateful extends ANormalFormInterface {
   * Other interesting differences between what I try to do and their alg. (in Fig. 3):
   * - we encode tuples as right-nested pairs, so their rst becomes snd.
   */
+//XXX: the sharing with ANormalFormStateful gives rise to a lot of non-sensical names.
+//The sharing is probably still a good idea, but requires quite some refactoring to avoid this problem.
 trait AddCaches extends ANormalFormStateful {
   override val mySyntax: Syntax with IsAtomic with products.SyntaxSugar with Traversals
   import mySyntax._
-  //XXX remove soon!
-  private val freshGen = new FreshGen { val syntax: mySyntax.type = mySyntax }
   import freshGen._
 
   //This is not supported yet for this analysis — I think this would require a concept of arity to be type-safe.
   override val partialApplicationsAreSpecial = false
 
-  //From aNormalize, calling addCaches instead of aNormalizeTerm
-  //XXX aNormalizeName still calls aNormalize instead of aNormalizeAddCaches. To fix this, stop the copy-pasting and the mixing-in.
-  def aNormalizeAddCaches(t: Term, bindings: Bindings): Term = t match {
-    case Abs(v, body) =>
-      Abs(v, addCaches(body))
-    case App(operator, operand) =>
-      def collectApps(t: Term, acc: List[Term]): List[Term] = t match {
-        case App(s, t) => collectApps(s, t :: acc)
-        case _ => t :: acc
-      }
-      //(Conditional) special handling for nested applications: Don't save an intermediate result for each intermediate node.
-      //Note that this is very syntactic, and that's good: if the user already inserted a binding for a partial application, as in:
-      // val r1 = f arg1 arg2
-      // val r2 = r1 arg3
-      //we don't want to inline r1 into r2, because that might lead to work duplication.
-      //Here, we assume that the user inserted all needed sharing already.
-      val operands =
-        if (partialApplicationsAreSpecial)
-          collectApps(operator, operand :: Nil)
-        else
-          operator :: operand :: Nil
-      aNormalizeName2(operands map (aNormalizeName(_)(bindings)) reduceLeft (App))(bindings)
-    case Let(variable, exp, body) =>
-      val normalExp = aNormalizeName(exp, Some(variable))(bindings)
-      aNormalizeAddCaches(body, bindings)
-    case v: Var =>
-      (bindings.substs get v) getOrElse v
-    case _ if isAtomic(t) => t
-  }
+  //Adapter...
+  def addCaches(t: Term): Term = aNormalizeTerm(t)
 
-  //From aNormalizeTerm
-  def addCaches(t: Term): Term = {
+  override def aNormalizeTerm(t: Term): Term = {
     val bindings = createBindings()
     //XXX We need to also use adaptCallers.
     //And we need to use the full tuples when returning, and their first component in the rest of the computation.
-    val normalT = aNormalizeAddCaches(t, bindings)
+    val normalT = aNormalize(t, bindings)
     val withAdaptedCallers = everywhere(adaptCallers)(normalT)
     def go(s: List[(Term, Var)], t: Term, vars: List[Var]): Term =
       s match {

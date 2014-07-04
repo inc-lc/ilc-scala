@@ -12,3 +12,4 @@ extends functions.Evaluation
    with sums.Evaluation
    with abelianGroups.Evaluation
    with products.Evaluation
+   with booleans.Evaluation

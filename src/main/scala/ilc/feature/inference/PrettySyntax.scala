@@ -3,6 +3,8 @@ package ilc.feature.inference
 import scala.language.implicitConversions
 
 trait PrettySyntax extends Inference {
+  implicit def untypedTermToTerm(t: UntypedTerm) =
+    typedTermToTerm(inferType(t))
   implicit def polymorphicConstantToUPolymorphicConstant(x: PolymorphicConstant): UntypedTerm = UPolymorphicConstant(x)
   implicit def monomorphicConstantToUMonomorphicConstant(x: Term): UntypedTerm = UMonomorphicConstant(x)
   implicit def symbolToUVar(x: Symbol): UVar = UVar(x.name)

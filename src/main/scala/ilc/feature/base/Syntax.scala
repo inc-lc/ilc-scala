@@ -29,6 +29,9 @@ Please do not declare getType as an abstract `val`.
 
   case class Var(getName: Name, getType: Type) extends Term
 
+  //To override with pretty if pretty is available.
+  protected def showTerm(t: Term): String = t.toString
+
   import collection.immutable.HashMap
 
   // TYPING CONTEXT

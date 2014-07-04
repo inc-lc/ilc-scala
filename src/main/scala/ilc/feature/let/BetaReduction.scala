@@ -2,6 +2,8 @@ package ilc
 package feature
 package let
 
+import base.TypeError
+
 trait ProgramSize extends Syntax {
   def termSize: Term => Int = {
     case App(f, t) => 1 + termSize(f) + termSize(t)
@@ -11,16 +13,15 @@ trait ProgramSize extends Syntax {
   }
 }
 
-//XXX ToScala and Pretty don't strictly belong in here.
-trait BetaReduction extends Syntax with FreeVariables with analysis.Occurrences with Traversals with ToScala with Pretty {
+trait BetaReduction extends Syntax with FreeVariables with analysis.Occurrences with Traversals with IsAtomic {
   outer =>
   val freshGen = new FreshGen {
     /*
      * The singleton type annotation encodes a "sharing constraint"*:
-     * freshGen.syntax.type =:= outer.type, thus
-     * freshGen.syntax.Term =:= outer.Term
+     * freshGen.syntax.type =:= outer.type. The typechecker can deduce then
+     * that freshGen.syntax.Term =:= outer.Term.
      *
-     * *In in the ML module system sense.
+     * * In the ML module system sense.
      */
     val syntax: outer.type = outer
   }
@@ -103,11 +104,16 @@ trait BetaReduction extends Syntax with FreeVariables with analysis.Occurrences 
     case class FunVal(fun: Value => Value, v: Var, doInline: Boolean) extends Value
 
     /**
-     * A neutral term is a normal form which is not a lambda abstraction: that is, usually, a variable or an application.
+     * A neutral term is a normal form which is not a lambda abstraction: that
+     * is, usually, a variable, a constant or an application.
      * We use the same concept in our values.
      */
     sealed trait NeutralValue extends Value
-    case class TermVal(term: Term) extends NeutralValue
+
+    //Variables or constants.
+    case class TermVal(term: Term) extends NeutralValue {
+      require(isAtomic(term))
+    }
     /**
      * Residualized application. It can only contain a neutral residual term in the function position.
      */
@@ -131,13 +137,6 @@ trait BetaReduction extends Syntax with FreeVariables with analysis.Occurrences 
     //TODO: Move it to analysis to allow for more trivial terms. In particular, to allow (x + 1) we'd need a "trivialConstant" predicate.
     def isTrivial(arg: Value): Boolean =
       arg match {
-        case TermVal(Abs(_, _)) =>
-          assert(false)
-          false
-        case TermVal(App(_, _)) =>
-          assert(false)
-          false
-        //Variables or constants.
         case TermVal(_) => true
         //Duplicating a function value can increase code size, but will not
         //duplicate work, because evaluating a closure requires only packaging
@@ -194,7 +193,7 @@ trait BetaReduction extends Syntax with FreeVariables with analysis.Occurrences 
 
         case Var(name, _) =>
           //This inlines values from the environment.
-          env(name)
+          env get name getOrElse (throw new TypeError(s"Variable $name not available in context $env, ill-scoped term"))
 
         case Let(v, varDef, body) =>
           //This would perform full inlining for such lets. So we don't do that.

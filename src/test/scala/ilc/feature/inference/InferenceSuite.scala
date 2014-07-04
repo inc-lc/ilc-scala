@@ -45,7 +45,7 @@ with integers.Syntax
       (=>:(t9, t7), t3),
       (t9, t5)) map Function.tupled(Constraint(_, _))
     val subst = unification(ex)
-    assert(substitute(subst)(t0) === ((t5 =>: t7 =>: t6) =>: (t5 =>: t7) =>: (t5 =>: t6)))
+    assert(substituteInType(subst)(t0) === ((t5 =>: t7 =>: t6) =>: (t5 =>: t7) =>: (t5 =>: t6)))
   }
 
   it should "fail for inputs where no substitution is possible" in {
@@ -58,7 +58,7 @@ with integers.Syntax
     val id: UntypedTerm = UAbs("x", None, UVar("x"))
     val (typedTerm, constraints) = collectConstraints(UApp(id, id), List())
     val solved = unification(constraints)
-    val finalTerm = substitute(typedTerm, solved)
+    val finalTerm = substitute(solved, typedTerm)
     assert(dropSourceInfo(finalTerm.getType) === =>:(TypeVariable(2), TypeVariable(2)))
   }
 }

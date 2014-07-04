@@ -14,6 +14,7 @@ class FixpointSuite
 extends FunSuite
     with Matchers
     with bacchus.Syntax
+    with bacchus.Pretty
     with bacchus.ToScala
     with Syntax
     with Derivation

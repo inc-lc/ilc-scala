@@ -4,7 +4,7 @@ package base
 
 import scala.collection.immutable
 
-trait Evaluation extends Syntax with functions.Pretty {
+trait Evaluation extends Syntax {
   type Env = immutable.Map[Name, Value]
 
   //Core of the evaluation function, to be extended by subclasses.
@@ -44,9 +44,9 @@ trait Evaluation extends Syntax with functions.Pretty {
   case class InnerTypeExceptionInfo(message: String) extends TypeExceptionInfo
   case class OuterTypeExceptionInfo(message: String, subterm: Term, term: Option[Term] = None) extends TypeExceptionInfo {
     override def toString = {
-      val subtermStr = pretty(subterm)
+      val subtermStr = showTerm(subterm)
       val optTermStr = term map { t =>
-        "\n>> Term: " + pretty(t).toString
+        "\n>> Term: " + showTerm(t)
       } getOrElse ""
       s"${message}\n>> Subterm: ${subtermStr}${optTermStr}"
     }

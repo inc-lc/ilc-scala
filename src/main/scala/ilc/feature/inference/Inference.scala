@@ -1,6 +1,7 @@
-package ilc.feature.inference
+package ilc
+package feature
+package inference
 
-import ilc.feature._
 import java.util.concurrent.atomic.AtomicInteger
 import scala.annotation.tailrec
 import scala.language.implicitConversions
@@ -10,6 +11,7 @@ import scala.language.implicitConversions
 trait Inference
 extends base.Syntax
    with functions.Syntax
+   with UntypedSyntax
    with Reflection
 {
   case class UnificationFailureDetails(remaining: Set[Constraint], substitutions: Map[TypeVariable, Type]) {
@@ -17,15 +19,6 @@ extends base.Syntax
   }
   class UnificationFailure(val details: UnificationFailureDetails) extends Exception("No unification possible")
   def UnificationFailure(remaining: Set[Constraint], substitutions: Map[TypeVariable, Type]) = new UnificationFailure(UnificationFailureDetails(remaining, substitutions))
-
-  trait UntypedTerm
-
-  case class UVar(getName: String) extends UntypedTerm
-  case class UAbs(argumentName: String, typeAnnotation: Option[Type], body: UntypedTerm) extends UntypedTerm
-  case class UApp(operator: UntypedTerm, operand: UntypedTerm) extends UntypedTerm
-  case class UMonomorphicConstant(term: Term) extends UntypedTerm
-  case class UPolymorphicConstant(term: PolymorphicConstant) extends UntypedTerm
-  case class TypeAscription(term: UntypedTerm, typ: Type) extends UntypedTerm
 
   // Only use this for pattern matching. Create new TypeVariables with freshTypeVariable.
   case class TypeVariable(name: Int, uterm: Option[UntypedTerm] = None) extends Type
@@ -63,6 +56,11 @@ extends base.Syntax
   }
   case class TPolymorphicConstant(term: PolymorphicConstant, typ: Type, typeArguments: Seq[Type]) extends TypedTerm {
     override def getType = typ
+  }
+  //XXX this should be in LetInference, but let's not unseal stuff for now, that might break shapeless.
+  //However, the handling is only
+  case class TLet(variable: String, varType: Type, exp: TypedTerm, body: TypedTerm) extends TypedTerm {
+    override def getType = body.getType
   }
 
   import shapeless._
@@ -106,34 +104,30 @@ extends base.Syntax
       else false)
   }
 
-  def substitute(substitutions: Map[TypeVariable, Type]): Type => Type =
+  def substituteInType(substitutions: Map[TypeVariable, Type]): Type => Type =
     traverse {
       case tv: TypeVariable => substitutions.getOrElse(tv, tv)
       case typ => typ
     }
 
   def substituteInConstraint(substitutions: Map[TypeVariable, Type])(constraint: Constraint): Constraint =
-    Constraint(substitute(substitutions)(constraint._1),
-     substitute(substitutions)(constraint._2), constraint.term)
+    Constraint(substituteInType(substitutions)(constraint._1),
+     substituteInType(substitutions)(constraint._2), constraint.term)
 
-  def substitute(constraints: Set[Constraint], substitutions: Map[TypeVariable, Type]): Set[Constraint] =
-    constraints.map(substituteInConstraint(substitutions))
-
-  def substitute(term: TypedTerm, substitutions: Map[TypeVariable, Type]): TypedTerm = term match {
-    case TVar(name, typ: TypeVariable) => TVar(name, substitutions.getOrElse(typ, typ))
-    case TVar(name, typ) => TVar(name, typ)
-    case TAbs(argumentName, argumentType, body) => TAbs(argumentName, substitute(substitutions)(argumentType), substitute(body, substitutions))
-    case TApp(t1, t2, typ) => TApp(substitute(t1, substitutions), substitute(t2, substitutions), substitute(substitutions)(typ))
+  def substitute(substitutions: Map[TypeVariable, Type], term: TypedTerm): TypedTerm = term match {
+    case TVar(name, typ) => TVar(name, substituteInType(substitutions)(typ))
+    case TAbs(argumentName, argumentType, body) => TAbs(argumentName, substituteInType(substitutions)(argumentType), substitute(substitutions, body))
+    case TApp(t1, t2, typ) => TApp(substitute(substitutions, t1), substitute(substitutions, t2), substituteInType(substitutions)(typ))
     case t@TMonomorphicConstant(_) => t
-    case TPolymorphicConstant(term, typ, typeArguments) => TPolymorphicConstant(term, substitute(substitutions)(typ), typeArguments map substitute(substitutions))
+    case TPolymorphicConstant(term, typ, typeArguments) => TPolymorphicConstant(term, substituteInType(substitutions)(typ), typeArguments map substituteInType(substitutions))
     case anythingElse => sys error s"implement substitute for $anythingElse"
   }
 
   def unification(constraints: Set[Constraint]): Map[TypeVariable, Type] = {
     def typeVariableAndAnythingElse(tn: TypeVariable, a: Type, remaining: Set[Constraint], substitutions: Map[TypeVariable, Type]) = {
       val nextRemaining = remaining.tail
-      val nextSubstitutions = substitutions.mapValues(substitute(Map(tn -> a))) + (tn -> a)
-      unificationHelper(substitute(nextRemaining, nextSubstitutions), nextSubstitutions)
+      val nextSubstitutions = substitutions.mapValues(substituteInType(Map(tn -> a))) + (tn -> a)
+      unificationHelper(nextRemaining map substituteInConstraint(nextSubstitutions), nextSubstitutions)
     }
     def getTypes(p: Product) = p.productIterator.asInstanceOf[Iterator[Type]].toStream
     @tailrec
@@ -164,11 +158,8 @@ extends base.Syntax
   def inferType(t: UntypedTerm): TypedTerm = {
     val (typedTerm, constraints) = collectConstraints(t)
     val substitutions = unification(constraints)
-    substitute(typedTerm, substitutions)
+    substitute(substitutions, typedTerm)
   }
-
-  implicit def untypedTermToTerm(t: UntypedTerm) =
-    typedTermToTerm(inferType(t))
 
   def onTypes[T](transformer: Type => Type): T => T = {
     //The pattern matching cannot distinguish this.Type from (something else).Type.
@@ -205,4 +196,30 @@ extends base.Syntax
   def traverse[T <: Product](transformer: Type => Type): T => T =
     typ =>
       onTypes(transformer)(mapSubtrees(traverse(transformer))(typ))
+}
+
+trait LetInference extends Inference with LetUntypedSyntax with let.Syntax {
+  override def collectConstraints(term: UntypedTerm, context: InferenceContext = emptyContext): (TypedTerm, Set[Constraint]) = term match {
+    case ULet(variable, exp, body) =>
+      //collectConstraints( ... desugared node ...)
+      //desugaring result: UApp(UAbs(variable, body), exp)
+      val (typedExp, c1) = collectConstraints(exp, context)
+      val argType = freshTypeVariable(term)
+      val (typedBody, c2) = collectConstraints(body, extend(context, variable, argType))
+      val c = c1 ++ c2 + Constraint(argType, typedExp.getType, Some(term))
+      (TLet(variable, argType, typedExp, typedBody), c)
+    case _ => super.collectConstraints(term, context)
+  }
+
+  override def substitute(substitutions: Map[TypeVariable, Type], term: TypedTerm): TypedTerm = term match {
+    case TLet(variable, varType, exp, body) =>
+      TLet(variable, substituteInType(substitutions)(varType), substitute(substitutions, exp), substitute(substitutions, body))
+    case _ => super.substitute(substitutions, term)
+  }
+
+  override def typedTermToTerm(tt: TypedTerm): Term = tt match {
+    case TLet(variable, varType, exp, body) =>
+      Let(Var(variable, varType), typedTermToTerm(exp), typedTermToTerm(body))
+    case _ => super.typedTermToTerm(tt)
+  }
 }

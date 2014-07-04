@@ -82,8 +82,10 @@ trait ANormalFormStateful extends Syntax with IsAtomic with ANormalFormInterface
   val copyPropagation = true
   val partialApplicationsAreSpecial = true
 
+  def createBindings() = if (doCSE) new CSEBindings else new NonCSEBindings
+
   override def aNormalizeTerm(t: Term): Term = {
-    val bindings = if (doCSE) new CSEBindings else new NonCSEBindings
+    val bindings = createBindings()
     val normalT = aNormalize(t, bindings)
     bindings.bindings.foldRight(normalT) {
       case ((term, variable), t) =>
@@ -149,5 +151,34 @@ trait ANormalFormStateful extends Syntax with IsAtomic with ANormalFormInterface
       //Prevents calling bind() for a new binding of the same body.
       bindings lookup normalT some (reuse) none (bind())
     }
+  }
+}
+
+/**
+  * Implement, in essence, half of phase 1 of "Caching intermediate results for program improvement",
+  * (Liu and Teitelbaum, PEPM 1995) for our lambda-calculus extended with at least
+  * Let and pairs. Basically, this simply means returning all intermediate results.
+  *
+  * The other half is adapting every function call to cope with this API change: the caller needs to extract the first component of the return value.
+  */
+trait AddCaches extends ANormalFormStateful with products.SyntaxSugar {
+  //This is not supported yet for this analysis — I think this would require a concept of arity to be type-safe.
+  override val partialApplicationsAreSpecial = false
+
+  def addCaches(t: Term): Term = {
+    val bindings = createBindings()
+    val normalT = aNormalize(t, bindings)
+    def go(s: List[(Term, Var)], t: Term, vars: List[Var]): Term =
+      s match {
+        case Nil =>
+          //This happens to return the result twice, if it is bound to a variable before return (that is, if it's not an atomic expression).
+          //XXX Figure out the expected behavior and ensure it happens.
+          ((t :: vars) foldLeft (tuple(vars.length + 1))) {
+            _ ! _
+          }
+        case (term, variable) :: rest =>
+          Let(variable, term, go(rest, t, variable :: vars))
+      }
+    go(bindings.bindings.toList, normalT, Nil)
   }
 }

@@ -6,13 +6,13 @@ object ANormalFormTest {
   println("Welcome to the Scala worksheet")       //> Welcome to the Scala worksheet
   import language._
   val v = new Bacchus with let.ANormalFormStateful with integers.ImplicitSyntaxSugar with inference.LetInference
-    with BetaReduction with Pretty
+    with BetaReduction with Pretty with AddCaches
     //with inference.SyntaxSugar //Or with:
     with inference.LetSyntaxSugar                 //> v  : ilc.language.Bacchus with ilc.feature.let.ANormalFormStateful with ilc.
                                                   //| feature.integers.ImplicitSyntaxSugar with ilc.feature.inference.LetInference
                                                   //|  with ilc.feature.let.BetaReduction with ilc.feature.let.Pretty with ilc.fea
-                                                  //| ture.inference.LetSyntaxSugar = ilc.feature.let.ANormalFormTest$$anonfun$mai
-                                                  //| n$1$$anon$1@7b3bf06d
+                                                  //| ture.let.AddCaches with ilc.feature.inference.LetSyntaxSugar = ilc.feature.l
+                                                  //| et.ANormalFormTest$$anonfun$main$1$$anon$1@7a2520fa
     //Both work, but the output is different.
 
   //def tests(v: Bacchus with feature.let.ANormalFormStateful with integers.ImplicitSyntaxSugar with inference.LetInference
@@ -167,6 +167,34 @@ object ANormalFormTest {
                                                   //|   True
                                                   //|   a_5
                                                   //|   a_6"
+  "\n" + pretty(addCaches(test3))                 //> res11: String = "
+                                                  //| a_7 =
+                                                  //|   λunit.
+                                                  //|     LiteralInt(1);
+                                                  //| a_8 =
+                                                  //|   λunit.
+                                                  //|     LiteralInt(2);
+                                                  //| x =
+                                                  //|   IfThenElse(ℤ)
+                                                  //|     True
+                                                  //|     a_7
+                                                  //|     a_8;
+                                                  //| (λx1lit.
+                                                  //|  λx2lit.
+                                                  //|  λx3lit.
+                                                  //|  λx4lit.
+                                                  //|    Pair(ℤ, ProductType(ℤ,ProductType(UnitType → ℤ,UnitType → ℤ)
+                                                  //| ))
+                                                  //|      x1lit
+                                                  //|      (Pair(ℤ, ProductType(UnitType → ℤ,UnitType → ℤ))
+                                                  //|         x2lit
+                                                  //|         (Pair(UnitType → ℤ, UnitType → ℤ)
+                                                  //|            x3lit
+                                                  //|            x4lit)))
+                                                  //|   x
+                                                  //|   x
+                                                  //|   a_8
+                                                  //|   a_7"
   //}
   //tests(v)
 }

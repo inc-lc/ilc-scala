@@ -41,10 +41,10 @@ object Archive {
   * syntax.
   */
 abstract class Example
-extends functions.Pretty
+extends functions.Pretty with let.Pretty
    with let.BetaReduction
-   with let.ToScala
    with let.ProgramSize
+   with let.ToScala
 {
   this: base.ToScala
    with base.Derivation =>

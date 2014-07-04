@@ -56,7 +56,7 @@ class ANormalFormSpec extends FlatSpec {
   */
     val test3 =
       let('x, ifThenElse(True, 1, 2): Term)('x)
-    pretty(addCaches(test3: Term))
+    //pretty(addCaches(test3: Term))
 
     val config = s"doCSE = $doCSE, copyPropagation = $copyPropagation, partialApplicationsAreSpecial = $partialApplicationsAreSpecial"
     "aNormalizeTerm(test1)" should s"contain id_i2 iff !doCSE, $config" in {

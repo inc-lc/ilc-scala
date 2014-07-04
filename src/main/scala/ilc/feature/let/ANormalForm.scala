@@ -5,12 +5,16 @@ package let
 import scalaz._
 import scala.collection.generic.Growable
 
+trait ANormalFormInterface {
+  this: Syntax =>
+  def aNormalizeTerm(t: Term): Term
+}
 /**
  * Implementation of A-normalization, based on http://matt.might.net/articles/a-normalization/.
  * Written in CPS, so stack usage might be a problem. Should that ever happen, trampolining is an alternative.
  * Alternatively, one could implement this using a writer monad, as suggested by Tillmann.
  */
-trait ANormalForm extends Syntax with IsAtomic {
+trait ANormalForm extends Syntax with IsAtomic with ANormalFormInterface {
   outer =>
   private val freshGen = new FreshGen { val syntax: outer.type = outer }
   import freshGen._
@@ -45,7 +49,7 @@ trait ANormalForm extends Syntax with IsAtomic {
 }
 
 //
-trait ANormalFormStateful extends Syntax with IsAtomic {
+trait ANormalFormStateful extends Syntax with IsAtomic with ANormalFormInterface {
   outer =>
   private val freshGen = new FreshGen { val syntax: outer.type = outer }
   import freshGen._

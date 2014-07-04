@@ -110,7 +110,7 @@ trait ANormalFormStateful extends ANormalFormInterface {
     val normalT = aNormalize(t, bindings)
     bindings.bindings.foldRight(normalT) {
       case ((term, variable), t) =>
-        Let(variable, term, t)
+        Let(variable, everywhere(orIdentity(substRule(bindings)))(term), t)
     }
   }
 

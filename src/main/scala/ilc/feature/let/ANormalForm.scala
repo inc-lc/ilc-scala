@@ -191,7 +191,7 @@ trait ANormalFormStateful extends ANormalFormInterface {
 //XXX: the sharing with ANormalFormStateful gives rise to a lot of non-sensical names.
 //The sharing is probably still a good idea, but requires quite some refactoring to avoid this problem.
 trait AddCaches extends ANormalFormStateful {
-  override val mySyntax: Syntax with IsAtomic with products.SyntaxSugar with Traversals
+  override val mySyntax: Syntax with IsAtomic with products.SyntaxSugar with unit.Syntax with Traversals
   import mySyntax._
   import freshGen._
 
@@ -222,7 +222,12 @@ trait AddCaches extends ANormalFormStateful {
               case v: Var => transformVar(v)
             }
           }(t)
-          ((transformedT :: (vars map transformVar)) foldLeft (tuple(vars.length + 1))) {
+          val rest =
+            if (vars.isEmpty)
+              UnitTerm :: Nil
+            else
+              vars map transformVar
+          ((transformedT :: rest) foldLeft (tuple(rest.length + 1))) {
             _ ! _
           }
         case (term, variable) :: rest =>

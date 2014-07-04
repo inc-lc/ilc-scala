@@ -65,12 +65,16 @@ trait ANormalFormStateful extends Syntax with IsAtomic with ANormalFormInterface
     def isCSE: Boolean
   }
   class CSEBindings extends Bindings {
+    //Stores all bindings in order & prevent duplicates
     override val bindings = mutable.LinkedHashMap.empty[Term, Var]
+    //Reuse bindings if needed.
     def lookup(t: Term): Option[Var] = bindings get t
     def isCSE = true
   }
   class NonCSEBindings extends Bindings {
+    //Stores all bindings in order & keep duplicates.
     override val bindings = mutable.ListBuffer.empty[(Term, Var)]
+    //Never reuse an existing binding.
     def lookup(t: Term): Option[Var] = None
     def isCSE = false
   }
@@ -78,9 +82,6 @@ trait ANormalFormStateful extends Syntax with IsAtomic with ANormalFormInterface
   val copyPropagation = true
 
   override def aNormalizeTerm(t: Term): Term = {
-    //Stores all bindings in order & without auto-removing duplicates.
-    //So this works for both CSE and non-CSE.
-    //In fact, we only need either bindings (for non-CSE) or a mutable map (for CSE).
     val bindings = if (doCSE) new CSEBindings else new NonCSEBindings
     val normalT = aNormalize(t, bindings)
     bindings.bindings.foldRight(normalT) {

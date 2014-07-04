@@ -43,6 +43,7 @@ object Archive {
 abstract class Example
 extends functions.Pretty with let.Pretty
    with let.BetaReduction
+   with let.ANormalFormStateful
    with let.ProgramSize
    with let.ToScala
 {
@@ -54,8 +55,8 @@ extends functions.Pretty with let.Pretty
 
   def program: Term
   lazy val derivative: Term = derive(program)
-  lazy val normalizedProgram = normalize(program)
-  lazy val normalizedDerivative = normalize(derivative)
+  lazy val normalizedProgram = aNormalizeTerm(normalize(program))
+  lazy val normalizedDerivative = aNormalizeTerm(normalize(derivative))
 
   private lazy val inputType =>: outputType = program.getType
 

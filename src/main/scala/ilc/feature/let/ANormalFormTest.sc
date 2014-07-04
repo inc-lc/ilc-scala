@@ -112,16 +112,12 @@ object ANormalFormTest {
                                                   //|     f
                                                   //|       x;
                                                   //| a_1 =
-                                                  //|   id
-                                                  //|     apply;
-                                                  //| a_2 =
-                                                  //|   a_1
-                                                  //|     id_i;
-                                                  //| a_3 =
                                                   //|   id_i
                                                   //|     LiteralInt(3);
-                                                  //| a_2
-                                                  //|   a_3"
+                                                  //| id
+                                                  //|   apply
+                                                  //|   id_i
+                                                  //|   a_1"
   "\n" + pretty(normalize(aNormalizeTerm(test1))) //> res2: String = "
                                                   //| LiteralInt(3)"
   "\n" + pretty(aNormalizeTerm(normalize(test1))) //> res3: String = "
@@ -148,37 +144,29 @@ object ANormalFormTest {
                                                   //|        LiteralInt(2));
                                                   //| x"
   "\n" + pretty(aNormalizeTerm(test3))            //> res9: String = "
-                                                  //| a_7 =
-                                                  //|   IfThenElse(ℤ)
-                                                  //|     True;
-                                                  //| a_8 =
+                                                  //| a_3 =
                                                   //|   λunit.
                                                   //|     LiteralInt(1);
-                                                  //| a_9 =
-                                                  //|   a_7
-                                                  //|     a_8;
-                                                  //| a_10 =
+                                                  //| a_4 =
                                                   //|   λunit.
                                                   //|     LiteralInt(2);
                                                   //| x =
-                                                  //|   a_9
-                                                  //|     a_10;
+                                                  //|   IfThenElse(ℤ)
+                                                  //|     True
+                                                  //|     a_3
+                                                  //|     a_4;
                                                   //| x"
   "\n" + pretty(aNormalizeTerm(normalize(test3))) //> res10: String = "
-                                                  //| a_11 =
-                                                  //|   IfThenElse(ℤ)
-                                                  //|     True;
-                                                  //| a_12 =
+                                                  //| a_5 =
                                                   //|   λunit_1.
                                                   //|     LiteralInt(1);
-                                                  //| a_13 =
-                                                  //|   a_11
-                                                  //|     a_12;
-                                                  //| a_14 =
+                                                  //| a_6 =
                                                   //|   λunit_2.
                                                   //|     LiteralInt(2);
-                                                  //| a_13
-                                                  //|   a_14"
+                                                  //| IfThenElse(ℤ)
+                                                  //|   True
+                                                  //|   a_5
+                                                  //|   a_6"
   //}
   //tests(v)
 }

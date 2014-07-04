@@ -51,29 +51,29 @@ class ANormalFormSpec extends FlatSpec {
       println(e.details)
     }
     "\n" + pretty(test1)
-    "normalizeTerm(test1)" should s"contain id_i2 iff !doCSE, doCSE = $doCSE, copyPropagation = $copyPropagation" in {
+    "aNormalizeTerm(test1)" should s"contain id_i2 iff !doCSE, doCSE = $doCSE, copyPropagation = $copyPropagation" in {
       var contains_id_i2: Boolean = false
       everywhere {
         case t@Var(LiteralName(name), _) =>
           contains_id_i2 |= name == "id_i2"
           t
         case t => t
-      }(normalizeTerm(test1))
+      }(aNormalizeTerm(test1))
       assert(contains_id_i2 === !doCSE)
     }
-    "normalizeTerm(test2)" should s"be id_i2 iff copyPropagation, doCSE = $doCSE, copyPropagation = $copyPropagation" in {
-      assert((normalizeTerm(test2) == (20: Term)) === copyPropagation)
+    "aNormalizeTerm(test2)" should s"be id_i2 iff copyPropagation, doCSE = $doCSE, copyPropagation = $copyPropagation" in {
+      assert((aNormalizeTerm(test2) == (20: Term)) === copyPropagation)
     }
-    "normalizeTerm(test3)" should s"not crash, doCSE = $doCSE, copyPropagation = $copyPropagation" in {
-      normalizeTerm(test3)
+    "aNormalizeTerm(test3)" should s"not crash, doCSE = $doCSE, copyPropagation = $copyPropagation" in {
+      aNormalizeTerm(test3)
     }
     for ((test, i_) <- Seq(test1, test2, test3).zipWithIndex) {
       val i = i_ + 1
-      val testNorm = normalizeTerm(test)
-      s"normalizeTerm(test$i)" should s"not alter evaluation results, doCSE = $doCSE, copyPropagation = $copyPropagation" in {
+      val testNorm = aNormalizeTerm(test)
+      s"aNormalizeTerm(test$i)" should s"not alter evaluation results, doCSE = $doCSE, copyPropagation = $copyPropagation" in {
         assert(eval(testNorm) === eval(test))
       }
-      s"normalizeTerm(test$i)" should s"produce a normalizable term, doCSE = $doCSE, copyPropagation = $copyPropagation" in {
+      s"aNormalizeTerm(test$i)" should s"produce a normalizable term, doCSE = $doCSE, copyPropagation = $copyPropagation" in {
         val testNormNorm = normalize(testNorm)
         assert(eval(testNormNorm) === eval(testNorm))
       }

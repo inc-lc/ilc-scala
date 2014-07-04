@@ -15,26 +15,25 @@ trait ANormalForm extends Syntax with IsAtomic {
   private val freshGen = new FreshGen { val syntax: outer.type = outer }
   import freshGen._
 
-  //XXX: Rename to avoid name clashes/confusion when importing (and also in ANormalFormStateful).
-  def normalizeTerm(t: Term): Term = normalize(t)(identity)
-  def normalize(t: Term)(k: Term => Term): Term = t match {
+  override def aNormalizeTerm(t: Term): Term = aNormalize(t)(identity)
+  def aNormalize(t: Term)(k: Term => Term): Term = t match {
     case Abs(v, body) =>
-      k(Abs(v, normalizeTerm(body)))
+      k(Abs(v, aNormalizeTerm(body)))
     case App(operator, operand) =>
-      normalizeName(operator) { s =>
-        normalizeName(operand) { t =>
+      aNormalizeName(operator) { s =>
+        aNormalizeName(operand) { t =>
           k(App(s, t))
         }
       }
     case Let(variable, exp, body) =>
-      normalize(exp) { normalExp =>
-        Let(variable, normalExp, normalize(body)(k))
+      aNormalize(exp) { normalExp =>
+        Let(variable, normalExp, aNormalize(body)(k))
       }
     case _ if isAtomic(t) => k(t)
   }
 
-  def normalizeName(t: Term)(k: Term => Term) = {
-    normalize(t) { normalT =>
+  def aNormalizeName(t: Term)(k: Term => Term) = {
+    aNormalize(t) { normalT =>
       if (isAtomic(normalT))
         k(normalT)
       else {
@@ -74,12 +73,12 @@ trait ANormalFormStateful extends Syntax with IsAtomic {
   val doCSE = true
   val copyPropagation = true
 
-  def normalizeTerm(t: Term): Term = {
+  override def aNormalizeTerm(t: Term): Term = {
     //Stores all bindings in order & without auto-removing duplicates.
     //So this works for both CSE and non-CSE.
     //In fact, we only need either bindings (for non-CSE) or a mutable map (for CSE).
     val bindings = if (doCSE) new CSEBindings else new NonCSEBindings
-    val normalT = normalize(t, bindings)
+    val normalT = aNormalize(t, bindings)
     bindings.bindings.foldRight(normalT) {
       case ((term, variable), t) =>
         Let(variable, term, t)
@@ -89,25 +88,25 @@ trait ANormalFormStateful extends Syntax with IsAtomic {
   /*
    * The only mutable state we use are the (global) fresh variable generator,
    * and the mutable maps threaded through as parameters, initialized by calls
-   * to normalizeTerm (at the top-level and inside each lambda).
+   * to aNormalizeTerm (at the top-level and inside each lambda).
    */
-  def normalize(t: Term, bindings: Bindings): Term = t match {
+  def aNormalize(t: Term, bindings: Bindings): Term = t match {
     case Abs(v, body) =>
-      Abs(v, normalizeTerm(body))
+      Abs(v, aNormalizeTerm(body))
     case App(operator, operand) =>
-      val s = normalizeName(operator)(bindings)
-      val t = normalizeName(operand)(bindings)
+      val s = aNormalizeName(operator)(bindings)
+      val t = aNormalizeName(operand)(bindings)
       App(s, t)
     case Let(variable, exp, body) =>
-      val normalExp = normalizeName(exp, Some(variable))(bindings)
-      normalize(body, bindings)
+      val normalExp = aNormalizeName(exp, Some(variable))(bindings)
+      aNormalize(body, bindings)
     case v: Var =>
       (bindings.substs get v) getOrElse v
     case _ if isAtomic(t) => t
   }
 
-  def normalizeName(t: Term, boundVarOpt: Option[Var] = None)(bindings: Bindings): Term = {
-    val normalT = normalize(t, bindings)
+  def aNormalizeName(t: Term, boundVarOpt: Option[Var] = None)(bindings: Bindings): Term = {
+    val normalT = aNormalize(t, bindings)
     def bind(): Var = {
       val newV = boundVarOpt getOrElse fresh("a", normalT.getType)
       bindings += normalT -> newV

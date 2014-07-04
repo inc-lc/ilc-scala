@@ -12,7 +12,7 @@ object ANormalFormTest {
                                                   //| feature.integers.ImplicitSyntaxSugar with ilc.feature.inference.LetInference
                                                   //|  with ilc.feature.let.BetaReduction with ilc.feature.let.Pretty with ilc.fea
                                                   //| ture.inference.LetSyntaxSugar = ilc.feature.let.ANormalFormTest$$anonfun$mai
-                                                  //| n$1$$anon$1@5135e781
+                                                  //| n$1$$anon$1@7b3bf06d
     //Both work, but the output is different.
 
   //def tests(v: Bacchus with feature.let.ANormalFormStateful with integers.ImplicitSyntaxSugar with inference.LetInference
@@ -99,7 +99,7 @@ object ANormalFormTest {
                                                   //|   id_i
                                                   //|   (id_i2lit
                                                   //|      LiteralInt(3))"
-  "\n" + pretty(normalizeTerm(test1))             //> res1: String = "
+  "\n" + pretty(aNormalizeTerm(test1))            //> res1: String = "
                                                   //| id =
                                                   //|   λx.
                                                   //|     x;
@@ -122,9 +122,9 @@ object ANormalFormTest {
                                                   //|     LiteralInt(3);
                                                   //| a_2
                                                   //|   a_3"
-  "\n" + pretty(normalize(normalizeTerm(test1)))  //> res2: String = "
+  "\n" + pretty(normalize(aNormalizeTerm(test1))) //> res2: String = "
                                                   //| LiteralInt(3)"
-  "\n" + pretty(normalizeTerm(normalize(test1)))  //> res3: String = "
+  "\n" + pretty(aNormalizeTerm(normalize(test1))) //> res3: String = "
                                                   //| LiteralInt(3)"
   "\n" + pretty(test2)                            //> res4: String = "
                                                   //| x =
@@ -132,11 +132,11 @@ object ANormalFormTest {
                                                   //|     LiteralInt(20);
                                                   //|   y;
                                                   //| x"
-  "\n" + pretty(normalizeTerm(test2))             //> res5: String = "
+  "\n" + pretty(aNormalizeTerm(test2))            //> res5: String = "
                                                   //| LiteralInt(20)"
-  "\n" + pretty(normalize(normalizeTerm(test2)))  //> res6: String = "
+  "\n" + pretty(normalize(aNormalizeTerm(test2))) //> res6: String = "
                                                   //| LiteralInt(20)"
-  "\n" + pretty(normalizeTerm(normalize(test2)))  //> res7: String = "
+  "\n" + pretty(aNormalizeTerm(normalize(test2))) //> res7: String = "
                                                   //| LiteralInt(20)"
   "\n" + pretty(test3)                            //> res8: String = "
                                                   //| x =
@@ -147,7 +147,7 @@ object ANormalFormTest {
                                                   //|     (λunit.
                                                   //|        LiteralInt(2));
                                                   //| x"
-  "\n" + pretty(normalizeTerm(test3))             //> res9: String = "
+  "\n" + pretty(aNormalizeTerm(test3))            //> res9: String = "
                                                   //| a_7 =
                                                   //|   IfThenElse(ℤ)
                                                   //|     True;
@@ -164,7 +164,7 @@ object ANormalFormTest {
                                                   //|   a_9
                                                   //|     a_10;
                                                   //| x"
-  "\n" + pretty(normalizeTerm(normalize(test3)))  //> res10: String = "
+  "\n" + pretty(aNormalizeTerm(normalize(test3))) //> res10: String = "
                                                   //| a_11 =
                                                   //|   IfThenElse(ℤ)
                                                   //|     True;

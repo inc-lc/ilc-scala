@@ -3,8 +3,6 @@ package feature
 package let
 
 import org.scalatest._
-import shapeless._
-import poly._
 
 class ANormalFormSpec extends FlatSpec {
   def tests(doCSE_ : Boolean, copyPropagation_ : Boolean) {

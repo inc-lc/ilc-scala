@@ -117,7 +117,8 @@ trait ANormalFormStateful extends Syntax with IsAtomic with ANormalFormInterface
           collectApps(operator, operand :: Nil)
         else
           operator :: operand :: Nil
-      operands map (aNormalizeName(_)(bindings)) reduceLeft (App)
+      //Can't call aNormalizeName since it first calls aNormalize.
+      aNormalizeName2(operands map (aNormalizeName(_)(bindings)) reduceLeft (App))(bindings)
     case Let(variable, exp, body) =>
       val normalExp = aNormalizeName(exp, Some(variable))(bindings)
       aNormalize(body, bindings)
@@ -127,7 +128,10 @@ trait ANormalFormStateful extends Syntax with IsAtomic with ANormalFormInterface
   }
 
   def aNormalizeName(t: Term, boundVarOpt: Option[Var] = None)(bindings: Bindings): Term = {
-    val normalT = aNormalize(t, bindings)
+    aNormalizeName2(aNormalize(t, bindings), boundVarOpt)(bindings)
+  }
+
+  def aNormalizeName2(normalT: Term, boundVarOpt: Option[Var] = None)(bindings: Bindings): Term = {
     def bind(): Var = {
       val newV = boundVarOpt getOrElse fresh("a", normalT.getType)
       bindings += normalT -> newV

@@ -1,6 +1,8 @@
 package ilc
 package examples
 
+import feature._
+
 import java.io.{ File, FileWriter }
 
 import util.Extractors._
@@ -39,13 +41,13 @@ object Archive {
   * syntax.
   */
 abstract class Example
-extends feature.functions.Pretty
-   with feature.let.BetaReduction
-   with feature.let.ToScala
-   with feature.let.ProgramSize
+extends functions.Pretty
+   with let.BetaReduction
+   with let.ToScala
+   with let.ProgramSize
 {
-  this: feature.base.ToScala
-   with feature.base.Derivation =>
+  this: base.ToScala
+   with base.Derivation =>
 
   def name =
     this.getClass().getSimpleName().stripSuffix("Example")

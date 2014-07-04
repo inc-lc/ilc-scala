@@ -63,7 +63,7 @@ trait ANormalForm extends ANormalFormInterface {
 
 //
 trait ANormalFormStateful extends ANormalFormInterface {
-  val mySyntax: Syntax with IsAtomic
+  val mySyntax: Syntax with IsAtomic with Traversals
   type MySyntax = mySyntax.type
   import mySyntax._
 
@@ -103,6 +103,8 @@ trait ANormalFormStateful extends ANormalFormInterface {
 
   def createBindings() = if (doCSE) new CSEBindings else new NonCSEBindings
 
+  //Invoked at the top-level and for each lambda body.
+  //That is, for each new scope.
   override def aNormalizeTerm(t: Term): Term = {
     val bindings = createBindings()
     val normalT = aNormalize(t, bindings)
@@ -117,7 +119,18 @@ trait ANormalFormStateful extends ANormalFormInterface {
    * and the mutable maps threaded through as parameters, initialized by calls
    * to aNormalizeTerm (at the top-level and inside each lambda).
    */
-  def aNormalize(t: Term, bindings: Bindings): Term = t match {
+  def aNormalize(t: Term, bindings: Bindings): Term = aNormalizeTransform(bindings)(t)
+
+  def substRule(bindings: Bindings): Term =?>: Term = {
+    case v: Var =>
+      (bindings.substs get v) getOrElse v
+  }
+
+  def preserveAtomicRule: Term =?>: Term = {
+    case t if isAtomic(t) => t
+  }
+
+  def aNormalizeMainCases(bindings: Bindings): Term =?>: Term = {
     case Abs(v, body) =>
       Abs(v, aNormalizeTerm(body))
     case App(operator, operand) =>
@@ -141,10 +154,9 @@ trait ANormalFormStateful extends ANormalFormInterface {
     case Let(variable, exp, body) =>
       val normalExp = aNormalizeName(exp, Some(variable))(bindings)
       aNormalize(body, bindings)
-    case v: Var =>
-      (bindings.substs get v) getOrElse v
-    case _ if isAtomic(t) => t
   }
+
+  def aNormalizeTransform(bindings: Bindings): Term => Term = aNormalizeMainCases(bindings) orElse substRule(bindings) orElse preserveAtomicRule
 
   def aNormalizeName(t: Term, boundVarOpt: Option[Var] = None)(bindings: Bindings): Term = {
     aNormalizeName2(aNormalize(t, bindings), boundVarOpt)(bindings)

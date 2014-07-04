@@ -63,7 +63,7 @@ trait ANormalForm extends ANormalFormInterface {
 
 //
 trait ANormalFormStateful extends ANormalFormInterface {
-  protected val mySyntax: Syntax with IsAtomic
+  val mySyntax: Syntax with IsAtomic
   type MySyntax = mySyntax.type
   import mySyntax._
 
@@ -189,7 +189,7 @@ trait ANormalFormStateful extends ANormalFormInterface {
   * - we encode tuples as right-nested pairs, so their rst becomes snd.
   */
 trait AddCaches extends ANormalFormStateful {
-  override protected val mySyntax: Syntax with IsAtomic with products.SyntaxSugar with Traversals
+  override val mySyntax: Syntax with IsAtomic with products.SyntaxSugar with Traversals
   import mySyntax._
   //XXX remove soon!
   private val freshGen = new FreshGen { val syntax: mySyntax.type = mySyntax }

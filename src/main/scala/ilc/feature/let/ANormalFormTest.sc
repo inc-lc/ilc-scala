@@ -10,8 +10,8 @@ object ANormalFormTest {
     //with inference.SyntaxSugar //Or with:
     with inference.LetSyntaxSugar {
       outer =>
-      val aNormalizer: feature.let.ANormalFormStateful { val mySyntax: outer.type } = new feature.let.ANormalFormStateful {
-        protected val mySyntax: outer.type = outer
+      val aNormalizer = new feature.let.ANormalFormStateful {
+        val mySyntax: outer.type = outer
       }
     }                                             //> v  : ilc.language.Bacchus with ilc.feature.let.ANormalFormAdapter with ilc.f
                                                   //| eature.integers.ImplicitSyntaxSugar with ilc.feature.inference.LetInference 

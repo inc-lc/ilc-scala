@@ -12,8 +12,8 @@ class ANormalFormSpec extends FlatSpec {
       with inference.LetInference
       with BetaReduction with inference.LetSyntaxSugar with inference.InferenceTestHelper {
         outer =>
-        val aNormalizer: ANormalFormStateful { val mySyntax: outer.type } = new ANormalFormStateful {
-          protected val mySyntax: outer.type = outer
+        val aNormalizer = new ANormalFormStateful {
+          val mySyntax: outer.type = outer
           override val doCSE = doCSE_
           override val copyPropagation = copyPropagation_
           override val partialApplicationsAreSpecial = partialApplicationsAreSpecial_
@@ -21,8 +21,8 @@ class ANormalFormSpec extends FlatSpec {
     }
     import v._
     import aNormalizer.{doCSE, copyPropagation, partialApplicationsAreSpecial}
-    val v1: AddCaches { val mySyntax: v.type } = new AddCaches {
-      protected val mySyntax: v.type = v
+    val v1 = new AddCaches {
+      val mySyntax: v.type = v
     }
     import v1.addCaches
 

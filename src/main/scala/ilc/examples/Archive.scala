@@ -50,8 +50,8 @@ extends functions.Pretty with let.Pretty
   outer: base.ToScala
     with base.Derivation =>
 
-  val aNormalizer: let.ANormalFormStateful { val mySyntax: outer.type } = new let.ANormalFormStateful {
-    protected val mySyntax: outer.type = outer
+  val aNormalizer = new let.ANormalFormStateful {
+    val mySyntax: outer.type = outer
   }
   def name =
     this.getClass().getSimpleName().stripSuffix("Example")

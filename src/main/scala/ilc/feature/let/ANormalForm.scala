@@ -10,7 +10,7 @@ import scala.collection.generic.Growable
  * Written in CPS, so stack usage might be a problem. Should that ever happen, trampolining is an alternative.
  * Alternatively, one could implement this using a writer monad, as suggested by Tillmann.
  */
-trait ANormalForm extends Syntax with FreeVariables with analysis.Occurrences with Traversals with ToScala with Pretty with IsAtomic {
+trait ANormalForm extends Syntax with IsAtomic {
   outer =>
   private val freshGen = new FreshGen { val syntax: outer.type = outer }
   import freshGen._
@@ -45,7 +45,8 @@ trait ANormalForm extends Syntax with FreeVariables with analysis.Occurrences wi
   }
 }
 
-trait ANormalFormStateful extends Syntax with FreeVariables with analysis.Occurrences with Traversals with ToScala with Pretty with IsAtomic {
+//
+trait ANormalFormStateful extends Syntax with IsAtomic {
   outer =>
   private val freshGen = new FreshGen { val syntax: outer.type = outer }
   import freshGen._

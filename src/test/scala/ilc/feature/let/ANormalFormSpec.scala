@@ -8,8 +8,8 @@ import poly._
 
 class ANormalFormSpec extends FlatSpec {
   def tests(doCSE_ : Boolean, copyPropagation_ : Boolean) {
-    val v = new language.Bacchus with feature.let.ANormalFormStateful with integers.ImplicitSyntaxSugar
-      with integers.Evaluation with let.Evaluation
+    val v = new language.Bacchus with let.ANormalFormStateful with integers.ImplicitSyntaxSugar
+      with integers.Evaluation with let.Evaluation with let.Pretty
       with inference.LetInference
       with BetaReduction with inference.LetSyntaxSugar with inference.InferenceTestHelper {
       override val doCSE = doCSE_

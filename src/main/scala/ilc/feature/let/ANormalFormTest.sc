@@ -6,12 +6,13 @@ object ANormalFormTest {
   println("Welcome to the Scala worksheet")       //> Welcome to the Scala worksheet
   import language._
   val v = new Bacchus with let.ANormalFormStateful with integers.ImplicitSyntaxSugar with inference.LetInference
-    with BetaReduction
+    with BetaReduction with Pretty
     //with inference.SyntaxSugar //Or with:
     with inference.LetSyntaxSugar                 //> v  : ilc.language.Bacchus with ilc.feature.let.ANormalFormStateful with ilc.
                                                   //| feature.integers.ImplicitSyntaxSugar with ilc.feature.inference.LetInference
-                                                  //|  with ilc.feature.let.BetaReduction with ilc.feature.inference.LetSyntaxSuga
-                                                  //| r = ilc.feature.let.ANormalFormTest$$anonfun$main$1$$anon$1@5660d2d2
+                                                  //|  with ilc.feature.let.BetaReduction with ilc.feature.let.Pretty with ilc.fea
+                                                  //| ture.inference.LetSyntaxSugar = ilc.feature.let.ANormalFormTest$$anonfun$mai
+                                                  //| n$1$$anon$1@5135e781
     //Both work, but the output is different.
 
   //def tests(v: Bacchus with feature.let.ANormalFormStateful with integers.ImplicitSyntaxSugar with inference.LetInference

@@ -9,7 +9,7 @@ import ilc.util.EvalGenerated
 class BetaReductionSuite
 extends FlatSpec
    with Matchers
-   with BetaReduction with naturals.ImplicitSyntaxSugar with ToScala with ProgramSize with naturals.ToScala with EvalGenerated {
+   with BetaReduction with naturals.ImplicitSyntaxSugar with Pretty with ToScala with ProgramSize with naturals.ToScala with EvalGenerated {
 
   val x = Var("x", NatType)
   val y = Var("y", NatType)

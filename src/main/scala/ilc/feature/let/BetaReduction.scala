@@ -13,8 +13,7 @@ trait ProgramSize extends Syntax {
   }
 }
 
-//XXX ToScala and Pretty don't strictly belong in here.
-trait BetaReduction extends Syntax with FreeVariables with analysis.Occurrences with Traversals with ToScala with Pretty with IsAtomic {
+trait BetaReduction extends Syntax with FreeVariables with analysis.Occurrences with Traversals with IsAtomic {
   outer =>
   val freshGen = new FreshGen {
     /*

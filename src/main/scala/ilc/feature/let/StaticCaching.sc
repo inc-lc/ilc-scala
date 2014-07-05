@@ -7,6 +7,7 @@ import language._
 object StaticCaching {
   val v = new Bacchus with let.ANormalFormAdapter with integers.ImplicitSyntaxSugar with inference.LetInference
     with BetaReduction with Pretty
+    with products.StdLib
     //with inference.SyntaxSugar //Or with:
     with inference.LetSyntaxSugar {
       outer =>
@@ -16,17 +17,119 @@ object StaticCaching {
     }                                             //> v  : ilc.language.Bacchus with ilc.feature.let.ANormalFormAdapter with ilc.f
                                                   //| eature.integers.ImplicitSyntaxSugar with ilc.feature.inference.LetInference 
                                                   //| with ilc.feature.let.BetaReduction with ilc.feature.let.Pretty with ilc.feat
-                                                  //| ure.inference.LetSyntaxSugar{val aNormalizer: ilc.feature.let.ANormalFormSta
-                                                  //| teful{val mySyntax: ilc.feature.let.StaticCaching.<refinement>.type}} = ilc.
-                                                  //| feature.let.StaticCaching$$anonfun$main$1$$anon$1@2aa20aac
+                                                  //| ure.products.StdLib with ilc.feature.inference.LetSyntaxSugar{val aNormalize
+                                                  //| r: ilc.feature.let.ANormalFormStateful{val mySyntax: ilc.feature.let.StaticC
+                                                  //| aching.<refinement>.type}} = ilc.feature.let.StaticCaching$$anonfun$main$1$$
+                                                  //| anon$1@6a4f0359
   val v1 = new AddCaches {
     val mySyntax: v.type = v
   }                                               //> v1  : ilc.feature.let.AddCaches{val mySyntax: ilc.feature.let.StaticCaching.
-                                                  //| <refinement>.type} = ilc.feature.let.StaticCaching$$anonfun$main$1$$anon$2@5
-                                                  //| 879ff89
+                                                  //| <refinement>.type} = ilc.feature.let.StaticCaching$$anonfun$main$1$$anon$2@7
+                                                  //| 3cd15da
 
   import v._
   import v1.addCaches
+
+  val testBeta1 =
+    'f2 ->:
+	    letS(
+	      'f -> ('x ->: 'y ->: 'f2('x)('y)),
+	      'f1 -> ('x ->: 'y ->: pair('x)('y)),
+	      'h -> ('x ->: 'y ->: let('g, 'f('x))(PlusInt('g('y))('g('y))))
+	    ) { 'h }                              //> testBeta1  : ilc.feature.let.StaticCaching.v.UntypedTerm = UAbs(f2,None,ULet
+                                                  //| (f,UAbs(x,None,UAbs(y,None,UApp(UApp(UVar(f2),UVar(x)),UVar(y)))),ULet(f1,UA
+                                                  //| bs(x,None,UAbs(y,None,UApp(UApp(UPolymorphicConstant(Pair),UVar(x)),UVar(y))
+                                                  //| )),ULet(h,UAbs(x,None,UAbs(y,None,ULet(g,UApp(UVar(f),UVar(x)),UApp(UApp(UMo
+                                                  //| nomorphicConstant(PlusInt),UApp(UVar(g),UVar(y))),UApp(UVar(g),UVar(y)))))),
+                                                  //| UVar(h)))))
+  "\n" + pretty(normalize(testBeta1))             //> res0: String = "
+                                                  //| λf2lit_1.
+                                                  //| λx_2.
+                                                  //| λy_3.
+                                                  //|   PlusInt
+                                                  //|     (f2lit_1
+                                                  //|        x_2
+                                                  //|        y_3)
+                                                  //|     (f2lit_1
+                                                  //|        x_2
+                                                  //|        y_3)"
+  val testBeta1Bis =
+    'f2 ->:
+      letS(
+        'f -> ('x ->: 'y ->: 'f2('x)('y)),
+        'h -> ('x ->: 'y ->:
+          letS(
+            'g -> 'f('x),
+            'i -> 'g('y)
+          ) {
+              PlusInt('i)('i)
+            })
+      ) { 'h }                                    //> testBeta1Bis  : ilc.feature.let.StaticCaching.v.UntypedTerm = UAbs(f2,None,
+                                                  //| ULet(f,UAbs(x,None,UAbs(y,None,UApp(UApp(UVar(f2),UVar(x)),UVar(y)))),ULet(
+                                                  //| h,UAbs(x,None,UAbs(y,None,ULet(g,UApp(UVar(f),UVar(x)),ULet(i,UApp(UVar(g),
+                                                  //| UVar(y)),UApp(UApp(UMonomorphicConstant(PlusInt),UVar(i)),UVar(i)))))),UVar
+                                                  //| (h))))
+  "\n" + pretty(normalize(testBeta1Bis))          //> res1: String = "
+                                                  //| λf2lit_1.
+                                                  //| λx_2.
+                                                  //| λy_3.
+                                                  //|   i_4 =
+                                                  //|     f2lit_1
+                                                  //|       x_2
+                                                  //|       y_3;
+                                                  //|   PlusInt
+                                                  //|     i_4
+                                                  //|     i_4"
+  val testBeta2 =
+    'f ->:
+      letS(
+        'h -> ('x ->: 'y ->: let('g, 'f('x))('g('y)))
+      ) { 'h }                                    //> testBeta2  : ilc.feature.let.StaticCaching.v.UntypedTerm = UAbs(f,None,ULet
+                                                  //| (h,UAbs(x,None,UAbs(y,None,ULet(g,UApp(UVar(f),UVar(x)),UApp(UVar(g),UVar(y
+                                                  //| ))))),UVar(h)))
+  "\n" + pretty(normalize(testBeta2))             //> res2: String = "
+                                                  //| λf_1.
+                                                  //| λx_2.
+                                                  //| λy_3.
+                                                  //|   f_1
+                                                  //|     x_2
+                                                  //|     y_3"
+  val testBeta3 =
+    'f ->:
+      letS(
+        'h -> ('x ->: 'y ->: let('g, 'f('x))(PlusInt('g('y))('g('y))))
+      ) { 'h }                                    //> testBeta3  : ilc.feature.let.StaticCaching.v.UntypedTerm = UAbs(f,None,ULet
+                                                  //| (h,UAbs(x,None,UAbs(y,None,ULet(g,UApp(UVar(f),UVar(x)),UApp(UApp(UMonomorp
+                                                  //| hicConstant(PlusInt),UApp(UVar(g),UVar(y))),UApp(UVar(g),UVar(y)))))),UVar(
+                                                  //| h)))
+  "\n" + pretty(normalize(testBeta3))             //> res3: String = "
+                                                  //| λf_1.
+                                                  //| λx_2.
+                                                  //| λy_3.
+                                                  //|   g_4 =
+                                                  //|     f_1
+                                                  //|       x_2;
+                                                  //|   PlusInt
+                                                  //|     (g_4
+                                                  //|        y_3)
+                                                  //|     (g_4
+                                                  //|        y_3)"
+  "\n" + pretty(aNormalizeTerm(normalize(testBeta3)))
+                                                  //> res4: String = "
+                                                  //| λf_1.
+                                                  //| λx_2.
+                                                  //| λy_3.
+                                                  //|   a_1 =
+                                                  //|     f_1
+                                                  //|       x_2;
+                                                  //|   a_2 =
+                                                  //|     a_1
+                                                  //|       y_3;
+                                                  //|   a_3 =
+                                                  //|     PlusInt
+                                                  //|       a_2
+                                                  //|       a_2;
+                                                  //|   a_3"
   val test1 =
     letS(
       'id -> ('x ->: 'x),

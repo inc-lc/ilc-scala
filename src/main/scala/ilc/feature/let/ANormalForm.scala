@@ -106,8 +106,8 @@ trait ANormalFormStateful extends ANormalFormInterface {
   //That is, for each new scope.
   override def aNormalizeTerm(t: Term) = aNormalizeTerm(t, immutable.Map.empty)
   def aNormalizeTerm(t: Term, substs: immutable.Map[Var, Term]): Term = {
-    val bindings = createBindings(substs)
-    val normalT = aNormalize(t, bindings)
+    implicit val bindings = createBindings(substs)
+    val normalT = aNormalize(t)
     bindings.bindings.foldRight(normalT) {
       case ((term, variable), t) =>
         Let(variable, term, t)
@@ -119,9 +119,9 @@ trait ANormalFormStateful extends ANormalFormInterface {
    * and the mutable maps threaded through as parameters, initialized by calls
    * to aNormalizeTerm (at the top-level and inside each lambda).
    */
-  def aNormalize(t: Term, bindings: Bindings): Term = aNormalizeTransform(bindings)(t)
+  def aNormalize(t: Term)(implicit bindings: Bindings): Term = aNormalizeTransform(bindings)(t)
 
-  def substRule(bindings: Bindings): Term =?>: Term = {
+  def substRule(implicit bindings: Bindings): Term =?>: Term = {
     case v: Var =>
       (bindings.substs get v) getOrElse v
   }
@@ -130,7 +130,7 @@ trait ANormalFormStateful extends ANormalFormInterface {
     case t if isAtomic(t) => t
   }
 
-  def aNormalizeMainCases(bindings: Bindings): Term =?>: Term = {
+  def aNormalizeMainCases(implicit bindings: Bindings): Term =?>: Term = {
     case Abs(v, body) =>
       Abs(v, aNormalizeTerm(body, bindings.substs))
     case App(operator, operand) =>
@@ -152,17 +152,17 @@ trait ANormalFormStateful extends ANormalFormInterface {
       //Can't call aNormalizeName since it first calls aNormalize.
       aNormalizeName2(operands map (aNormalizeName(_)(bindings)) reduceLeft (App))(bindings)
     case Let(variable, exp, body) =>
-      val normalExp = aNormalizeName(exp, Some(variable))(bindings)
-      aNormalize(body, bindings)
+      val normalExp = aNormalizeName(exp, Some(variable))
+      aNormalize(body)
   }
 
-  def aNormalizeTransform(bindings: Bindings): Term => Term = aNormalizeMainCases(bindings) orElse substRule(bindings) orElse preserveAtomicRule
+  def aNormalizeTransform(implicit bindings: Bindings): Term => Term = aNormalizeMainCases orElse substRule orElse preserveAtomicRule
 
-  def aNormalizeName(t: Term, boundVarOpt: Option[Var] = None)(bindings: Bindings): Term = {
-    aNormalizeName2(aNormalize(t, bindings), boundVarOpt)(bindings)
+  def aNormalizeName(t: Term, boundVarOpt: Option[Var] = None)(implicit bindings: Bindings): Term = {
+    aNormalizeName2(aNormalize(t), boundVarOpt)
   }
 
-  def aNormalizeName2(normalT: Term, boundVarOpt: Option[Var] = None)(bindings: Bindings): Term = {
+  def aNormalizeName2(normalT: Term, boundVarOpt: Option[Var] = None)(implicit bindings: Bindings): Term = {
     def bind(): Var = {
       val newV = boundVarOpt getOrElse fresh("a", normalT.getType)
       bindings += normalT -> newV
@@ -214,10 +214,10 @@ trait AddCaches extends ANormalFormStateful {
   def addCaches(t: Term): Term = aNormalizeTerm(t)
 
   override def aNormalizeTerm(t: Term, substs: immutable.Map[Var, Term]): Term = {
-    val bindings = createBindings(substs)
+    implicit val bindings = createBindings(substs)
     //XXX We need to also use adaptCallers.
     //And we need to use the full tuples when returning, and their first component in the rest of the computation.
-    val normalT = aNormalize(t, bindings)
+    val normalT = aNormalize(t)
     val withAdaptedCallers = everywhere(adaptCallers)(normalT)
     def go(s: List[(Term, Var)], t: Term, vars: List[Var]): Term =
       s match {

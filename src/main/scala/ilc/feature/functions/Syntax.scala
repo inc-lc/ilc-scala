@@ -12,10 +12,11 @@ trait Syntax extends base.Syntax {
         if (expectedDomain == actualDomain)
           range
         else
-          typeErrorNotTheSame(
+          range
+          /*typeErrorNotTheSame(
             s"operand position of $operator : ${expectedDomain =>: range}",
             expectedDomain,
-            s"$operand : $actualDomain")
+            s"$operand : $actualDomain")*/
 
       case _ =>
         typeErrorNotTheSame(

@@ -5,30 +5,37 @@ package let
 import language._
 
 object StaticCaching {
-  val v = new Bacchus with let.ANormalFormAdapter with integers.ImplicitSyntaxSugar with inference.LetInference
+  val v = new Bacchus with integers.ImplicitSyntaxSugar with inference.LetInference
     with BetaReduction with Pretty
     with products.StdLib
     //with inference.SyntaxSugar //Or with:
-    with inference.LetSyntaxSugar {
+    with inference.LetSyntaxSugar                 //> v  : ilc.language.Bacchus with ilc.feature.integers.ImplicitSyntaxSugar with
+                                                  //|  ilc.feature.inference.LetInference with ilc.feature.let.BetaReduction with 
+                                                  //| ilc.feature.let.Pretty with ilc.feature.products.StdLib with ilc.feature.inf
+                                                  //| erence.LetSyntaxSugar = ilc.feature.let.StaticCaching$$anonfun$main$1$$anon$
+                                                  //| 1@1430eb11
+    /*
+    with let.ANormalFormAdapter {
       outer =>
       val aNormalizer = new feature.let.ANormalFormStateful {
         val mySyntax: outer.type = outer
       }
-    }                                             //> v  : ilc.language.Bacchus with ilc.feature.let.ANormalFormAdapter with ilc.f
-                                                  //| eature.integers.ImplicitSyntaxSugar with ilc.feature.inference.LetInference 
-                                                  //| with ilc.feature.let.BetaReduction with ilc.feature.let.Pretty with ilc.feat
-                                                  //| ure.products.StdLib with ilc.feature.inference.LetSyntaxSugar{val aNormalize
-                                                  //| r: ilc.feature.let.ANormalFormStateful{val mySyntax: ilc.feature.let.StaticC
-                                                  //| aching.<refinement>.type}} = ilc.feature.let.StaticCaching$$anonfun$main$1$$
-                                                  //| anon$1@6a4f0359
-  val v1 = new AddCaches {
-    val mySyntax: v.type = v
-  }                                               //> v1  : ilc.feature.let.AddCaches{val mySyntax: ilc.feature.let.StaticCaching.
-                                                  //| <refinement>.type} = ilc.feature.let.StaticCaching$$anonfun$main$1$$anon$2@7
-                                                  //| 3cd15da
-
+    }
+  */
   import v._
-  import v1.addCaches
+  /*
+  val cacher = new AddCaches {
+    val mySyntax: v.type = v
+  }
+
+  */
+   val cacher = new AddCaches2 {
+    val mySyntax: v.type = v
+  }                                               //> cacher  : ilc.feature.let.AddCaches2{val mySyntax: ilc.feature.let.StaticCac
+                                                  //| hing.<refinement>.type} = ilc.feature.let.StaticCaching$$anonfun$main$1$$ano
+                                                  //| n$2@1b28af8
+  import cacher._
+  import aNormalizer._
 
   val testBeta1 =
     'f2 ->:
@@ -127,9 +134,11 @@ object StaticCaching {
                                                   //|       y_3;
                                                   //|   a_3 =
                                                   //|     PlusInt
-                                                  //|       a_2
                                                   //|       a_2;
-                                                  //|   a_3"
+                                                  //|   a_4 =
+                                                  //|     a_3
+                                                  //|       a_2;
+                                                  //|   a_4"
   val test1 =
     letS(
       'id -> ('x ->: 'x),
@@ -138,17 +147,17 @@ object StaticCaching {
       'apply -> ('f ->: 'x ->: 'f('x))
     ) {
         'id('apply, 'id_i, 'id_i2(3: Term))
-      }                                           //> test1  : ilc.feature.let.StaticCaching.v.UntypedTerm = ULet(id,UAbs(x,None,U
-                                                  //| Var(x)),ULet(id_i,UAbs(x,None,UVar(x)),ULet(id_i2,UAbs(x,None,UVar(x)),ULet(
-                                                  //| apply,UAbs(f,None,UAbs(x,None,UApp(UVar(f),UVar(x)))),UApp(UApp(UApp(UVar(id
-                                                  //| ),UVar(apply)),UVar(id_i)),UApp(UVar(id_i2),UMonomorphicConstant(LiteralInt(
-                                                  //| 3))))))))
+      }                                           //> test1  : ilc.feature.let.StaticCaching.v.UntypedTerm = ULet(id,UAbs(x,None,
+                                                  //| UVar(x)),ULet(id_i,UAbs(x,None,UVar(x)),ULet(id_i2,UAbs(x,None,UVar(x)),ULe
+                                                  //| t(apply,UAbs(f,None,UAbs(x,None,UApp(UVar(f),UVar(x)))),UApp(UApp(UApp(UVar
+                                                  //| (id),UVar(apply)),UVar(id_i)),UApp(UVar(id_i2),UMonomorphicConstant(Literal
+                                                  //| Int(3))))))))
   //val t = test1
   val test3 =
-    let('x, ifThenElse(True, 1, 2): Term)('x)     //> test3  : ilc.feature.let.StaticCaching.v.UntypedTerm = ULet(x,UMonomorphicCo
-                                                  //| nstant(App(App(App(IfThenElse(ℤ),True),Abs(Var(unit,UnitType),LiteralInt(1
-                                                  //| ))),Abs(Var(unit,UnitType),LiteralInt(2)))),UVar(x))
-  "\n" + pretty(test3)                            //> res0: String = "
+    let('x, ifThenElse(True, 1, 2): Term)('x)     //> test3  : ilc.feature.let.StaticCaching.v.UntypedTerm = ULet(x,UMonomorphicC
+                                                  //| onstant(App(App(App(IfThenElse(ℤ),True),Abs(Var(unit,UnitType),LiteralInt
+                                                  //| (1))),Abs(Var(unit,UnitType),LiteralInt(2)))),UVar(x))
+  "\n" + pretty(test3)                            //> res5: String = "
                                                   //| x =
                                                   //|   IfThenElse(ℤ)
                                                   //|     True
@@ -157,14 +166,93 @@ object StaticCaching {
                                                   //|     (λunit.
                                                   //|        LiteralInt(2));
                                                   //| x"
-  "\n" + pretty(addCaches(test3))                 //> res1: String = "
-                                                  //| aTot_1 =
-                                                  //|   IfThenElse(ℤ)
+  "\n" + pretty(etaExpandPrimitives(test3))       //> res6: String = "
+                                                  //| x =
+                                                  //|   (λeta_1.
+                                                  //|    λeta_2.
+                                                  //|    λeta_3.
+                                                  //|      IfThenElse(ℤ)
+                                                  //|        eta_1
+                                                  //|        eta_2
+                                                  //|        eta_3)
+                                                  //|     True
+                                                  //|     (λunit.
+                                                  //|        LiteralInt(1))
+                                                  //|     (λunit.
+                                                  //|        LiteralInt(2));
+                                                  //| x"
+  "\n" + pretty(aNormalizeTerm(etaExpandPrimitives(test3)))
+                                                  //> res7: String = "
+                                                  //| a_8 =
+                                                  //|   λeta_4.
+                                                  //|   λeta_5.
+                                                  //|   λeta_6.
+                                                  //|     a_5 =
+                                                  //|       IfThenElse(ℤ)
+                                                  //|         eta_4;
+                                                  //|     a_6 =
+                                                  //|       a_5
+                                                  //|         eta_5;
+                                                  //|     a_7 =
+                                                  //|       a_6
+                                                  //|         eta_6;
+                                                  //|     a_7;
+                                                  //| a_9 =
+                                                  //|   a_8
                                                   //|     True;
-                                                  //| a_1 =
+                                                  //| a_10 =
+                                                  //|   λunit.
+                                                  //|     LiteralInt(1);
+                                                  //| a_11 =
+                                                  //|   a_9
+                                                  //|     a_10;
+                                                  //| a_12 =
+                                                  //|   λunit.
+                                                  //|     LiteralInt(2);
+                                                  //| a_13 =
+                                                  //|   a_11
+                                                  //|     a_12;
+                                                  //| a_13"
+  "\n" + pretty(addCaches(test3))                 //> res8: String = "
+                                                  //| a_17 =
+                                                  //|   λeta_7.
+                                                  //|   λeta_8.
+                                                  //|   λeta_9.
+                                                  //|     a_14 =
+                                                  //|       IfThenElse(ℤ)
+                                                  //|         eta_7;
+                                                  //|     aTot_10 =
+                                                  //|       a_14
+                                                  //|         eta_8;
+                                                  //|     a_15 =
+                                                  //|       Proj1((UnitType → ℤ) → ℤ, UnknownType())
+                                                  //|         aTot_10;
+                                                  //|     aTot_11 =
+                                                  //|       a_15
+                                                  //|         eta_9;
+                                                  //|     a_16 =
+                                                  //|       Proj1(ℤ, UnknownType())
+                                                  //|         aTot_11;
+                                                  //|     (λx1lit.
+                                                  //|      λx2lit.
+                                                  //|      λx3lit.
+                                                  //|        Pair(ℤ, ProductType(ProductType(ℤ,UnknownType()),ProductType((Un
+                                                  //| itType → ℤ) → ℤ,UnknownType())))
+                                                  //|          x1lit
+                                                  //|          (Pair(ProductType(ℤ,UnknownType()), ProductType((UnitType → �
+                                                  //| �) → ℤ,UnknownType()))
+                                                  //|             x2lit
+                                                  //|             x3lit))
+                                                  //|       a_16
+                                                  //|       aTot_11
+                                                  //|       aTot_10;
+                                                  //| aTot_12 =
+                                                  //|   a_17
+                                                  //|     True;
+                                                  //| a_18 =
                                                   //|   Proj1((UnitType → ℤ) → (UnitType → ℤ) → ℤ, UnknownType())
-                                                  //|     aTot_1;
-                                                  //| a_2 =
+                                                  //|     aTot_12;
+                                                  //| a_19 =
                                                   //|   λunit.
                                                   //|     (λx1lit.
                                                   //|      λx2lit.
@@ -173,13 +261,13 @@ object StaticCaching {
                                                   //|          x2lit)
                                                   //|       LiteralInt(1)
                                                   //|       UnitTerm;
-                                                  //| aTot_3 =
-                                                  //|   a_1
-                                                  //|     a_2;
-                                                  //| a_3 =
+                                                  //| aTot_13 =
+                                                  //|   a_18
+                                                  //|     a_19;
+                                                  //| a_20 =
                                                   //|   Proj1((UnitType → ℤ) → ℤ, UnknownType())
-                                                  //|     aTot_3;
-                                                  //| a_4 =
+                                                  //|     aTot_13;
+                                                  //| a_21 =
                                                   //|   λunit.
                                                   //|     (λx1lit.
                                                   //|      λx2lit.
@@ -188,44 +276,56 @@ object StaticCaching {
                                                   //|          x2lit)
                                                   //|       LiteralInt(2)
                                                   //|       UnitTerm;
-                                                  //| aTot_5 =
-                                                  //|   a_3
-                                                  //|     a_4;
-                                                  //| a_5 =
+                                                  //| aTot_14 =
+                                                  //|   a_20
+                                                  //|     a_21;
+                                                  //| a_22 =
                                                   //|   Proj1(ℤ, UnknownType())
-                                                  //|     aTot_5;
+                                                  //|     aTot_14;
                                                   //| (λx1lit.
                                                   //|  λx2lit.
                                                   //|  λx3lit.
                                                   //|  λx4lit.
                                                   //|  λx5lit.
                                                   //|  λx6lit.
-                                                  //|    Pair(ℤ, ProductType(ℤ,ProductType(UnitType → ProductType(ℤ,UnitTy
-                                                  //| pe),ProductType((UnitType → ℤ) → ℤ,ProductType(UnitType → ProductT
-                                                  //| ype(ℤ,UnitType),(UnitType → ℤ) → (UnitType → ℤ) → ℤ)))))
+                                                  //|  λx7lit.
+                                                  //|    Pair(ℤ, ProductType(ProductType(ℤ,UnknownType()),ProductType(UnitTyp
+                                                  //| e → ℤ,ProductType(ProductType((UnitType → ℤ) → ℤ,UnknownType())
+                                                  //| ,ProductType(UnitType → ℤ,ProductType(ProductType((UnitType → ℤ) �
+                                                  //| � (UnitType → ℤ) → ℤ,UnknownType()),BooleanType → (UnitType → �2038 ��) → (UnitType → ℤ) → ℤ))))))
                                                   //|      x1lit
-                                                  //|      (Pair(ℤ, ProductType(UnitType → ProductType(ℤ,UnitType),ProductTy
-                                                  //| pe((UnitType → ℤ) → ℤ,ProductType(UnitType → ProductType(ℤ,UnitT
-                                                  //| ype),(UnitType → ℤ) → (UnitType → ℤ) → ℤ))))
+                                                  //|      (Pair(ProductType(ℤ,UnknownType()), ProductType(UnitType → ℤ,Pro
+                                                  //| ductType(ProductType((UnitType → ℤ) → ℤ,UnknownType()),ProductType(
+                                                  //| UnitType → ℤ,ProductType(ProductType((UnitType → ℤ) → (UnitType �2038 �� ℤ) → ℤ,UnknownType()),BooleanType → (UnitType → ℤ) → (Unit
+                                                  //| Type → ℤ) → ℤ)))))
                                                   //|         x2lit
-                                                  //|         (Pair(UnitType → ProductType(ℤ,UnitType), ProductType((UnitType 
-                                                  //| → ℤ) → ℤ,ProductType(UnitType → ProductType(ℤ,UnitType),(UnitTyp
-                                                  //| e → ℤ) → (UnitType → ℤ) → ℤ)))
+                                                  //|         (Pair(UnitType → ℤ, ProductType(ProductType((UnitType → ℤ) 
+                                                  //| → ℤ,UnknownType()),ProductType(UnitType → ℤ,ProductType(ProductType
+                                                  //| ((UnitType → ℤ) → (UnitType → ℤ) → ℤ,UnknownType()),BooleanTy
+                                                  //| pe → (UnitType → ℤ) → (UnitType → ℤ) → ℤ))))
                                                   //|            x3lit
-                                                  //|            (Pair((UnitType → ℤ) → ℤ, ProductType(UnitType → Produc
-                                                  //| tType(ℤ,UnitType),(UnitType → ℤ) → (UnitType → ℤ) → ℤ))
+                                                  //|            (Pair(ProductType((UnitType → ℤ) → ℤ,UnknownType()), Pro
+                                                  //| ductType(UnitType → ℤ,ProductType(ProductType((UnitType → ℤ) → (U
+                                                  //| nitType → ℤ) → ℤ,UnknownType()),BooleanType → (UnitType → ℤ) 
+                                                  //| → (UnitType → ℤ) → ℤ)))
                                                   //|               x4lit
-                                                  //|               (Pair(UnitType → ProductType(ℤ,UnitType), (UnitType → �
-                                                  //| �) → (UnitType → ℤ) → ℤ)
+                                                  //|               (Pair(UnitType → ℤ, ProductType(ProductType((UnitType →
+                                                  //|  ℤ) → (UnitType → ℤ) → ℤ,UnknownType()),BooleanType → (UnitTy
+                                                  //| pe → ℤ) → (UnitType → ℤ) → ℤ))
                                                   //|                  x5lit
-                                                  //|                  x6lit)))))
-                                                  //|   a_5
-                                                  //|   a_5
-                                                  //|   a_4
-                                                  //|   a_3
-                                                  //|   a_2
-                                                  //|   a_1"
-  "\n" + pretty(addCaches(test1))                 //> res2: String = "
+                                                  //|                  (Pair(ProductType((UnitType → ℤ) → (UnitType → ℤ
+                                                  //| ) → ℤ,UnknownType()), BooleanType → (UnitType → ℤ) → (UnitType 
+                                                  //| → ℤ) → ℤ)
+                                                  //|                     x6lit
+                                                  //|                     x7lit))))))
+                                                  //|   a_22
+                                                  //|   aTot_14
+                                                  //|   a_21
+                                                  //|   aTot_13
+                                                  //|   a_19
+                                                  //|   aTot_12
+                                                  //|   a_17"
+  "\n" + pretty(addCaches(test1))                 //> res9: String = "
                                                   //| id =
                                                   //|   λx.
                                                   //|     (λx1lit.
@@ -246,56 +346,44 @@ object StaticCaching {
                                                   //|       UnitTerm;
                                                   //| apply =
                                                   //|   λf.
+                                                  //|   λx.
+                                                  //|     aTot_15 =
+                                                  //|       f
+                                                  //|         x;
+                                                  //|     a_23 =
+                                                  //|       Proj1(ℤ, UnknownType())
+                                                  //|         aTot_15;
                                                   //|     (λx1lit.
                                                   //|      λx2lit.
-                                                  //|        Pair(ℤ → ProductType(ℤ,ℤ), UnitType)
+                                                  //|        Pair(ℤ, ProductType(ℤ,UnknownType()))
                                                   //|          x1lit
                                                   //|          x2lit)
-                                                  //|       (λx.
-                                                  //|          aTot_6 =
-                                                  //|            f
-                                                  //|              x;
-                                                  //|          aTot_6 =
-                                                  //|            Proj1(ProductType(ℤ,UnknownType()), UnknownType())
-                                                  //|              aTot_6;
-                                                  //|          aTot_6 =
-                                                  //|            Proj1(ℤ, UnknownType())
-                                                  //|              aTot_6;
-                                                  //|          a_6 =
-                                                  //|            Proj1(ℤ, UnknownType())
-                                                  //|              aTot_6;
-                                                  //|          (λx1lit.
-                                                  //|           λx2lit.
-                                                  //|             Pair(ℤ, ℤ)
-                                                  //|               x1lit
-                                                  //|               x2lit)
-                                                  //|            aTot_6
-                                                  //|            aTot_6)
-                                                  //|       UnitTerm;
-                                                  //| aTot_7 =
+                                                  //|       a_23
+                                                  //|       aTot_15;
+                                                  //| aTot_16 =
                                                   //|   id
                                                   //|     apply;
-                                                  //| a_7 =
+                                                  //| a_24 =
                                                   //|   Proj1((ℤ → ℤ) → ℤ → ℤ, UnknownType())
-                                                  //|     aTot_7;
-                                                  //| aTot_8 =
-                                                  //|   a_7
+                                                  //|     aTot_16;
+                                                  //| aTot_17 =
+                                                  //|   a_24
                                                   //|     id_i;
-                                                  //| a_8 =
+                                                  //| a_25 =
                                                   //|   Proj1(ℤ → ℤ, UnknownType())
-                                                  //|     aTot_8;
-                                                  //| aTot_9 =
+                                                  //|     aTot_17;
+                                                  //| aTot_18 =
                                                   //|   id_i
                                                   //|     LiteralInt(3);
-                                                  //| a_9 =
+                                                  //| a_26 =
                                                   //|   Proj1(ℤ, UnknownType())
-                                                  //|     aTot_9;
-                                                  //| aTot_10 =
-                                                  //|   a_8
-                                                  //|     a_9;
-                                                  //| a_10 =
+                                                  //|     aTot_18;
+                                                  //| aTot_19 =
+                                                  //|   a_25
+                                                  //|     a_26;
+                                                  //| a_27 =
                                                   //|   Proj1(ℤ, UnknownType())
-                                                  //|     aTot_10;
+                                                  //|     aTot_19;
                                                   //| (λx1lit.
                                                   //|  λx2lit.
                                                   //|  λx3lit.
@@ -304,39 +392,44 @@ object StaticCaching {
                                                   //|  λx6lit.
                                                   //|  λx7lit.
                                                   //|  λx8lit.
-                                                  //|    Pair(ℤ, ProductType(ℤ,ProductType(ℤ,ProductType(ℤ → ℤ,Product
-                                                  //| Type((ℤ → ℤ) → ℤ → ℤ,ProductType((ℤ → ℤ) → ℤ → ℤ
-                                                  //| ,ProductType(ℤ → ℤ,((ℤ → ℤ) → ℤ → ℤ) → (ℤ → ℤ) �912 �� ℤ → ℤ)))))))
+                                                  //|    Pair(ℤ, ProductType(ProductType(ℤ,UnknownType()),ProductType(Product
+                                                  //| Type(ℤ,UnknownType()),ProductType(ProductType(ℤ → ℤ,UnknownType()),
+                                                  //| ProductType(ProductType((ℤ → ℤ) → ℤ → ℤ,UnknownType()),Produc
+                                                  //| tType((ℤ → ℤ) → ℤ → ℤ,ProductType(ℤ → ℤ,((ℤ → ℤ) 
+                                                  //| → ℤ → ℤ) → (ℤ → ℤ) → ℤ → ℤ)))))))
                                                   //|      x1lit
-                                                  //|      (Pair(ℤ, ProductType(ℤ,ProductType(ℤ → ℤ,ProductType((ℤ →
-                                                  //|  ℤ) → ℤ → ℤ,ProductType((ℤ → ℤ) → ℤ → ℤ,ProductType(
-                                                  //| ℤ → ℤ,((ℤ → ℤ) → ℤ → ℤ) → (ℤ → ℤ) → ℤ → �
-                                                  //| �))))))
+                                                  //|      (Pair(ProductType(ℤ,UnknownType()), ProductType(ProductType(ℤ,Unkn
+                                                  //| ownType()),ProductType(ProductType(ℤ → ℤ,UnknownType()),ProductType(P
+                                                  //| roductType((ℤ → ℤ) → ℤ → ℤ,UnknownType()),ProductType((ℤ �
+                                                  //| � ℤ) → ℤ → ℤ,ProductType(ℤ → ℤ,((ℤ → ℤ) → ℤ → �
+                                                  //| ��) → (ℤ → ℤ) → ℤ → ℤ))))))
                                                   //|         x2lit
-                                                  //|         (Pair(ℤ, ProductType(ℤ → ℤ,ProductType((ℤ → ℤ) → ℤ
-                                                  //|  → ℤ,ProductType((ℤ → ℤ) → ℤ → ℤ,ProductType(ℤ → ℤ,(
-                                                  //| (ℤ → ℤ) → ℤ → ℤ) → (ℤ → ℤ) → ℤ → ℤ)))))
+                                                  //|         (Pair(ProductType(ℤ,UnknownType()), ProductType(ProductType(ℤ �2072 �� ℤ,UnknownType()),ProductType(ProductType((ℤ → ℤ) → ℤ → ℤ
+                                                  //| ,UnknownType()),ProductType((ℤ → ℤ) → ℤ → ℤ,ProductType(ℤ �
+                                                  //| �� ℤ,((ℤ → ℤ) → ℤ → ℤ) → (ℤ → ℤ) → ℤ → ℤ)))
+                                                  //| ))
                                                   //|            x3lit
-                                                  //|            (Pair(ℤ → ℤ, ProductType((ℤ → ℤ) → ℤ → ℤ,Prod
-                                                  //| uctType((ℤ → ℤ) → ℤ → ℤ,ProductType(ℤ → ℤ,((ℤ → ℤ)
-                                                  //|  → ℤ → ℤ) → (ℤ → ℤ) → ℤ → ℤ))))
+                                                  //|            (Pair(ProductType(ℤ → ℤ,UnknownType()), ProductType(Produc
+                                                  //| tType((ℤ → ℤ) → ℤ → ℤ,UnknownType()),ProductType((ℤ → ℤ
+                                                  //| ) → ℤ → ℤ,ProductType(ℤ → ℤ,((ℤ → ℤ) → ℤ → ℤ) �
+                                                  //| �� (ℤ → ℤ) → ℤ → ℤ))))
                                                   //|               x4lit
-                                                  //|               (Pair((ℤ → ℤ) → ℤ → ℤ, ProductType((ℤ → ℤ)
-                                                  //|  → ℤ → ℤ,ProductType(ℤ → ℤ,((ℤ → ℤ) → ℤ → ℤ) →
-                                                  //|  (ℤ → ℤ) → ℤ → ℤ)))
+                                                  //|               (Pair(ProductType((ℤ → ℤ) → ℤ → ℤ,UnknownType()
+                                                  //| ), ProductType((ℤ → ℤ) → ℤ → ℤ,ProductType(ℤ → ℤ,((ℤ 
+                                                  //| → ℤ) → ℤ → ℤ) → (ℤ → ℤ) → ℤ → ℤ)))
                                                   //|                  x5lit
                                                   //|                  (Pair((ℤ → ℤ) → ℤ → ℤ, ProductType(ℤ → �
-                                                  //| �,((ℤ → ℤ) → ℤ → ℤ) → (ℤ → ℤ) → ℤ → ℤ))
+                                                  //| ��,((ℤ → ℤ) → ℤ → ℤ) → (ℤ → ℤ) → ℤ → ℤ))
                                                   //|                     x6lit
-                                                  //|                     (Pair(ℤ → ℤ, ((ℤ → ℤ) → ℤ → ℤ) → (
-                                                  //| ℤ → ℤ) → ℤ → ℤ)
+                                                  //|                     (Pair(ℤ → ℤ, ((ℤ → ℤ) → ℤ → ℤ) → 
+                                                  //| (ℤ → ℤ) → ℤ → ℤ)
                                                   //|                        x7lit
                                                   //|                        x8lit)))))))
-                                                  //|   a_10
-                                                  //|   a_10
-                                                  //|   a_9
-                                                  //|   a_8
-                                                  //|   a_7
+                                                  //|   a_27
+                                                  //|   aTot_19
+                                                  //|   aTot_18
+                                                  //|   aTot_17
+                                                  //|   aTot_16
                                                   //|   apply
                                                   //|   id_i
                                                   //|   id"

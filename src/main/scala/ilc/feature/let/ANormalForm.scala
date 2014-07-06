@@ -288,20 +288,6 @@ trait AddCaches extends ANormalFormStateful {
         Nil)
   }
 
-  //Should move to base.Names or base.Syntax.
-  def transformName(transf: String => String): Name => Name = {
-    def goNonIndexedName: NonIndexedName => NonIndexedName = {
-      case DeltaName(n) => DeltaName(goNonIndexedName(n))
-      case LiteralName(s) => LiteralName(transf(s))
-    }
-    def go: Name => Name = {
-      case IndexedName(n, i) => IndexedName(goNonIndexedName(n), i)
-      case nin: NonIndexedName => goNonIndexedName(nin)
-      case _ => ???
-    }
-    go
-  }
-
   def transformVar(varName: Name, fstT: Type): Var =
     Var(transformName{ name =>
       if (name endsWith "Tot") {

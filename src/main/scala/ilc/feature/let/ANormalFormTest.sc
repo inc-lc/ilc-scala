@@ -3,7 +3,6 @@ package feature
 package let
 
 object ANormalFormTest {
-  println("Welcome to the Scala worksheet")       //> Welcome to the Scala worksheet
   import language._
   val v = new Bacchus with let.ANormalFormAdapter with integers.ImplicitSyntaxSugar with inference.LetInference
     with BetaReduction with Pretty// with AddCaches
@@ -18,7 +17,7 @@ object ANormalFormTest {
                                                   //| with ilc.feature.let.BetaReduction with ilc.feature.let.Pretty with ilc.feat
                                                   //| ure.inference.LetSyntaxSugar{val aNormalizer: ilc.feature.let.ANormalFormSta
                                                   //| teful{val mySyntax: ilc.feature.let.ANormalFormTest.<refinement>.type}} = il
-                                                  //| c.feature.let.ANormalFormTest$$anonfun$main$1$$anon$1@746ab811
+                                                  //| c.feature.let.ANormalFormTest$$anonfun$main$1$$anon$1@df61ca
     //Both work, but the output is different.
 
   //def tests(v: Bacchus with feature.let.ANormalFormStateful with integers.ImplicitSyntaxSugar with inference.LetInference
@@ -53,6 +52,11 @@ object ANormalFormTest {
   val test2 =
     let('x, let('y, 20: Term)('y))('x)            //> test2  : ilc.feature.let.ANormalFormTest.v.UntypedTerm = ULet(x,ULet(y,UMon
                                                   //| omorphicConstant(LiteralInt(20)),UVar(y)),UVar(x))
+  val test2Bis =
+    let('x, let('y, (PlusInt ! (20: Term) ! (30: Term)): Term)('y))('x)
+                                                  //> test2Bis  : ilc.feature.let.ANormalFormTest.v.UntypedTerm = ULet(x,ULet(y,U
+                                                  //| MonomorphicConstant(App(App(PlusInt,LiteralInt(20)),LiteralInt(30))),UVar(y
+                                                  //| )),UVar(x))
 /*
 (define t3
   '(let ([x (if #t 1 2)])
@@ -144,7 +148,33 @@ object ANormalFormTest {
                                                   //| LiteralInt(20)"
   "\n" + pretty(aNormalizeTerm(normalize(test2))) //> res7: String = "
                                                   //| LiteralInt(20)"
-  "\n" + pretty(test3)                            //> res8: String = "
+  "\n" + pretty(test2Bis)                         //> res8: String = "
+                                                  //| x =
+                                                  //|   y =
+                                                  //|     PlusInt
+                                                  //|       LiteralInt(20)
+                                                  //|       LiteralInt(30);
+                                                  //|   y;
+                                                  //| x"
+  "\n" + pretty(aNormalizeTerm(test2Bis))         //> res9: String = "
+                                                  //| a_7 =
+                                                  //|   PlusInt
+                                                  //|     LiteralInt(20)
+                                                  //|     LiteralInt(30);
+                                                  //| a_7"
+  "\n" + pretty(normalize(aNormalizeTerm(test2Bis)))
+                                                  //> res10: String = "
+                                                  //| PlusInt
+                                                  //|   LiteralInt(20)
+                                                  //|   LiteralInt(30)"
+  "\n" + pretty(aNormalizeTerm(normalize(test2Bis)))
+                                                  //> res11: String = "
+                                                  //| a_9 =
+                                                  //|   PlusInt
+                                                  //|     LiteralInt(20)
+                                                  //|     LiteralInt(30);
+                                                  //| a_9"
+  "\n" + pretty(test3)                            //> res12: String = "
                                                   //| x =
                                                   //|   IfThenElse(ℤ)
                                                   //|     True
@@ -153,25 +183,12 @@ object ANormalFormTest {
                                                   //|     (λunit.
                                                   //|        LiteralInt(2));
                                                   //| x"
-  "\n" + pretty(aNormalizeTerm(test3))            //> res9: String = "
-                                                  //| a_7 =
-                                                  //|   λunit.
-                                                  //|     LiteralInt(1);
-                                                  //| a_8 =
-                                                  //|   λunit.
-                                                  //|     LiteralInt(2);
-                                                  //| a_9 =
-                                                  //|   IfThenElse(ℤ)
-                                                  //|     True
-                                                  //|     a_7
-                                                  //|     a_8;
-                                                  //| a_9"
-  "\n" + pretty(aNormalizeTerm(normalize(test3))) //> res10: String = "
+  "\n" + pretty(aNormalizeTerm(test3))            //> res13: String = "
                                                   //| a_10 =
-                                                  //|   λunit_1.
+                                                  //|   λunit.
                                                   //|     LiteralInt(1);
                                                   //| a_11 =
-                                                  //|   λunit_2.
+                                                  //|   λunit.
                                                   //|     LiteralInt(2);
                                                   //| a_12 =
                                                   //|   IfThenElse(ℤ)
@@ -179,6 +196,19 @@ object ANormalFormTest {
                                                   //|     a_10
                                                   //|     a_11;
                                                   //| a_12"
+  "\n" + pretty(aNormalizeTerm(normalize(test3))) //> res14: String = "
+                                                  //| a_13 =
+                                                  //|   λunit_1.
+                                                  //|     LiteralInt(1);
+                                                  //| a_14 =
+                                                  //|   λunit_2.
+                                                  //|     LiteralInt(2);
+                                                  //| a_15 =
+                                                  //|   IfThenElse(ℤ)
+                                                  //|     True
+                                                  //|     a_13
+                                                  //|     a_14;
+                                                  //| a_15"
   //"\n" + pretty(addCaches(test3))
   //"\n" + pretty(addCaches(test1))
   //}

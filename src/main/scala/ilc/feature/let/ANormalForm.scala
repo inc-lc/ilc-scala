@@ -438,3 +438,20 @@ trait AddCaches2 {
       }
   }
 }
+
+object Bug {
+  type =?>:[A, B] = PartialFunction[A, B]
+
+  val ??? : Nothing = throw new Exception
+  //Does not work.
+  def or[T, U](f: T =?>: U)(g: T => U): T => U =
+  //Works.
+  //def or[T, U](f: PartialFunction[T, U])(g: T => U): T => U =
+    //x => f applyOrElse (x, g)
+    ???
+
+  def bar: String =?>: String = ???
+  def foo: String => String = ???
+  def bippy: String => String =
+    or(bar orElse bar)(foo)
+}

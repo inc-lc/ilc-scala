@@ -21,10 +21,6 @@ class ANormalFormSpec extends FlatSpec {
     }
     import v._
     import aNormalizer.{doCSE, copyPropagation, partialApplicationsAreSpecial}
-    val v1 = new AddCaches {
-      val mySyntax: v.type = v
-    }
-    import v1.addCaches
 
     //Taken from http://matt.might.net/articles/a-normalization/, but was ill-typed!
   /*

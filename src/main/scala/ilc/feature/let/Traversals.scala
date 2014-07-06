@@ -6,7 +6,10 @@ trait Traversals extends Syntax {
   type =?>:[A, B] = PartialFunction[A, B]
 
   //Switch to Scalaz?
+  //Does not work.
   def or[T, U](f: T =?>: U)(g: T => U): T => U =
+  //Works.
+  //def or[T, U](f: PartialFunction[T, U])(g: T => U): T => U =
     x => f applyOrElse (x, g)
 
   def orIdentity[T](f: T =?>: T): T => T =

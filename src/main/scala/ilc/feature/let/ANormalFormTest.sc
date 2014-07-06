@@ -18,7 +18,7 @@ object ANormalFormTest {
                                                   //| with ilc.feature.let.BetaReduction with ilc.feature.let.Pretty with ilc.feat
                                                   //| ure.inference.LetSyntaxSugar{val aNormalizer: ilc.feature.let.ANormalFormSta
                                                   //| teful{val mySyntax: ilc.feature.let.ANormalFormTest.<refinement>.type}} = il
-                                                  //| c.feature.let.ANormalFormTest$$anonfun$main$1$$anon$1@746ab811
+                                                  //| c.feature.let.ANormalFormTest$$anonfun$main$1$$anon$1@7b1c661c
     //Both work, but the output is different.
 
   //def tests(v: Bacchus with feature.let.ANormalFormStateful with integers.ImplicitSyntaxSugar with inference.LetInference
@@ -51,8 +51,10 @@ object ANormalFormTest {
      x))
  */
   val test2 =
-    let('x, let('y, 20: Term)('y))('x)            //> test2  : ilc.feature.let.ANormalFormTest.v.UntypedTerm = ULet(x,ULet(y,UMon
-                                                  //| omorphicConstant(LiteralInt(20)),UVar(y)),UVar(x))
+    let('x, let('y, (PlusInt ! (20: Term) ! (30: Term)): Term)('y))('x)
+                                                  //> test2  : ilc.feature.let.ANormalFormTest.v.UntypedTerm = ULet(x,ULet(y,UMon
+                                                  //| omorphicConstant(App(App(PlusInt,LiteralInt(20)),LiteralInt(30))),UVar(y)),
+                                                  //| UVar(x))
 /*
 (define t3
   '(let ([x (if #t 1 2)])
@@ -120,7 +122,7 @@ object ANormalFormTest {
                                                   //|         x;
                                                   //|     a_1;
                                                   //| a_2 =
-                                                  //|   id_i
+                                                  //|   id_i2lit
                                                   //|     LiteralInt(3);
                                                   //| a_3 =
                                                   //|   id
@@ -128,57 +130,34 @@ object ANormalFormTest {
                                                   //|     id_i
                                                   //|     a_2;
                                                   //| a_3"
-  "\n" + pretty(normalize(aNormalizeTerm(test1))) //> res2: String = "
-                                                  //| LiteralInt(3)"
-  "\n" + pretty(aNormalizeTerm(normalize(test1))) //> res3: String = "
-                                                  //| LiteralInt(3)"
-  "\n" + pretty(test2)                            //> res4: String = "
-                                                  //| x =
-                                                  //|   y =
-                                                  //|     LiteralInt(20);
-                                                  //|   y;
-                                                  //| x"
-  "\n" + pretty(aNormalizeTerm(test2))            //> res5: String = "
-                                                  //| LiteralInt(20)"
-  "\n" + pretty(normalize(aNormalizeTerm(test2))) //> res6: String = "
-                                                  //| LiteralInt(20)"
-  "\n" + pretty(aNormalizeTerm(normalize(test2))) //> res7: String = "
-                                                  //| LiteralInt(20)"
-  "\n" + pretty(test3)                            //> res8: String = "
-                                                  //| x =
-                                                  //|   IfThenElse(ℤ)
-                                                  //|     True
-                                                  //|     (λunit.
-                                                  //|        LiteralInt(1))
-                                                  //|     (λunit.
-                                                  //|        LiteralInt(2));
-                                                  //| x"
-  "\n" + pretty(aNormalizeTerm(test3))            //> res9: String = "
-                                                  //| a_7 =
-                                                  //|   λunit.
-                                                  //|     LiteralInt(1);
-                                                  //| a_8 =
-                                                  //|   λunit.
-                                                  //|     LiteralInt(2);
-                                                  //| a_9 =
-                                                  //|   IfThenElse(ℤ)
-                                                  //|     True
-                                                  //|     a_7
-                                                  //|     a_8;
-                                                  //| a_9"
-  "\n" + pretty(aNormalizeTerm(normalize(test3))) //> res10: String = "
-                                                  //| a_10 =
-                                                  //|   λunit_1.
-                                                  //|     LiteralInt(1);
-                                                  //| a_11 =
-                                                  //|   λunit_2.
-                                                  //|     LiteralInt(2);
-                                                  //| a_12 =
-                                                  //|   IfThenElse(ℤ)
-                                                  //|     True
-                                                  //|     a_10
-                                                  //|     a_11;
-                                                  //| a_12"
+  "\n" + pretty(normalize(aNormalizeTerm(test1))) //> ilc.feature.base.TypeError: Type error: Variable id_i2lit not available in 
+                                                  //| context Map(id -> FunVal(<function1>,Var(x,(ℤ → ℤ) → ℤ → ℤ),t
+                                                  //| rue), id_i -> FunVal(<function1>,Var(x,ℤ),true), apply -> FunVal(<functio
+                                                  //| n1>,Var(f,ℤ → ℤ),false)), ill-scoped term
+                                                  //| 	at ilc.feature.let.BetaReduction$Normalize$.eval(BetaReduction.scala:196
+                                                  //| )
+                                                  //| 	at ilc.feature.let.BetaReduction$Normalize$.eval(BetaReduction.scala:192
+                                                  //| )
+                                                  //| 	at ilc.feature.let.BetaReduction$Normalize$.eval(BetaReduction.scala:168
+                                                  //| )
+                                                  //| 	at ilc.feature.let.BetaReduction$Normalize$$anonfun$eval$1.apply(BetaRed
+                                                  //| uction.scala:166)
+                                                  //| 	at ilc.feature.let.BetaReduction$Normalize$$anonfun$eval$1.apply(BetaRed
+                                                  //| uction.scala:166)
+                                                  //| 	at ilc.feature.let.BetaReduction$Normalize$.ilc$feature$let$BetaReductio
+                                                  //| n$Normalize$$findFun$1(BetaReduction.scala:176)
+                                                  //| 	at ilc.feature.let.BetaReduction$Normalize$.eval(BetaReduction.scala:192
+                                                  //| )
+                                                  //| 	at ilc.feature.let.BetaReduction$Normali
+                                                  //| Output exceeds cutoff limit.
+  "\n" + pretty(aNormalizeTerm(normalize(test1)))
+  "\n" + pretty(test2)
+  "\n" + pretty(aNormalizeTerm(test2))
+  "\n" + pretty(normalize(aNormalizeTerm(test2)))
+  "\n" + pretty(aNormalizeTerm(normalize(test2)))
+  "\n" + pretty(test3)
+  "\n" + pretty(aNormalizeTerm(test3))
+  "\n" + pretty(aNormalizeTerm(normalize(test3)))
   //"\n" + pretty(addCaches(test3))
   //"\n" + pretty(addCaches(test1))
   //}

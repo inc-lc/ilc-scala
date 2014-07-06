@@ -287,18 +287,8 @@ trait AddCaches extends ANormalFormStateful {
         //normalT,
         Nil)
   }
-
-  def transformVar(varName: Name, fstT: Type): Var =
-    Var(transformName{ name =>
-      if (name endsWith "Tot") {
-        //XXX AAARGH
-        name
-        //new Exception().printStackTrace()
-      } else {
-        name + "Tot"
-      }
-    }(varName), fstT)
-  def transformVar(v: Var): Var = transformVar(v.getName, v.getType)
+  def transformVar(v: Var): Var = ???
+  def transformVar(varName: Name, fstT: Type): Var = ???
 
   //XXX: what about primitives? In the paper, you can distinguish them
   //statically, here you typically can't.
@@ -314,4 +304,137 @@ trait AddCaches extends ANormalFormStateful {
         Let(varTot, App(fun, arg),
           Let(variable, project(1) ! varTot, body))
     }
+}
+
+trait AddCaches2 {
+  outer =>
+
+  val mySyntax: Syntax with IsAtomic with products.SyntaxSugar with unit.Syntax with Traversals
+  val aNormalizer = new ANormalFormStateful {
+    lazy val mySyntax: outer.mySyntax.type = outer.mySyntax
+    override val partialApplicationsAreSpecial = false
+  }
+  protected val freshGen = new FreshGen {
+    //This must be lazy because at this time mySyntax is not initialized yet.
+    lazy val syntax: mySyntax.type = mySyntax
+  }
+  import mySyntax._
+  import aNormalizer._
+  import freshGen._
+
+  def addCaches: Term => Term =
+    etaExpandPrimitives andThen aNormalizeTerm andThen extendReturns
+
+  def etaExpandPrimitives: Term => Term = everywhere { orIdentity {
+    case v: Var => v
+    case primitive if isAtomic(primitive) =>
+      @annotation.tailrec def getArgsRev(typ: Type, acc: List[Type] = Nil): List[Type] = typ match {
+        case s =>: t =>
+          getArgsRev(t, s :: acc)
+        case _ => acc
+      }
+      val vars = getArgsRev(primitive.getType).reverse map (fresh("eta", _))
+      vars.foldRight(vars.foldLeft(primitive)(App))(Abs)
+  }}
+
+  //This needs to be invoked for each abs node, to reset the list of intermediate results for that scope.
+  //That's similar to A-normalization.
+  def extendReturns: Term => Term = descendAbsLetAtom(Nil)
+
+  /* We implement an abstract machine traversing a structure specified by this grammar
+   * (courtesy of A-normalization):
+   *
+   * exp ::= atom | let var = appOrAbs in exp | abs
+   * app ::= atom atom
+   * app ::= app atom     [if partialApplicationsAreSpecial]
+   * abs ::= lambda name . exp
+   * appOrAbs ::= app | abs
+   * atom ::= name | primitive
+   *
+   * Thanks to etaExpandPrimitives, primitives are fully eta-expanded, so non-nullary ones can only appear inside lambdas.
+   * This means that the operator of an application can't be a primitive - except in those eta-expansion.
+   * Instead of
+   * app ::= atom atom
+   * we have
+   * app ::= name atom
+   */
+
+  //XXX also prove that the resulting term is (at least dynamically) type-safe.
+  //We should even manage to get static type-safety still easily.
+  //The complicated thing to type is that a function and its derivative share
+  //the type of "cache", but this is not yet visible here, and that's only needed
+  //when we want to pack different functions together...
+  //NO: consider f g, f h, where g and h are different functions with the same
+  //type. They'll get different types now! But this requires only let-polymorphism.
+
+  //Resulting term produces a tuple.
+  //Proof: by invariant on descendAbsLetAtom
+  def descendExp = descendAbsLetAtom(Nil)
+  //Resulting term produces a tuple.
+  //Proof: by inspection of tupleVars.
+  def descendAtom(intermediateResults: List[Var]) = { (t: Term) =>
+    assert(isAtomic(t))
+    tupleVars(intermediateResults)(t)
+  }
+
+  //Resulting term produces a tuple.
+  //Proof: by invariant on descendAbsRule and descendLetRule and descendAtom
+  def descendAbsLetAtom(intermediateResults: List[Var]): Term => Term =
+    or(descendAbsRule orElse descendLetRule(intermediateResults))(descendAtom(intermediateResults))
+
+  //Resulting term produces a tuple.
+  //Proof: by induction & invariant on descendExp
+  def descendAbsRule: Term =?>: Term = {
+    case Abs(v, body) =>
+      Abs(v, descendExp(body))
+  }
+
+  def transformVar(varName: Name, fstT: Type): Var =
+    Var(transformName{ name =>
+      if (name endsWith "Tot") {
+        //XXX AAARGH
+        throw new Exception()//.printStackTrace()
+        //name
+      } else {
+        name + "Tot"
+      }
+    }(varName), fstT)
+  def transformVar(v: Var): Var = transformVar(v.getName, v.getType)
+
+  //Resulting term produces a tuple.
+  //Proof: by induction on descendAbsLetAtom, which is always called through
+  //transformedBody.
+  def descendLetRule(intermediateResults: List[Var]): Term =?>: Term = {
+    case Let(v, exp, body) =>
+      def transformedBody(newVar: Var) = descendAbsLetAtom(newVar :: intermediateResults)(body)
+      exp match {
+        case App(fun: Var, arg) if isAtomic(arg) =>
+          case class UnknownType() extends Type
+          val varTot = fresh(transformVar(v.getName, ProductType(v.getType, UnknownType())))
+          //Is this application still type-safe?
+          //fun's return is correctly tupled, and its argument is not tupled
+          //because it's bound by the output of descendLetRule
+          Let(varTot, App(fun, arg),
+            Let(v, Proj1 ! varTot, transformedBody(varTot)))
+
+        case _: App => exp
+        case _: Abs =>
+          Let(v, descendAbsRule(exp), transformedBody(v))
+      }
+  }
+
+  def tupleVars(intermediateResults: List[Var]): Term =?>: Term = {
+    case t =>
+      //XXX: Liu does use unary tuples instead! Hmm... well, in fact using unit is an encoding of them
+      //with nested pairs... right? No, with nested pairs the base case is the pair of the last two vars.
+      //That's one reason why project has to be so complicated...
+      val rest =
+        if (intermediateResults.isEmpty)
+          UnitTerm :: Nil
+        else
+          intermediateResults
+      (t :: intermediateResults foldLeft (tuple(intermediateResults.length + 1))) {
+        _ ! _
+      }
+  }
 }

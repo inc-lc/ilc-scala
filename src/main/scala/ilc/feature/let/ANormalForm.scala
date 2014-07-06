@@ -96,7 +96,13 @@ trait ANormalFormStateful extends ANormalFormInterface {
     def lookup(t: Term): Option[Var] = None
     def isCSE = false
   }
+  /**
+   * Enable common-subexpression elimination (CSE).
+   */
   val doCSE = true
+  /**
+   * Enable copy propagation: avoid binding a variable to a new variable.
+   */
   val copyPropagation = true
   val partialApplicationsAreSpecial = true
 
@@ -104,6 +110,28 @@ trait ANormalFormStateful extends ANormalFormInterface {
 
   //Invoked at the top-level and for each lambda body.
   //That is, for each new scope.
+  /**
+    * Performs a (variant of) A-normalization of the term.
+    * Usually, the goal is that all intermediate results are bound to variables.
+    * Here, we do not admit an application even as the final result.
+    *
+    * This function will rewrite the term into an equivalent* one in this A-normal
+    * form, as specified by the following grammar:
+    *
+    * exp ::= atom | let var = appOrAbs in exp | abs
+    * app ::= atom atom
+    * app ::= app atom     [if partialApplicationsAreSpecial]
+    * abs ::= lambda name . exp
+    * appOrAbs ::= app | abs
+    * atom ::= name | primitive
+    *
+    * If doCSE is enabled, this will also perform common-subexpression elimination
+    * (CSE), that is, reuse bindings producing the same result.
+    *
+    * *This equivalence is stronger than beta-equivalence: operations are
+    * performed in the same order.
+    */
+  //XXX this should be apply, and the comment should be a class comment.
   override def aNormalizeTerm(t: Term) = aNormalizeTerm(t, immutable.Map.empty)
   def aNormalizeTerm(t: Term, substs: immutable.Map[Var, Term]): Term = {
     implicit val bindings = createBindings(substs)

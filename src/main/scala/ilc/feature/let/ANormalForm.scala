@@ -190,6 +190,9 @@ trait ANormalFormStateful extends ANormalFormInterface {
     aNormalizeName2(aNormalize(t), boundVarOpt)
   }
 
+  //For overriding.
+  def isAFormAtom(t: Term) = isAtomic(t)
+
   def aNormalizeName2(normalT: Term, boundVarOpt: Option[Var] = None)(implicit bindings: Bindings): Term = {
     def bind(): Var = {
       val newV = boundVarOpt getOrElse fresh("a", normalT.getType)
@@ -207,7 +210,7 @@ trait ANormalFormStateful extends ANormalFormInterface {
       }
       existingTerm
     }
-    if (isAtomic(normalT) && (copyPropagation || boundVarOpt.isEmpty)) {
+    if (isAFormAtom(normalT) && (copyPropagation || boundVarOpt.isEmpty)) {
       reuse(normalT)
     } else {
       import std.option.optionSyntax._
@@ -312,20 +315,32 @@ trait AddCaches2 {
   outer =>
 
   val mySyntax: Syntax with IsAtomic with products.SyntaxSugar with unit.Syntax with Traversals
+  import mySyntax._
+
   val aNormalizer = new ANormalFormStateful {
     lazy val mySyntax: outer.mySyntax.type = outer.mySyntax
     override val partialApplicationsAreSpecial = false
+    override def isAFormAtom(t: Term) = {
+      super.isAFormAtom(t) && (t match {
+        case _: Var => true
+        case prim =>
+          prim.getType match {
+            //Need eta-expansion, so save it into its own var to ease that.
+            case _ =>: _ => false
+            case _ => true
+          }
+      })
+    }
   }
   protected val freshGen = new FreshGen {
     //This must be lazy because at this time mySyntax is not initialized yet.
     lazy val syntax: mySyntax.type = mySyntax
   }
-  import mySyntax._
   import aNormalizer._
   import freshGen._
 
   def addCaches: Term => Term =
-    etaExpandPrimitives andThen aNormalizeTerm andThen extendReturns
+    t => extendReturns(aNormalizeTerm(t))
 
   def etaExpandPrimitives: Term => Term = everywhere { orIdentity {
     case v: Var => v
@@ -338,6 +353,34 @@ trait AddCaches2 {
       val vars = getArgsRev(primitive.getType).reverse map (fresh("eta", _))
       vars.foldRight(vars.foldLeft(primitive)(App))(Abs)
   }}
+
+  def isVar(t: Term) = t.isInstanceOf[Var]
+
+  /*
+  def extendReturnsEtaExpandedPrim(intermediateResults: List[Var]): Term => Term = {
+    case Abs(v, body) =>
+      Abs(v, extendReturnsEtaExpandedPrim(intermediateResults)(body)) =>
+    case Let(v, exp, body) =>
+      val extIntermediateResults =
+        if (isAtomic(exp)) {
+          assert(!isVar(t))
+          //We probably don't want to add v if exp is a primitive.
+          intermediateResults
+        } else
+          v :: intermediateResults
+      Let(v, exp, extendReturnsEtaExpandedPrim(extIntermediateResults)(body))
+    case v if isAtomic(v) =>
+      assert(isVar(v))
+
+    //descendAbsRuleGen(extendReturnsEtaExpandedPrim) orElse descendAtom(???)
+  }
+  */
+  def extendReturnsEtaExpandedPrim: Term => Term = {
+    case Abs(v, body) =>
+      Abs(v, Pair ! extendReturnsEtaExpandedPrim(body) ! UnitTerm)
+    case t =>
+      Pair ! t ! UnitTerm
+  }
 
   //This needs to be invoked for each abs node, to reset the list of intermediate results for that scope.
   //That's similar to A-normalization.
@@ -353,16 +396,17 @@ trait AddCaches2 {
    * appOrAbs ::= app | abs
    * atom ::= name | primitive
    *
-   * Thanks to etaExpandPrimitives, primitives are fully eta-expanded, so non-nullary ones can only appear inside lambdas.
-   * This means that the operator of an application can't be a primitive - except in those eta-expansion.
-   * Instead of
+   * In fact, since we override isAFormAtom, this becomes:
+   *
+   * exp ::= atom | let var = appOrAbsOrPrim in exp | abs
    * app ::= atom atom
-   * we have
-   * app ::= name atom
+   * abs ::= lambda name . exp
+   * appOrAbsOrPrim ::= app | abs | primitive
+   * atom ::= name
    */
 
   //XXX also prove that the resulting term is (at least dynamically) type-safe.
-  //We should even manage to get static type-safety still easily.
+  //We should even manage to get static type-safety somewhat easily.
   //The complicated thing to type is that a function and its derivative share
   //the type of "cache", but this is not yet visible here, and that's only needed
   //when we want to pack different functions together...
@@ -388,6 +432,7 @@ trait AddCaches2 {
   //Proof: by induction & invariant on descendExp
   def descendAbsRule: Term =?>: Term = {
     case Abs(v, body) =>
+      //XXX if body is a lambda-abstr, descendExp(body) won't be a tuple!
       Abs(v, descendExp(body))
   }
 
@@ -412,20 +457,28 @@ trait AddCaches2 {
       exp match {
         case App(fun: Var, arg) if isAtomic(arg) =>
           case class UnknownType() extends Type
-          val varTot = fresh(transformVar(v.getName, ProductType(v.getType, UnknownType())))
+          //XXX This call to fresh makes the output harder to read, disabled.
+          val varTot = /*fresh*/(transformVar(v.getName, ProductType(v.getType, UnknownType())))
           //Is this application still type-safe?
           //fun's return is correctly tupled, and its argument is not tupled
           //because it's bound by the output of descendLetRule
           Let(varTot, App(fun, arg),
             Let(v, Proj1 ! varTot, transformedBody(varTot)))
 
-        //Special case, only possible inside eta-expansion of primitives... and still hacky
-        //XXX (won't recognize the whole inside of the eta-expansion of primitives).
-        //Solution: instead of pre-doing the eta-expansion, do it here when we meet a primitive, and do A-normalization of the result right after.
-        case _: App =>
-          Let(v, exp, descendAbsLetAtom(intermediateResults)(body))
+        /*case App(prim, arg) if isAtomic(arg) =>
+          Let(v,
+            //XXX ???
+            //This gives rise to nested lets, which might be OK. It'd be best to have primitives in their own lets for later expansion.
+            //Indeed, it stackoverflows.
+            //(etaExpandPrimitives andThen addCaches)(exp),
+            ???,
+            descendAbsLetAtom(intermediateResults)(body))*/
         case _: Abs =>
           Let(v, descendAbsRule(exp), transformedBody(v))
+        case _: Var =>
+          throw new RuntimeException("Should not happen!")
+        case prim if isAtomic(prim) =>
+          Let(v, extendReturnsEtaExpandedPrim(etaExpandPrimitives(prim)), transformedBody(v))
       }
   }
 

@@ -226,91 +226,11 @@ trait ANormalFormStateful extends ANormalFormInterface {
   * Let and pairs. Basically, this simply means returning all intermediate results.
   *
   * The other half is adapting every function call to cope with this API change: the caller needs to extract the first component of the return value.
-  * That's much more confused in my head and in the code.
   * One reason is that they deal only with the first-order case.
   * Other interesting differences between what I try to do and their alg. (in Fig. 3):
   * - we encode tuples as right-nested pairs, so their rst becomes snd.
   */
-//XXX: the sharing with ANormalFormStateful gives rise to a lot of non-sensical names.
-//The sharing is probably still a good idea, but requires quite some refactoring to avoid this problem.
-//TODO: eta-expand primitives
-//TODO2: generate untyped terms, even though this'll mean duplicating code from ANormalFormStateful.
-/*
-trait AddCaches extends ANormalFormStateful {
-  override val mySyntax: Syntax with IsAtomic with products.SyntaxSugar with unit.Syntax with Traversals
-  import mySyntax._
-  import freshGen._
-
-  //This is not supported yet for this analysis — I think this would require a concept of arity to be type-safe.
-  override val partialApplicationsAreSpecial = false
-
-  //Adapter...
-  def addCaches(t: Term): Term = aNormalizeTerm(t)
-
-  class Renames(var substs: immutable.Map[Var, Var] = immutable.Map.empty)
-
-  override def aNormalizeTerm(t: Term, substs: immutable.Map[Var, Term]): Term = {
-    implicit val bindings = createBindings(substs)
-    implicit val renames = new Renames()
-    //XXX We need to also use adaptCallers.
-    //And we need to use the full tuples when returning, and their first component in the rest of the computation.
-    val normalT = aNormalize(t)
-    val withAdaptedCallers = everywhere(adaptCallers)(normalT)
-    def go(s: List[(Term, Var)], t: Term, vars: List[Var]): Term =
-      s match {
-        case Nil =>
-          //This happens to return the result twice, if it is bound to a variable before return (that is, if it's not an atomic expression).
-          //XXX Figure out the expected behavior and ensure it happens.
-          //Answer: if the result is worth caching, it should indeed appear twice, as visible in the case for
-          //user-defined functions in Fig. 3. They're assuming that results of primitives
-          //needn't be cached and should be recomputed, which isn't the case for us.
-          //XXX: HOWEVER! A-normal form allows an application as a result value, which isn't good for us.
-          //But that's now FIXED.
-          def rename(v: Var) = (renames.substs get v) getOrElse v
-          val transformedT = everywhere {
-            orIdentity {
-              case v: Var =>
-                //transformVar(v)
-                rename(v)
-            }
-          }(t)
-          val rest =
-            if (vars.isEmpty)
-              UnitTerm :: Nil
-            else
-              vars map rename
-//              transformVar//
-          ((transformedT :: rest) foldLeft (tuple(rest.length + 1))) {
-            _ ! _
-          }
-        case (term, variable) :: rest =>
-          adaptCallers(renames)(Let(variable, term, go(rest, t, variable :: vars)))
-      }
-    go(bindings.bindings.toList,
-        withAdaptedCallers,
-        //normalT,
-        Nil)
-  }
-  def transformVar(v: Var): Var = ???
-  def transformVar(varName: Name, fstT: Type): Var = ???
-
-  //XXX: what about primitives? In the paper, you can distinguish them
-  //statically, here you typically can't.
-  def adaptCallers(implicit renames: Renames): Term => Term =
-    orIdentity {
-      //XXX Probably the type is not adapted yet, so we don't match against the ProductType
-      case Let(variable @ Var(varName, fstT /*ProductType(fstT, sndT)*/), App(fun, arg), body) =>
-        //XXX
-        case class UnknownType() extends Type
-        //No freshening for now. We'll need to thread more state for that.
-        val varTot = /*fresh*/(transformVar(varName, ProductType(fstT, UnknownType())))
-        renames.substs += variable -> varTot
-        Let(varTot, App(fun, arg),
-          Let(variable, project(1) ! varTot, body))
-    }
-}
-*/
-
+//TODO: generate untyped terms
 trait AddCaches2 {
   outer =>
 
@@ -356,25 +276,6 @@ trait AddCaches2 {
 
   def isVar(t: Term) = t.isInstanceOf[Var]
 
-  /*
-  def extendReturnsEtaExpandedPrim(intermediateResults: List[Var]): Term => Term = {
-    case Abs(v, body) =>
-      Abs(v, extendReturnsEtaExpandedPrim(intermediateResults)(body)) =>
-    case Let(v, exp, body) =>
-      val extIntermediateResults =
-        if (isAtomic(exp)) {
-          assert(!isVar(t))
-          //We probably don't want to add v if exp is a primitive.
-          intermediateResults
-        } else
-          v :: intermediateResults
-      Let(v, exp, extendReturnsEtaExpandedPrim(extIntermediateResults)(body))
-    case v if isAtomic(v) =>
-      assert(isVar(v))
-
-    //descendAbsRuleGen(extendReturnsEtaExpandedPrim) orElse descendAtom(???)
-  }
-  */
   def extendReturnsEtaExpandedPrim: Term => Term = {
     case Abs(v, body) =>
       Abs(v, Pair ! extendReturnsEtaExpandedPrim(body) ! UnitTerm)
@@ -443,9 +344,7 @@ trait AddCaches2 {
   def transformVar(varName: Name, fstT: Type): Var =
     Var(transformName{ name =>
       if (name endsWith "Tot") {
-        //XXX AAARGH
-        throw new Exception()//.printStackTrace()
-        //name
+        throw new Exception()
       } else {
         name + "Tot"
       }
@@ -469,14 +368,6 @@ trait AddCaches2 {
           Let(varTot, App(fun, arg),
             Let(v, Proj1 ! varTot, transformedBody(varTot)))
 
-        /*case App(prim, arg) if isAtomic(arg) =>
-          Let(v,
-            //XXX ???
-            //This gives rise to nested lets, which might be OK. It'd be best to have primitives in their own lets for later expansion.
-            //Indeed, it stackoverflows.
-            //(etaExpandPrimitives andThen addCaches)(exp),
-            ???,
-            descendAbsLetAtom(intermediateResults)(body))*/
         case _: Abs =>
           Let(v, descendAbsRule(exp), transformedBody(v))
         case _: Var =>

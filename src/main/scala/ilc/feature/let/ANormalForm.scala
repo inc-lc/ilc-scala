@@ -274,8 +274,6 @@ trait AddCaches2 {
       vars.foldRight(vars.foldLeft(primitive)(App))(Abs)
   }}
 
-  def isVar(t: Term) = t.isInstanceOf[Var]
-
   def extendReturnsEtaExpandedPrim: Term => Term = {
     case Abs(v, body) =>
       Abs(v, Pair ! extendReturnsEtaExpandedPrim(body) ! UnitTerm)

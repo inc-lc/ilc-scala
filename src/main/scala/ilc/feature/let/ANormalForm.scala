@@ -432,8 +432,12 @@ trait AddCaches2 {
   //Proof: by induction & invariant on descendExp
   def descendAbsRule: Term =?>: Term = {
     case Abs(v, body) =>
-      //XXX if body is a lambda-abstr, descendExp(body) won't be a tuple!
-      Abs(v, descendExp(body))
+      val transformedBody = descendExp(body)
+      Abs(v,
+          if (body.isInstanceOf[Abs])
+            Pair ! transformedBody ! UnitTerm
+          else
+            transformedBody)
   }
 
   def transformVar(varName: Name, fstT: Type): Var =

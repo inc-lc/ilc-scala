@@ -13,7 +13,7 @@ object StaticCaching {
                                                   //|  ilc.feature.inference.LetInference with ilc.feature.let.BetaReduction with 
                                                   //| ilc.feature.let.Pretty with ilc.feature.products.StdLib with ilc.feature.inf
                                                   //| erence.LetSyntaxSugar = ilc.feature.let.StaticCaching$$anonfun$main$1$$anon$
-                                                  //| 1@4580d050
+                                                  //| 1@7ebd6a19
     /*
     with let.ANormalFormAdapter {
       outer =>
@@ -33,7 +33,7 @@ object StaticCaching {
     val mySyntax: v.type = v
   }                                               //> cacher  : ilc.feature.let.AddCaches2{val mySyntax: ilc.feature.let.StaticCac
                                                   //| hing.<refinement>.type} = ilc.feature.let.StaticCaching$$anonfun$main$1$$ano
-                                                  //| n$2@1958e4ee
+                                                  //| n$2@451d871
   import cacher._
   import aNormalizer._
   /*
@@ -233,20 +233,23 @@ object StaticCaching {
                                                   //|       UnitTerm;
                                                   //| apply =
                                                   //|   λf.
-                                                  //|   λx.
-                                                  //|     aTot_13 =
-                                                  //|       f
-                                                  //|         x;
-                                                  //|     a_13 =
-                                                  //|       Proj1(ℤ, UnknownType())
-                                                  //|         aTot_13;
-                                                  //|     (λx1lit.
-                                                  //|      λx2lit.
-                                                  //|        Pair(ℤ, ProductType(ℤ,UnknownType()))
-                                                  //|          x1lit
-                                                  //|          x2lit)
-                                                  //|       a_13
-                                                  //|       aTot_13;
+                                                  //|     Pair(ℤ → ProductType(ℤ,ProductType(ℤ,UnknownType())), UnitType)
+                                                  //| 
+                                                  //|       (λx.
+                                                  //|          aTot_13 =
+                                                  //|            f
+                                                  //|              x;
+                                                  //|          a_13 =
+                                                  //|            Proj1(ℤ, UnknownType())
+                                                  //|              aTot_13;
+                                                  //|          (λx1lit.
+                                                  //|           λx2lit.
+                                                  //|             Pair(ℤ, ProductType(ℤ,UnknownType()))
+                                                  //|               x1lit
+                                                  //|               x2lit)
+                                                  //|            a_13
+                                                  //|            aTot_13)
+                                                  //|       UnitTerm;
                                                   //| aTot_14 =
                                                   //|   id
                                                   //|     apply;

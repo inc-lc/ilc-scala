@@ -43,19 +43,23 @@ object Archive {
 abstract class Example
 extends functions.Pretty with let.Pretty
    with let.BetaReduction
+   with let.ANormalFormAdapter
    with let.ProgramSize
    with let.ToScala
 {
-  this: base.ToScala
-   with base.Derivation =>
+  outer: base.ToScala
+    with base.Derivation =>
 
+  val aNormalizer = new let.ANormalFormStateful {
+    val mySyntax: outer.type = outer
+  }
   def name =
     this.getClass().getSimpleName().stripSuffix("Example")
 
   def program: Term
   lazy val derivative: Term = derive(program)
-  lazy val normalizedProgram = normalize(program)
-  lazy val normalizedDerivative = normalize(derivative)
+  lazy val normalizedProgram = aNormalizeTerm(normalize(program))
+  lazy val normalizedDerivative = aNormalizeTerm(normalize(derivative))
 
   private lazy val inputType =>: outputType = program.getType
 

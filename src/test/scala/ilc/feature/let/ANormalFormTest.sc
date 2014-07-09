@@ -2,26 +2,16 @@ package ilc
 package feature
 package let
 
-object ANormalFormTest {
-  import language._
-  val v = new Bacchus with let.ANormalFormAdapter with integers.ImplicitSyntaxSugar with inference.LetInference
-    with BetaReduction with Pretty// with AddCaches
-    //with inference.SyntaxSugar //Or with:
-    with inference.LetSyntaxSugar {
-      outer =>
-      val aNormalizer = new feature.let.ANormalFormStateful {
-        val mySyntax: outer.type = outer
-      }
-    }                                             //> v  : ilc.language.Bacchus with ilc.feature.let.ANormalFormAdapter with ilc.f
-                                                  //| eature.integers.ImplicitSyntaxSugar with ilc.feature.inference.LetInference 
-                                                  //| with ilc.feature.let.BetaReduction with ilc.feature.let.Pretty with ilc.feat
-                                                  //| ure.inference.LetSyntaxSugar{val aNormalizer: ilc.feature.let.ANormalFormSta
-                                                  //| teful{val mySyntax: ilc.feature.let.ANormalFormTest.<refinement>.type}} = il
-                                                  //| c.feature.let.ANormalFormTest$$anonfun$main$1$$anon$1@df61ca
-    //Both work, but the output is different.
-
-  //def tests(v: Bacchus with feature.let.ANormalFormStateful with integers.ImplicitSyntaxSugar with inference.LetInference
-    //with BetaReduction) {
+object ANormalFormTest extends WorksheetHelpers {
+  val v = buildBacchusWithLetSystem(true, true, true)
+                                                  //> v  : ilc.language.Bacchus with ilc.feature.let.ANormalFormAdapter with ilc.f
+                                                  //| eature.integers.ImplicitSyntaxSugar with ilc.feature.integers.Evaluation wit
+                                                  //| h ilc.feature.let.Evaluation with ilc.feature.let.Pretty with ilc.feature.in
+                                                  //| ference.LetInference with ilc.feature.let.BetaReduction with ilc.feature.inf
+                                                  //| erence.LetSyntaxSugar with ilc.feature.inference.InferenceTestHelper{val aNo
+                                                  //| rmalizer: ilc.feature.let.ANormalFormStateful{val mySyntax: ilc.feature.let.
+                                                  //| Instantiations.<refinement>.type}} = ilc.feature.let.Instantiations$$anon$1@
+                                                  //| 2cfd88b5
   import v._
 
   //Taken from http://matt.might.net/articles/a-normalization/, but was ill-typed!
@@ -209,8 +199,4 @@ object ANormalFormTest {
                                                   //|     a_13
                                                   //|     a_14;
                                                   //| a_15"
-  //"\n" + pretty(addCaches(test3))
-  //"\n" + pretty(addCaches(test1))
-  //}
-  //tests(v)
 }

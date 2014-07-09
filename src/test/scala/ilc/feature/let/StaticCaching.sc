@@ -4,36 +4,14 @@ package let
 
 import language._
 
-object StaticCaching {
-  val v = new Bacchus with integers.ImplicitSyntaxSugar with inference.LetInference
-    with BetaReduction with Pretty
-    with products.StdLib
-    //with inference.SyntaxSugar //Or with:
-    with inference.LetSyntaxSugar                 //> v  : ilc.language.Bacchus with ilc.feature.integers.ImplicitSyntaxSugar with
+object StaticCaching extends WorksheetHelpers {
+  val v = buildBaseBacchus()                      //> v  : ilc.language.Bacchus with ilc.feature.integers.ImplicitSyntaxSugar with
                                                   //|  ilc.feature.inference.LetInference with ilc.feature.let.BetaReduction with 
                                                   //| ilc.feature.let.Pretty with ilc.feature.products.StdLib with ilc.feature.inf
-                                                  //| erence.LetSyntaxSugar = ilc.feature.let.StaticCaching$$anonfun$main$1$$anon$
-                                                  //| 1@7ebd6a19
-    /*
-    with let.ANormalFormAdapter {
-      outer =>
-      val aNormalizer = new feature.let.ANormalFormStateful {
-        val mySyntax: outer.type = outer
-      }
-    }
-  */
+                                                  //| erence.LetSyntaxSugar = ilc.feature.let.Instantiations$$anon$2@692ed858
   import v._
-  /*
-  val cacher = new AddCaches {
-    val mySyntax: v.type = v
-  }
-
-  */
-  val cacher = new AddCaches2 {
-    val mySyntax: v.type = v
-  }                                               //> cacher  : ilc.feature.let.AddCaches2{val mySyntax: ilc.feature.let.StaticCac
-                                                  //| hing.<refinement>.type} = ilc.feature.let.StaticCaching$$anonfun$main$1$$ano
-                                                  //| n$2@451d871
+  val cacher = buildCacher(v)                     //> cacher  : ilc.feature.let.AddCaches2{val mySyntax: ilc.feature.let.Instantia
+                                                  //| tions.<refinement>.type} = ilc.feature.let.Instantiations$$anon$4@4373e7e5
   import cacher._
   import aNormalizer._
   /*

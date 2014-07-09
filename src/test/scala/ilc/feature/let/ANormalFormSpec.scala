@@ -5,22 +5,8 @@ package let
 import org.scalatest._
 
 class ANormalFormSpec extends FlatSpec with Instantiations {
-  def buildBacchusSystem(doCSE_ : Boolean, copyPropagation_ : Boolean, partialApplicationsAreSpecial_ : Boolean) =
-    new language.Bacchus with let.ANormalFormAdapter with integers.ImplicitSyntaxSugar
-      with integers.Evaluation with let.Evaluation with let.Pretty
-      with inference.LetInference
-      with BetaReduction with inference.LetSyntaxSugar with inference.InferenceTestHelper {
-        outer =>
-        val aNormalizer = new ANormalFormStateful {
-          val mySyntax: outer.type = outer
-          override val doCSE = doCSE_
-          override val copyPropagation = copyPropagation_
-          override val partialApplicationsAreSpecial = partialApplicationsAreSpecial_
-        }
-    }
-
   def tests(doCSE_ : Boolean, copyPropagation_ : Boolean, partialApplicationsAreSpecial_ : Boolean) {
-    val bacchusSystem = buildBacchusSystem(doCSE_, copyPropagation_, partialApplicationsAreSpecial_)
+    val bacchusSystem = buildBacchusWithLetSystem(doCSE_, copyPropagation_, partialApplicationsAreSpecial_)
     import bacchusSystem._
     import aNormalizer.{doCSE, copyPropagation, partialApplicationsAreSpecial}
 

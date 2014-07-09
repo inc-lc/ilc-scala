@@ -4,10 +4,9 @@ package let
 
 import org.scalatest._
 
-class ANormalFormSpec extends FlatSpec {
-  def tests(doCSE_ : Boolean, copyPropagation_ : Boolean, partialApplicationsAreSpecial_ : Boolean) {
-    val v =
-      new language.Bacchus with let.ANormalFormAdapter with integers.ImplicitSyntaxSugar
+class ANormalFormSpec extends FlatSpec with Instantiations {
+  def buildBacchusSystem(doCSE_ : Boolean, copyPropagation_ : Boolean, partialApplicationsAreSpecial_ : Boolean) =
+    new language.Bacchus with let.ANormalFormAdapter with integers.ImplicitSyntaxSugar
       with integers.Evaluation with let.Evaluation with let.Pretty
       with inference.LetInference
       with BetaReduction with inference.LetSyntaxSugar with inference.InferenceTestHelper {
@@ -19,7 +18,10 @@ class ANormalFormSpec extends FlatSpec {
           override val partialApplicationsAreSpecial = partialApplicationsAreSpecial_
         }
     }
-    import v._
+
+  def tests(doCSE_ : Boolean, copyPropagation_ : Boolean, partialApplicationsAreSpecial_ : Boolean) {
+    val bacchusSystem = buildBacchusSystem(doCSE_, copyPropagation_, partialApplicationsAreSpecial_)
+    import bacchusSystem._
     import aNormalizer.{doCSE, copyPropagation, partialApplicationsAreSpecial}
 
     //Taken from http://matt.might.net/articles/a-normalization/, but was ill-typed!

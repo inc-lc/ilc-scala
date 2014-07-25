@@ -24,7 +24,7 @@ trait Syntax
 extends functions.Syntax
    with let.Syntax
    with maybe.Syntax
-   with integers.SyntaxSugar
+   with integers.ImplicitSyntaxSugar
    with sums.SyntaxSugar
    with equality.Syntax
    with products.Syntax

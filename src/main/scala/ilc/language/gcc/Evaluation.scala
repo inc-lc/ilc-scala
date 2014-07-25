@@ -8,8 +8,8 @@ trait Evaluation
 extends functions.Evaluation
    with let.Evaluation
    with maybe.Evaluation
-   with naturals.Evaluation
+   with integers.Evaluation
    with sums.Evaluation
-   with abelianGroups.Evaluation
+   //with equality.Evaluation
    with products.Evaluation
    with booleans.Evaluation

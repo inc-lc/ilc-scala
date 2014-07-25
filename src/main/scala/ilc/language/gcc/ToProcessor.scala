@@ -56,6 +56,8 @@ trait Instructions {
     )
 
   case class LD(idx: DeBrujinIdx) extends Instr
+  case class DUM(n: Int) extends Instr
+  case class RAP(n: Int) extends Instr
 }
 
 trait ToProcessor extends BasicDefinitions with TopLevel with Instructions {
@@ -63,6 +65,7 @@ trait ToProcessor extends BasicDefinitions with TopLevel with Instructions {
   val freshener = new FreshGen {
     val syntax: outer.type = outer
   }
+  //XXX distinguish top labels (code pointers) from the top stack frame (which is a normal one).
   case class LDF(n: Var) extends Instr {
     assert(topNames contains n)
   }
@@ -112,6 +115,19 @@ trait ToProcessor extends BasicDefinitions with TopLevel with Instructions {
       //List(LD(idx))
       //Create the closure here.
       List(LDF(v))
+    case LetRecStar(bindings, body) =>
+      val frame = Frame(bindings map (_._1))
+      val newFrames = frame :: frames
+      val labels = bindings map {
+        case (v, exp) =>
+          addTopLevelName(v)
+          val compiledExp = toProc(exp, newFrames)
+          addTopLevelBlock(compiledExp)
+          LDF(v)
+      }
+      //XXX define DUM
+      val frameSize = frame.vars.length
+      List(DUM(frameSize)) ++ labels ++ List(RAP(frameSize))
     case v @ Var(name, _) =>
       List(LD(toIdx(v, frames)))
     case _ =>

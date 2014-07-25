@@ -2,9 +2,16 @@ package ilc
 package feature
 package let
 
-object StaticCaching {
-  import WorksheetHelpers._
-  import bacchus._
+import language._
+
+object StaticCaching extends WorksheetHelpers {
+  val v = buildBaseBacchus()                      //> v  : ilc.language.Bacchus with ilc.feature.integers.ImplicitSyntaxSugar with
+                                                  //|  ilc.feature.inference.LetInference with ilc.feature.let.BetaReduction with 
+                                                  //| ilc.feature.let.Pretty with ilc.feature.products.StdLib with ilc.feature.inf
+                                                  //| erence.LetSyntaxSugar = ilc.feature.let.Instantiations$$anon$2@692ed858
+  import v._
+  val cacher = buildCacher(v)                     //> cacher  : ilc.feature.let.AddCaches2{val mySyntax: ilc.feature.let.Instantia
+                                                  //| tions.<refinement>.type} = ilc.feature.let.Instantiations$$anon$4@4373e7e5
   import cacher._
   import aNormalizer._
   /*
@@ -15,7 +22,7 @@ object StaticCaching {
 	      'f1 -> ('x ->: 'y ->: pair('x)('y)),
 	      'h -> ('x ->: 'y ->: let('g, 'f('x))(PlusInt('g('y))('g('y))))
 	    ) { 'h }
-  show(normalize(testBeta1))
+  "\n" + pretty(normalize(testBeta1))
   val testBeta1Bis =
     'f2 ->:
       letS(
@@ -28,20 +35,20 @@ object StaticCaching {
               PlusInt('i)('i)
             })
       ) { 'h }
-  show(normalize(testBeta1Bis))
+  "\n" + pretty(normalize(testBeta1Bis))
   val testBeta2 =
     'f ->:
       letS(
         'h -> ('x ->: 'y ->: let('g, 'f('x))('g('y)))
       ) { 'h }
-  show(normalize(testBeta2))
+  "\n" + pretty(normalize(testBeta2))
   val testBeta3 =
     'f ->:
       letS(
         'h -> ('x ->: 'y ->: let('g, 'f('x))(PlusInt('g('y))('g('y))))
       ) { 'h }
-  show(normalize(testBeta3))
-  show(aNormalizeTerm(normalize(testBeta3)))
+  "\n" + pretty(normalize(testBeta3))
+  "\n" + pretty(aNormalizeTerm(normalize(testBeta3)))
   */
   val test1 =
     letS(
@@ -51,17 +58,17 @@ object StaticCaching {
       'apply -> ('f ->: 'x ->: 'f('x))
     ) {
         'id('apply, 'id_i, 'id_i2(3: Term))
-      }                                           //> test1  : ilc.feature.let.WorksheetHelpers.bacchus.UntypedTerm = ULet(id,UAb
-                                                  //| s(x,None,UVar(x)),ULet(id_i,UAbs(x,None,UVar(x)),ULet(id_i2,UAbs(x,None,UVa
-                                                  //| r(x)),ULet(apply,UAbs(f,None,UAbs(x,None,UApp(UVar(f),UVar(x)))),UApp(UApp(
-                                                  //| UApp(UVar(id),UVar(apply)),UVar(id_i)),UApp(UVar(id_i2),UMonomorphicConstan
-                                                  //| t(LiteralInt(3))))))))
+      }                                           //> test1  : ilc.feature.let.StaticCaching.v.UntypedTerm = ULet(id,UAbs(x,None,
+                                                  //| UVar(x)),ULet(id_i,UAbs(x,None,UVar(x)),ULet(id_i2,UAbs(x,None,UVar(x)),ULe
+                                                  //| t(apply,UAbs(f,None,UAbs(x,None,UApp(UVar(f),UVar(x)))),UApp(UApp(UApp(UVar
+                                                  //| (id),UVar(apply)),UVar(id_i)),UApp(UVar(id_i2),UMonomorphicConstant(Literal
+                                                  //| Int(3))))))))
   //val t = test1
   val test3 =
-    let('x, ifThenElse(True, 1, 2): Term)('x)     //> test3  : ilc.feature.let.WorksheetHelpers.bacchus.UntypedTerm = ULet(x,UMon
-                                                  //| omorphicConstant(App(App(App(IfThenElse(ℤ),True),Abs(Var(unit,UnitType),L
-                                                  //| iteralInt(1))),Abs(Var(unit,UnitType),LiteralInt(2)))),UVar(x))
-  show(aNormalizeTerm(test3))                     //> res0: String = "
+    let('x, ifThenElse(True, 1, 2): Term)('x)     //> test3  : ilc.feature.let.StaticCaching.v.UntypedTerm = ULet(x,UMonomorphicC
+                                                  //| onstant(App(App(App(IfThenElse(ℤ),True),Abs(Var(unit,UnitType),LiteralInt
+                                                  //| (1))),Abs(Var(unit,UnitType),LiteralInt(2)))),UVar(x))
+  "\n" + pretty(aNormalizeTerm(test3))            //> res0: String = "
                                                   //| a_1 =
                                                   //|   IfThenElse(ℤ);
                                                   //| a_2 =
@@ -81,11 +88,11 @@ object StaticCaching {
                                                   //|     a_5;
                                                   //| a_6"
   /*
-  show(test3)
-  show(etaExpandPrimitives(test3))
-  show(aNormalizeTerm(etaExpandPrimitives(test3)))
+  "\n" + pretty(test3)
+  "\n" + pretty(etaExpandPrimitives(test3))
+  "\n" + pretty(aNormalizeTerm(etaExpandPrimitives(test3)))
   */
-  show(addCaches(test3))                          //> res1: String = "
+  "\n" + pretty(addCaches(test3))                 //> res1: String = "
                                                   //| a_7 =
                                                   //|   λeta_1.
                                                   //|     Pair((UnitType → ℤ) → ProductType((UnitType → ℤ) → ProductT
@@ -150,11 +157,11 @@ object StaticCaching {
                                                   //|    Pair(ℤ, ProductType(ProductType(ℤ,UnknownType()),ProductType(UnitTyp
                                                   //| e → ℤ,ProductType(ProductType((UnitType → ℤ) → ℤ,UnknownType())
                                                   //| ,ProductType(UnitType → ℤ,ProductType(ProductType((UnitType → ℤ) �
-                                                  //| � (UnitType → ℤ) → ℤ,UnknownType()),BooleanType → (UnitType → �1480 ��) → (UnitType → ℤ) → ℤ))))))
+                                                  //| � (UnitType → ℤ) → ℤ,UnknownType()),BooleanType → (UnitType → �2095 ��) → (UnitType → ℤ) → ℤ))))))
                                                   //|      x1lit
                                                   //|      (Pair(ProductType(ℤ,UnknownType()), ProductType(UnitType → ℤ,Pro
                                                   //| ductType(ProductType((UnitType → ℤ) → ℤ,UnknownType()),ProductType(
-                                                  //| UnitType → ℤ,ProductType(ProductType((UnitType → ℤ) → (UnitType �1480 �� ℤ) → ℤ,UnknownType()),BooleanType → (UnitType → ℤ) → (Unit
+                                                  //| UnitType → ℤ,ProductType(ProductType((UnitType → ℤ) → (UnitType �2095 �� ℤ) → ℤ,UnknownType()),BooleanType → (UnitType → ℤ) → (Unit
                                                   //| Type → ℤ) → ℤ)))))
                                                   //|         x2lit
                                                   //|         (Pair(UnitType → ℤ, ProductType(ProductType((UnitType → ℤ) 
@@ -183,7 +190,7 @@ object StaticCaching {
                                                   //|   a_9
                                                   //|   aTot_8
                                                   //|   a_7"
-  show(addCaches(test1))                          //> res2: String = "
+  "\n" + pretty(addCaches(test1))                 //> res2: String = "
                                                   //| id =
                                                   //|   λx.
                                                   //|     (λx1lit.
@@ -262,21 +269,21 @@ object StaticCaching {
                                                   //|      (Pair(ProductType(ℤ,UnknownType()), ProductType(ProductType(ℤ,Unkn
                                                   //| ownType()),ProductType(ProductType(ℤ → ℤ,UnknownType()),ProductType(P
                                                   //| roductType((ℤ → ℤ) → ℤ → ℤ,UnknownType()),ProductType((ℤ �
-                                                  //| � ℤ) → ℤ → ℤ,ProductType(ℤ → ℤ,((ℤ → ℤ) → ℤ → �1505 ��) → (ℤ → ℤ) → ℤ → ℤ))))))
+                                                  //| � ℤ) → ℤ → ℤ,ProductType(ℤ → ℤ,((ℤ → ℤ) → ℤ → �2129 ��) → (ℤ → ℤ) → ℤ → ℤ))))))
                                                   //|         x2lit
-                                                  //|         (Pair(ProductType(ℤ,UnknownType()), ProductType(ProductType(ℤ �1505 �� ℤ,UnknownType()),ProductType(ProductType((ℤ → ℤ) → ℤ → ℤ
-                                                  //| ,UnknownType()),ProductType((ℤ → ℤ) → ℤ → ℤ,ProductType(ℤ �1505 �� ℤ,((ℤ → ℤ) → ℤ → ℤ) → (ℤ → ℤ) → ℤ → ℤ)))
+                                                  //|         (Pair(ProductType(ℤ,UnknownType()), ProductType(ProductType(ℤ �2129 �� ℤ,UnknownType()),ProductType(ProductType((ℤ → ℤ) → ℤ → ℤ
+                                                  //| ,UnknownType()),ProductType((ℤ → ℤ) → ℤ → ℤ,ProductType(ℤ �2129 �� ℤ,((ℤ → ℤ) → ℤ → ℤ) → (ℤ → ℤ) → ℤ → ℤ)))
                                                   //| ))
                                                   //|            x3lit
                                                   //|            (Pair(ProductType(ℤ → ℤ,UnknownType()), ProductType(Produc
                                                   //| tType((ℤ → ℤ) → ℤ → ℤ,UnknownType()),ProductType((ℤ → ℤ
-                                                  //| ) → ℤ → ℤ,ProductType(ℤ → ℤ,((ℤ → ℤ) → ℤ → ℤ) �1505 �� (ℤ → ℤ) → ℤ → ℤ))))
+                                                  //| ) → ℤ → ℤ,ProductType(ℤ → ℤ,((ℤ → ℤ) → ℤ → ℤ) �2129 �� (ℤ → ℤ) → ℤ → ℤ))))
                                                   //|               x4lit
                                                   //|               (Pair(ProductType((ℤ → ℤ) → ℤ → ℤ,UnknownType()
                                                   //| ), ProductType((ℤ → ℤ) → ℤ → ℤ,ProductType(ℤ → ℤ,((ℤ 
                                                   //| → ℤ) → ℤ → ℤ) → (ℤ → ℤ) → ℤ → ℤ)))
                                                   //|                  x5lit
-                                                  //|                  (Pair((ℤ → ℤ) → ℤ → ℤ, ProductType(ℤ → �1505 ��,((ℤ → ℤ) → ℤ → ℤ) → (ℤ → ℤ) → ℤ → ℤ))
+                                                  //|                  (Pair((ℤ → ℤ) → ℤ → ℤ, ProductType(ℤ → �2129 ��,((ℤ → ℤ) → ℤ → ℤ) → (ℤ → ℤ) → ℤ → ℤ))
                                                   //|                     x6lit
                                                   //|                     (Pair(ℤ → ℤ, ((ℤ → ℤ) → ℤ → ℤ) → 
                                                   //| (ℤ → ℤ) → ℤ → ℤ)

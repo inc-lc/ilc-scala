@@ -1,8 +1,8 @@
-lazy val ilc = project in file(".")
+lazy val lc = project in file(".")
 
-lazy val clients = project in file("clients") dependsOn (ilc % "test->test;compile->test")
+lazy val lcClients = project in file("clients") dependsOn (lc % "test->test;compile->test")
 
-lazy val bigClients = project in file("bigClients") dependsOn (clients % "test->compile;compile->compile") dependsOn (ilc % "test->test;compile->test")
+lazy val lcBigClients = project in file("bigClients") dependsOn (lcClients % "test->compile;compile->compile") dependsOn (lc % "test->test;compile->test")
 
 scalaVersion in ThisBuild := "2.11.1"
 

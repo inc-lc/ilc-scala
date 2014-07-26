@@ -105,5 +105,6 @@ trait SyntaxSugar
   implicit class PairOps[T <% UT](t: T) {
     def first = outer.first(t)
     def second = outer.second(t)
+    def at(i: Int, n: Int) = project(i, n, t)
   }
 }

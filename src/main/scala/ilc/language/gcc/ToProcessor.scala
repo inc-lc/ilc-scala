@@ -112,6 +112,10 @@ trait ToProcessor extends BasicDefinitions with TopLevel with Instructions {
     //Integers
     case LiteralInt(n) =>
       List(LDC(n))
+    //Argh, this doesn't work because the App logic will insert an extra AP instruction
+//    case PlusInt =>
+//      List(ADD)
+
     case App(App(PlusInt, a), b) =>
       toProc(b, frames) ++
       toProc(a, frames) ++
@@ -122,9 +126,26 @@ trait ToProcessor extends BasicDefinitions with TopLevel with Instructions {
      * - Add more primitives
      * - Test non-top-level LetRecStar
      */
-    case App(f, arg) =>
-      val arity = 1 //XXX generalize!
-      toProc(arg, frames) ++ toProc(f, frames) ++ List(AP(arity))
+    case App(operator, operand) =>
+      //Adapted from A-normalization.
+      def collectApps(t: Term, acc: List[Term]): List[Term] = t match {
+        case App(s, t) => collectApps(s, t :: acc)
+        case _ =>
+          //The function must be last!
+          acc ++ (t :: Nil)
+      }
+      //Special handling for nested applications
+      //Note that this is very syntactic, and that's bad: if the user already inserted a binding for a partial application, as in:
+      // val r1 = f arg1 arg2
+      // val r2 = r1 arg3
+      //we don't want to inline r1 into r2, because that might lead to work duplication.
+      //XXX: This works if programs are in eta-long normal form.
+      val operands =
+        collectApps(operator, operand :: Nil)
+
+      val arity = operands.length - 1
+      (operands flatMap (toProc(_, frames))) ++ List(AP(arity))
+      //toProc(operand, frames) ++ toProc(operator, frames)
 
     //Maybe the current "top-level" handling should instead be used just for letrec*?
     case Abs(variable, body) =>

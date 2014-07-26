@@ -188,7 +188,7 @@ trait ToProcessor extends BasicDefinitions with TopLevel with Instructions {
       //But we don't do lambda-lifting because we still expect to find the variables in the containing frame.
       val v: Var = suggestedFunName getOrElse freshener.fresh("fun", variable.getType =>: body.getType)
       toClosure(v, body, Frame(List(variable)) :: frames)
-    case LetRecStar(bindings, bodyName, body) =>
+    case LetRec(bindings, bodyName, body) =>
       val frame = Frame(bindings map (_._1))
       //Allow recursion by binding the names before compiling them.
       val newFrames = frame :: frames

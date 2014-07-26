@@ -5,22 +5,6 @@ package gcc
 import feature._
 import scala.language.implicitConversions
 
-trait LetRecSyntax extends functions.Syntax {
-  case class LetRec(variable: Var, exp: Term, body: Term) extends Term {
-    override lazy val getType = {
-      assert (variable.getType == exp.getType || !TypeChecking.value)
-      body.getType
-    }
-  }
-
-  case class LetRecStar(pairs: List[(Var, Term)], bodyName: Name, body: Term) extends Term {
-    override lazy val getType = {
-      assert ((pairs forall { case (variable, exp) => variable.getType == exp.getType }) || !TypeChecking.value)
-      body.getType
-    }
-  }
-}
-
 trait GCCIntSyntax
 extends base.Syntax
    with integers.Types
@@ -50,4 +34,30 @@ extends functions.Syntax
    with equality.Syntax
    with products.Syntax
    with booleans.SyntaxSugar
-   with LetRecSyntax
+   with functions.LetRecSyntax
+
+trait SyntaxSugar
+  extends Syntax
+  with inference.PrettySyntax
+  with inference.LetSyntaxSugar
+  with inference.LetRecUntypedSyntax
+  with inference.LetRecInference
+{
+  implicit def intToUTerm(n: Int): UntypedTerm = asUntyped(LiteralInt(n))
+  def letrec(pairs: (Symbol, UntypedTerm)*)
+        (bodyName: String, body: UntypedTerm): UntypedTerm = {
+    ULetRec(pairs.toList map {
+      case (sym, t) => (sym.name, t)
+    }, bodyName, body)
+  }
+  //Force implicit conversions.
+  def asTerm(t: Term) = t
+
+  type UT = UntypedTerm
+  implicit class UTermOps[T <% UT](a: T) {
+    def +(b: UT) = asUntyped(Plus)(a, b)
+    def -(b: UT) = asUntyped(Minus)(a, b)
+    def *(b: UT) = asUntyped(Mult)(a, b)
+    def /(b: UT) = asUntyped(Div)(a, b)
+  }
+}

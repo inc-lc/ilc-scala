@@ -13,7 +13,5 @@ import feature._
   *
   * We have untyped pairs, which are used to encode other types (lists and n-ary tuples).
   */
-class GCC extends Syntax with Pretty with ToProcessor
-  with inference.PrettySyntax
-
+class GCC extends SyntaxSugar with Pretty with ToProcessor
 object GCC extends GCC

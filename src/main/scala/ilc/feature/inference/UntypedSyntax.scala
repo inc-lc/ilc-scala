@@ -20,3 +20,9 @@ trait LetUntypedSyntax extends UntypedSyntax {
 
   case class ULet(variable: String, exp: UntypedTerm, body: UntypedTerm) extends UntypedTerm
 }
+
+trait LetRecUntypedSyntax extends UntypedSyntax {
+  this: base.Syntax with functions.Syntax =>
+
+  case class ULetRec(pairs: List[(String, UntypedTerm)], bodyName: String, body: UntypedTerm) extends UntypedTerm
+}

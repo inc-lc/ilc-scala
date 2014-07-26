@@ -62,6 +62,10 @@ extends base.Syntax
   case class TLet(variable: String, varType: Type, exp: TypedTerm, body: TypedTerm) extends TypedTerm {
     override def getType = body.getType
   }
+  case class TBinding(variable: String, varType: Type, exp: TypedTerm)
+  case class TLetRec(bindings: List[TBinding], bodyName: String, body: TypedTerm) extends TypedTerm {
+    override def getType = body.getType
+  }
 
   import shapeless._
 
@@ -220,6 +224,49 @@ trait LetInference extends Inference with LetUntypedSyntax with let.Syntax {
   override def typedTermToTerm(tt: TypedTerm): Term = tt match {
     case TLet(variable, varType, exp, body) =>
       Let(Var(variable, varType), typedTermToTerm(exp), typedTermToTerm(body))
+    case _ => super.typedTermToTerm(tt)
+  }
+}
+
+trait LetRecInference extends Inference with LetRecUntypedSyntax with functions.LetRecSyntax {
+  override def collectConstraints(term: UntypedTerm, context: InferenceContext = emptyContext): (TypedTerm, Set[Constraint]) = term match {
+    case ULetRec(pairs, bodyName, body) =>
+      val tVars: List[(String, TypeVariable)] = pairs map (_._1) map ((_, freshTypeVariable(term)))
+      val extCtx = tVars.foldLeft(context) {
+        (ctx, newTVar) => extend(ctx, newTVar._1, newTVar._2)
+      }
+      val (typedExps, constraintss) = (pairs map { case (variable, exp) => collectConstraints(exp, extCtx)}).unzip
+      val (typedBody, c2) = collectConstraints(body, extCtx)
+      val expMatchConstraints = typedExps map (_.getType) zip (tVars map (_._2)) map {
+        case (expT, varT) => Constraint(varT, expT, Some(term))
+      }
+      val c = c2 ++ constraintss.flatten ++ expMatchConstraints
+      val bindings = (pairs map (_._1)) zip (tVars map (_._2)) zip typedExps map {
+        case ((a, b), c) => TBinding(a, b, c)
+      }
+      (TLetRec(bindings, bodyName, typedBody), c)
+    case _ => super.collectConstraints(term, context)
+  }
+
+  //  case class TLetRec(bindings: List[(String, Type, TypedTerm)], body: TypedTerm)
+
+  override def substitute(substitutions: Map[TypeVariable, Type], term: TypedTerm): TypedTerm = term match {
+    case TLetRec(bindings, bodyName, body) =>
+      val substBindings = bindings map {
+        case TBinding(variable, varType, exp) =>
+          TBinding(variable, substituteInType(substitutions)(varType), substitute(substitutions, exp))
+      }
+      TLetRec(substBindings, bodyName, substitute(substitutions, body))
+    case _ => super.substitute(substitutions, term)
+  }
+
+  override def typedTermToTerm(tt: TypedTerm): Term = tt match {
+    case TLetRec(bindings, bodyName, body) =>
+      val convBindings: List[(Var, Term)] = bindings map {
+        case TBinding(variable, varType, exp) =>
+          (Var(variable, varType), typedTermToTerm(exp))
+      }
+      LetRec(convBindings, bodyName, typedTermToTerm(body))
     case _ => super.typedTermToTerm(tt)
   }
 }

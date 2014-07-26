@@ -18,6 +18,13 @@ trait BasicDefinitions {
       val sep = if (args.nonEmpty) " " else ""
       s"$instrName$sep$args"
     }
+
+    //Is this a primitive which consumes its arguments from the stack?
+    def isPrimFun: Boolean = false
+  }
+
+  trait PrimInstr extends Instr {
+    override def isPrimFun = true
   }
   type Block = List[Instr]
 
@@ -69,10 +76,10 @@ trait Instructions {
   }
 
   //Integer instructions
-  case object ADD extends Instr
-  case object SUB extends Instr
-  case object MUL extends Instr
-  case object DIV extends Instr
+  case object ADD extends PrimInstr
+  case object SUB extends PrimInstr
+  case object MUL extends PrimInstr
+  case object DIV extends PrimInstr
 
 }
 
@@ -140,11 +147,22 @@ trait ToProcessor extends BasicDefinitions with TopLevel with Instructions {
       // val r2 = r1 arg3
       //we don't want to inline r1 into r2, because that might lead to work duplication.
       //XXX: This works if programs are in eta-long normal form.
-      val operands =
+      val subNodes =
         collectApps(operator, operand :: Nil)
+      val fun = subNodes.last
+      val operands = subNodes.init
+      def descend(v: Term) = toProc(v, frames)
 
-      val arity = operands.length - 1
-      (operands flatMap (toProc(_, frames))) ++ List(AP(arity))
+      val arity = operands.length
+      val operandsCode = operands flatMap descend
+      val funCode = descend(fun)
+      val isPrim = funCode.length == 1 && funCode.head.isPrimFun
+      val extraApply =
+        if (isPrim)
+          Nil
+        else
+          List(AP(arity))
+      operandsCode ++ funCode ++ extraApply
       //toProc(operand, frames) ++ toProc(operator, frames)
 
     //Maybe the current "top-level" handling should instead be used just for letrec*?

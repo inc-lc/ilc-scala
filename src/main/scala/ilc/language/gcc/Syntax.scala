@@ -96,12 +96,12 @@ trait SyntaxSugar
   //   letrec(fun('go)('n) { 'to('n + 1) })
   def fun(name: Symbol)(args: Symbol*)(body: UntypedTerm) =
     (name -> args.foldRight(body)(_ ->: _))
-    
+
   implicit def consSyntax[A <% UT, B <% UT](scalaPair: (A, B)): UntypedTerm =
     pair(scalaPair._1, scalaPair._2)
-    
+
   implicit class PairOps[T <% UT](t: T) {
-    def _1 = proj1(t)
-    def _2 = proj2(t)
+    def left = proj1(t)
+    def right = proj2(t)
   }
 }

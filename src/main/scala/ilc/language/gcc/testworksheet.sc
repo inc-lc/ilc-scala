@@ -26,7 +26,7 @@ object testworksheet {
         fun('to)('n) { 'go('n - 1) },
         fun('foo)('n) {
         	if_('n >= 5) {
-        		('n, 43)._1
+        		('n, (43, 42)).right.right
         	} else_ {
         		43
         	}
@@ -41,10 +41,12 @@ object testworksheet {
                                                   //| hicConstant(Plus),UVar(n)),UMonomorphicConstant(LiteralInt(1))))))),App(App(
                                                   //| Minus,Var(n,ℤ)),LiteralInt(1))))), (Var(foo,ℤ → ℤ),Abs(Var(n,ℤ),Ap
                                                   //| p(App(App(IfThenElse(ℤ),App(App(Gte,Var(n,ℤ)),LiteralInt(5))),Abs(Var(_l
-                                                  //| it,UnitType),Var(n,ℤ))),Abs(Var(_lit,UnitType),LiteralInt(43)))))),main,Ap
-                                                  //| p(Var(go,ℤ → TypeVariable(10,Some(UApp(UVar(to),UApp(UApp(UMonomorphicCo
-                                                  //| nstant(Plus),UVar(n)),UMonomorphicConstant(LiteralInt(1))))))),LiteralInt(42
-                                                  //| )))
+                                                  //| it,UnitType),App(Proj2(ℤ, ℤ),App(Proj2(ℤ, ProductType(ℤ,ℤ)),App(Ap
+                                                  //| p(Pair(ℤ, ProductType(ℤ,ℤ)),Var(n,ℤ)),App(App(Pair(ℤ, ℤ),Literal
+                                                  //| Int(43)),LiteralInt(42))))))),Abs(Var(_lit,UnitType),LiteralInt(43)))))),mai
+                                                  //| n,App(Var(go,ℤ → TypeVariable(10,Some(UApp(UVar(to),UApp(UApp(UMonomorph
+                                                  //| icConstant(Plus),UVar(n)),UMonomorphicConstant(LiteralInt(1))))))),LiteralIn
+                                                  //| t(42)))
   showProg(goto)                                  //> res3: String = "
                                                   //| 0: DUM 3
                                                   //| 1: LDF go
@@ -70,24 +72,30 @@ object testworksheet {
                                                   //| 17: AP 1
                                                   //| 18: RTN
                                                   //| 19: LD 0 0		; var Var(n,ℤ)
-                                                  //| 20: JOIN
-                                                  //| 21: LDC 43
-                                                  //| 22: JOIN
-                                                  //| 23: LD 0 0		; var Var(n,ℤ)
-                                                  //| 24: LDC 5
-                                                  //| 25: CGTE
-                                                  //| 26: SEL if_t_1 if_f_2
-                                                  //| 27: RTN
-                                                  //| 28: LDC 42
-                                                  //| 29: LD 0 0		; var Var(go,ℤ → TypeVariable(10,Some(UApp(UVar(to),
+                                                  //| 20: LDC 43
+                                                  //| 21: LDC 42
+                                                  //| 22: CONS
+                                                  //| 23: CONS
+                                                  //| 24: CDR
+                                                  //| 25: CDR
+                                                  //| 26: JOIN
+                                                  //| 27: LDC 43
+                                                  //| 28: JOIN
+                                                  //| 29: LD 0 0		; var Var(n,ℤ)
+                                                  //| 30: LDC 5
+                                                  //| 31: CGTE
+                                                  //| 32: SEL if_t_1 if_f_2
+                                                  //| 33: RTN
+                                                  //| 34: LDC 42
+                                                  //| 35: LD 0 0		; var Var(go,ℤ → TypeVariable(10,Some(UApp(UVar(to),
                                                   //| UApp(UApp(UMonomorphicConstant(Plus),UVar(n)),UMonomorphicConstant(LiteralIn
                                                   //| t(1)))))))
-                                                  //| 30: AP 1
-                                                  //| 31: RTN
+                                                  //| 36: AP 1
+                                                  //| 37: RTN
                                                   //| 
-                                                  //| 28: Var(main,UnitType)
-                                                  //| 21: Var(if_f_2,UnitType → ℤ)
-                                                  //| 23: Var(foo,ℤ → ℤ)
+                                                  //| 34: Var(main,UnitType)
+                                                  //| 27: Var(if_f_2,UnitType → ℤ)
+                                                  //| 29: Var(foo,ℤ → ℤ)
                                                   //| 19: Var(if_t_1,UnitType → ℤ)
                                                   //| 13: Var(to,ℤ → TypeVariable(10,Some(UApp(UVar(to),UApp(UApp(UMonomorphic
                                                   //| Constant(Plus),UVar(n)),UMonomorphicConstant(LiteralInt(1)))))))
@@ -96,8 +104,8 @@ object testworksheet {
                                                   //| [DUM 3,
                                                   //| LDF 7,
                                                   //| LDF 13,
-                                                  //| LDF 23,
-                                                  //| LDF 28,
+                                                  //| LDF 29,
+                                                  //| LDF 34,
                                                   //| RAP 3,
                                                   //| RTN,
                                                   //| LD 0 0,
@@ -113,13 +121,19 @@ object testworksheet {
                                                   //| AP 1,
                                                   //| RTN,
                                                   //| LD 0 0,
+                                                  //| LDC 43,
+                                                  //| LDC 42,
+                                                  //| CONS,
+                                                  //| CONS,
+                                                  //| CDR,
+                                                  //| CDR,
                                                   //| JOIN,
                                                   //| LDC 43,
                                                   //| JOIN,
                                                   //| LD 0 0,
                                                   //| LDC 5,
                                                   //| CGTE,
-                                                  //| SEL 19 21,
+                                                  //| SEL 19 27,
                                                   //| RTN,
                                                   //| LDC 42,
                                                   //| LD 0 0,

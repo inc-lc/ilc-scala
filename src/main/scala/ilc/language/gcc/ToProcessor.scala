@@ -50,12 +50,19 @@ trait Instructions {
   case class DUM(n: Int) extends Instr
   case class LDC(n: Int) extends Instr
   case class RAP(n: Int) extends Instr
-  case object ADD extends Instr
   case object RTN extends Instr
-  //XXX distinguish top labels (code pointers) from the top stack frame (which is a normal one).
+
   case class LDF(v: Var) extends Instr {
+    //XXX distinguish top labels (code pointers) from the top stack frame (which is a normal one).
     validateTopVar(v)
   }
+
+  //Integer instructions
+  case object ADD extends Instr
+  case object SUB extends Instr
+  case object MUL extends Instr
+  case object DIV extends Instr
+
 }
 
 trait ToProcessor extends BasicDefinitions with TopLevel with Instructions {

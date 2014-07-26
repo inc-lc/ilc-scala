@@ -98,7 +98,7 @@ trait ToProcessor extends BasicDefinitions with TopLevel with Instructions {
     List(LDF(bodyVar))
   }
 
-  def toProc(t: Term, frames: List[Frame]): Block = t match {
+  def toProc(t: Term, frames: List[Frame], suggestedFunName: Option[Var] = None): Block = t match {
     //Integers
     case LiteralInt(n) =>
       List(LDC(n))
@@ -119,7 +119,7 @@ trait ToProcessor extends BasicDefinitions with TopLevel with Instructions {
     case Abs(variable, body) =>
       //We have to lift the body to the top.
       //But we don't do lambda-lifting because we still expect to find the
-      val v: Var = freshener.fresh("fun", variable.getType =>: body.getType)
+      val v: Var = suggestedFunName getOrElse freshener.fresh("fun", variable.getType =>: body.getType)
       toClosure(v, body, Frame(List(variable)) :: frames)
     case LetRecStar(bindings, bodyName, body) =>
       //XXX handle better the last case.
@@ -127,7 +127,7 @@ trait ToProcessor extends BasicDefinitions with TopLevel with Instructions {
       val newFrames = frame :: frames
       val labels = bindings flatMap {
         case (v, exp) =>
-          toProc(exp, newFrames)
+          toProc(exp, newFrames, Some(v))
       }
       val frameSize = frame.vars.length
       val bodyVar = Var(bodyName, UnitType)

@@ -87,6 +87,17 @@ trait ToProcessor extends BasicDefinitions with TopLevel with Instructions {
     results.head //Finds the left-most (that is, innermost) binding (in case we do support it)
   }
 
+  def toClosure(bodyVar: Var, body: Term, frames: List[Frame]) = {
+    //"Allow recursion by adding the name before compiling the body." XXX
+    // Doesn't make sense, because the name is not part of the program.
+    // That would make sense for letrec* though.
+    addTopLevelName(bodyVar)
+    //Add compiledBody with a fresh name to the environment.
+    addTopLevelBlock(toProc(body, frames) ++ List(RTN))
+    //Create the closure here.
+    List(LDF(bodyVar))
+  }
+
   def toProc(t: Term, frames: List[Frame]): Block = t match {
     //Integers
     case LiteralInt(n) =>
@@ -109,19 +120,8 @@ trait ToProcessor extends BasicDefinitions with TopLevel with Instructions {
       //We have to lift the body to the top.
       //But we don't do lambda-lifting because we still expect to find the
       val v: Var = freshener.fresh("fun", variable.getType =>: body.getType)
-      //"Allow recursion by adding the name before compiling the body." XXX
-      // Doesn't make sense, because the name is not part of the program.
-      // That would make sense for letrec* though.
-      addTopLevelName(v)
-      val compiledBody = toProc(body, Frame(List(variable)) :: frames) ++ List(RTN)
-      //Add compiledBody with a fresh name to the environment.
-      addTopLevelBlock(compiledBody)
-      //XXX That's for accessing globals, not for creating closures.
-      //val idx = toIdx(v, frames)
-      //List(LD(idx))
-      //Create the closure here.
-      List(LDF(v))
-    case LetRecStar(bindings, body) =>
+      toClosure(v, body, Frame(List(variable)) :: frames)
+    case LetRecStar(bindings, bodyName, body) =>
       //XXX handle better the last case.
       val frame = Frame(bindings map (_._1))
       val newFrames = frame :: frames
@@ -130,7 +130,8 @@ trait ToProcessor extends BasicDefinitions with TopLevel with Instructions {
           toProc(exp, newFrames)
       }
       val frameSize = frame.vars.length
-      List(DUM(frameSize)) ++ labels ++ toProc(body, newFrames) ++ List(RAP(frameSize))
+      val bodyVar = Var(bodyName, UnitType)
+      List(DUM(frameSize)) ++ labels ++ toClosure(bodyVar, body, newFrames) ++ List(RAP(frameSize))
       //XXX turn body into special-cased last abstraction. And add separate name for it.
     case v @ Var(name, _) =>
       List(LD(toIdx(v, frames)))
@@ -146,4 +147,8 @@ trait ToProcessor extends BasicDefinitions with TopLevel with Instructions {
     val labelSizes = Map(topNames.toList zip (blocks.map (_.length) .scanLeft(0)(_ + _)).tail: _*)
     (blocks.flatten, labelSizes)
   }
+  def show(b: Block) =
+    "\n" + (for {
+      (instr, n) <- b.zipWithIndex
+    } yield s"$n: $instr") mkString "\n"
 }

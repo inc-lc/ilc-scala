@@ -12,7 +12,7 @@ trait LetRecSyntax extends functions.Syntax {
     }
   }
 
-  case class LetRecStar(pairs: List[(Var, Term)], body: Term) extends Term {
+  case class LetRecStar(pairs: List[(Var, Term)], bodyName: Name, body: Term) extends Term {
     override lazy val getType = {
       assert ((pairs forall { case (variable, exp) => variable.getType == exp.getType }) || !TypeChecking.value)
       body.getType

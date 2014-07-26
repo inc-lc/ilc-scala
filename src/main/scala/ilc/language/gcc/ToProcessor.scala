@@ -147,8 +147,13 @@ trait ToProcessor extends BasicDefinitions with TopLevel with Instructions {
     val labelSizes = Map(topNames.toList zip (blocks.map (_.length) .scanLeft(0)(_ + _)).tail: _*)
     (blocks.flatten, labelSizes)
   }
-  def show(b: Block) =
-    "\n" + (for {
-      (instr, n) <- b.zipWithIndex
-    } yield s"$n: $instr") mkString "\n"
+  def showTraversable[T, U](trav: Traversable[(T, U)]) =
+    "\n" + ((for {
+      (el, n) <- trav
+    } yield s"$n: $el") mkString "\n")
+  def show(b: Block) = showTraversable(b.zipWithIndex)
+  def showProg(t: Term) = {
+    val (prog, labels) = toProg(t)
+    s"${show(prog)}\n${showTraversable(labels)}"
+  }
 }

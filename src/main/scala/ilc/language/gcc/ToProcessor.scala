@@ -97,17 +97,17 @@ trait Instructions {
   case object SUB extends PrimInstr
   case object MUL extends PrimInstr
   case object DIV extends PrimInstr
-  
+
   //Boolean instructions
   case object CEQ extends PrimInstr
   case object CGT extends PrimInstr
   case object CGTE extends PrimInstr
-  
+
   case object JOIN extends Instr
   case class SEL(targets: Either[(Var, Var), (Int, Int)]) extends Instr {
     //XXX distinguish top labels (code pointers) from the top stack frame (which is a normal one).
     targets match {
-      case Left((thn, els)) => 
+      case Left((thn, els)) =>
         validateTopVar(thn)
         validateTopVar(els)
       case _ =>
@@ -123,7 +123,7 @@ trait Instructions {
         i.toString + " " + j.toString
     }
   }
-  
+
   // Pairs
   case object CONS extends PrimInstr
   case object CAR extends PrimInstr
@@ -165,12 +165,12 @@ trait ToProcessor extends BasicDefinitions with TopLevel with Instructions {
     //Primitives.
     //Integers
     case LiteralInt(n) => List(LDC(n))
-    
+
     //Integer Ops
     case Plus  => List(ADD)
     case Minus => List(SUB)
     case Mult  => List(MUL)
-    case Div   => List(DIV) 
+    case Div   => List(DIV)
     case Eq    => List(CEQ)
     case Gt    => List(CGT)
     case Gte   => List(CGTE)
@@ -178,25 +178,29 @@ trait ToProcessor extends BasicDefinitions with TopLevel with Instructions {
     //Booleans
     case True  => toProc(LiteralInt(1), frames, suggestedFunName)
     case False => toProc(LiteralInt(0), frames, suggestedFunName)
-    case App(App(App(IfThenElse(t), cond), Abs(_, trueBlock)), Abs(_, falseBlock)) => { 
-      
+
+    case App(Not, b) =>
+      toProc(App(App(Minus, 1), b), frames)
+
+    case App(App(App(IfThenElse(t), cond), Abs(_, trueBlock)), Abs(_, falseBlock)) => {
+
       val trueLabel: Var = freshener.fresh("if_t", UnitType =>: t)
       val falseLabel: Var = freshener.fresh("if_f", UnitType =>: t)
-      
+
       addTopLevelBinding(trueLabel, toProc(trueBlock, frames) ++ List(JOIN))
       addTopLevelBinding(falseLabel, toProc(falseBlock, frames) ++ List(JOIN))
-      
+
       toProc(cond, frames, suggestedFunName) ++ List(SEL(Left((trueLabel, falseLabel))))
     }
- 
+
     //Pairs
     case Pair(car, cdr) => List(CONS)
       // val left = toProc(car, frames, suggestedFunName)
       // val right = toProc(cdr, frames, suggestedFunName)
-      
+
     case Proj1(a, b) => List(CAR)
     case Proj2(a, b) => List(CDR)
-      
+
     //Core: lambda-calculus with letrec*.
     /* TODOs:
      * - Add more primitives

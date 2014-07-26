@@ -33,6 +33,10 @@ extends base.Syntax
   case object Gte extends IntCmpOp
   
   implicit def intToTerm(n: Int): Term = LiteralInt(n)
+
+  case object Not extends Term {
+    override lazy val getType: Type = BooleanType =>: BooleanType
+  }
 }
 
 trait Syntax
@@ -77,17 +81,17 @@ trait SyntaxSugar
     def =!=(b: UT) = not(a === b)
   }
 
-  def not(a: UT) = 1 - a
+  def not(a: UT) = Not(a)
 
   def if_(cond: UntypedTerm)(thn: UntypedTerm) = ProvideElse(cond, thn)
   case class ProvideElse(cond: UntypedTerm, thn: UntypedTerm) {
     def else_(els: Term): UntypedTerm = asUntyped(IfThenElse)(cond, '_ ->: thn, '_ ->: els)
   }
-  
+
   // other syntax for functions
   def lam(args: Symbol*)(body: UntypedTerm) =
     args.foldRight(body)(_ ->: _)
-  
+
   // creates a pair to be used immediately in letrec like
   //   letrec(fun('go)('n) { 'to('n + 1) })
   def fun(name: Symbol)(args: Symbol*)(body: UntypedTerm) =

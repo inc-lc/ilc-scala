@@ -124,8 +124,8 @@ trait ToProcessor extends BasicDefinitions with TopLevel with Instructions {
 //      List(ADD)
 
     case App(App(PlusInt, a), b) =>
-      toProc(b, frames) ++
       toProc(a, frames) ++
+      toProc(b, frames) ++
       List(ADD)
 
     //Core: lambda-calculus with letrec*.

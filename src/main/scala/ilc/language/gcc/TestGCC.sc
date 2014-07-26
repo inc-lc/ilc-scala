@@ -51,14 +51,14 @@ object TestGCC {
                                                   //| 3: LDF main
                                                   //| 4: RAP 2
                                                   //| 5: RTN
-                                                  //| 6: LDC 1
-                                                  //| 7: LD 0 0		; var Var(n,ℤ)
+                                                  //| 6: LD 0 0		; var Var(n,ℤ)
+                                                  //| 7: LDC 1
                                                   //| 8: ADD
                                                   //| 9: LD 1 1		; var Var(to,ℤ → UnitType)
                                                   //| 10: AP 1
                                                   //| 11: RTN
-                                                  //| 12: LDC -1
-                                                  //| 13: LD 0 0		; var Var(n,ℤ)
+                                                  //| 12: LD 0 0		; var Var(n,ℤ)
+                                                  //| 13: LDC -1
                                                   //| 14: ADD
                                                   //| 15: LD 1 0		; var Var(go,ℤ → UnitType)
                                                   //| 16: AP 1

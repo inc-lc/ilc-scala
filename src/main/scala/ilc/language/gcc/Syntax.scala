@@ -31,7 +31,6 @@ extends functions.Syntax
    with maybe.Syntax
    with GCCIntSyntax
    with sums.SyntaxSugar
-   with equality.Syntax
    with products.Syntax
    with booleans.SyntaxSugar
    with functions.LetRecSyntax

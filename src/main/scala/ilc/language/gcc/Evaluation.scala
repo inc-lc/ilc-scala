@@ -10,6 +10,5 @@ extends functions.Evaluation
    with maybe.Evaluation
    with integers.Evaluation
    with sums.Evaluation
-   //with equality.Evaluation
    with products.Evaluation
    with booleans.Evaluation

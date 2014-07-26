@@ -155,11 +155,13 @@ trait ToProcessor extends BasicDefinitions with TopLevel with Instructions {
     results.head //Finds the left-most (that is, innermost) binding (in case we do support it)
   }
 
-  def toClosure(bodyVar: Var, body: Term, frames: List[Frame]) = {
+  def toClosure(bodyVar: Var, isFresh: Boolean, body: Term, frames: List[Frame]) = {
+    //Freshening again would create confusion for human readers between fun_N1 and fun_N2 referring to the same function
+    val fresherVar = if (isFresh) bodyVar else freshener.fresh(bodyVar)
     //Add compiled `body` with given name to the list of top-level procedures.
-    addTopLevelBinding(bodyVar, toProc(body, frames) ++ List(RTN))
+    addTopLevelBinding(fresherVar, toProc(body, frames) ++ List(RTN))
     //Create the closure here.
-    List(LDF(bodyVar))
+    List(LDF(fresherVar))
   }
 
   def toProc(t: Term, frames: List[Frame], suggestedFunName: Option[Var] = None): Block = t match {
@@ -249,8 +251,8 @@ trait ToProcessor extends BasicDefinitions with TopLevel with Instructions {
     case Abs(variable, body) =>
       //We have to lift the body to the top.
       //But we don't do lambda-lifting because we still expect to find the variables in the containing frame.
-      val v: Var = suggestedFunName getOrElse freshener.fresh("fun", variable.getType =>: body.getType)
-      toClosure(v, body, Frame(List(variable)) :: frames)
+      val (v, isFresh) = suggestedFunName map ((_, false)) getOrElse ((freshener.fresh("fun", variable.getType =>: body.getType), true))
+      toClosure(v, isFresh, body, Frame(List(variable)) :: frames)
     case LetRec(bindings, bodyName, body) =>
       val frame = Frame(bindings map (_._1))
       //Allow recursion by binding the names before compiling them.
@@ -261,7 +263,7 @@ trait ToProcessor extends BasicDefinitions with TopLevel with Instructions {
       }
       val frameSize = frame.vars.length
       val bodyVar = Var(bodyName, UnitType)
-      List(DUM(frameSize)) ++ labels ++ toClosure(bodyVar, body, newFrames) ++ List(RAP(frameSize))
+      List(DUM(frameSize)) ++ labels ++ toClosure(bodyVar, false, body, newFrames) ++ List(RAP(frameSize))
 
     case v @ Var(name, _) =>
       List(LD(toIdx(v, frames)))

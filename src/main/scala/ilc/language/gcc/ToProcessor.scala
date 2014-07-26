@@ -12,7 +12,6 @@ trait BasicDefinitions {
   trait Instr
   type Block = List[Instr]
 
-  //case class Frame(v: Var)
   case class Frame(vars: List[Var])
   val emptyFrame = Frame(Nil)
 }
@@ -88,9 +87,6 @@ trait ToProcessor extends BasicDefinitions with TopLevel with Instructions {
   }
 
   def toClosure(bodyVar: Var, body: Term, frames: List[Frame]) = {
-    //"Allow recursion by adding the name before compiling the body." XXX
-    // Doesn't make sense, because the name is not part of the program.
-    // That would make sense for letrec* though.
     addTopLevelName(bodyVar)
     //Add compiledBody with a fresh name to the environment.
     addTopLevelBlock(toProc(body, frames) ++ List(RTN))
@@ -99,6 +95,7 @@ trait ToProcessor extends BasicDefinitions with TopLevel with Instructions {
   }
 
   def toProc(t: Term, frames: List[Frame], suggestedFunName: Option[Var] = None): Block = t match {
+    //Primitives.
     //Integers
     case LiteralInt(n) =>
       List(LDC(n))
@@ -107,10 +104,11 @@ trait ToProcessor extends BasicDefinitions with TopLevel with Instructions {
       toProc(a, frames) ++
       List(ADD)
 
-    //XXX: - Add more cases
-    //XXX: - Add Let, and especially LetRecs. We need to support a LetRec* at the top-level, but probably we can just as well support it everywhere
-    //by collecting the definitions, so that we don't need to use mutation for the top-level. (They don't really do that either).
-    //XXX: - test this!!!
+    //Core: lambda-calculus with letrec*.
+    /* TODOs:
+     * - Add more primitives
+     * - Test non-top-level LetRecStar
+     */
     case App(f, arg) =>
       val arity = 1 //XXX generalize!
       toProc(arg, frames) ++ toProc(f, frames) ++ List(AP(arity))
@@ -118,12 +116,12 @@ trait ToProcessor extends BasicDefinitions with TopLevel with Instructions {
     //Maybe the current "top-level" handling should instead be used just for letrec*?
     case Abs(variable, body) =>
       //We have to lift the body to the top.
-      //But we don't do lambda-lifting because we still expect to find the
+      //But we don't do lambda-lifting because we still expect to find the variables in the containing frame.
       val v: Var = suggestedFunName getOrElse freshener.fresh("fun", variable.getType =>: body.getType)
       toClosure(v, body, Frame(List(variable)) :: frames)
     case LetRecStar(bindings, bodyName, body) =>
-      //XXX handle better the last case.
       val frame = Frame(bindings map (_._1))
+      //Allow recursion by binding the names before compiling them.
       val newFrames = frame :: frames
       val labels = bindings flatMap {
         case (v, exp) =>
@@ -132,13 +130,14 @@ trait ToProcessor extends BasicDefinitions with TopLevel with Instructions {
       val frameSize = frame.vars.length
       val bodyVar = Var(bodyName, UnitType)
       List(DUM(frameSize)) ++ labels ++ toClosure(bodyVar, body, newFrames) ++ List(RAP(frameSize))
-      //XXX turn body into special-cased last abstraction. And add separate name for it.
+
     case v @ Var(name, _) =>
       List(LD(toIdx(v, frames)))
 
     case _ =>
       ???
   }
+
   def toProcBase(t: Term) = toProc(t, Nil) ++ List(RTN)
   def toProg(t: Term) = {
     reset()
@@ -147,6 +146,7 @@ trait ToProcessor extends BasicDefinitions with TopLevel with Instructions {
     val labelSizes = Map(topNames.toList zip (blocks.map (_.length) .scanLeft(0)(_ + _)).tail: _*)
     (blocks.flatten, labelSizes)
   }
+
   def showTraversable[T, U](trav: Traversable[(T, U)]) =
     "\n" + ((for {
       (el, n) <- trav

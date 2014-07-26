@@ -15,6 +15,8 @@ trait BasicDefinitions {
 
   case class Frame(vars: List[Var])
   val emptyFrame = Frame(Nil)
+
+  def validateTopVar(v: Var): Unit
 }
 
 trait TopLevel {
@@ -31,6 +33,7 @@ trait TopLevel {
 
   def topNames = topLevel map (_._1) toList
   def topBlocks = topLevel map (_._2) toList
+  def validateTopVar(v: Var): Unit = assert(topNames contains v)
 }
 
 trait Instructions {
@@ -49,16 +52,16 @@ trait Instructions {
   case class RAP(n: Int) extends Instr
   case object ADD extends Instr
   case object RTN extends Instr
+  //XXX distinguish top labels (code pointers) from the top stack frame (which is a normal one).
+  case class LDF(v: Var) extends Instr {
+    validateTopVar(v)
+  }
 }
 
 trait ToProcessor extends BasicDefinitions with TopLevel with Instructions {
   outer: Syntax =>
   val freshener = new FreshGen {
     val syntax: outer.type = outer
-  }
-  //XXX distinguish top labels (code pointers) from the top stack frame (which is a normal one).
-  case class LDF(n: Var) extends Instr {
-    assert(topNames contains n)
   }
 
   def varInFrame(v: Var)(l: Frame): Option[Int] = {

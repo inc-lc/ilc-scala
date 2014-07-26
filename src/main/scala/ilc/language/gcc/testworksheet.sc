@@ -6,113 +6,131 @@ import Predef.{any2stringadd => _, _}
 
 object testworksheet {
   ADD.show()                                      //> res0: String = ADD
-  val localMod = typecheck { letrec('x -> 1)("body", 'x + 'x) }
+  val localMod = asTerm(letrec('x -> 1)("body", 'x + 'x))
                                                   //> localMod  : ilc.language.GCC.Term = LetRec(List((Var(x,ℤ),LiteralInt(1))),
                                                   //| body,App(App(Plus,Var(x,ℤ)),Var(x,ℤ)))
   //LetRecStar(List((x, 1), (body, Abs(unitVar, PlusInt ! x ! x))), body)
   pretty(localMod)                                //> res1: String = LetRec(List((Var(x,ℤ),LiteralInt(1))),body,App(App(Plus,Var
                                                   //| (x,ℤ)),Var(x,ℤ)))
- 
+
   toProcBase(localMod)                            //> res2: List[ilc.language.GCC.Instr] = List(DUM(1), LDC(1), LDF(Left(Var(body,
                                                   //| UnitType))), RAP(1), RTN)
   // showProg(localMod)
-
-  /*
-  Orig:
+  
+  
   val goto =
     asTerm(
       letrec(
-        'go -> ('n ->: 'to('n + 1)),
-        'to -> ('n ->: 'go('n - 1))
-        )("main", 'go(1)))
-  */
-  
-  val goto =
-    typecheck {
-      letrec(
       	fun('go)('n) { 'to('n + 1) },
         fun('to)('n) { 'go('n - 1) },
+        fun('listTest)('n) { (11 ::: 42 ::: empty).tail.head },
         fun('foo)('n) {
-        	if_('n =!= 5) {
-        	  tuple('n, 43, 42).at(2, 3)
+        	if_('n >= 5) {
+        		('n, (43, 42)).second.second
         	} else_ {
         		43
         	}
-        })("main", 'go(42))
-    }                                             //> goto  : ilc.language.GCC.Term = LetRec(List((Var(go,ℤ → TypeVariable(39,
-                                                  //| Some(UApp(UVar(go),UMonomorphicConstant(LiteralInt(42)))))),Abs(Var(n,ℤ),A
-                                                  //| pp(Var(to,ℤ → TypeVariable(39,Some(UApp(UVar(go),UMonomorphicConstant(Li
-                                                  //| teralInt(42)))))),App(App(Plus,Var(n,ℤ)),LiteralInt(1))))), (Var(to,ℤ �
-                                                  //| � TypeVariable(39,Some(UApp(UVar(go),UMonomorphicConstant(LiteralInt(42)))))
-                                                  //| ),Abs(Var(n,ℤ),App(Var(go,ℤ → TypeVariable(39,Some(UApp(UVar(go),UMono
-                                                  //| morphicConstant(LiteralInt(42)))))),App(App(Minus,Var(n,ℤ)),LiteralInt(1))
-                                                  //| ))), (Var(foo,ℤ → ℤ),Abs(Var(n,ℤ),App(App(App(IfThenElse(ℤ),App(No
-                                                  //| t,App(App(Eq,Var(n,ℤ)),LiteralInt(5)))),Abs(Var(_lit,UnitType),App(Proj2(�
-                                                  //| ��, ℤ),App(Proj2(ℤ, ProductType(ℤ,ℤ)),App(App(Pair(ℤ, ProductType(
-                                                  //| ℤ,ℤ)),Var(n,ℤ)),App(App(Pair(ℤ, ℤ),LiteralInt(43)),LiteralInt(42))
-                                                  //| ))))),Abs(Var(_lit,UnitType),LiteralInt(43)))))),main,App(Var(go,ℤ → Typ
-                                                  //| eVariable(39,Some(UApp(UVar(go),UMonomorphicConstant(LiteralInt(42)))))),Lit
-                                                  //| eralInt(42)))
-
+        })("main", 'go(42)))                      //> goto  : ilc.language.GCC.Term = LetRec(List((Var(go,ℤ → TypeVariable(11,
+                                                  //| Some(UApp(UVar(to),UApp(UApp(UMonomorphicConstant(Plus),UVar(n)),UMonomorphi
+                                                  //| cConstant(LiteralInt(1))))))),Abs(Var(n,ℤ),App(Var(to,ℤ → TypeVariable
+                                                  //| (11,Some(UApp(UVar(to),UApp(UApp(UMonomorphicConstant(Plus),UVar(n)),UMonomo
+                                                  //| rphicConstant(LiteralInt(1))))))),App(App(Plus,Var(n,ℤ)),LiteralInt(1)))))
+                                                  //| , (Var(to,ℤ → TypeVariable(11,Some(UApp(UVar(to),UApp(UApp(UMonomorphicC
+                                                  //| onstant(Plus),UVar(n)),UMonomorphicConstant(LiteralInt(1))))))),Abs(Var(n,�
+                                                  //| �),App(Var(go,ℤ → TypeVariable(11,Some(UApp(UVar(to),UApp(UApp(UMonomorp
+                                                  //| hicConstant(Plus),UVar(n)),UMonomorphicConstant(LiteralInt(1))))))),App(App(
+                                                  //| Minus,Var(n,ℤ)),LiteralInt(1))))), (Var(listTest,TypeVariable(16,Some(UAbs
+                                                  //| (n,None,UApp(UPolymorphicConstant(Head),UApp(UPolymorphicConstant(Tail),UApp
+                                                  //| (UApp(UPolymorphicConstant(Cons),UMonomorphicConstant(LiteralInt(11))),UApp(
+                                                  //| UApp(UPolymorphicConstant(Cons),UMonomorphicConstant(LiteralInt(42))),UPolym
+                                                  //| orphicConstant(Empty)))))))) → ℤ),Abs(Var(n,TypeVariable(16,Some(UAbs(n,
+                                                  //| None,UApp(UPolymorphicConstant(Head),UApp(UPolymorphicConstant(Tail),UApp(UA
+                                                  //| pp(UPolymorphicConstant(Cons),UMonomorphicConstant(LiteralInt(11))),UApp(UAp
+                                                  //| p(UPolymorphicConstant(Cons),UMonomorphicConstant(LiteralInt(42))),UPolymorp
+                                                  //| hicConstant(Empty))))))))),App(Head(ℤ),App(Tail(ℤ),App(App(Cons(ℤ),Lit
+                                                  //| eralInt(11)),App(App(Cons(ℤ),LiteralInt(42)),Empty(ℤ))))))), (Var(foo,�
+                                                  //| � → ℤ),Abs(Var(n,ℤ),App(App(App(IfThenElse(ℤ),App(App(Gte,Var(n,ℤ)
+                                                  //| ),LiteralInt(5))),Abs(Var(_lit,UnitType),App(Proj2(ℤ, ℤ),App(Proj2(ℤ, 
+                                                  //| ProductType(ℤ,ℤ)),App(App(Pair(ℤ, ProductType(ℤ,ℤ)),Var(n,ℤ)),Ap
+                                                  //| p(App(Pair(ℤ, ℤ),LiteralInt(43)),LiteralInt(42))))))),Abs(Var(_lit,UnitT
+                                                  //| ype),LiteralInt(43)))))),main,App(Var(go,ℤ → TypeVariable(11,Some(UApp(U
+                                                  //| Var(to),UApp(UApp(UMonomorphicConstant(Plus),UVar(n)),UMonomorphicConstant(L
+                                                  //| iteralInt(1))))))),LiteralInt(42)))
   showProg(goto)                                  //> res3: String = "
-                                                  //| 0: DUM 3
+                                                  //| 0: DUM 4
                                                   //| 1: LDF go
                                                   //| 2: LDF to
-                                                  //| 3: LDF foo
-                                                  //| 4: LDF main
-                                                  //| 5: RAP 3
-                                                  //| 6: RTN
-                                                  //| 7: LD 0 0		; var Var(n,ℤ)
-                                                  //| 8: LDC 1
-                                                  //| 9: ADD
-                                                  //| 10: LD 1 1		; var Var(to,ℤ → TypeVariable(39,Some(UApp(UVar(go),
-                                                  //| UMonomorphicConstant(LiteralInt(42))))))
-                                                  //| 11: AP 1
-                                                  //| 12: RTN
-                                                  //| 13: LD 0 0		; var Var(n,ℤ)
-                                                  //| 14: LDC 1
-                                                  //| 15: SUB
-                                                  //| 16: LD 1 0		; var Var(go,ℤ → TypeVariable(39,Some(UApp(UVar(go),
-                                                  //| UMonomorphicConstant(LiteralInt(42))))))
-                                                  //| 17: AP 1
-                                                  //| 18: RTN
-                                                  //| 19: LD 0 0		; var Var(n,ℤ)
-                                                  //| 20: LDC 43
+                                                  //| 3: LDF listTest
+                                                  //| 4: LDF foo
+                                                  //| 5: LDF main
+                                                  //| 6: RAP 4
+                                                  //| 7: RTN
+                                                  //| 8: LD 0 0		; var Var(n,ℤ)
+                                                  //| 9: LDC 1
+                                                  //| 10: ADD
+                                                  //| 11: LD 1 1		; var Var(to,ℤ → TypeVariable(11,Some(UApp(UVar(to),
+                                                  //| UApp(UApp(UMonomorphicConstant(Plus),UVar(n)),UMonomorphicConstant(LiteralIn
+                                                  //| t(1)))))))
+                                                  //| 12: AP 1
+                                                  //| 13: RTN
+                                                  //| 14: LD 0 0		; var Var(n,ℤ)
+                                                  //| 15: LDC 1
+                                                  //| 16: SUB
+                                                  //| 17: LD 1 0		; var Var(go,ℤ → TypeVariable(11,Some(UApp(UVar(to),
+                                                  //| UApp(UApp(UMonomorphicConstant(Plus),UVar(n)),UMonomorphicConstant(LiteralIn
+                                                  //| t(1)))))))
+                                                  //| 18: AP 1
+                                                  //| 19: RTN
+                                                  //| 20: LDC 11
                                                   //| 21: LDC 42
-                                                  //| 22: CONS
+                                                  //| 22: LDC 0
                                                   //| 23: CONS
-                                                  //| 24: CDR
+                                                  //| 24: CONS
                                                   //| 25: CDR
-                                                  //| 26: JOIN
-                                                  //| 27: LDC 43
-                                                  //| 28: JOIN
-                                                  //| 29: LDC 1
-                                                  //| 30: LD 0 0		; var Var(n,ℤ)
-                                                  //| 31: LDC 5
-                                                  //| 32: CEQ
-                                                  //| 33: SUB
-                                                  //| 34: SEL if_t_1 if_f_2
-                                                  //| 35: RTN
-                                                  //| 36: LDC 42
-                                                  //| 37: LD 0 0		; var Var(go,ℤ → TypeVariable(39,Some(UApp(UVar(go),
-                                                  //| UMonomorphicConstant(LiteralInt(42))))))
-                                                  //| 38: AP 1
-                                                  //| 39: RTN
+                                                  //| 26: CAR
+                                                  //| 27: RTN
+                                                  //| 28: LD 0 0		; var Var(n,ℤ)
+                                                  //| 29: LDC 43
+                                                  //| 30: LDC 42
+                                                  //| 31: CONS
+                                                  //| 32: CONS
+                                                  //| 33: CDR
+                                                  //| 34: CDR
+                                                  //| 35: JOIN
+                                                  //| 36: LDC 43
+                                                  //| 37: JOIN
+                                                  //| 38: LD 0 0		; var Var(n,ℤ)
+                                                  //| 39: LDC 5
+                                                  //| 40: CGTE
+                                                  //| 41: SEL if_t_1 if_f_2
+                                                  //| 42: RTN
+                                                  //| 43: LDC 42
+                                                  //| 44: LD 0 0		; var Var(go,ℤ → TypeVariable(11,Some(UApp(UVar(to),
+                                                  //| UApp(UApp(UMonomorphicConstant(Plus),UVar(n)),UMonomorphicConstant(LiteralIn
+                                                  //| t(1)))))))
+                                                  //| 45: AP 1
+                                                  //| 46: RTN
                                                   //| 
-                                                  //| 36: Var(main,UnitType)
-                                                  //| 27: Var(if_f_2,UnitType → ℤ)
-                                                  //| 13: Var(to,ℤ → TypeVariable(39,Some(UApp(UVar(go),UMonomorphicConstant(L
-                                                  //| iteralInt(42))))))
-                                                  //| 29: Var(foo,ℤ → ℤ)
-                                                  //| 19: Var(if_t_1,UnitType → ℤ)
-                                                  //| 7: Var(go,ℤ → TypeVariable(39,Some(UApp(UVar(go),UMonomorphicConstant(Li
-                                                  //| teralInt(42))))))
-                                                  //| [DUM 3,
-                                                  //| LDF 7,
-                                                  //| LDF 13,
-                                                  //| LDF 29,
-                                                  //| LDF 36,
-                                                  //| RAP 3,
+                                                  //| 20: Var(listTest,TypeVariable(16,Some(UAbs(n,None,UApp(UPolymorphicConstant(
+                                                  //| Head),UApp(UPolymorphicConstant(Tail),UApp(UApp(UPolymorphicConstant(Cons),U
+                                                  //| MonomorphicConstant(LiteralInt(11))),UApp(UApp(UPolymorphicConstant(Cons),UM
+                                                  //| onomorphicConstant(LiteralInt(42))),UPolymorphicConstant(Empty)))))))) → �
+                                                  //| ��)
+                                                  //| 14: Var(to,ℤ → TypeVariable(11,Some(UApp(UVar(to),UApp(UApp(UMonomorphic
+                                                  //| Constant(Plus),UVar(n)),UMonomorphicConstant(LiteralInt(1)))))))
+                                                  //| 8: Var(go,ℤ → TypeVariable(11,Some(UApp(UVar(to),UApp(UApp(UMonomorphicC
+                                                  //| onstant(Plus),UVar(n)),UMonomorphicConstant(LiteralInt(1)))))))
+                                                  //| 43: Var(main,UnitType)
+                                                  //| 36: Var(if_f_2,UnitType → ℤ)
+                                                  //| 38: Var(foo,ℤ → ℤ)
+                                                  //| 28: Var(if_t_1,UnitType → ℤ)
+                                                  //| [DUM 4,
+                                                  //| LDF 8,
+                                                  //| LDF 14,
+                                                  //| LDF 20,
+                                                  //| LDF 38,
+                                                  //| LDF 43,
+                                                  //| RAP 4,
                                                   //| RTN,
                                                   //| LD 0 0,
                                                   //| LDC 1,
@@ -126,6 +144,14 @@ object testworksheet {
                                                   //| LD 1 0,
                                                   //| AP 1,
                                                   //| RTN,
+                                                  //| LDC 11,
+                                                  //| LDC 42,
+                                                  //| LDC 0,
+                                                  //| CONS,
+                                                  //| CONS,
+                                                  //| CDR,
+                                                  //| CAR,
+                                                  //| RTN,
                                                   //| LD 0 0,
                                                   //| LDC 43,
                                                   //| LDC 42,
@@ -136,15 +162,14 @@ object testworksheet {
                                                   //| JOIN,
                                                   //| LDC 43,
                                                   //| JOIN,
-                                                  //| LDC 1,
                                                   //| LD 0 0,
                                                   //| LDC 5,
-                                                  //| CEQ,
-                                                  //| SUB,
-                                                  //| SEL 19 27,
+                                                  //| CGTE,
+                                                  //| SEL 28 36,
                                                   //| RTN,
                                                   //| LDC 42,
                                                   //| LD 0 0,
                                                   //| AP 1,
                                                   //| RTN]"
+   
 }

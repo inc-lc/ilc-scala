@@ -201,6 +201,11 @@ trait ToProcessor extends BasicDefinitions with TopLevel with Instructions {
     case Proj1(a, b) => List(CAR)
     case Proj2(a, b) => List(CDR)
 
+    case Empty(elemT) => toProc(LiteralInt(0), frames, suggestedFunName)
+    case Cons(elemT) => List(CONS)
+    case Head(elemT) => List(CAR)
+    case Tail(elemT) => List(CDR)
+
     //Core: lambda-calculus with letrec*.
     /* TODOs:
      * - Add more primitives

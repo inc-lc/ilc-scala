@@ -18,7 +18,18 @@ import scala.language.implicitConversions
  */
 trait LambdaManApi extends SyntaxSugar {
 
-  val all = collections ++ worldApi ++ enumApi ++ characterApi ++ directionApi
+  lazy val all = collections ++ worldApi ++ enumApi ++ characterApi ++ directionApi
+
+  def elemAt(list: UntypedTerm, i: UntypedTerm) =
+    letrec {
+        fun('go)('l, 'i) {
+          if_('i === 0) {
+            'l.head
+          } else_ {
+            'go('l.tail, 'i - 1)
+          }
+        }
+      }("elemAtBody", 'go(list, i))
 
   val collections = Seq(
     fun('foldRight)('list, 'z, 'fun) {
@@ -33,19 +44,7 @@ trait LambdaManApi extends SyntaxSugar {
       }("foldRightBody", 'go('list))
     },
 
-    fun('elemAt)('list, 'i) {
-      letrec {
-        fun('go)('l, 'i) {
-          if_('i === 0) {
-            'l.head
-          } else_ {
-            'go('l.tail, 'i - 1)
-          }
-        }
-      }("elemAtBody", 'go('list))
-    },
-
-    fun('map)('fun, 'list) {
+    fun('map)('list, 'fun) {
       'foldRight('list, empty, lam('head, 'tail) {
         'fun('head) ::: 'tail
       })
@@ -68,7 +67,7 @@ trait LambdaManApi extends SyntaxSugar {
   val worldApi = Seq(
     fun('world_map)('world) { 'world.at(0, 4) },
     fun('world_lambdaStatus)('world) { 'world at(1, 4) },
-    fun('world_itemAt)('world, 'x, 'y) { 'elemAt('elemAt('world at(0, 4), 'y), 'x) },
+    fun('world_itemAt)('world, 'x, 'y) { elemAt(elemAt('world at(0, 4), 'y), 'x) },
 
     /**
      * Returns a list of ghosts

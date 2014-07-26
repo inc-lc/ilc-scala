@@ -84,4 +84,13 @@ trait SyntaxSugar
   case class ProvideElse(cond: UntypedTerm, thn: UntypedTerm) {
     def else_(els: Term): UntypedTerm = asUntyped(IfThenElse)(cond, '_ ->: thn, '_ ->: els)
   }
+  
+  // other syntax for functions
+  def lam(args: Symbol*)(body: UntypedTerm) =
+    args.foldRight(body)(_ ->: _)
+  
+  // creates a pair to be used immediately in letrec like
+  //   letrec(fun('go)('n) { 'to('n + 1) })
+  def fun(name: Symbol)(args: Symbol*)(body: UntypedTerm) =
+    (name -> args.foldRight(body)(_ ->: _))
 }

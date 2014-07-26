@@ -11,10 +11,10 @@ trait BasicDefinitions {
   outer: Syntax =>
 
   trait Instr extends Product {
-    def showArgs = productIterator.toList mkString " "
-    def show = {
-      val instrName = this.getClass().getSimpleName().stripSuffix("$")
-      val args = showArgs
+    def showArgs(forHaskell: Boolean) = productIterator.toList mkString " "
+    def show(forHaskell: Boolean = false) = {
+      def instrName = this.getClass().getSimpleName().stripSuffix("$")
+      val args = showArgs(forHaskell)
       val sep = if (args.nonEmpty) " " else ""
       s"$instrName$sep$args"
     }
@@ -62,17 +62,34 @@ trait Instructions {
     )
 
   case class LD(idx: DeBrujinIdx) extends Instr {
-    override def showArgs = s"${idx.n} ${idx.i}\t\t; var ${idx.v}"
+    override def showArgs(forHaskell: Boolean) = s"${idx.n} ${idx.i}${if (forHaskell) "" else s"\t\t; var ${idx.v}"}"
   }
   case class DUM(n: Int) extends Instr
   case class LDC(n: Int) extends Instr
   case class RAP(n: Int) extends Instr
   case object RTN extends Instr
 
-  case class LDF(v: Var) extends Instr {
+  case class LDF(target: Either[Var, Int]) extends Instr {
     //XXX distinguish top labels (code pointers) from the top stack frame (which is a normal one).
-    validateTopVar(v)
-    override def showArgs = v.getName.toString
+    target match {
+      case Left(v) => validateTopVar(v)
+      case _ =>
+    }
+
+    override def showArgs(forHaskell: Boolean) =
+      target match {
+      case Left(v) =>
+        assert(!forHaskell)
+        v.getName.toString
+      case Right(i) =>
+        assert(forHaskell)
+        i.toString
+    }
+  }
+
+  object LDF {
+    def apply(v: Var): LDF = LDF(Left(v))
+    def apply(i: Int): LDF = LDF(Right(i))
   }
 
   //Integer instructions
@@ -191,7 +208,7 @@ trait ToProcessor extends BasicDefinitions with TopLevel with Instructions {
   }
 
   def toProcBase(t: Term) = toProc(t, Nil) ++ List(RTN)
-  def toProg(t: Term) = {
+  def toProg(t: Term): (Block, Map[Var, Int]) = {
     reset()
     val main = toProcBase(t)
     val blocks = main :: topBlocks
@@ -205,8 +222,24 @@ trait ToProcessor extends BasicDefinitions with TopLevel with Instructions {
       (el, n) <- trav
     } yield s"$n: $el") mkString "\n")
   //def show(b: Block) = showTraversable(b.zipWithIndex)
+
   def showProg(t: Term) = {
     val (prog, labels) = toProg(t)
-    s"${showTraversable(prog map (_ show) zipWithIndex)}\n${showTraversable(labels)}"
+    s"${showTraversable(prog map (_ show()) zipWithIndex)}\n${showTraversable(labels)}\n${toHaskell(prog, labels)}"
+  }
+
+  def resolveSymbolic(instrs: Block, labelSizes: Map[Var, Int]) = {
+    instrs map {
+      case LDF(Left(v)) => LDF(labelSizes(v))
+      case op => op
+    }
+  }
+
+  /**
+   * Convert to a form which can be Read in Haskell with a "natural" definition of instructions
+   * (the one used elsewhere in this repo).
+   */
+  def toHaskell(block: Block, labelSizes: Map[Var, Int]) = {
+    resolveSymbolic(block, labelSizes) map (_ show true) mkString ("[", ",\n", "]")
   }
 }

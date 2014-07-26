@@ -119,8 +119,14 @@ trait ToProcessor extends BasicDefinitions with TopLevel with Instructions {
     //Integers
     case LiteralInt(n) =>
       List(LDC(n))
-    case PlusInt =>
+    case Plus =>
       List(ADD)
+    case Minus =>
+      List(SUB)
+    case Mult =>
+      List(MUL)
+    case Div =>
+      List(DIV)
 
     //Core: lambda-calculus with letrec*.
     /* TODOs:

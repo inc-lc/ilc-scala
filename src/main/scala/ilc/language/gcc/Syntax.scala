@@ -3,6 +3,7 @@ package language
 package gcc
 
 import feature._
+import scala.language.implicitConversions
 
 trait LetRecSyntax extends functions.Syntax {
   case class LetRec(variable: Var, exp: Term, body: Term) extends Term {
@@ -20,11 +21,31 @@ trait LetRecSyntax extends functions.Syntax {
   }
 }
 
+trait GCCIntSyntax
+extends base.Syntax
+   with integers.Types
+   with functions.Types {
+  case class LiteralInt(i: Int) extends Term {
+    override lazy val getType: Type = IntType
+  }
+
+  class IntOp extends Term {
+    override lazy val getType: Type = IntType =>: IntType =>: IntType
+  }
+
+  case object Plus extends IntOp
+  case object Minus extends IntOp
+  case object Mult extends IntOp
+  case object Div extends IntOp
+
+  implicit def intToTerm(n: Int): Term = LiteralInt(n)
+}
+
 trait Syntax
 extends functions.Syntax
    with let.Syntax
    with maybe.Syntax
-   with integers.ImplicitSyntaxSugar
+   with GCCIntSyntax
    with sums.SyntaxSugar
    with equality.Syntax
    with products.Syntax

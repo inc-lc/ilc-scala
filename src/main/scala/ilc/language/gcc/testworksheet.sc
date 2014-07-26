@@ -26,7 +26,7 @@ object testworksheet {
         fun('to)('n) { 'go('n - 1) },
         fun('foo)('n) {
         	if_('n >= 5) {
-        		('n, (43, 42)).right.right
+        	  tuple('n, 43, 42).at(2, 3)
         	} else_ {
         		43
         	}

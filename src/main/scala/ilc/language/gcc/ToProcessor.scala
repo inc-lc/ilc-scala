@@ -119,13 +119,7 @@ trait ToProcessor extends BasicDefinitions with TopLevel with Instructions {
     //Integers
     case LiteralInt(n) =>
       List(LDC(n))
-    //Argh, this doesn't work because the App logic will insert an extra AP instruction
-//    case PlusInt =>
-//      List(ADD)
-
-    case App(App(PlusInt, a), b) =>
-      toProc(a, frames) ++
-      toProc(b, frames) ++
+    case PlusInt =>
       List(ADD)
 
     //Core: lambda-calculus with letrec*.

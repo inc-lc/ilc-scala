@@ -18,6 +18,38 @@ import scala.language.implicitConversions
  */
 trait LambdaManApi extends SyntaxSugar {
 
+  val collections = Seq(
+    fun('foldRight)('list, 'z, 'fun) {
+      letrec {
+        fun('go)('l) {
+          if_('l.isEmpty) {
+            'z
+          } else_ {
+            'fun('l.head, 'go('l.tail))
+          }
+        }
+      }("foldRightBody", 'go('list))
+    },
+
+    fun('elemAt)('list, 'i) {
+      letrec {
+        fun('go)('l, 'i) {
+          if_('i === 0) {
+            'l.head
+          } else_ {
+            'go('l.tail, 'i - 1)
+          }
+        }
+      }("elemAtBody", 'go('list))
+    },
+
+    fun('map)('fun, 'list) {
+      'foldRight('list, empty, lam('head, 'tail) {
+        'fun('head) ::: 'tail
+      })
+    }
+  )
+
   /**
    * The state of the world is encoded as follows:
    *
@@ -34,7 +66,18 @@ trait LambdaManApi extends SyntaxSugar {
   val worldApi = Seq(
     fun('world_map)('world) { 'world.at(0, 4) },
     fun('world_lambdaStatus)('world) { 'world at(1, 4) },
-    fun('world_ghostsStatus)('world) { 'world at(2, 4) },
+    fun('world_itemAt)('world, 'x, 'y) { 'elemAt('elemAt('world at(0, 4), 'y), 'x) },
+
+    /**
+     * Returns a list of ghosts
+     *
+     * We pad it to a 5-tuple in order to be compatible with lambda man
+     */
+    fun('world_ghostsStatus)('world) {
+      'map('world at(2, 4), lam('el) {
+        tuple('el at(0, 3), 'el at(1, 3), 'el at(2, 3), 0, 0)
+      })
+    },
 
     /**
      * The status of the fruit is a number which is a countdown to the expiry of
@@ -57,7 +100,7 @@ trait LambdaManApi extends SyntaxSugar {
    */
   val enumApi = Seq(
     fun('isWall)('obj) { 'obj === 0 },
-    fun('isEmpty)('obj) { 'obj === 1 },
+    fun('isEmptyField)('obj) { 'obj === 1 },
     fun('isPill)('obj) { 'obj === 2 },
     fun('isPowerPill)('obj) { 'obj === 3 },
     fun('isFruit)('obj) { 'obj === 4 },
@@ -78,10 +121,8 @@ trait LambdaManApi extends SyntaxSugar {
    *
    * For ghosts:
    * -----------
-   * The status for each ghost is a 3-tuple coerced to a five tuple
+   * The status for each ghost is a 5-tuple
    * (to abstract over lambda and ghosts at the same time) consisting of
-   *
-   * TODO implement this coercion!
    *
    * 1. the ghost's vitality
    * 2. the ghost's current location, as an (x,y) pair
@@ -104,7 +145,15 @@ trait LambdaManApi extends SyntaxSugar {
      * Only works for lambdas!
      */
     fun('lives)('char) { 'char at(3, 5) },
-    fun('score)('char) { 'char at(4, 5) }
+    fun('score)('char) { 'char at(4, 5) },
+
+    // for ghosts:
+    fun('isAfraid)('ghost) { 'vitality('ghost) === 1 },
+    fun('isInvisible)('ghost) { 'vitality('ghost) === 2 },
+
+    // for lambda man:
+    fun('powerLeft)('lambdaMan) { 'lambdaMan at(0, 5) },
+    fun('isInPowerMode)('lambdaMan) { 'powerLeft('lambdaMan) =!= 0 }
   )
 
   /**

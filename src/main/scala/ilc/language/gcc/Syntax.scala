@@ -58,6 +58,7 @@ trait SyntaxSugar
   with inference.LetRecUntypedSyntax
   with inference.LetRecInference
   with products.StdLib
+  with lists.InferenceSyntaxSugar
 {
   outer =>
   implicit def intToUTerm(n: Int): UntypedTerm = asUntyped(LiteralInt(n))
@@ -111,14 +112,4 @@ trait SyntaxSugar
     def second = outer.second(t)
     def at(i: Int, n: Int) = project(i, n, t)
   }
-
-
-  // syntax for lists
-  implicit class ListOps[T <% UT](t: T) {
-    def :::(s: UT) = asUntyped(Cons)(s, t)
-    def head = asUntyped(Head)(t)
-    def tail = asUntyped(Tail)(t)
-  }
-
-  def empty = asUntyped(Empty)
 }

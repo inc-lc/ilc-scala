@@ -6,7 +6,7 @@ import Predef.{any2stringadd => _, _}
 
 object testworksheet {
   ADD.show()                                      //> res0: String = ADD
-  val localMod = asTerm(letrec('x -> 1)("body", 'x + 'x))
+  val localMod = typecheck { letrec('x -> 1)("body", 'x + 'x) }
                                                   //> localMod  : ilc.language.GCC.Term = LetRec(List((Var(x,ℤ),LiteralInt(1))),
                                                   //| body,App(App(Plus,Var(x,ℤ)),Var(x,ℤ)))
   //LetRecStar(List((x, 1), (body, Abs(unitVar, PlusInt ! x ! x))), body)
@@ -17,10 +17,18 @@ object testworksheet {
                                                   //| UnitType))), RAP(1), RTN)
   // showProg(localMod)
 
-  
-  
+  /*
+  Orig:
   val goto =
     asTerm(
+      letrec(
+        'go -> ('n ->: 'to('n + 1)),
+        'to -> ('n ->: 'go('n - 1))
+        )("main", 'go(1)))
+  */
+  
+  val goto =
+    typecheck {
       letrec(
       	fun('go)('n) { 'to('n + 1) },
         fun('to)('n) { 'go('n - 1) },
@@ -30,7 +38,8 @@ object testworksheet {
         	} else_ {
         		43
         	}
-        })("main", 'go(42)))                      //> goto  : ilc.language.GCC.Term = LetRec(List((Var(go,ℤ → TypeVariable(39,
+        })("main", 'go(42))
+    }                                             //> goto  : ilc.language.GCC.Term = LetRec(List((Var(go,ℤ → TypeVariable(39,
                                                   //| Some(UApp(UVar(go),UMonomorphicConstant(LiteralInt(42)))))),Abs(Var(n,ℤ),A
                                                   //| pp(Var(to,ℤ → TypeVariable(39,Some(UApp(UVar(go),UMonomorphicConstant(Li
                                                   //| teralInt(42)))))),App(App(Plus,Var(n,ℤ)),LiteralInt(1))))), (Var(to,ℤ �
@@ -138,8 +147,4 @@ object testworksheet {
                                                   //| LD 0 0,
                                                   //| AP 1,
                                                   //| RTN]"
-
-
-
-   
 }

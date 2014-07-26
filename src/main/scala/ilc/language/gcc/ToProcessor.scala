@@ -14,7 +14,9 @@ trait BasicDefinitions {
     def showArgs = productIterator.toList mkString " "
     def show = {
       val instrName = this.getClass().getSimpleName().stripSuffix("$")
-      s"$instrName ${showArgs}"
+      val args = showArgs
+      val sep = if (args.nonEmpty) " " else ""
+      s"$instrName$sep$args"
     }
   }
   type Block = List[Instr]

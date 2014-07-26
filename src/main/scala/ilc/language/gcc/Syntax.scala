@@ -59,8 +59,6 @@ trait SyntaxSugar
       case (sym, t) => (sym.name, t)
     }, bodyName, body)
   }
-  //Force implicit conversions.
-  def asTerm(t: Term) = t
 
   type UT = UntypedTerm
   implicit class UTermOps[T <% UT](a: T) {

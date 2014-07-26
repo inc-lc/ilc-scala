@@ -2,7 +2,7 @@ package ilc
 package language
 package gcc
 
-import ilc.language.GCC._
+import GCC._
 //Needed to avoid ambiguities when using +
 import Predef.{any2stringadd => _, _}
  

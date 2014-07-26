@@ -31,7 +31,7 @@ extends base.Syntax
   case object Eq extends IntCmpOp
   case object Gt extends IntCmpOp
   case object Gte extends IntCmpOp
-  
+
   implicit def intToTerm(n: Int): Term = LiteralInt(n)
 
   case object Not extends Term {
@@ -48,6 +48,7 @@ extends functions.Syntax
    with products.Syntax
    with booleans.SyntaxSugar
    with functions.LetRecSyntax
+   with products.InferenceSyntaxSugar
 
 trait SyntaxSugar
   extends Syntax
@@ -57,6 +58,7 @@ trait SyntaxSugar
   with inference.LetRecInference
   with products.StdLib
 {
+  outer =>
   implicit def intToUTerm(n: Int): UntypedTerm = asUntyped(LiteralInt(n))
   def letrec(pairs: (Symbol, UntypedTerm)*)
         (bodyName: String, body: UntypedTerm): UntypedTerm = {
@@ -101,7 +103,7 @@ trait SyntaxSugar
     pair(scalaPair._1, scalaPair._2)
 
   implicit class PairOps[T <% UT](t: T) {
-    def left = proj1(t)
-    def right = proj2(t)
+    def first = outer.first(t)
+    def second = outer.second(t)
   }
 }

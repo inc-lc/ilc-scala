@@ -73,4 +73,10 @@ trait SyntaxSugar
     def >(b: UT) = asUntyped(Gt)(a, b)
     def ===(b: UT) = asUntyped(Eq)(a, b)
   }
+  
+  // asUntyped(IfThenElse)(True, '_ ->: 42, '_ ->: 43)
+  def if_(cond: UntypedTerm)(thn: UntypedTerm) = ProvideElse(cond, thn)
+  case class ProvideElse(cond: UntypedTerm, thn: UntypedTerm) {
+    def else_(els: Term): UntypedTerm = asUntyped(IfThenElse)(cond, '_ ->: thn, '_ ->: els)
+  }
 }

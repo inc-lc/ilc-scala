@@ -10,7 +10,13 @@ import collection._
 trait BasicDefinitions {
   outer: Syntax =>
 
-  trait Instr
+  trait Instr extends Product {
+    def showArgs = productIterator.toList mkString " "
+    def show = {
+      val instrName = this.getClass().getSimpleName().stripSuffix("$")
+      s"$instrName ${showArgs}"
+    }
+  }
   type Block = List[Instr]
 
   case class Frame(vars: List[Var])
@@ -46,7 +52,9 @@ trait Instructions {
     , v: Var //Readable name
     )
 
-  case class LD(idx: DeBrujinIdx) extends Instr
+  case class LD(idx: DeBrujinIdx) extends Instr {
+    override def showArgs = s"${idx.n} ${idx.i}\t\t; var ${idx.v}"
+  }
   case class DUM(n: Int) extends Instr
   case class LDC(n: Int) extends Instr
   case class RAP(n: Int) extends Instr
@@ -55,6 +63,7 @@ trait Instructions {
   case class LDF(v: Var) extends Instr {
     //XXX distinguish top labels (code pointers) from the top stack frame (which is a normal one).
     validateTopVar(v)
+    override def showArgs = v.getName.toString
   }
 
   //Integer instructions
@@ -154,9 +163,9 @@ trait ToProcessor extends BasicDefinitions with TopLevel with Instructions {
     "\n" + ((for {
       (el, n) <- trav
     } yield s"$n: $el") mkString "\n")
-  def show(b: Block) = showTraversable(b.zipWithIndex)
+  //def show(b: Block) = showTraversable(b.zipWithIndex)
   def showProg(t: Term) = {
     val (prog, labels) = toProg(t)
-    s"${show(prog)}\n${showTraversable(labels)}"
+    s"${showTraversable(prog map (_ show) zipWithIndex)}\n${showTraversable(labels)}"
   }
 }

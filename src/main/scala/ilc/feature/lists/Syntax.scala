@@ -6,6 +6,7 @@ trait Syntax
 extends base.Syntax
    with Types
    with functions.Types
+   with booleans.Types
 {
 
   case object Empty extends ConstantWith1TypeParameter {
@@ -29,6 +30,12 @@ extends base.Syntax
       ListType(t) =>: ListType(t)
     }
   }
+
+  case object IsEmpty extends ConstantWith1TypeParameter {
+    val typeConstructor = TypeConstructor("elemType") { t =>
+      ListType(t) =>: BooleanType
+    }
+  }
 }
 
 trait InferenceSyntaxSugar extends Syntax with inference.SyntaxSugar {
@@ -37,6 +44,7 @@ trait InferenceSyntaxSugar extends Syntax with inference.SyntaxSugar {
     def :::(s: UntypedTerm) = asUntyped(Cons)(s, t)
     def head = asUntyped(Head)(t)
     def tail = asUntyped(Tail)(t)
+    def isEmpty = asUntyped(IsEmpty)(t)
     def get(i: Int) = project(i, t)
   }
 

@@ -128,6 +128,7 @@ trait Instructions {
   case object CONS extends PrimInstr
   case object CAR extends PrimInstr
   case object CDR extends PrimInstr
+  case object ATOM extends PrimInstr
 }
 
 trait ToProcessor extends BasicDefinitions with TopLevel with Instructions {
@@ -205,6 +206,7 @@ trait ToProcessor extends BasicDefinitions with TopLevel with Instructions {
     case Cons(elemT) => List(CONS)
     case Head(elemT) => List(CAR)
     case Tail(elemT) => List(CDR)
+    case IsEmpty(elemT) => List(ATOM)
 
     //Core: lambda-calculus with letrec*.
     /* TODOs:

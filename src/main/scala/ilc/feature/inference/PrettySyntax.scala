@@ -8,6 +8,7 @@ trait PrettySyntax extends Inference {
   implicit def polymorphicConstantToUPolymorphicConstant(x: PolymorphicConstant): UntypedTerm = UPolymorphicConstant(x)
   implicit def monomorphicConstantToUMonomorphicConstant(x: Term): UntypedTerm = UMonomorphicConstant(x)
   implicit def symbolToUVar(x: Symbol): UVar = UVar(x.name)
+  implicit def stringToUVar(x: String): UVar = UVar(x)
 
   /*
    * The point of this implicit conversion is to trigger ambiguity errors in
@@ -28,6 +29,7 @@ trait PrettySyntax extends Inference {
    * much work and I'm not sure it'd actually work).
    */
   implicit def symbolToUTOps(x: Symbol) = UTOps(x)
+  implicit def stringToUTOps(x: String) = UTOps(x)
 
   case class TypeAnnotation(name: String, typ: Type)
 
@@ -39,6 +41,9 @@ trait PrettySyntax extends Inference {
 
     def ->:(param: TypeAnnotation): UntypedTerm =
       UAbs(param.name, Some(param.typ), untypedTerm)
+
+    def ->:(param: String): UntypedTerm =
+      UAbs(param, None, untypedTerm)
 
     // Require at least one argument.
     def apply(that: UntypedTerm, more: UntypedTerm*): UApp =

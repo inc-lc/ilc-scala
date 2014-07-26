@@ -99,6 +99,9 @@ trait SyntaxSugar
   def fun(name: Symbol)(args: Symbol*)(body: UntypedTerm) =
     (name -> args.foldRight(body)(_ ->: _))
 
+  def fun(name: String)(args: Symbol*)(body: UntypedTerm) =
+    (name -> args.foldRight(body)(_ ->: _))
+
   implicit def consSyntax[A <% UT, B <% UT](scalaPair: (A, B)): UntypedTerm =
     pair(scalaPair._1, scalaPair._2)
 

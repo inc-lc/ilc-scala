@@ -2,6 +2,7 @@ package ilc
 package language
 package gcc
 
+import scala.language.postfixOps
 import feature._
 import let.FreshGen
 import collection._
@@ -19,25 +20,17 @@ trait BasicDefinitions {
 trait TopLevel {
   outer: Syntax with BasicDefinitions =>
 
-  def checkTopConsistent(): Unit =
-    assert(topBlocks.length == topNames.length)
-
-  val topNames: mutable.ArrayBuffer[Var] = mutable.ArrayBuffer.empty
-  def addTopLevelName(v: Var): Unit = {
-    checkTopConsistent()
-    topNames += v
+  val topLevel: mutable.ArrayBuffer[(Var, Block)] = mutable.ArrayBuffer.empty
+  def addTopLevelBinding(v: Var, b: Block): Unit = {
+    topLevel += ((v, b))
   }
 
-  val topBlocks: mutable.ArrayBuffer[Block] = mutable.ArrayBuffer.empty
-  def addTopLevelBlock(b: Block): Unit = {
-    topBlocks += b
-    checkTopConsistent()
+  def reset(): Unit = {
+    topLevel.clear()
   }
 
-  def reset() {
-    topBlocks.clear()
-    topNames.clear()
-  }
+  def topNames = topLevel map (_._1) toList
+  def topBlocks = topLevel map (_._2) toList
 }
 
 trait Instructions {
@@ -87,9 +80,8 @@ trait ToProcessor extends BasicDefinitions with TopLevel with Instructions {
   }
 
   def toClosure(bodyVar: Var, body: Term, frames: List[Frame]) = {
-    addTopLevelName(bodyVar)
-    //Add compiledBody with a fresh name to the environment.
-    addTopLevelBlock(toProc(body, frames) ++ List(RTN))
+    //Add compiled `body` with given name to the list of top-level procedures.
+    addTopLevelBinding(bodyVar, toProc(body, frames) ++ List(RTN))
     //Create the closure here.
     List(LDF(bodyVar))
   }
@@ -142,8 +134,9 @@ trait ToProcessor extends BasicDefinitions with TopLevel with Instructions {
   def toProg(t: Term) = {
     reset()
     val main = toProcBase(t)
-    val blocks = main :: topBlocks.toList
-    val labelSizes = Map(topNames.toList zip (blocks.map (_.length) .scanLeft(0)(_ + _)).tail: _*)
+    val blocks = main :: topBlocks
+    val blockSizes = (blocks.map (_.length) .scanLeft(0)(_ + _)).tail
+    val labelSizes = Map(topNames zip blockSizes: _*)
     (blocks.flatten, labelSizes)
   }
 

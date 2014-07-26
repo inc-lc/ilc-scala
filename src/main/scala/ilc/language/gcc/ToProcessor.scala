@@ -98,6 +98,9 @@ trait Instructions {
   case object MUL extends PrimInstr
   case object DIV extends PrimInstr
 
+  case object CEQ extends PrimInstr
+  case object CGT extends PrimInstr
+  case object CGTE extends PrimInstr
 }
 
 trait ToProcessor extends BasicDefinitions with TopLevel with Instructions {
@@ -144,6 +147,12 @@ trait ToProcessor extends BasicDefinitions with TopLevel with Instructions {
       List(MUL)
     case Div =>
       List(DIV)
+    case Eq =>
+      List(CEQ)
+    case Gt =>
+      List(CGT)
+    case Gte =>
+      List(CGTE)
 
     //Core: lambda-calculus with letrec*.
     /* TODOs:

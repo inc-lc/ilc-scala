@@ -123,6 +123,11 @@ trait Instructions {
         i.toString + " " + j.toString
     }
   }
+  
+  // Pairs
+  case object CONS extends PrimInstr
+  case object CAR extends PrimInstr
+  case object CDR extends PrimInstr
 }
 
 trait ToProcessor extends BasicDefinitions with TopLevel with Instructions {
@@ -184,6 +189,14 @@ trait ToProcessor extends BasicDefinitions with TopLevel with Instructions {
       toProc(cond, frames, suggestedFunName) ++ List(SEL(Left((trueLabel, falseLabel))))
     }
  
+    //Pairs
+    case Pair(car, cdr) => List(CONS)
+      // val left = toProc(car, frames, suggestedFunName)
+      // val right = toProc(cdr, frames, suggestedFunName)
+      
+    case Proj1(a, b) => List(CAR)
+    case Proj2(a, b) => List(CDR)
+      
     //Core: lambda-calculus with letrec*.
     /* TODOs:
      * - Add more primitives

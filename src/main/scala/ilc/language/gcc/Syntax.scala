@@ -31,7 +31,7 @@ extends base.Syntax
   case object Eq extends IntCmpOp
   case object Gt extends IntCmpOp
   case object Gte extends IntCmpOp
-
+  
   implicit def intToTerm(n: Int): Term = LiteralInt(n)
 }
 
@@ -51,6 +51,7 @@ trait SyntaxSugar
   with inference.LetSyntaxSugar
   with inference.LetRecUntypedSyntax
   with inference.LetRecInference
+  with products.StdLib
 {
   implicit def intToUTerm(n: Int): UntypedTerm = asUntyped(LiteralInt(n))
   def letrec(pairs: (Symbol, UntypedTerm)*)
@@ -91,4 +92,12 @@ trait SyntaxSugar
   //   letrec(fun('go)('n) { 'to('n + 1) })
   def fun(name: Symbol)(args: Symbol*)(body: UntypedTerm) =
     (name -> args.foldRight(body)(_ ->: _))
+    
+  implicit def consSyntax[A <% UT, B <% UT](scalaPair: (A, B)): UntypedTerm =
+    pair(scalaPair._1, scalaPair._2)
+    
+  implicit class PairOps[T <% UT](t: T) {
+    def _1 = proj1(t)
+    def _2 = proj2(t)
+  }
 }

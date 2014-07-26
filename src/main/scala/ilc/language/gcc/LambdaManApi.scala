@@ -18,6 +18,8 @@ import scala.language.implicitConversions
  */
 trait LambdaManApi extends SyntaxSugar {
 
+  val all = collections ++ worldApi ++ enumApi ++ characterApi ++ directionApi
+
   val collections = Seq(
     fun('foldRight)('list, 'z, 'fun) {
       letrec {

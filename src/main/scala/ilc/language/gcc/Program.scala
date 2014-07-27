@@ -40,13 +40,13 @@ class ProgramBase extends GCC {
       let('nextPos,
          if_('dir === move.left) {
           ('loc.first - 1, 'loc.second)
-         } else_ (if_('dir === move.right) {
+         } .else_if ('dir === move.right) {
           ('loc.first + 1, 'loc.second)
-         } else_ (if_('dir === move.up) {
+         } .else_if ('dir === move.up) {
           ('loc.first, 'loc.second - 1)
          } else_ {
           ('loc.first, 'loc.second + 1)
-         })) ofType Loc) {
+         } ofType Loc) {
           'obstacleAt('world, 'nextPos.first, 'nextPos.second) ofType bool
         }
       }

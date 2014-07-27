@@ -23,7 +23,7 @@ trait Types extends base.Types {
   }
 
   object =>: {
-    val arrow = "→"
+    val arrow = "->"
   }
 
   def getArgumentTypes(functionType: Type): List[Type] =

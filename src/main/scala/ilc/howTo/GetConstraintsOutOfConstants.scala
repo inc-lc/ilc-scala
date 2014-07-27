@@ -12,7 +12,9 @@ extends feature.base.Syntax
 
   // from ilc.feature.maps.Syntax
 
-  case class MapType(keyType: Type, valType: Type) extends Type
+  case class MapType(keyType: Type, valType: Type) extends Type {
+    override def traverse(f: Type => Type): Type = copy(f(keyType), f(valType))
+  }
 
   object EmptyMap extends ConstantWith2TypeParameters {
     val typeConstructor = TypeConstructor("keyType", "valType") {
@@ -33,7 +35,7 @@ extends feature.base.Syntax
   val dummyMapType = EmptyMap.typeConstructor(Seq(DummyKey, DummyVal))
 
   println(s"\n\n\ndummyMapType = $dummyMapType\n\n")
-  
+
   // running in sbt
   //
   // > test-only ilc.howTo.GetC*

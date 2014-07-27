@@ -7,6 +7,7 @@ import ilc.util.ExtractorTrait
 trait Types extends base.Types with ExtractorTrait {
   case class ProductType(leftType: Type, rightType: Type) extends Type {
     override def toString = s"($leftType) x ($rightType)"
+    override def traverse(f: Type => Type) = copy(f(leftType), f(rightType))
   }
 
   /** As in Agda, tuples are nested toward the right.

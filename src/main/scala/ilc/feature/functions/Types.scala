@@ -20,6 +20,7 @@ trait Types extends base.Types {
         case _ => s"$domain $arrow $range"
       }
     }
+    override def traverse(f: Type => Type) = copy(f(domain), f(range))
   }
 
   object =>: {

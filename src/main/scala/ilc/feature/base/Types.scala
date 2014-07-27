@@ -12,7 +12,10 @@ trait Types {
   //
   // In unification we use the product iterator to map over all fields and we expect those to be types themselves.
   // If we ever want non-type fields we need to adapt ilc.feature.inference.Inference.unification
-  trait Type extends Product
+  trait Type extends Product {
+    def traverse(f: Type => Type): Type =
+      this
+  }
 
   // ERROR THROWERS
 

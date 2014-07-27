@@ -53,15 +53,17 @@ class ProgramBase extends GCC {
     },
 
     fun('chooseFreeDir)('world % WorldState, '_state % AIState) {
-      if_(not('obstacleInDir('world, move.right))) {
-        move.right
-      } .else_if (not('obstacleInDir('world, move.left))) {
-        move.left
-      } .else_if (not('obstacleInDir('world, move.up))) {
-        move.up
-      } else_ {
-        move.down
-      }
+      letrec(
+        fun('go)('mov % Dir) {
+          let('next, 'nextDir('mov)) {
+            if_(not('obstacleInDir('world, 'next))) {
+              'next
+            } else_ {
+              'go('next)
+            }
+          }
+        })("chooseFreeDir",
+          'go('myMovement('_state)))
     },
 
     fun('myMovement)('_state % AIState) { '_state.at(0, stateSize) }
@@ -71,10 +73,9 @@ class ProgramBase extends GCC {
 
   val main = letrec((all ++ helpers ++ program): _*)("main",
       (initialState, lam('_state % AIState, 'world % WorldState) {
-        let('mov, 'myMovement('_state)) {
         let('nextDir, 'chooseFreeDir('world, '_state)) {
            (tuple('nextDir, 0, 0, 0), 'nextDir)
-        }}
+        }
       }))
 
 //    val main = letrec((all ++ helpers ++ program): _*)("main",

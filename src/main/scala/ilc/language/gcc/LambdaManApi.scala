@@ -17,7 +17,7 @@ import Predef.{any2stringadd => _, _}
  * 1. query the environment
  * 2. actions: moving...
  */
-trait LambdaManApi extends SyntaxSugar with Math {
+trait LambdaManApi extends SyntaxSugar with Math with Collection {
 
   lazy val all = collectionApi ++ worldApi ++ enumApi ++ characterApi ++ directionApi ++ math
 
@@ -38,43 +38,6 @@ trait LambdaManApi extends SyntaxSugar with Math {
     val first = up
     val last = left
   }
-
-  def elemAt(list: UT, i: UT) =
-    letrec {
-        fun('go)('l, 'i) {
-          if_('i === 0) {
-            'l.head
-          } else_ {
-            'go('l.tail, 'i - 1)
-          }
-        }
-      }("elemAtBody", 'go(list, i))
-
-  def foldRight(list: UT, z: UT, f: UT) =
-    letrec {
-      fun('go)('l) {
-        if_('l.isEmpty) {
-          z
-        } else_ {
-          f('l.head, 'go('l.tail))
-        }
-      }
-    }("foldRightBody", 'go(list))
-
-  def map(list: UT, f: UT) =
-    foldRight(list, empty, lam('head, 'tail) {
-      f('head) ::: 'tail
-    })
-
-  //This contains only monomorphic functions, all polymorphic ones must be macros as above!
-  val collectionApi = Seq(
-    fun('all)('list % ListType(BooleanType)) {
-      foldRight('list, true, lam('b1, 'b2) { 'b1 and 'b2 })
-    },
-    fun('any)('list % ListType(BooleanType)) {
-      foldRight('list, false, lam('b1, 'b2) { 'b1 or 'b2 })
-    }
-  )
 
   /**
    * The state of the world is encoded as follows:
@@ -201,10 +164,54 @@ trait LambdaManApi extends SyntaxSugar with Math {
 
 }
 
+trait Collection extends SyntaxSugar {
+
+  def elemAt(list: UT, i: UT) =
+    letrec {
+        fun('go)('l, 'i) {
+          if_('i === 0) {
+            'l.head
+          } else_ {
+            'go('l.tail, 'i - 1)
+          }
+        }
+      }("elemAtBody", 'go(list, i))
+
+  def foldRight(list: UT, z: UT, f: UT) =
+    letrec {
+      fun('go)('l) {
+        if_('l.isEmpty) {
+          z
+        } else_ {
+          f('l.head, 'go('l.tail))
+        }
+      }
+    }("foldRightBody", 'go(list))
+
+  def map(list: UT, f: UT) =
+    foldRight(list, empty, lam('head, 'tail) {
+      f('head) ::: 'tail
+    })
+
+  def size(list: UT) =
+    foldRight(list, 0, lam('_, 'n) { 'n + 1 })
+
+  //This contains only monomorphic functions, all polymorphic ones must be macros as above!
+  val collectionApi = Seq(
+    fun('all)('list % ListType(BooleanType)) {
+      foldRight('list, true, lam('b1, 'b2) { 'b1 and 'b2 })
+    },
+    fun('any)('list % ListType(BooleanType)) {
+      foldRight('list, false, lam('b1, 'b2) { 'b1 or 'b2 })
+    }
+  )
+}
+
 trait Math extends SyntaxSugar {
 
   val math = Seq(
-    fun('mod)('x % int, 'y % int) { 'x - ('x / 'y * 'y) }
+    fun('mod)('x % int, 'y % int) { 'x - ('x / 'y * 'y) },
+    fun('abs)('x % int) { if_('x < 0) { 'x * (-1) } else_ { 'x } }
   )
 
 }

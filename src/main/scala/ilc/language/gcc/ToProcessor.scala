@@ -54,6 +54,14 @@ trait TopLevel {
 trait Instructions {
   outer: Syntax with BasicDefinitions =>
 
+  def showComment(forHaskell: Boolean, _comment: Option[String]): String =
+    _comment map { comment =>
+      if (forHaskell)
+        ""
+      else
+        "\t\t; " + comment
+    } getOrElse ""
+
   case class AP(n: Int) extends Instr
   case class DeBrujinIdx
     ( n: Int //Number of binders (frames) to go down
@@ -62,33 +70,42 @@ trait Instructions {
     )
 
   case class LD(idx: DeBrujinIdx) extends Instr {
-    override def showArgs(forHaskell: Boolean) = s"${idx.n} ${idx.i}${if (forHaskell) "" else s"\t\t; var ${idx.v}"}"
+    override def showArgs(forHaskell: Boolean) = s"${idx.n} ${idx.i}${showComment(forHaskell, Some(s"var ${idx.v}"))}"
   }
   case class DUM(n: Int) extends Instr
   case class LDC(n: Int) extends Instr
   case class RAP(n: Int) extends Instr
   case object RTN extends Instr
 
-  case class LDF(target: Either[Var, Int]) extends Instr {
+  /**
+   * A list of symbolic labels as part of an instruction, which can optionally have been resolved to numeric labels.
+   * We keep the original labels for comments.
+   */
+  case class ResolvableLabels(targetVars: List[Var], targetPositions: Option[List[Int]]) {
     //XXX distinguish top labels (code pointers) from the top stack frame (which is a normal one).
-    target match {
-      case Left(v) => validateTopVar(v)
-      case _ =>
-    }
+    targetVars foreach validateTopVar
 
-    override def showArgs(forHaskell: Boolean) =
-      target match {
-      case Left(v) =>
-        assert(!forHaskell)
-        v.getName.toString
-      case Right(i) =>
-        i.toString
-    }
+    def comment =
+      targetPositions map { _ =>
+        (for {
+          v <- targetVars
+        } yield s"var $v") mkString ", "
+      }
+
+    def show(forHaskell: Boolean): String =
+      targetPositions match {
+        case Some(positions) =>
+         (positions mkString " ") + showComment(forHaskell, comment)
+        case _ =>
+          assert(!forHaskell)
+          targetVars map (_.getName.toString) mkString " "
+      }
   }
-
+  case class LDF(label: ResolvableLabels) extends Instr {
+    override def showArgs(forHaskell: Boolean) = label show forHaskell
+  }
   object LDF {
-    def apply(v: Var): LDF = LDF(Left(v))
-    def apply(i: Int): LDF = LDF(Right(i))
+    def apply(v: Var): LDF = LDF(ResolvableLabels(List(v), None))
   }
 
   //Integer instructions
@@ -103,23 +120,11 @@ trait Instructions {
   case object CGTE extends PrimInstr
 
   case object JOIN extends Instr
-  case class SEL(targets: Either[(Var, Var), (Int, Int)]) extends Instr {
-    //XXX distinguish top labels (code pointers) from the top stack frame (which is a normal one).
-    targets match {
-      case Left((thn, els)) =>
-        validateTopVar(thn)
-        validateTopVar(els)
-      case _ =>
-    }
-
-    override def showArgs(forHaskell: Boolean) =
-      targets match {
-      case Left((thn, els)) =>
-        assert(!forHaskell)
-        thn.getName.toString + " " + els.getName.toString
-      case Right((i, j)) =>
-        i.toString + " " + j.toString
-    }
+  case class SEL(targets: ResolvableLabels) extends Instr {
+    override def showArgs(forHaskell: Boolean) = targets show forHaskell
+  }
+  object SEL {
+    def apply(thn: Var, els: Var): SEL = SEL(ResolvableLabels(List(thn, els), None))
   }
 
   // Pairs
@@ -195,7 +200,7 @@ trait ToProcessor extends BasicDefinitions with TopLevel with Instructions {
       addTopLevelBinding(trueLabel, toProc(trueBlock, frames) ++ List(JOIN))
       addTopLevelBinding(falseLabel, toProc(falseBlock, frames) ++ List(JOIN))
 
-      toProc(cond, frames, suggestedFunName) ++ List(SEL(Left((trueLabel, falseLabel))))
+      toProc(cond, frames, suggestedFunName) ++ List(SEL(trueLabel, falseLabel))
     }
 
     //Pairs
@@ -312,7 +317,7 @@ trait ToProcessorFrontend extends ToProcessor {
     def showNumbered = showTraversable(code map (_ show()) zipWithIndex)
     def showLabels = showTraversable(labelPositions)
 
-    def showResolved(forHaskell: Boolean) =
+    def showResolved(forHaskell: Boolean = false) =
       resolveSymbolic(code, labelPositions) map (_ show forHaskell)
     /**
      * Convert to a form which can be Read in Haskell with a "natural" definition of instructions
@@ -341,10 +346,16 @@ trait ToProcessorFrontend extends ToProcessor {
     s"${cp.showNumbered}\n${cp.showLabels}\n${cp.toHaskell}"
   }
 
+  def resolveLabelSymbolic(l: ResolvableLabels, labelSizes: Map[Var, Int]): ResolvableLabels =
+    l match {
+      case ResolvableLabels(vars, None) =>
+        ResolvableLabels(vars, Some(vars map labelSizes))
+  }
+
   def resolveSymbolic(instrs: Block, labelSizes: Map[Var, Int]) = {
     instrs map {
-      case LDF(Left(v)) => LDF(labelSizes(v))
-      case SEL(Left((thn, els))) => SEL(Right((labelSizes(thn), labelSizes(els))))
+      case LDF(rl) => LDF(resolveLabelSymbolic(rl, labelSizes))
+      case SEL(rl) => SEL(resolveLabelSymbolic(rl, labelSizes))
       case op => op
     }
   }

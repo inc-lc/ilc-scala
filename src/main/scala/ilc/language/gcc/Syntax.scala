@@ -84,8 +84,8 @@ trait SyntaxSugar
     def ===(b: UT) = asUntyped(Eq)(a, b)
     def =!=(b: UT) = not(a === b)
 
-    def and(b: UT) = if_ (a) { b } else_ { false }
-    def or(b: UT) = if_ (a) { true } else_ { b }
+    def and(b: UT) = a * b
+    def or(b: UT) = (a + b) >= 1
   }
 
   def not(a: UT) = Not(a)

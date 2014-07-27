@@ -92,20 +92,23 @@ trait SyntaxSugar
   }
 
   // other syntax for functions
-  def lam(args: Symbol*)(body: UntypedTerm) =
-    args.foldRight(body)(_ ->: _)
+  def lam(firstArg: Symbol, args: Symbol*)(body: UntypedTerm) =
+    (firstArg +: args).foldRight(body)(_ ->: _)
+
+  def lam(firstArg: TypeAnnotation, args: TypeAnnotation*)(body: UntypedTerm) =
+    (firstArg +: args).foldRight(body)(_ ->: _)
 
   // creates a pair to be used immediately in letrec like
   //   letrec(fun('go)('n) { 'to('n + 1) })
   def fun(name: Symbol)(firstArg: Symbol, args: Symbol*)(body: UntypedTerm) =
-    (name -> (firstArg +: args).foldRight(body)(_ ->: _))
+    (name -> lam(firstArg, args: _*)(body))
 
   def fun(name: String)(firstArg: Symbol, args: Symbol*)(body: UntypedTerm) =
-    (name -> (firstArg +: args).foldRight(body)(_ ->: _))
+    (name -> lam(firstArg, args: _*)(body))
 
    // TODO simplify this
    def funT(name: Symbol)(firstArg: TypeAnnotation, args: TypeAnnotation*)(body: UntypedTerm) =
-    (name -> (firstArg +: args).foldRight(body)(_ ->: _))
+    (name -> lam(firstArg, args: _*)(body))
 
 
   implicit def consSyntax[A <% UT, B <% UT](scalaPair: (A, B)): UntypedTerm =

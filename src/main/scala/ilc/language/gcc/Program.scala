@@ -49,11 +49,11 @@ object Program extends GCC {
     },
 
     funT('chooseFreeDir)('world % WorldState, '_state % AIState) {
-      if_(not('obstacleInDir('world, '_state, move.right))) {
+      if_(not('obstacleInDir('world, move.right))) {
         move.right
-      } else_ (if_(not('obstacleInDir('world, '_state, move.left))) {
+      } else_ (if_(not('obstacleInDir('world, move.left))) {
         move.left
-      } else_ (if_(not('obstacleInDir('world, '_state, move.up))) {
+      } else_ (if_(not('obstacleInDir('world, move.up))) {
         move.up
       } else_ {
         move.down

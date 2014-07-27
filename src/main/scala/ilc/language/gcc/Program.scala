@@ -55,12 +55,10 @@ class ProgramBase extends GCC {
     fun('chooseFreeDir)('world % WorldState, '_state % AIState) {
       letrec(
         fun('go)('mov % Dir) {
-          let('next, 'nextDir('mov)) {
-            if_(not('obstacleInDir('world, 'next))) {
-              'next
-            } else_ {
-              'go('next)
-            }
+          if_(not('obstacleInDir('world, 'mov))) {
+            'mov
+          } else_ {
+            'go('nextDir('mov))
           }
         })("chooseFreeDir",
           'go('myMovement('_state)))

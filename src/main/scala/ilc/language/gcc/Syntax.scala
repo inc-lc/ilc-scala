@@ -90,9 +90,11 @@ trait SyntaxSugar
 
   def not(a: UT) = Not(a)
 
-  def if_(cond: UntypedTerm)(thn: UntypedTerm) = ProvideElse(cond, thn)
-  case class ProvideElse(cond: UntypedTerm, thn: UntypedTerm) {
-    def else_(els: UntypedTerm): UntypedTerm = asUntyped(IfThenElse)(cond, '_ ->: thn, '_ ->: els)
+  def if_(cond: UntypedTerm)(thn: UntypedTerm) = ProvideElse(els => asUntyped(IfThenElse)(cond, '_ ->: thn, '_ ->: els))
+  case class ProvideElse(buildIf: UntypedTerm => UntypedTerm) {
+    def else_(els: UntypedTerm): UntypedTerm = buildIf(els)
+    def else_if(elsCond: UntypedTerm)(elsThn: UntypedTerm) =
+      ProvideElse(elsEls => buildIf(asUntyped(IfThenElse)(elsCond, '_ ->: elsThn, '_ ->: elsEls)))
   }
 
   // Symbol + TypeAnnotation

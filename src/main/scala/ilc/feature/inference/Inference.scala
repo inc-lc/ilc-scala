@@ -253,7 +253,7 @@ trait LetRecInference extends Inference with LetRecUntypedSyntax with functions.
       val (typedExps, constraintss) = (pairs map { case (variable, exp) => collectConstraints(exp, extCtx)}).unzip
       val (typedBody, c2) = collectConstraints(body, extCtx)
       val expMatchConstraints = typedExps zip tVars map {
-        case (exp, v@(varName, varT)) => Constraint(varT, exp.getType, s"matching $exp and $v")
+        case (exp, v@(varName, varT)) => Constraint(varT, (exp: TypedTerm).getType, s"binding $varName — $exp's type should be $varT")
       }
       val c = c2 ++ constraintss.flatten ++ expMatchConstraints
       val bindings = (pairs map (_._1)) zip (tVars map (_._2)) zip typedExps map {

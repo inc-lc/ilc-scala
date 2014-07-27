@@ -90,9 +90,9 @@ object Program extends GCC {
 //        }}
 //      }))
 
-  val (prog, labels) = toProg(typecheck(main))
+  val cp @ CompiledProgram(prog, labels) = toProg(typecheck(main))
 
   //println("[" + (resolveSymbolic(prog, labels) map (_ show(true)) mkString ",\n") + "]")
-  println((resolveSymbolic(prog, labels) map (_ show()) mkString "\n"))
+  println(cp.toRaw)
 
 }

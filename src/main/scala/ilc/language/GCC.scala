@@ -13,5 +13,5 @@ import feature._
   *
   * We have untyped pairs, which are used to encode other types (lists and n-ary tuples).
   */
-class GCC extends SyntaxSugar with Pretty with ToProcessor with LambdaManApi
+class GCC extends SyntaxSugar with Pretty with ToProcessorFrontend with LambdaManApi
 object GCC extends GCC

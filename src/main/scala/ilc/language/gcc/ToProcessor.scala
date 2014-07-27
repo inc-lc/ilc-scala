@@ -297,14 +297,10 @@ trait ToProcessor extends BasicDefinitions with TopLevel with Instructions {
       Nil
 
   def toProcBase(t: Term) = toProc(t, baseFrames) ++ List(RTN)
-  def toProg(t: Term): (Block, Map[Var, Int]) = {
-    reset()
-    val main = toProcBase(t)
-    val blocks = main :: topBlocks
-    val blockSizes = (blocks.map (_.length) .scanLeft(0)(_ + _)).tail
-    val labelSizes = Map(topNames zip blockSizes: _*)
-    (blocks.flatten, labelSizes)
-  }
+}
+
+trait ToProcessorFrontend extends ToProcessor {
+  outer: Syntax =>
 
   def showTraversable[T, U](trav: Traversable[(T, U)]) =
     "\n" + ((for {
@@ -312,9 +308,37 @@ trait ToProcessor extends BasicDefinitions with TopLevel with Instructions {
     } yield s"$n: $el") mkString "\n")
   //def show(b: Block) = showTraversable(b.zipWithIndex)
 
+  case class CompiledProgram(code: Block, labelPositions: Map[Var, Int]) {
+    def showNumbered = showTraversable(code map (_ show()) zipWithIndex)
+    def showLabels = showTraversable(labelPositions)
+
+    def showResolved(forHaskell: Boolean) =
+      resolveSymbolic(code, labelPositions) map (_ show forHaskell)
+    /**
+     * Convert to a form which can be Read in Haskell with a "natural" definition of instructions
+     * (the one used elsewhere in this repo).
+     */
+    def toHaskell =
+      showResolved(true) mkString ("[", ",\n", "]")
+    /**
+     * Convert to form acceptable for input in website.
+     */
+    def toRaw =
+      showResolved(false) mkString "\n"
+  }
+
+  def toProg(t: Term): CompiledProgram = {
+    reset()
+    val main = toProcBase(t)
+    val blocks = main :: topBlocks
+    val blockSizes = (blocks.map (_.length) .scanLeft(0)(_ + _)).tail
+    val labelSizes = Map(topNames zip blockSizes: _*)
+    CompiledProgram(blocks.flatten, labelSizes)
+  }
+
   def showProg(t: Term) = {
-    val (prog, labels) = toProg(t)
-    s"${showTraversable(prog map (_ show()) zipWithIndex)}\n${showTraversable(labels)}\n${toHaskell(prog, labels)}"
+    val cp@CompiledProgram(prog, labels) = toProg(t)
+    s"${cp.showNumbered}\n${cp.showLabels}\n${cp.toHaskell}"
   }
 
   def resolveSymbolic(instrs: Block, labelSizes: Map[Var, Int]) = {
@@ -323,13 +347,5 @@ trait ToProcessor extends BasicDefinitions with TopLevel with Instructions {
       case SEL(Left((thn, els))) => SEL(Right((labelSizes(thn), labelSizes(els))))
       case op => op
     }
-  }
-
-  /**
-   * Convert to a form which can be Read in Haskell with a "natural" definition of instructions
-   * (the one used elsewhere in this repo).
-   */
-  def toHaskell(block: Block, labelSizes: Map[Var, Int]) = {
-    resolveSymbolic(block, labelSizes) map (_ show true) mkString ("[", ",\n", "]")
   }
 }

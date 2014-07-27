@@ -12,6 +12,43 @@ trait InferenceTestHelper
   extends Inference
   with PrettySyntax
 {
+
+  def onTypes[T](transformer: Type => Type): T => T = {
+    //The pattern matching cannot distinguish this.Type from (something else).Type.
+    //Won't be a problem as long as you don't mix different Types in the same tree.
+    case subType: Type @unchecked => transformer(subType).asInstanceOf[T]
+    case notType: Product => mapSubtrees(transformer)(notType).asInstanceOf[T]
+    case v: Traversable[u] => (v map onTypes(transformer)).asInstanceOf[T]
+    case notProduct => notProduct
+  }
+
+  /**
+   * Take a transformer and a term, and apply transformer to each subterm of term.
+   * @param transformer
+   */
+  def mapSubtrees[T <: Product](transformer: Type => Type): T => T =
+    typ => {
+      val subTypes = typ.productIterator.toList map onTypes(transformer)
+      reflectiveCopy(typ, subTypes: _*)
+    }
+
+  /**
+   * Apply transformer to a Type bottom-up: transformer is applied to each leave,
+   * then the parent node is rebuilt with the transformed leaves, then the
+   * transformer is applied to the newly constructed nodes, and so forth.
+   * The traversal algorithm is the same as a fold.
+   *
+   * If you want to implement a rewrite system, this might not be enough — you
+   * might need to implement fix-point iteration, if a single rule needs to be
+   * applied more than once in the same position. Since in my experience most
+   * rules must be applied at most once, this is left to the rules themselves.
+   *
+   * Beta-reduction is a typical example of a rule needing fixpoint iteration.
+   */
+  def traverse[T <: Product](transformer: Type => Type): T => T =
+    typ =>
+      onTypes(transformer)(mapSubtrees(traverse(transformer))(typ))
+
   //object dropSourceInfoBase extends ->((t: TypeVariable) => t copy (uterm = None))
   //val dropSourceInfoType = (t: Type) => everywhere(dropSourceInfoBase)(t)
   object dropSourceInfoBase extends ->((t: TypeVariable) => t copy (uterm = None))

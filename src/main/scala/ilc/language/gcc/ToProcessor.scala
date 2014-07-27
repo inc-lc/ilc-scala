@@ -151,9 +151,9 @@ trait ToProcessor extends BasicDefinitions with TopLevel with Instructions {
       case (Some(idx), idxFrame) =>
         DeBrujinIdx(idxFrame, idx, v)
     })
-    if (results.length != 1)
-      println(s"$results - $v - $frames")
-    assert (results.length == 1) //We don't expect shadowing, do we?
+//    if (results.length != 1)
+//      println(s"$results - $v - $frames")
+//    assert (results.length == 1) //We don't expect shadowing, do we?
     results.head //Finds the left-most (that is, innermost) binding (in case we do support it)
   }
 

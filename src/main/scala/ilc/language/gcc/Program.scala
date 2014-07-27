@@ -26,7 +26,7 @@ object Program extends GCC {
         // TODO add ghosts here...
         } else_ {
           False
-        }
+        } ofType BooleanType
       }
     },
 

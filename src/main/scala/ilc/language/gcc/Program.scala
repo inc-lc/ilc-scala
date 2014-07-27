@@ -18,11 +18,16 @@ class ProgramBase extends GCC {
 
   val helpers = Seq(
     funT('obstacleAt)('world % WorldState, 'x % IntType, 'y % IntType) {
-      letS {
-        'item := 'world_itemAt('world, 'x, 'y)
-      } {
+      letS (
+        'item := 'world_itemAt('world, 'x, 'y),
+        'ghostStatuses := 'world_ghostsStatus('world),
+        'ghostLocations := map('ghostStatuses, 'location),
+        'ghostsInPos := 'any(map('ghostLocations, lam('pos % Loc) {
+          'pos.first === 'x and 'pos.second === 'y
+        }))
+      ) {
         // TODO add ghosts here...
-        'isWall('item)
+        'isWall('item) or 'ghostsInPos
       }
     },
 

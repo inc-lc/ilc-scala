@@ -4,6 +4,7 @@ package gcc
 
 import feature._
 import scala.language.implicitConversions
+import Predef.{any2stringadd => _, _}
 
 /**
  * TODO add later to api:
@@ -18,7 +19,7 @@ import scala.language.implicitConversions
  */
 trait LambdaManApi extends SyntaxSugar {
 
-  lazy val all = worldApi ++ enumApi ++ characterApi ++ directionApi
+  lazy val all = collectionApi ++ worldApi ++ enumApi ++ characterApi ++ directionApi
 
   val Loc: Type = ProductType(IntType, IntType)
   val Dir: Type = IntType
@@ -33,6 +34,9 @@ trait LambdaManApi extends SyntaxSugar {
     val right = 1
     val down  = 2
     val left  = 3
+
+    val first = up
+    val last = left
   }
 
   def elemAt(list: UT, i: UT) =
@@ -61,6 +65,16 @@ trait LambdaManApi extends SyntaxSugar {
     foldRight(list, empty, lam('head, 'tail) {
       f('head) ::: 'tail
     })
+
+  //This contains only monomorphic functions, all polymorphic ones must be macros as above!
+  val collectionApi = Seq(
+    funT('all)('list % ListType(BooleanType)) {
+      foldRight('list, true, lam('b1, 'b2) { 'b1 and 'b2 })
+    },
+    funT('any)('list % ListType(BooleanType)) {
+      foldRight('list, false, lam('b1, 'b2) { 'b1 or 'b2 })
+    }
+  )
 
   /**
    * The state of the world is encoded as follows:
@@ -179,7 +193,8 @@ trait LambdaManApi extends SyntaxSugar {
     funT('isUp)('obj % Dir) { 'obj === move.up },
     funT('isRight)('obj % Dir) { 'obj === move.right },
     funT('isDown)('obj % Dir) { 'obj === move.down },
-    funT('isLeft)('obj % Dir) { 'obj === move.left }
+    funT('isLeft)('obj % Dir) { 'obj === move.left },
+    funT('nextDir)('obj % Dir) { letS('next := 'obj + 1) { if_ ('next > move.last) {move.first} else_ 'next } }
   )
 
 }

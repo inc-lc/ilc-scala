@@ -69,6 +69,7 @@ trait SyntaxSugar
   }
 
   type UT = UntypedTerm
+  implicit def booleanToUT(b: Boolean): UT = if (b) True else False
   implicit class UTermOps[T <% UT](a: T) {
     def +(b: UT) = asUntyped(Plus)(a, b)
     def -(b: UT) = asUntyped(Minus)(a, b)
@@ -82,6 +83,9 @@ trait SyntaxSugar
 
     def ===(b: UT) = asUntyped(Eq)(a, b)
     def =!=(b: UT) = not(a === b)
+
+    def and(b: UT) = if_ (a) { b } else_ { false }
+    def or(b: UT) = if_ (a) { true } else_ { b }
   }
 
   def not(a: UT) = Not(a)

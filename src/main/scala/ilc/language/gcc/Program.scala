@@ -9,8 +9,6 @@ object Program extends GCC {
     //fun('go)('world, 'ghosts) { }
   )
 
-  // TODO implement "or"
-  // TODO implicitly convert booleans
   // TODO add debug statement
 
   val AIState: Type = tupleType(Dir, IntType, IntType, IntType)

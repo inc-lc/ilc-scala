@@ -13,14 +13,45 @@ object testworksheet {
   pretty(localMod)                                //> res1: String = LetRec(List((Var(x,ℤ),LiteralInt(1))),body,App(App(Plus,Var
                                                   //| (x,ℤ)),Var(x,ℤ)))
 
-  toProcBase(localMod)                            //> res2: List[ilc.language.GCC.Instr] = List(DUM(1), LDC(1), LDF(Left(Var(body,
-                                                  //| UnitType))), RAP(1), RTN)
+  toProcBase(localMod)                            //> res2: List[ilc.language.GCC.Instr] = List(DUM(1), LDC(1), LDF(Left(Var(body_
+                                                  //| 1,UnitType))), RAP(1), RTN)
   // showProg(localMod)
   
   
+  
+  /*
+  
+  For LAMBDAMAN, main is a function with two arguments:
+
+ 1. the initial state of the world, encoded as below
+ 2. undocumented
+
+It returns a pair containing:
+
+ 1. the initial AI state
+ 2. the AI step function (closure)
+
+The AI step function has two arguments:
+
+ 1. the current AI state
+ 2. the current state of the world, encoded as below
+
+It returns a pair containing:
+
+ 1. the current AI state
+ 2. the move, encoded as below
+  
+  
+  */
   val program = Seq(
-  	fun('go)('n) { 'to('n + 1) },
-		fun('to)('n) { 'go('n - 1) },
+  	fun('go)('world, 'ghosts) {
+  		  		
+  		(42, lam('_state, 'world) {
+  			('_state, move.left)
+  		})
+  	}
+  	
+		/*fun('to)('n) { 'go('n - 1) },
 		fun('listTest)('n) { (11 ::: 42 ::: empty) get(1) },
 		fun('foo)('n) {
 			if_('n >= 5) {

@@ -101,7 +101,9 @@ trait LambdaManApi extends SyntaxSugar {
      */
     fun('world_ghostsStatus)('world % WorldState) {
       map('world at(2, 4), lam('el) {
-        tuple('el at(0, 3), 'el at(1, 3), 'el at(2, 3), 0, 0)
+        'el.bind('vit, 'loc, 'dir) {
+          tuple('vit, 'loc, 'dir, 0, 0)
+        }
       })
     },
 

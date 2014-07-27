@@ -37,7 +37,11 @@ extends base.Syntax
   def extend(context: InferenceContext, name: String, typ: Type): InferenceContext =
     (name, typ) :: context
 
-  def emptyContext = List()
+  def initVars: List[Var] = Nil
+
+  lazy val emptyContext: InferenceContext = initVars map {
+    case Var(name, typ) => (name.toString, typ)
+  }
 
   sealed trait TypedTerm extends Product {
     def getType: Type

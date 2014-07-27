@@ -138,7 +138,9 @@ trait ToProcessor extends BasicDefinitions with TopLevel with Instructions {
   }
 
   def varInFrame(v: Var)(l: Frame): Option[Int] = {
-    val idx = l.vars indexOf v
+    //Variables must only be looked up by name, not by type.
+    //That's only ever important for the initVars
+    val idx = l.vars map (_.getName) indexOf v.getName
     if (idx == -1)
       None
     else
@@ -151,6 +153,8 @@ trait ToProcessor extends BasicDefinitions with TopLevel with Instructions {
       case (Some(idx), idxFrame) =>
         DeBrujinIdx(idxFrame, idx, v)
     })
+    if (results.length != 1)
+      println(s"$results - $v - $frames")
     assert (results.length == 1) //We don't expect shadowing, do we?
     results.head //Finds the left-most (that is, innermost) binding (in case we do support it)
   }
@@ -282,7 +286,19 @@ trait ToProcessor extends BasicDefinitions with TopLevel with Instructions {
       ???
   }
 
-  def toProcBase(t: Term) = toProc(t, Nil) ++ List(RTN)
+  val forGame = true
+  override def initVars =
+    if (forGame)
+      List(Var("initWorld", freshTypeVariable('initWorld)), Var("ghosts", freshTypeVariable('ghosts)))
+    else
+      Nil
+  def baseFrames: List[Frame] =
+    if (forGame)
+      List(Frame(initVars))
+    else
+      Nil
+
+  def toProcBase(t: Term) = toProc(t, baseFrames) ++ List(RTN)
   def toProg(t: Term): (Block, Map[Var, Int]) = {
     reset()
     val main = toProcBase(t)

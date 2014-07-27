@@ -253,12 +253,10 @@ trait ToProcessor extends BasicDefinitions with TopLevel with Instructions {
         case Abs(v, body) =>
           collectAbs(v :: acc, body)
         case _ =>
-          (acc, t)
+          (acc.reverse, t)
       }
       val (variables, body) = collectAbs(Nil, abs)
-      val funType = variables.reverse.map(_.getType).foldRight(body.getType)(_ =>: _)
-        //variable1 =>:
-        //variable.getType =>: body.getType
+      val funType = variables.map(_.getType).foldRight(body.getType)(_ =>: _)
 
       //We have to lift the body to the top.
       //But we don't do lambda-lifting because we still expect to find the variables in the containing frame.

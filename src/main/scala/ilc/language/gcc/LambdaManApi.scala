@@ -20,6 +20,21 @@ trait LambdaManApi extends SyntaxSugar {
 
   lazy val all = collections ++ worldApi ++ enumApi ++ characterApi ++ directionApi
 
+  val Loc: Type = ProductType(IntType, IntType)
+  val Dir: Type = IntType
+  val Character: Type = tupleType(IntType, Loc, Dir, IntType, IntType)
+  val Ghost: Type = tupleType(IntType, Loc, Dir)
+  val Item: Type = IntType
+  val WorldMap: Type = ListType(ListType(Item))
+  val WorldState: Type = tupleType(WorldMap, Character, ListType(Ghost), IntType)
+
+  object move {
+    val up    = 0
+    val right = 1
+    val down  = 2
+    val left  = 3
+  }
+
   def elemAt(list: UntypedTerm, i: UntypedTerm) =
     letrec {
         fun('go)('l, 'i) {
@@ -31,6 +46,7 @@ trait LambdaManApi extends SyntaxSugar {
         }
       }("elemAtBody", 'go(list, i))
 
+  // TODO reimplement those as macros such as elemAt
   val collections = Seq(
     fun('foldRight)('list, 'z, 'fun) {
       letrec {
@@ -65,16 +81,16 @@ trait LambdaManApi extends SyntaxSugar {
    * grid. An enumeration represents the contents of each grid cell:
    */
   val worldApi = Seq(
-    fun('world_map)('world) { 'world.at(0, 4) },
-    fun('world_lambdaStatus)('world) { 'world at(1, 4) },
-    fun('world_itemAt)('world, 'x, 'y) { elemAt(elemAt('world at(0, 4), 'y), 'x) },
+    funT('world_map)('world % WorldState) { 'world.at(0, 4) },
+    funT('world_lambdaStatus)('world % WorldState) { 'world at(1, 4) },
+    funT('world_itemAt)('world % WorldState, 'x % IntType, 'y % IntType) { elemAt(elemAt('world at(0, 4), 'y), 'x) },
 
     /**
      * Returns a list of ghosts
      *
      * We pad it to a 5-tuple in order to be compatible with lambda man
      */
-    fun('world_ghostsStatus)('world) {
+    funT('world_ghostsStatus)('world % WorldState) {
       'map('world at(2, 4), lam('el) {
         tuple('el at(0, 3), 'el at(1, 3), 'el at(2, 3), 0, 0)
       })
@@ -87,7 +103,7 @@ trait LambdaManApi extends SyntaxSugar {
      * - n > 0: fruit present: the number of game ticks remaining while the
      *          fruit will will be present.
      */
-    fun('world_fruitStatus)('world) { 'world at(3, 4) }
+    funT('world_fruitStatus)('world % WorldState) { 'world at(3, 4) }
   )
 
   /**
@@ -100,13 +116,13 @@ trait LambdaManApi extends SyntaxSugar {
    * - 6: Ghost starting position
    */
   val enumApi = Seq(
-    fun('isWall)('obj) { 'obj === 0 },
-    fun('isEmptyField)('obj) { 'obj === 1 },
-    fun('isPill)('obj) { 'obj === 2 },
-    fun('isPowerPill)('obj) { 'obj === 3 },
-    fun('isFruit)('obj) { 'obj === 4 },
-    fun('isLambdaStart)('obj) { 'obj === 5 },
-    fun('isGhostStart)('obj) { 'obj === 6 }
+    funT('isWall)('obj % Item) { 'obj === 0 },
+    funT('isEmptyField)('obj % Item) { 'obj === 1 },
+    funT('isPill)('obj % Item) { 'obj === 2 },
+    funT('isPowerPill)('obj % Item) { 'obj === 3 },
+    funT('isFruit)('obj % Item) { 'obj === 4 },
+    funT('isLambdaStart)('obj % Item) { 'obj === 5 },
+    funT('isGhostStart)('obj % Item) { 'obj === 6 }
   )
 
   /**
@@ -138,23 +154,23 @@ trait LambdaManApi extends SyntaxSugar {
    *            power pill will will be active
    */
   val characterApi = Seq(
-    fun('vitality)('char) { 'char at(0, 5) },
-    fun('location)('char) { 'char at(1, 5) },
-    fun('direction)('char) { 'char at(2, 5) },
+    funT('vitality)('char % Character) { 'char at(0, 5) },
+    funT('location)('char % Character) { 'char at(1, 5) },
+    funT('direction)('char % Character) { 'char at(2, 5) },
 
     /**
      * Only works for lambdas!
      */
-    fun('lives)('char) { 'char at(3, 5) },
-    fun('score)('char) { 'char at(4, 5) },
+    funT('lives)('char % Character) { 'char at(3, 5) },
+    funT('score)('char % Character) { 'char at(4, 5) },
 
     // for ghosts:
-    fun('isAfraid)('ghost) { 'vitality('ghost) === 1 },
-    fun('isInvisible)('ghost) { 'vitality('ghost) === 2 },
+    funT('isAfraid)('ghost % Character) { 'vitality('ghost) === 1 },
+    funT('isInvisible)('ghost % Character) { 'vitality('ghost) === 2 },
 
     // for lambda man:
-    fun('powerLeft)('lambdaMan) { 'lambdaMan at(0, 5) },
-    fun('isInPowerMode)('lambdaMan) { 'powerLeft('lambdaMan) =!= 0 }
+    funT('powerLeft)('lambdaMan % Character) { 'lambdaMan at(0, 5) },
+    funT('isInPowerMode)('lambdaMan % Character) { 'powerLeft('lambdaMan) =!= 0 }
   )
 
   /**
@@ -165,10 +181,10 @@ trait LambdaManApi extends SyntaxSugar {
    * - 3: left.
    */
   val directionApi = Seq(
-    fun('isUp)('obj) { 'obj === 0 },
-    fun('isRight)('obj) { 'obj === 1 },
-    fun('isDown)('obj) { 'obj === 2 },
-    fun('isLeft)('obj) { 'obj === 3 }
+    funT('isUp)('obj % Dir) { 'obj === move.up },
+    funT('isRight)('obj % Dir) { 'obj === move.right },
+    funT('isDown)('obj % Dir) { 'obj === move.down },
+    funT('isLeft)('obj % Dir) { 'obj === move.left }
   )
 
 }

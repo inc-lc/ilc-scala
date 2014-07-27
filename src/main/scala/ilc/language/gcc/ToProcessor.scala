@@ -248,11 +248,23 @@ trait ToProcessor extends BasicDefinitions with TopLevel with Instructions {
       //toProc(operand, frames) ++ toProc(operator, frames)
 
     //Maybe the current "top-level" handling should instead be used just for letrec*?
-    case Abs(variable, body) =>
+    case abs@Abs(_, _) =>
+      def collectAbs(acc: List[Var], t: Term): (List[Var], Term) = t match {
+        case Abs(v, body) =>
+          collectAbs(v :: acc, body)
+        case _ =>
+          (acc, t)
+      }
+      val (variables, body) = collectAbs(Nil, abs)
+      val funType = variables.reverse.map(_.getType).foldRight(body.getType)(_ =>: _)
+        //variable1 =>:
+        //variable.getType =>: body.getType
+
       //We have to lift the body to the top.
       //But we don't do lambda-lifting because we still expect to find the variables in the containing frame.
-      val (v, isFresh) = suggestedFunName map ((_, false)) getOrElse ((freshener.fresh("fun", variable.getType =>: body.getType), true))
-      toClosure(v, isFresh, body, Frame(List(variable)) :: frames)
+      val (v, isFresh) = suggestedFunName map ((_, false)) getOrElse ((freshener.fresh("fun", funType), true))
+      toClosure(v, isFresh, body, Frame(variables) :: frames)
+
     case LetRec(bindings, bodyName, body) =>
       val frame = Frame(bindings map (_._1))
       //Allow recursion by binding the names before compiling them.

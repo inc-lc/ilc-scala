@@ -66,7 +66,7 @@ object Program extends GCC {
 
 
   val main = letrec((all ++ helpers ++ program): _*)("main",
-      (initialState, lam('_state, 'world) {
+      (initialState, lam('_state % AIState, 'world % WorldState) {
         let('mov, 'myMovement('_state)) {
         let('nextDir, 'chooseFreeDir('world, '_state)) {
            (tuple('nextDir, 0, 0, 0), 'nextDir)

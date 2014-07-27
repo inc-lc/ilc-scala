@@ -17,9 +17,9 @@ import Predef.{any2stringadd => _, _}
  * 1. query the environment
  * 2. actions: moving...
  */
-trait LambdaManApi extends SyntaxSugar {
+trait LambdaManApi extends SyntaxSugar with Math {
 
-  lazy val all = collectionApi ++ worldApi ++ enumApi ++ characterApi ++ directionApi
+  lazy val all = collectionApi ++ worldApi ++ enumApi ++ characterApi ++ directionApi ++ math
 
   val Loc: Type = (int, int)
   val Dir: Type = int
@@ -197,6 +197,14 @@ trait LambdaManApi extends SyntaxSugar {
     fun('isDown)('obj % Dir) { 'obj === move.down },
     fun('isLeft)('obj % Dir) { 'obj === move.left },
     fun('nextDir)('obj % Dir) { letS('next := 'obj + 1) { if_ ('next > move.last) {move.first} else_ 'next } }
+  )
+
+}
+
+trait Math extends SyntaxSugar {
+
+  val math = Seq(
+    fun('mod)('x % int, 'y % int) { 'x - ('x / 'y * 'y) }
   )
 
 }

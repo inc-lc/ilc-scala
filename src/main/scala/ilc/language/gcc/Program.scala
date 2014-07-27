@@ -12,7 +12,11 @@ class ProgramBase extends GCC {
   // TODO add debug statement
 
   val AIState: Type = (Dir, int, int, int)
-  val initialState = tuple(move.left, 0, 0, 0) ofType AIState
+  val initialState = tuple(
+      move.left, // current direction
+      0, // tick
+      0,
+      0) ofType AIState
   val stateSize = 4
 
 
@@ -54,21 +58,37 @@ class ProgramBase extends GCC {
           if_(not('obstacleInDir('world, 'mov))) {
             'mov
           } else_ {
-            'go('nextDir('mov))
+            let ('nextMov, 'randomMove('world, '_state)) {
+              if_ ('mov =!= 'nextMov) {
+                'go('nextMov)
+              } else_ {
+                'go('nextDir('mov))
+              }
+            }
           }
         })("chooseFreeDir",
-          'go('myMovement('_state)))
+          'go('getMovement('_state)))
     },
 
-    fun('myMovement)('_state % AIState) { '_state.at(0, stateSize) }
+    fun('getMovement)('_state % AIState) { '_state.at(0, stateSize) },
+    fun('getTick)('_state % AIState) { '_state.at(1, stateSize) },
+
+    // pseudo-random move, depends on the tick
+    fun('randomMove)('world % WorldState, '_state % AIState) {
+      'mod('getTick('_state), 4) ofType Dir
+    }
 
   )
 
 
   val main = letrec((all ++ helpers ++ program): _*)("main",
       (initialState, lam('_state % AIState, 'world % WorldState) {
-        let('nextDir, 'chooseFreeDir('world, '_state)) {
-           (tuple('nextDir, 0, 0, 0), 'nextDir)
+
+        '_state.bind('currDir % Dir, 'tick % int, '_3, '_4) {
+
+          let('nextDir, 'chooseFreeDir('world, '_state)) {
+             (tuple('nextDir, 'mod('tick + 1, 1337), 0, 0), 'nextDir)
+          }
         }
       }))
 

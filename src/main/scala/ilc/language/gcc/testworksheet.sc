@@ -13,8 +13,8 @@ object testworksheet {
   pretty(localMod)                                //> res1: String = LetRec(List((Var(x,Z),LiteralInt(1))),body,App(App(Plus,Var(x
                                                   //| ,Z)),Var(x,Z)))
 
-  toProcBase(localMod)                            //> res2: List[ilc.language.GCC.Instr] = List(DUM(1), LDC(1), LDF(Left(Var(body_
-                                                  //| 1,UnitType))), RAP(1), RTN)
+  toProcBase(localMod)                            //> res2: List[ilc.language.GCC.Instr] = List(DUM(1), LDC(1), LDF(ResolvableLabe
+                                                  //| ls(List(Var(body_1,UnitType)),None)), RAP(1), RTN)
   // showProg(localMod)
   
   /*
@@ -50,16 +50,16 @@ It returns a pair containing:
   
   */
   val program = Seq(
-  	fun('go)('world, 'ghosts) {
-  		  		
-  		(42, lam('_state, 'world) {
-  			('_state, move.left)
-  		})
-  	})                                        //> program  : Seq[(Symbol, ilc.language.GCC.UntypedTerm)] = List(('go,UAbs(wor
-                                                  //| ld,None,UAbs(ghosts,None,UApp(UApp(UPolymorphicConstant(Pair),UMonomorphicC
-                                                  //| onstant(LiteralInt(42))),UAbs(_state,None,UAbs(world,None,UApp(UApp(UPolymo
-                                                  //| rphicConstant(Pair),UVar(_state)),UMonomorphicConstant(LiteralInt(3))))))))
-                                                  //| ))
+  	fun('go)('tuple % ((int, int, int))) {
+  		'tuple.bind('a, 'b, 'c) {
+  		  'b
+  		}
+  	})                                        //> program  : Seq[(Symbol, ilc.language.GCC.UntypedTerm)] = List(('go,UAbs(tup
+                                                  //| le,Some((Z) x ((Z) x (Z))),UApp(UAbs(bind_2,None,UApp(UAbs(a,None,UApp(UAbs
+                                                  //| (b,None,UApp(UAbs(c,None,UVar(b)),UApp(UPolymorphicConstant(Proj2),UApp(UPo
+                                                  //| lymorphicConstant(Proj2),UVar(bind_2))))),UApp(UPolymorphicConstant(Proj1),
+                                                  //| UApp(UPolymorphicConstant(Proj2),UVar(bind_2))))),UApp(UPolymorphicConstant
+                                                  //| (Proj1),UVar(bind_2)))),UVar(tuple)))))
   	
 		/*fun('to)('n) { 'go('n - 1) },
 		fun('listTest)('n) { (11 ::: 42 ::: empty) get(1) },
@@ -75,108 +75,92 @@ It returns a pair containing:
   
   // ++ all
   val goto = typecheck {
-  	letrec((program): _*)("main", 'go(42))
-  }                                               //> goto  : ilc.language.GCC.Term = LetRec(List((Var(go,Z -> TypeVariable(10,So
-                                                  //| me(UAbs(ghosts,None,UApp(UApp(UPolymorphicConstant(Pair),UMonomorphicConsta
-                                                  //| nt(LiteralInt(42))),UAbs(_state,None,UAbs(world,None,UApp(UApp(UPolymorphic
-                                                  //| Constant(Pair),UVar(_state)),UMonomorphicConstant(LiteralInt(3))))))))) -> 
-                                                  //| ProductType(Z,TypeVariable(14,Some(UAbs(_state,None,UAbs(world,None,UApp(UA
-                                                  //| pp(UPolymorphicConstant(Pair),UVar(_state)),UMonomorphicConstant(LiteralInt
-                                                  //| (3))))))) -> TypeVariable(15,Some(UAbs(world,None,UApp(UApp(UPolymorphicCon
-                                                  //| stant(Pair),UVar(_state)),UMonomorphicConstant(LiteralInt(3)))))) -> Produc
-                                                  //| tType(TypeVariable(14,Some(UAbs(_state,None,UAbs(world,None,UApp(UApp(UPoly
-                                                  //| morphicConstant(Pair),UVar(_state)),UMonomorphicConstant(LiteralInt(3))))))
-                                                  //| ),Z))),Abs(Var(world,Z),Abs(Var(ghosts,TypeVariable(10,Some(UAbs(ghosts,Non
-                                                  //| e,UApp(UApp(UPolymorphicConstant(Pair),UMonomorphicConstant(LiteralInt(42))
-                                                  //| ),UAbs(_state,None,UAbs(world,None,UApp(UApp(UPolymorphicConstant(Pair),UVa
-                                                  //| r(_state)),UMonomorphicConstant(LiteralInt(3)))))))))),App(App(Pair(Z, Type
-                                                  //| Variable(14,Some(UAbs(_state,None,UAbs(world,None,UApp(UApp(UPolymorphicCon
-                                                  //| stant(Pair),UVar(_state)),UMonomorphicConstant(LiteralInt(3))))))) -> TypeV
-                                                  //| ariable(15,Some(UAbs(world,None,UApp(UApp(UPolymorphicConstant(Pair),UVar(_
-                                                  //| state)),UMonomorphicConstant(LiteralInt(3)))))) -> ProductType(TypeVariable
-                                                  //| (14,Some(UAbs(_state,None,UAbs(world,None,UApp(UApp(UPolymorphicConstant(Pa
-                                                  //| ir),UVar(_state)),UMonomorphicConstant(LiteralInt(3))))))),Z)),LiteralInt(4
-                                                  //| 2)),Abs(Var(_state,TypeVariable(14,Some(UAbs(_state,None,UAbs(world,None,UA
-                                                  //| pp(UApp(UPolymorphicConstant(Pair),UVar(_state)),UMonomorphicConstant(Liter
-                                                  //| alInt(3)))))))),Abs(Var(world,TypeVariable(15,Some(UAbs(world,None,UApp(UAp
-                                                  //| p(UPolymorphicConstant(Pair),UVar(_state)),UMonomorphicConstant(LiteralInt(
-                                                  //| 3))))))),App(App(Pair(TypeVariable(14,Some(UAbs(_state,None,UAbs(world,None
-                                                  //| ,UApp(UApp(UPolymorphicConstant(Pair),UVar(_state)),UMonomorphicConstant(Li
-                                                  //| teralInt(3))))))), Z),Var(_state,TypeVariable(14,Some(UAbs(_state,None,UAbs
-                                                  //| (world,None,UApp(UApp(UPolymorphicConstant(Pair),UVar(_state)),UMonomorphic
-                                                  //| Constant(LiteralInt(3))))))))),LiteralInt(3))))))))),main,App(Var(go,Z -> T
-                                                  //| ypeVariable(10,Some(UAbs(ghosts,None,UApp(UApp(UPolymorphicConstant(Pair),U
-                                                  //| MonomorphicConstant(LiteralInt(42))),UAbs(_state,None,UAbs(world,None,UApp(
-                                                  //| UApp(UPolymorphicConstant(Pair),UVar(_state)),UMonomorphicConstant(LiteralI
-                                                  //| nt(3))))))))) -> ProductType(Z,TypeVariable(14,Some(UAbs(_state,None,UAbs(w
-                                                  //| orld,None,UApp(UApp(UPolymorphicConstant(Pair),UVar(_state)),UMonomorphicCo
-                                                  //| nstant(LiteralInt(3))))))) -> TypeVariable(15,Some(UAbs(world,None,UApp(UAp
-                                                  //| p(UPolymorphicConstant(Pair),UVar(_state)),UMonomorphicConstant(LiteralInt(
-                                                  //| 3)))))) -> ProductType(TypeVariable(14,Some(UAbs(_state,None,UAbs(world,Non
-                                                  //| e,UApp(UApp(UPolymorphicConstant(Pair),UVar(_state)),UMonomorphicConstant(L
-                                                  //| iteralInt(3))))))),Z))),LiteralInt(42)))
+  	letrec((program): _*)("main", 'go(tuple(1, 2, 3)))
+  }                                               //> goto  : ilc.language.GCC.Term = LetRec(List((Var(go,(Z) x ((Z) x (Z)) -> Z)
+                                                  //| ,Abs(Var(tuple,(Z) x ((Z) x (Z))),App(Abs(Var(bind_2lit,(Z) x ((Z) x (Z))),
+                                                  //| App(Abs(Var(a,Z),App(Abs(Var(b,Z),App(Abs(Var(c,Z),Var(b,Z)),App(Proj2(Z, Z
+                                                  //| ),App(Proj2(Z, (Z) x (Z)),Var(bind_2lit,(Z) x ((Z) x (Z))))))),App(Proj1(Z,
+                                                  //|  Z),App(Proj2(Z, (Z) x (Z)),Var(bind_2lit,(Z) x ((Z) x (Z))))))),App(Proj1(
+                                                  //| Z, (Z) x (Z)),Var(bind_2lit,(Z) x ((Z) x (Z)))))),Var(tuple,(Z) x ((Z) x (Z
+                                                  //| ))))))),main,App(Var(go,(Z) x ((Z) x (Z)) -> Z),App(App(Pair(Z, (Z) x (Z)),
+                                                  //| LiteralInt(1)),App(App(Pair(Z, Z),LiteralInt(2)),LiteralInt(3)))))
   showProg(goto)                                  //> res3: String = "
                                                   //| 0: DUM 1
-                                                  //| 1: LDF go_2
-                                                  //| 2: LDF main_4
+                                                  //| 1: LDF go_3
+                                                  //| 2: LDF main_8
                                                   //| 3: RAP 1
                                                   //| 4: RTN
-                                                  //| 5: LD 0 0		; var Var(_state,TypeVariable(14,Some(UAbs(_state,None,U
-                                                  //| Abs(world,None,UApp(UApp(UPolymorphicConstant(Pair),UVar(_state)),UMonomorp
-                                                  //| hicConstant(LiteralInt(3))))))))
-                                                  //| 6: LDC 3
-                                                  //| 7: CONS
-                                                  //| 8: RTN
-                                                  //| 9: LDC 42
-                                                  //| 10: LDF fun_3
-                                                  //| 11: CONS
+                                                  //| 5: LD 1 0		; var Var(b,Z)
+                                                  //| 6: RTN
+                                                  //| 7: LD 2 0		; var Var(bind_2lit,(Z) x ((Z) x (Z)))
+                                                  //| 8: CDR
+                                                  //| 9: CDR
+                                                  //| 10: LDF fun_7
+                                                  //| 11: AP 1
                                                   //| 12: RTN
-                                                  //| 13: LDC 42
-                                                  //| 14: LD 0 0		; var Var(go,Z -> TypeVariable(10,Some(UAbs(ghosts,None,
-                                                  //| UApp(UApp(UPolymorphicConstant(Pair),UMonomorphicConstant(LiteralInt(42))),
-                                                  //| UAbs(_state,None,UAbs(world,None,UApp(UApp(UPolymorphicConstant(Pair),UVar(
-                                                  //| _state)),UMonomorphicConstant(LiteralInt(3))))))))) -> ProductType(Z,TypeVa
-                                                  //| riable(14,Some(UAbs(_state,None,UAbs(world,None,UApp(UApp(UPolymorphicConst
-                                                  //| ant(Pair),UVar(_state)),UMonomorphicConstant(LiteralInt(3))))))) -> TypeVar
-                                                  //| iable(15,Some(UAbs(world,None,UApp(UApp(UPolymorphicConstant(Pair),UVar(_st
-                                                  //| ate)),UMonomorphicConstant(LiteralInt(3)))))) -> ProductType(TypeVariable(1
-                                                  //| 4,Some(UAbs(_state,None,UAbs(world,None,UApp(UApp(UPolymorphicConstant(Pair
-                                                  //| ),UVar(_state)),UMonomorphicConstant(LiteralInt(3))))))),Z)))
-                                                  //| 15: AP 1
-                                                  //| 16: RTN
+                                                  //| 13: LD 1 0		; var Var(bind_2lit,(Z) x ((Z) x (Z)))
+                                                  //| 14: CDR
+                                                  //| 15: CAR
+                                                  //| 16: LDF fun_6
+                                                  //| 17: AP 1
+                                                  //| 18: RTN
+                                                  //| 19: LD 0 0		; var Var(bind_2lit,(Z) x ((Z) x (Z)))
+                                                  //| 20: CAR
+                                                  //| 21: LDF fun_5
+                                                  //| 22: AP 1
+                                                  //| 23: RTN
+                                                  //| 24: LD 0 0		; var Var(tuple,(Z) x ((Z) x (Z)))
+                                                  //| 25: LDF fun_4
+                                                  //| 26: AP 1
+                                                  //| 27: RTN
+                                                  //| 28: LDC 1
+                                                  //| 29: LDC 2
+                                                  //| 30: LDC 3
+                                                  //| 31: CONS
+                                                  //| 32: CONS
+                                                  //| 33: LD 0 0		; var Var(go,(Z) x ((Z) x (Z)) -> Z)
+                                                  //| 34: AP 1
+                                                  //| 35: RTN
                                                   //| 
-                                                  //| 5: Var(fun_3,TypeVariable(14,Some(UAbs(_state,None,UAbs(world,None,UApp(UAp
-                                                  //| p(UPolymorphicConstant(Pair),UVar(_state)),UMonomorphicConstant(LiteralInt(
-                                                  //| 3))))))) -> TypeVariable(15,Some(UAbs(world,None,UApp(UApp(UPolymorphicCons
-                                                  //| tant(Pair),UVar(_state)),UMonomorphicConstant(LiteralInt(3)))))) -> Product
-                                                  //| Type(TypeVariable(14,Some(UAbs(_state,None,UAbs(world,None,UApp(UApp(UPolym
-                                                  //| orphicConstant(Pair),UVar(_state)),UMonomorphicConstant(LiteralInt(3)))))))
-                                                  //| ,Z))
-                                                  //| 9: Var(go_2,Z -> TypeVariable(10,Some(UAbs(ghosts,None,UApp(UApp(UPolymorph
-                                                  //| icConstant(Pair),UMonomorphicConstant(LiteralInt(42))),UAbs(_state,None,UAb
-                                                  //| s(world,None,UApp(UApp(UPolymorphicConstant(Pair),UVar(_state)),UMonomorphi
-                                                  //| cConstant(LiteralInt(3))))))))) -> ProductType(Z,TypeVariable(14,Some(UAbs(
-                                                  //| _state,None,UAbs(world,None,UApp(UApp(UPolymorphicConstant(Pair),UVar(_stat
-                                                  //| e)),UMonomorphicConstant(LiteralInt(3))))))) -> TypeVariable(15,Some(UAbs(w
-                                                  //| orld,None,UApp(UApp(UPolymorphicConstant(Pair),UVar(_state)),UMonomorphicCo
-                                                  //| nstant(LiteralInt(3)))))) -> ProductType(TypeVariable(14,Some(UAbs(_state,N
-                                                  //| one,UAbs(world,None,UApp(UApp(UPolymorphicConstant(Pair),UVar(_state)),UMon
-                                                  //| omorphicConstant(LiteralInt(3))))))),Z)))
-                                                  //| 13: Var(main_4,UnitType)
+                                                  //| 13: Var(fun_5,Z -> Z)
+                                                  //| 5: Var(fun_7,Z -> Z)
+                                                  //| 7: Var(fun_6,Z -> Z)
+                                                  //| 28: Var(main_8,UnitType)
+                                                  //| 24: Var(go_3,(Z) x ((Z) x (Z)) -> Z)
+                                                  //| 19: Var(fun_4,(Z) x ((Z) x (Z)) -> Z)
                                                   //| [DUM 1,
-                                                  //| LDF 9,
-                                                  //| LDF 13,
+                                                  //| LDF 24,
+                                                  //| LDF 28,
                                                   //| RAP 1,
                                                   //| RTN,
+                                                  //| LD 1 0,
+                                                  //| RTN,
+                                                  //| LD 2 0,
+                                                  //| CDR,
+                                                  //| CDR,
+                                                  //| LDF 5,
+                                                  //| AP 1,
+                                                  //| RTN,
+                                                  //| LD 1 0,
+                                                  //| CDR,
+                                                  //| CAR,
+                                                  //| LDF 7,
+                                                  //| AP 1,
+                                                  //| RTN,
                                                   //| LD 0 0,
+                                                  //| CAR,
+                                                  //| LDF 13,
+                                                  //| AP 1,
+                                                  //| RTN,
+                                                  //| LD 0 0,
+                                                  //| LDF 19,
+                                                  //| AP 1,
+                                                  //| RTN,
+                                                  //| LDC 1,
+                                                  //| LDC 2,
                                                   //| LDC 3,
                                                   //| CONS,
-                                                  //| RTN,
-                                                  //| LDC 42,
-                                                  //| LDF 5,
                                                   //| CONS,
-                                                  //| RTN,
-                                                  //| LDC 42,
                                                   //| LD 0 0,
                                                   //| AP 1,
                                                   //| RTN]"

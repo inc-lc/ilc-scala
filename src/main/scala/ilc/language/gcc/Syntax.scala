@@ -41,7 +41,6 @@ extends base.Syntax
 
 trait Syntax
 extends functions.Syntax
-   with let.Syntax
    with maybe.Syntax
    with GCCIntSyntax
    with sums.SyntaxSugar

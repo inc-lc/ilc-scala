@@ -31,7 +31,7 @@ object Program extends GCC {
     },
 
     funT('obstacleInDir)('world % WorldState, 'dir % Dir) {
-      let('loc, 'location('world_lambdaStatus('world))) {
+      let('loc, 'location('world_lambdaStatus('world) ofType Loc)) {
       let('nextPos,
          if_('dir === move.left) {
           ('loc.first - 1, 'loc.second)
@@ -41,8 +41,8 @@ object Program extends GCC {
           ('loc.first, 'loc.second - 1)
          } else_ {
           ('loc.first, 'loc.second + 1)
-         }))) {
-          'obstacleAt('world, 'nextPos.first, 'nextPos.second)
+         })) ofType Loc) {
+          'obstacleAt('world, 'nextPos.first, 'nextPos.second) ofType BooleanType
         }
       }
     },

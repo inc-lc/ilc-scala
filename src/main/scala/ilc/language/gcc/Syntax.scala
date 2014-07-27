@@ -84,8 +84,8 @@ trait SyntaxSugar
     def ===(b: UT) = asUntyped(Eq)(a, b)
     def =!=(b: UT) = not(a === b)
 
-    def and(b: UT) = if_ (a) { b } else_ { false }
-    def or(b: UT) = if_ (a) { true } else_ { b }
+    def and(b: UT) = a * b
+    def or(b: UT) = (a + b) >= 1
   }
 
   def not(a: UT) = Not(a)
@@ -95,23 +95,21 @@ trait SyntaxSugar
     def else_(els: UntypedTerm): UntypedTerm = asUntyped(IfThenElse)(cond, '_ ->: thn, '_ ->: els)
   }
 
-  // other syntax for functions
-  def lam(firstArg: Symbol, args: Symbol*)(body: UntypedTerm) =
-    (firstArg +: args).foldRight(body)(_ ->: _)
+  // Symbol + TypeAnnotation
+  type NameOrTyped = Either[Symbol, TypeAnnotation]
+  implicit def symbolIsLeft(s: Symbol): NameOrTyped = Left(s)
+  implicit def annotationIsRight(anno: TypeAnnotation): NameOrTyped = Right(anno)
 
-  def lam(firstArg: TypeAnnotation, args: TypeAnnotation*)(body: UntypedTerm) =
-    (firstArg +: args).foldRight(body)(_ ->: _)
+  // other syntax for functions
+  def lam(firstArg: NameOrTyped, args: NameOrTyped*)(body: UntypedTerm) =
+    (firstArg +: args).foldRight(body){
+       case (Left(name), body) => name ->: body
+       case (Right(annotation), body) => annotation ->: body
+    }
 
   // creates a pair to be used immediately in letrec like
   //   letrec(fun('go)('n) { 'to('n + 1) })
-  def fun(name: Symbol)(firstArg: Symbol, args: Symbol*)(body: UntypedTerm) =
-    (name -> lam(firstArg, args: _*)(body))
-
-  def fun(name: String)(firstArg: Symbol, args: Symbol*)(body: UntypedTerm) =
-    (name -> lam(firstArg, args: _*)(body))
-
-   // TODO simplify this
-   def funT(name: Symbol)(firstArg: TypeAnnotation, args: TypeAnnotation*)(body: UntypedTerm) =
+  def fun(name: Symbol)(firstArg: NameOrTyped, args: NameOrTyped*)(body: UntypedTerm) =
     (name -> lam(firstArg, args: _*)(body))
 
 
@@ -130,4 +128,21 @@ trait SyntaxSugar
     def second = outer.second(t)
     def at(i: Int, n: Int) = project(i, n, t)
   }
+
+
+
+  // Type syntax
+
+  // some aliases for built-in types (lower case to not conflict with scala)
+  val int: Type = IntType
+  val bool: Type = BooleanType
+
+  implicit def pair2ToProductType[S <% Type, T <% Type](p: (S, T))
+    = tupleType(p._1, p._2)
+  implicit def pair3ToProductType[S <% Type, T <% Type, U <% Type](p: (S, T, U))
+    = tupleType(p._1, p._2, p._3)
+  implicit def pair4ToProductType[S <% Type, T <% Type, U <% Type, V <% Type](p: (S, T, U, V))
+    = tupleType(p._1, p._2, p._3, p._4)
+  implicit def pair5ToProductType[S <% Type, T <% Type, U <% Type, V <% Type, W <% Type](p: (S, T, U, V, W))
+    = tupleType(p._1, p._2, p._3, p._4, p._5)
 }

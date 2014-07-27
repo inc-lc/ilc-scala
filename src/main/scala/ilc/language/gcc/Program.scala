@@ -11,13 +11,17 @@ class ProgramBase extends GCC {
 
   // TODO add debug statement
 
-  val AIState: Type = tupleType(Dir, IntType, IntType, IntType)
-  val initialState = tuple(move.left, 0, 0, 0)
+  val AIState: Type = (Dir, int, int, int)
+  val initialState = tuple(move.left, 0, 0, 0) ofType AIState
   val stateSize = 4
 
 
   val helpers = Seq(
-    funT('obstacleAt)('world % WorldState, 'x % IntType, 'y % IntType) {
+    fun('test)('a % bool, 'b % bool) {
+      ('a or 'b) and 'a
+    },
+
+    fun('obstacleAt)('world % WorldState, 'x % IntType, 'y % IntType) {
       letS (
         'item := 'world_itemAt('world, 'x, 'y),
         'ghostStatuses := 'world_ghostsStatus('world),
@@ -26,12 +30,11 @@ class ProgramBase extends GCC {
           'pos.first === 'x and 'pos.second === 'y
         }))
       ) {
-        // TODO add ghosts here...
         'isWall('item) or 'ghostsInPos
       }
     },
 
-    funT('obstacleInDir)('world % WorldState, 'dir % Dir) {
+    fun('obstacleInDir)('world % WorldState, 'dir % Dir) {
 
       let('loc, 'location('world_lambdaStatus('world) ofType Character) ofType Loc) {
       let('nextPos,
@@ -44,12 +47,12 @@ class ProgramBase extends GCC {
          } else_ {
           ('loc.first, 'loc.second + 1)
          })) ofType Loc) {
-          'obstacleAt('world, 'nextPos.first, 'nextPos.second) ofType BooleanType
+          'obstacleAt('world, 'nextPos.first, 'nextPos.second) ofType bool
         }
       }
     },
 
-    funT('chooseFreeDir)('world % WorldState, '_state % AIState) {
+    fun('chooseFreeDir)('world % WorldState, '_state % AIState) {
       if_(not('obstacleInDir('world, move.right))) {
         move.right
       } else_ (if_(not('obstacleInDir('world, move.left))) {
@@ -61,7 +64,7 @@ class ProgramBase extends GCC {
       }))
     },
 
-    funT('myMovement)('_state % AIState) { '_state.at(0, stateSize) }
+    fun('myMovement)('_state % AIState) { '_state.at(0, stateSize) }
 
   )
 

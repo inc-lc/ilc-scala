@@ -111,8 +111,10 @@ class ProgramBase extends GCC {
 
   val cp @ CompiledProgram(prog, labels) = toProg(typecheck(main))
 
+  def results = cp.toRaw
+
   //println("[" + (resolveSymbolic(prog, labels) map (_ show(true)) mkString ",\n") + "]")
-  def showProg() = println(cp.toRaw)
+  def showProg() = println(results)
 
 }
 

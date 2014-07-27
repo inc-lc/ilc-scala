@@ -128,4 +128,21 @@ trait SyntaxSugar
     def second = outer.second(t)
     def at(i: Int, n: Int) = project(i, n, t)
   }
+
+
+
+  // Type syntax
+
+  // some aliases for built-in types (lower case to not conflict with scala)
+  val int: Type = IntType
+  val bool: Type = BooleanType
+
+  implicit def pair2ToProductType[S <% Type, T <% Type](p: (S, T))
+    = tupleType(p._1, p._2)
+  implicit def pair3ToProductType[S <% Type, T <% Type, U <% Type](p: (S, T, U))
+    = tupleType(p._1, p._2, p._3)
+  implicit def pair4ToProductType[S <% Type, T <% Type, U <% Type, V <% Type](p: (S, T, U, V))
+    = tupleType(p._1, p._2, p._3, p._4)
+  implicit def pair5ToProductType[S <% Type, T <% Type, U <% Type, V <% Type, W <% Type](p: (S, T, U, V, W))
+    = tupleType(p._1, p._2, p._3, p._4, p._5)
 }

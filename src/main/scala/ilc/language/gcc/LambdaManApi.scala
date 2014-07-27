@@ -20,13 +20,13 @@ trait LambdaManApi extends SyntaxSugar {
 
   lazy val all = collections ++ worldApi ++ enumApi ++ characterApi ++ directionApi
 
-  val Loc: Type = ProductType(IntType, IntType)
-  val Dir: Type = IntType
-  val Character: Type = tupleType(IntType, Loc, Dir, IntType, IntType)
-  val Ghost: Type = tupleType(IntType, Loc, Dir)
-  val Item: Type = IntType
+  val Loc: Type = (int, int)
+  val Dir: Type = int
+  val Character: Type = (int, Loc, Dir, int, int)
+  val Ghost: Type = (int, Loc, Dir)
+  val Item: Type = int
   val WorldMap: Type = ListType(ListType(Item))
-  val WorldState: Type = tupleType(WorldMap, Character, ListType(Ghost), IntType)
+  val WorldState: Type = (WorldMap, Character, ListType(Ghost), int)
 
   object move {
     val up    = 0
@@ -83,7 +83,7 @@ trait LambdaManApi extends SyntaxSugar {
   val worldApi = Seq(
     fun('world_map)('world % WorldState) { 'world.at(0, 4) },
     fun('world_lambdaStatus)('world % WorldState) { 'world at(1, 4) },
-    fun('world_itemAt)('world % WorldState, 'x % IntType, 'y % IntType) { elemAt(elemAt('world at(0, 4), 'y), 'x) },
+    fun('world_itemAt)('world % WorldState, 'x % int, 'y % int) { elemAt(elemAt('world at(0, 4), 'y), 'x) },
 
     /**
      * Returns a list of ghosts

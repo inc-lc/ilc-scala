@@ -17,16 +17,15 @@ class ProgramBase extends GCC {
 
 
   val helpers = Seq(
-    funT('obstacleAt)('world % WorldState, 'x % IntType, 'y % IntType) {
+    fun('obstacleAt)('world % WorldState, 'x % IntType, 'y % IntType) {
       letS {
         'item := 'world_itemAt('world, 'x, 'y)
       } {
-        // TODO add ghosts here...
         'isWall('item)
       }
     },
 
-    funT('obstacleInDir)('world % WorldState, 'dir % Dir) {
+    fun('obstacleInDir)('world % WorldState, 'dir % Dir) {
 
       let('loc, 'location('world_lambdaStatus('world) ofType Character) ofType Loc) {
       let('nextPos,
@@ -44,7 +43,7 @@ class ProgramBase extends GCC {
       }
     },
 
-    funT('chooseFreeDir)('world % WorldState, '_state % AIState) {
+    fun('chooseFreeDir)('world % WorldState, '_state % AIState) {
       if_(not('obstacleInDir('world, move.right))) {
         move.right
       } else_ (if_(not('obstacleInDir('world, move.left))) {
@@ -56,7 +55,7 @@ class ProgramBase extends GCC {
       }))
     },
 
-    funT('myMovement)('_state % AIState) { '_state.at(0, stateSize) }
+    fun('myMovement)('_state % AIState) { '_state.at(0, stateSize) }
 
   )
 

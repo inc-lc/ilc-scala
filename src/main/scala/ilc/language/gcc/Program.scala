@@ -18,13 +18,11 @@ object Program extends GCC {
 
   val helpers = Seq(
     funT('obstacleAt)('world % WorldState, 'x % IntType, 'y % IntType) {
-      let('item, 'world_itemAt('world, 'x, 'y)) {
-        if_('isWall('item)) {
-          True
+      letS {
+        'item := 'world_itemAt('world, 'x, 'y)
+      } {
         // TODO add ghosts here...
-        } else_ {
-          False
-        } ofType BooleanType
+        'isWall('item)
       }
     },
 

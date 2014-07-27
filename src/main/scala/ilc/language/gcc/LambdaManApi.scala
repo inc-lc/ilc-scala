@@ -18,7 +18,7 @@ import scala.language.implicitConversions
  */
 trait LambdaManApi extends SyntaxSugar {
 
-  lazy val all = collections ++ worldApi ++ enumApi ++ characterApi ++ directionApi
+  lazy val all = worldApi ++ enumApi ++ characterApi ++ directionApi
 
   val Loc: Type = ProductType(IntType, IntType)
   val Dir: Type = IntType
@@ -35,7 +35,7 @@ trait LambdaManApi extends SyntaxSugar {
     val left  = 3
   }
 
-  def elemAt(list: UntypedTerm, i: UntypedTerm) =
+  def elemAt(list: UT, i: UT) =
     letrec {
         fun('go)('l, 'i) {
           if_('i === 0) {
@@ -46,26 +46,21 @@ trait LambdaManApi extends SyntaxSugar {
         }
       }("elemAtBody", 'go(list, i))
 
-  // TODO reimplement those as macros such as elemAt
-  val collections = Seq(
-    fun('foldRight)('list, 'z, 'fun) {
-      letrec {
-        fun('go)('l) {
-          if_('l.isEmpty) {
-            'z
-          } else_ {
-            'fun('l.head, 'go('l.tail))
-          }
+  def foldRight(list: UT, z: UT, f: UT) =
+    letrec {
+      fun('go)('l) {
+        if_('l.isEmpty) {
+          z
+        } else_ {
+          f('l.head, 'go('l.tail))
         }
-      }("foldRightBody", 'go('list))
-    },
+      }
+    }("foldRightBody", 'go(list))
 
-    fun('map)('list, 'fun) {
-      'foldRight('list, empty, lam('head, 'tail) {
-        'fun('head) ::: 'tail
-      })
-    }
-  )
+  def map(list: UT, f: UT) =
+    foldRight(list, empty, lam('head, 'tail) {
+      f('head) ::: 'tail
+    })
 
   /**
    * The state of the world is encoded as follows:
@@ -91,7 +86,7 @@ trait LambdaManApi extends SyntaxSugar {
      * We pad it to a 5-tuple in order to be compatible with lambda man
      */
     funT('world_ghostsStatus)('world % WorldState) {
-      'map('world at(2, 4), lam('el) {
+      map('world at(2, 4), lam('el) {
         tuple('el at(0, 3), 'el at(1, 3), 'el at(2, 3), 0, 0)
       })
     },

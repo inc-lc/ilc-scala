@@ -30,8 +30,8 @@ extends base.Syntax
 
   case class Constraint(_1: Type, _2: Type, ctx: String = "", parent: Option[Constraint] = None) {
     def pretty(showTerm: Boolean = true): String =
-      s"""|Expected: ${_1}
-          |Actual: ${_2}
+      s"""|Actual: ${_1}
+          |Expected: ${_2}
           |${if (showTerm) s"From context: $ctx" else ""}
           |From constraint stack:
           |${parent.fold("")(_.pretty(false)) }

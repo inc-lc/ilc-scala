@@ -82,7 +82,6 @@ trait Instructions {
         assert(!forHaskell)
         v.getName.toString
       case Right(i) =>
-        assert(forHaskell)
         i.toString
     }
   }
@@ -119,7 +118,6 @@ trait Instructions {
         assert(!forHaskell)
         thn.getName.toString + " " + els.getName.toString
       case Right((i, j)) =>
-        assert(forHaskell)
         i.toString + " " + j.toString
     }
   }

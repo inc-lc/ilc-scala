@@ -14,11 +14,13 @@ extends base.Syntax
    with UntypedSyntax
    with Reflection
 {
-  case class UnificationFailureDetails(remaining: Set[Constraint], substitutions: Map[TypeVariable, Type]) {
-    override def toString = s"remaining constraints: ${remaining.mkString("\n")}\n\nsubstitutions: ${substitutions.mkString("\n")}"
+  case class UnificationFailureDetails(unsat: Constraint, remaining: Set[Constraint], substitutions: Map[TypeVariable, Type]) {
+    override def toString = s"failed constraint: ${unsat.pretty}"
+      //s"remaining constraints: ${remaining.mkString("\n")}\n\nsubstitutions: ${substitutions.mkString("\n")}"
   }
   class UnificationFailure(val details: UnificationFailureDetails) extends Exception("No unification possible")
-  def UnificationFailure(remaining: Set[Constraint], substitutions: Map[TypeVariable, Type]) = new UnificationFailure(UnificationFailureDetails(remaining, substitutions))
+  def UnificationFailure(unsat: Constraint, remaining: Set[Constraint], substitutions: Map[TypeVariable, Type]) =
+    new UnificationFailure(UnificationFailureDetails(unsat, remaining, substitutions))
 
   // Only use this for pattern matching. Create new TypeVariables with freshTypeVariable.
   case class TypeVariable(name: Int, uterm: Option[UntypedTerm] = None) extends Type
@@ -26,7 +28,13 @@ extends base.Syntax
   val typeVariableCounter: AtomicInteger = new AtomicInteger()
   def freshTypeVariable(uterm: UntypedTerm): TypeVariable = TypeVariable(typeVariableCounter.incrementAndGet(), Some(uterm))
 
-  case class Constraint(_1: Type, _2: Type, term: Option[UntypedTerm] = None)
+  case class Constraint(_1: Type, _2: Type, term: Option[UntypedTerm] = None) {
+    def pretty =
+      s"""|Expected: ${_1}
+          |Actual: ${_2}
+          |From term: ${term.fold ("")(_.toString()) }
+          |""".stripMargin
+  }
 
   def emptyConstraintSet = Set[Constraint]()
 

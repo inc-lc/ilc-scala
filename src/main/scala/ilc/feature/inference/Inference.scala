@@ -15,7 +15,7 @@ extends base.Syntax
    with Reflection
 {
   case class UnificationFailureDetails(unsat: Constraint, remaining: Set[Constraint], substitutions: Map[TypeVariable, Type]) {
-    override def toString = s"failed constraint: ${unsat.pretty}"
+    override def toString = s"failed constraint: ${unsat.pretty()}"
       //s"remaining constraints: ${remaining.mkString("\n")}\n\nsubstitutions: ${substitutions.mkString("\n")}"
   }
   class UnificationFailure(val details: UnificationFailureDetails) extends Exception("No unification possible")
@@ -28,11 +28,13 @@ extends base.Syntax
   val typeVariableCounter: AtomicInteger = new AtomicInteger()
   def freshTypeVariable(uterm: UntypedTerm): TypeVariable = TypeVariable(typeVariableCounter.incrementAndGet(), Some(uterm))
 
-  case class Constraint(_1: Type, _2: Type, term: Option[UntypedTerm] = None) {
-    def pretty =
+  case class Constraint(_1: Type, _2: Type, term: Option[UntypedTerm] = None, parent: Option[Constraint] = None) {
+    def pretty(showTerm: Boolean = true): String =
       s"""|Expected: ${_1}
           |Actual: ${_2}
-          |From term: ${term.fold ("")(_.toString()) }
+          |${if (showTerm) s"From term: ${term.fold ("")(_.toString())}" else ""}
+          |From constraint stack:
+          |${parent.fold("")(_.pretty(false)) }
           |""".stripMargin
   }
 
@@ -79,7 +81,7 @@ extends base.Syntax
     override def getType = body.getType
   }
 
-  import shapeless._
+  //import shapeless._
 
   //This line must be after all case classes subtypes of TypedTerm, because it uses macros, so all expectations for equational reasoning are lost.
   //implicit def GenericTypedTerm = Generic[TypedTerm]
@@ -152,11 +154,12 @@ extends base.Syntax
         substitutions
       else
         remaining.head match {
-          case Constraint(a, b, _) if a == b => unificationHelper(remaining.tail, substitutions)
-          case Constraint(tn: TypeVariable, a, _) if !occurs(tn, a) => typeVariableAndAnythingElse(tn, a, remaining, substitutions)
-          case Constraint(a, tn: TypeVariable, _) if !occurs(tn, a) => typeVariableAndAnythingElse(tn, a, remaining, substitutions)
-          case Constraint(a, b, term) if a.getClass == b.getClass =>  unificationHelper(remaining.tail ++ (getTypes(a), getTypes(b)).zipped.map(Constraint(_, _, term)).toSet, substitutions)
-          case _ => throw UnificationFailure(remaining, substitutions)
+          case Constraint(a, b, _, _) if a == b => unificationHelper(remaining.tail, substitutions)
+          case Constraint(tn: TypeVariable, a, _, _) if !occurs(tn, a) => typeVariableAndAnythingElse(tn, a, remaining, substitutions)
+          case Constraint(a, tn: TypeVariable, _, _) if !occurs(tn, a) => typeVariableAndAnythingElse(tn, a, remaining, substitutions)
+          case c @ Constraint(a, b, term, _) if a.getClass == b.getClass => unificationHelper(remaining.tail ++ (getTypes(a), getTypes(b)).zipped.map(Constraint(_, _,
+              term, Some(c))).toSet, substitutions)
+          case unsat => throw UnificationFailure(unsat, remaining, substitutions)
         }
     }
     unificationHelper(constraints, Map())

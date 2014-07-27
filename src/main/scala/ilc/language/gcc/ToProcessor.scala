@@ -132,6 +132,9 @@ trait Instructions {
   case object CAR extends PrimInstr
   case object CDR extends PrimInstr
   case object ATOM extends PrimInstr
+
+  // Debugging
+  case object DBUG extends PrimInstr
 }
 
 trait ToProcessor extends BasicDefinitions with TopLevel with Instructions {
@@ -217,6 +220,9 @@ trait ToProcessor extends BasicDefinitions with TopLevel with Instructions {
     case Tail(elemT) => List(CDR)
     case IsEmpty(elemT) => List(ATOM)
 
+    case App(App(Sequence(_, _), fst), thn) =>
+      toProc(fst, frames, suggestedFunName) ++ toProc(thn, frames, suggestedFunName)
+
     //Core: lambda-calculus with letrec*.
     /* TODOs:
      * - Add more primitives
@@ -284,6 +290,8 @@ trait ToProcessor extends BasicDefinitions with TopLevel with Instructions {
 
     case v @ Var(name, _) =>
       List(LD(toIdx(v, frames)))
+
+    case Debug(el) => List(DBUG)
 
     case _ =>
       ???

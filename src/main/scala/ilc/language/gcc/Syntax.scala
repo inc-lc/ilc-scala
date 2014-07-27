@@ -33,6 +33,18 @@ extends base.Syntax
   case object Gt extends IntCmpOp
   case object Gte extends IntCmpOp
 
+  case object Debug extends ConstantWith1TypeParameter {
+    val typeConstructor = TypeConstructor("elemTyp") {
+      case elemType => elemType =>: UnitType
+    }
+  }
+
+  case object Sequence extends ConstantWith2TypeParameters {
+    val typeConstructor = TypeConstructor("leftType", "rightType") {
+      case Seq(leftType, rightType) => rightType
+    }
+  }
+
   implicit def intToTerm(n: Int): Term = LiteralInt(n)
 
   case object Not extends Term {
@@ -116,6 +128,11 @@ trait SyntaxSugar
     def ==>(body: UT) = (asUntyped(t), body)
   }
 
+  // Sequencing and Debugging
+  implicit class SeqOps[T <% UT](t: T) {
+    def ~:(thn: UT) = asUntyped(Sequence)(thn, t)
+  }
+  def debug[T <% UT](t: T): UT = asUntyped(Debug)(t)
 
   // Symbol + TypeAnnotation
   type NameOrTyped = Either[Symbol, TypeAnnotation]

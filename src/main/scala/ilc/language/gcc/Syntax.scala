@@ -4,6 +4,7 @@ package gcc
 
 import feature._
 import scala.language.implicitConversions
+import base.FreshGen
 
 trait GCCIntSyntax
 extends base.Syntax
@@ -96,6 +97,25 @@ trait SyntaxSugar
     def else_if(elsCond: UntypedTerm)(elsThn: UntypedTerm) =
       ProvideElse(elsEls => buildIf(asUntyped(IfThenElse)(elsCond, '_ ->: elsThn, '_ ->: elsEls)))
   }
+
+  val freshener: FreshGen { val syntax: outer.type }
+
+  // syntax: switch(value)(branches*) withDefault (defaultValue)
+  def switch(value: UntypedTerm)(branches: (UntypedTerm, UntypedTerm)*) = WithDefault(value, branches)
+  case class WithDefault(value: UntypedTerm, branches: Seq[(UntypedTerm, UntypedTerm)]) {
+    def withDefault(default: UntypedTerm): UntypedTerm = {
+      val condName = Symbol(freshener.fresh("cond", int).getName.toString)
+      let(condName, value)(branches.foldRight(default) {
+        case ((comp, body), els) => if_(condName === comp)(body) else_(els)
+      })
+    }
+  }
+
+  // for specifying switch cases
+  implicit class CaseOps[T <% UT](t: T) {
+    def ==>(body: UT) = (asUntyped(t), body)
+  }
+
 
   // Symbol + TypeAnnotation
   type NameOrTyped = Either[Symbol, TypeAnnotation]

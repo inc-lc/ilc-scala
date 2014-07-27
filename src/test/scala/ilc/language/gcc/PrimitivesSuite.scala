@@ -20,7 +20,14 @@ extends FunSuite
       }
     }
 
+    typecheck {
+      switch(42)(
+          44 ==> 4,
+          43 ==> 5
+      ) withDefault 0
+    }
 
 
   }
+
 }

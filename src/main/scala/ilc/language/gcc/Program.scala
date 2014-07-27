@@ -38,15 +38,11 @@ class ProgramBase extends GCC {
 
       let('loc, 'location('world_lambdaStatus('world) ofType Character) ofType Loc) {
       let('nextPos,
-         if_('dir === move.left) {
-          ('loc.first - 1, 'loc.second)
-         } .else_if ('dir === move.right) {
-          ('loc.first + 1, 'loc.second)
-         } .else_if ('dir === move.up) {
-          ('loc.first, 'loc.second - 1)
-         } else_ {
-          ('loc.first, 'loc.second + 1)
-         } ofType Loc) {
+         switch ('dir) (
+           move.left  ==> ('loc.first - 1, 'loc.second),
+           move.right ==> ('loc.first + 1, 'loc.second),
+           move.up    ==> ('loc.first, 'loc.second - 1)
+         ) withDefault(('loc.first, 'loc.second + 1)) ofType Loc ) {
           'obstacleAt('world, 'nextPos.first, 'nextPos.second) ofType bool
         }
       }

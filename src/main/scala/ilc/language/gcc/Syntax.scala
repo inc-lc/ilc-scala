@@ -54,7 +54,7 @@ extends functions.Syntax
 trait SyntaxSugar
   extends Syntax
   with inference.PrettySyntax
-  with inference.LetSyntaxSugar
+  with inference.SyntaxSugar
   with inference.LetRecUntypedSyntax
   with inference.LetRecInference
   with products.StdLib

@@ -4,7 +4,7 @@ package gcc
 
 import scala.language.postfixOps
 import feature._
-import let.FreshGen
+import base.FreshGen
 import collection._
 
 trait BasicDefinitions {

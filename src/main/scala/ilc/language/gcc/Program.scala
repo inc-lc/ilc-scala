@@ -3,7 +3,7 @@ package gcc
 
 import Predef.{any2stringadd => _, _}
 
-object Program extends GCC {
+class ProgramBase extends GCC {
 
   val program = Seq(
     //fun('go)('world, 'ghosts) { }
@@ -89,6 +89,16 @@ object Program extends GCC {
   val cp @ CompiledProgram(prog, labels) = toProg(typecheck(main))
 
   //println("[" + (resolveSymbolic(prog, labels) map (_ show(true)) mkString ",\n") + "]")
-  println(cp.toRaw)
+  def showProg() = println(cp.toRaw)
 
+}
+
+//To load in REPL
+object Program extends ProgramBase {
+  showProg()
+}
+
+//To actually run.
+object Main extends App {
+  (new ProgramBase()).showProg
 }

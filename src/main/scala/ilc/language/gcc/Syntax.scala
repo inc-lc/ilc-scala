@@ -115,6 +115,13 @@ trait SyntaxSugar
     (name -> lam(firstArg, args: _*)(body))
 
 
+  //For use within letS.
+  //Example:
+  //letS('a := 1, 'b := 2){3}
+  implicit class SymBindingOps(s: Symbol) {
+    def :=(t: UntypedTerm) = s -> t
+  }
+
   implicit def consSyntax[A <% UT, B <% UT](scalaPair: (A, B)): UntypedTerm =
     pair(scalaPair._1, scalaPair._2)
 

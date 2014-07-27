@@ -149,7 +149,23 @@ trait SyntaxSugar
     def first = outer.first(t)
     def second = outer.second(t)
     def at(i: Int, n: Int) = project(i, n, t)
+
+    // Allows binding the contents of a tuple - similar to let
+    // syntax (1, 2, 3) bind ('a, 'b, 'c) { ... use 'a, 'b and 'c here ... }
+    def bind(firstName: NameOrTyped, names: NameOrTyped*)(body: UntypedTerm) = {
+      val tuple = Symbol(freshener.fresh("bind", int).getName.toString)
+      val size = names.size + 1
+      let(tuple, t) {
+        letS(
+         (firstName +: names).zipWithIndex.map {
+           case (Left(name), i) => name := tuple at(i, size)
+           case (Right(TypeAnnotation(name, tpe)), i) => Symbol(name) := tuple at(i, size) ofType (tpe)
+         }: _*)(body)
+      }
+    }
   }
+
+
 
 
 

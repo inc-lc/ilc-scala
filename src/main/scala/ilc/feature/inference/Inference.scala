@@ -28,11 +28,11 @@ extends base.Syntax
   val typeVariableCounter: AtomicInteger = new AtomicInteger()
   def freshTypeVariable(uterm: UntypedTerm): TypeVariable = TypeVariable(typeVariableCounter.incrementAndGet(), Some(uterm))
 
-  case class Constraint(_1: Type, _2: Type, term: Option[UntypedTerm] = None, parent: Option[Constraint] = None) {
+  case class Constraint(_1: Type, _2: Type, ctx: String = "", parent: Option[Constraint] = None) {
     def pretty(showTerm: Boolean = true): String =
       s"""|Expected: ${_1}
           |Actual: ${_2}
-          |${if (showTerm) s"From term: ${term.fold ("")(_.toString())}" else ""}
+          |${if (showTerm) s"From context: $ctx" else ""}
           |From constraint stack:
           |${parent.fold("")(_.pretty(false)) }
           |""".stripMargin
@@ -100,7 +100,7 @@ extends base.Syntax
       val (tt1, c1) = collectConstraints(t1, context)
       val (tt2, c2) = collectConstraints(t2, context)
       val x = freshTypeVariable(term)
-      val c = c1 ++ c2 + Constraint(tt1.getType, =>:(tt2.getType, x), Some(term))
+      val c = c1 ++ c2 + Constraint(tt1.getType, =>:(tt2.getType, x), s"applying $t1 to $t2")
       (TApp(tt1, tt2, x), c)
     case UMonomorphicConstant(term) =>
       (TMonomorphicConstant(term), emptyConstraintSet)
@@ -108,9 +108,9 @@ extends base.Syntax
       val typeArguments = (1 to t.typeConstructor.arity) map (_ => freshTypeVariable(term))
       val typ = t.typeConstructor(typeArguments)
       (TPolymorphicConstant(t, typ, typeArguments), emptyConstraintSet)
-    case TypeAscription(term, typ) =>
-      val (tt, c) = collectConstraints(term, context)
-      (tt, c + Constraint(tt.getType, typ, Some(term)))
+    case TypeAscription(innerTerm, typ) =>
+      val (tt, c) = collectConstraints(innerTerm, context)
+      (tt, c + Constraint(tt.getType, typ, term.toString()))
     case _ => sys error s"Cannot infer type for $term"
   }
 
@@ -130,7 +130,7 @@ extends base.Syntax
 
   def substituteInConstraint(substitutions: Map[TypeVariable, Type])(constraint: Constraint): Constraint =
     Constraint(substituteInType(substitutions)(constraint._1),
-     substituteInType(substitutions)(constraint._2), constraint.term)
+     substituteInType(substitutions)(constraint._2), constraint.ctx)
 
   def substitute(substitutions: Map[TypeVariable, Type], term: TypedTerm): TypedTerm = term match {
     case TVar(name, typ) => TVar(name, substituteInType(substitutions)(typ))
@@ -157,8 +157,8 @@ extends base.Syntax
           case Constraint(a, b, _, _) if a == b => unificationHelper(remaining.tail, substitutions)
           case Constraint(tn: TypeVariable, a, _, _) if !occurs(tn, a) => typeVariableAndAnythingElse(tn, a, remaining, substitutions)
           case Constraint(a, tn: TypeVariable, _, _) if !occurs(tn, a) => typeVariableAndAnythingElse(tn, a, remaining, substitutions)
-          case c @ Constraint(a, b, term, _) if a.getClass == b.getClass => unificationHelper(remaining.tail ++ (getTypes(a), getTypes(b)).zipped.map(Constraint(_, _,
-              term, Some(c))).toSet, substitutions)
+          case c @ Constraint(a, b, ctx, _) if a.getClass == b.getClass => unificationHelper(remaining.tail ++ (getTypes(a), getTypes(b)).zipped.map(Constraint(_, _,
+              ctx, Some(c))).toSet, substitutions)
           case unsat => throw UnificationFailure(unsat, remaining, substitutions)
         }
     }
@@ -225,7 +225,7 @@ trait LetInference extends Inference with LetUntypedSyntax with let.Syntax {
       val (typedExp, c1) = collectConstraints(exp, context)
       val argType = freshTypeVariable(term)
       val (typedBody, c2) = collectConstraints(body, extend(context, variable, argType))
-      val c = c1 ++ c2 + Constraint(argType, typedExp.getType, Some(term))
+      val c = c1 ++ c2 + Constraint(argType, typedExp.getType, term.toString())
       (TLet(variable, argType, typedExp, typedBody), c)
     case _ => super.collectConstraints(term, context)
   }
@@ -252,8 +252,8 @@ trait LetRecInference extends Inference with LetRecUntypedSyntax with functions.
       }
       val (typedExps, constraintss) = (pairs map { case (variable, exp) => collectConstraints(exp, extCtx)}).unzip
       val (typedBody, c2) = collectConstraints(body, extCtx)
-      val expMatchConstraints = typedExps map (_.getType) zip (tVars map (_._2)) map {
-        case (expT, varT) => Constraint(varT, expT, Some(term))
+      val expMatchConstraints = typedExps zip tVars map {
+        case (exp, v@(varName, varT)) => Constraint(varT, exp.getType, s"matching $exp and $v")
       }
       val c = c2 ++ constraintss.flatten ++ expMatchConstraints
       val bindings = (pairs map (_._1)) zip (tVars map (_._2)) zip typedExps map {

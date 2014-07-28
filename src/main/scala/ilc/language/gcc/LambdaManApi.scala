@@ -230,6 +230,25 @@ trait Collection extends SyntaxSugar { outer =>
           'acc
         }
       })
+    /*
+     * zip
+     */
+    /*def zip(other: UT)
+      = letrec(
+          'go := lam('l1, 'l2) {
+          }
+        )("zipMain", 'go('list, 'other))*/
+
+    def search(comp: UT /* T =>: bool */)
+      = foldRight(list, (empty, 0), lam('el, 'accPair) {
+        'acc.bind('acc, 'pos) {
+          (if_(not(comp('el))) {
+            ('el, 'pos) ::: 'acc
+          } else_ {
+            'acc
+          }, 'pos + 1)
+        }
+      }).first
   }
 }
 
@@ -430,7 +449,6 @@ trait Points extends SyntaxSugar with Collection { outer: LambdaManApi =>
         }
       )("updateBody", 'findColumn(0, list))
    }
-
 
     def width: UT = list.head.size
     def height: UT = list.size

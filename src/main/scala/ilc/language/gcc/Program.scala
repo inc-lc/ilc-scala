@@ -11,18 +11,29 @@ class ProgramBase extends GCC {
 
   // TODO add debug statement
 
-  val AIState: Type = (Dir, int, int, int)
+  val AIState: Type = (Dir, int, Point, int)
   val initialState = tuple(
       move.left, // current direction
       0, // tick
-      0,
+      (0, 0), //fruit position
       0) ofType AIState
   val stateSize = 4
 
+  val mapApi = Seq(
+  )
 
   val helpers = Seq(
     fun('test)('a % bool, 'b % bool) {
       ('a or 'b) and 'a
+    },
+
+    fun('findFruit)('map % WorldMap) {
+      val foundColumns = map('map, lam('row) { 'row search { lam('cell)('isFruit('cell)) }})
+      val foundFruit = foundColumns search { lam('row) { not('row.isEmpty) } }
+      let('head, foundFruit.head) {
+        ('head.second, 'head.first.head.second)
+      }
+      // X and Y
     },
 
     fun('obstacleAt)('world % WorldState, 'x % IntType, 'y % IntType) {
@@ -80,10 +91,18 @@ class ProgramBase extends GCC {
 
   )
 
+  /*
+   * Look for the next thing among:
+   * - ghosts (in fright mode)
+   * - fruit
+   * - power pill [ if ghosts are nearby ? ]
+   * - pills
+   */
   val targetPosition: UT = tuple(1, 1)
 
   val main = letrec((all ++ helpers ++ program): _*)("main",
-      (initialState, lam('_state % AIState, 'world % WorldState) {
+      (initialState.bind('dir, 'tick, 'fruitPos, 'dum) {tuple('dir, 'tick, 'findFruitLocation('world_map('initWorld ofType WorldState)), 'dum)},
+          lam('_state % AIState, 'world % WorldState) {
 
         '_state.bind('currDir % Dir, 'tick % int, '_3, '_4) {
 

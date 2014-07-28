@@ -43,9 +43,9 @@ class ProgramBase extends GCC {
       let('loc, 'location('world_lambdaStatus('world) ofType Character) ofType Loc) {
       let('nextPos,
          switch ('dir) (
-           move.left  ==> ('loc.first - 1, 'loc.second),
-           move.right ==> ('loc.first + 1, 'loc.second),
-           move.up    ==> ('loc.first, 'loc.second - 1)
+           move.left  ==> (('loc.first - 1, 'loc.second)),
+           move.right ==> (('loc.first + 1, 'loc.second)),
+           move.up    ==> (('loc.first, 'loc.second - 1))
          ) withDefault(('loc.first, 'loc.second + 1)) ofType Loc ) {
           'obstacleAt('world, 'nextPos.first, 'nextPos.second) ofType bool
         }

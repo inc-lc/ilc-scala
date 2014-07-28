@@ -2,16 +2,9 @@ package ilc
 package feature
 package let
 
-import language._
-
-object StaticCaching extends WorksheetHelpers {
-  val v = buildBaseBacchus()                      //> v  : ilc.language.Bacchus with ilc.feature.integers.ImplicitSyntaxSugar with
-                                                  //|  ilc.feature.inference.LetInference with ilc.feature.let.BetaReduction with 
-                                                  //| ilc.feature.let.Pretty with ilc.feature.products.StdLib with ilc.feature.inf
-                                                  //| erence.LetSyntaxSugar = ilc.feature.let.Instantiations$$anon$2@692ed858
-  import v._
-  val cacher = buildCacher(v)                     //> cacher  : ilc.feature.let.AddCaches2{val mySyntax: ilc.feature.let.Instantia
-                                                  //| tions.<refinement>.type} = ilc.feature.let.Instantiations$$anon$4@4373e7e5
+object StaticCaching {
+  import WorksheetHelpers._
+  import bacchus._
   import cacher._
   import aNormalizer._
   /*

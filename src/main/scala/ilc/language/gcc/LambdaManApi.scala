@@ -304,7 +304,7 @@ trait Pathfinding extends SyntaxSugar with Points with Collection { self: Lambda
         'F := lam('a % Point, 'gMap % GMap) { 'G('a, 'gMap) + 'H('a) },
 
         // the last cells of the map
-        'limit := ('map.head.size - 1, 'map.size - 1),
+        'limit := (('map.head.size - 1, 'map.size - 1)),
         'inRange := lam('p % Point) { 'p.x >= 0 and 'p.y >= 0 and 'p.x <= 'limit.x and 'p.y <= 'limit.y },
 
         'isObstacle := lam('a % Point) { ('map atPos 'a) === 0 },
@@ -315,10 +315,10 @@ trait Pathfinding extends SyntaxSugar with Points with Collection { self: Lambda
         letrec {
           fun('loop)('curCell % Point, 'openList % Queue, 'closedList % Queue, 'parents % ParentMap, 'gMap % GMap) {
             letS(
-              'Ncell := 'curCell |+| ( 0, -1),
-              'Scell := 'curCell |+| ( 0,  1),
-              'Ecell := 'curCell |+| ( 1,  0),
-              'Wcell := 'curCell |+| (-1,  0),
+              'Ncell := 'curCell |+| (( 0, -1)),
+              'Scell := 'curCell |+| (( 0,  1)),
+              'Ecell := 'curCell |+| (( 1,  0)),
+              'Wcell := 'curCell |+| ((-1,  0)),
               'cells := list('Ncell, 'Scell, 'Ecell, 'Wcell),
 
               'alreadyHandled := lam('p % Point) { 'closedList contains ('p, 'pointEq) },

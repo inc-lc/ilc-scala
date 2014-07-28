@@ -312,7 +312,7 @@ trait Pathfinding extends SyntaxSugar with Points with Collection { self: Lambda
      */
     fun('computePath)('from % Point, 'to % Point, 'map % GameMap) {
       letrec (
-        'parents := 'computeParents('from, 'to, 'map),
+        'parents := 'computeParents('from, 'map, 'distanceTo('to), 'isObstacle('map)),
         'computePathGo := lam('curr, 'acc) {
           if_('pointEq('curr, 'from)) {
             'from ::: 'acc
@@ -326,32 +326,35 @@ trait Pathfinding extends SyntaxSugar with Points with Collection { self: Lambda
 
     },
 
-    //Main function for A*.
-    fun('computeParents)('start % Point, 'target % Point, 'map % GameMap) {
-      letS(
-        // parameters to control the algorithm
-        'dg := 1,
-        'dh := 1,
+    'pathParamDg := 1,
+    'pathParamDh := 1,
 
+    fun('distanceTo)('target % Point) { noop ~: lam('p % Point) { 'pathParamDh * 'manhattan('p, 'target) } },
+    fun('isObstacle)('map % GameMap) { noop ~: lam('p % Point) {  ('map atPos 'p) =!= 0  } },
+
+    /**
+     * Main function for A*
+     *
+     * @param start the point to start the path search from
+     * @param map a two dimensional list representing the game map
+     * @param distance the approximated distance to the desired goal (point => int)
+     * @param shouldConsider a predicate that tests for obstacles
+     */
+    fun('computeParents)('start % Point, 'map % GameMap, 'distance % (Point =>: int), 'shouldConsider % (Point =>: bool)) {
+      letS(
         // distance measures
-        'H := lam('a % Point) { 'dh * 'manhattan('a, 'target) },
         'G := lam('a % Point, 'gMap % GMap) {
           if_(hashmap('gMap) isDefinedAt ('a, 'pointHash)) {
             hashmap('gMap).get('a, 'pointHash)
           } else_ {
-            'dg * 'manhattan('a, 'start)
+            'pathParamDg * 'manhattan('a, 'start)
           }
         },
-        'F := lam('a % Point, 'gMap % GMap) { 'G('a, 'gMap) + 'H('a) },
+        'F := lam('a % Point, 'gMap % GMap) { 'G('a, 'gMap) + 'distance('a) },
 
         // the last cells of the map
         'limit := (('map.head.size - 1, 'map.size - 1)),
-        'inRange := lam('p % Point) { 'p.x >= 0 and 'p.y >= 0 and 'p.x <= 'limit.x and 'p.y <= 'limit.y },
-
-        'isObstacle := lam('a % Point) { ('map atPos 'a) === 0 }
-
-//        'parentsInit := createMap('map.width, 'map.height, (-1, -1)) ofType ParentMap,
-//        'gMapInit    := createMap('map.width, 'map.height, -1) ofType GMap
+        'inRange := lam('p % Point) { 'p.x >= 0 and 'p.y >= 0 and 'p.x <= 'limit.x and 'p.y <= 'limit.y }
       ) {
         letrec {
           //Invariant: 'curCell is inside 'closedList
@@ -361,10 +364,9 @@ trait Pathfinding extends SyntaxSugar with Points with Collection { self: Lambda
               'Scell := 'curCell |+| (( 0,  1)),
               'Ecell := 'curCell |+| (( 1,  0)),
               'Wcell := 'curCell |+| ((-1,  0)),
-              'cells := list('Ncell, 'Scell, 'Ecell, 'Wcell),
+              'neighbours := list('Ncell, 'Scell, 'Ecell, 'Wcell),
 
               'alreadyHandled := lam('p % Point) { 'closedList contains ('p, 'pointEq) },
-              'shouldConsider := lam('p % Point) { not('isObstacle('p) or 'alreadyHandled('p)) },
 
                /**
                 * Updates the parents, openList and gMap for the given cell
@@ -374,12 +376,12 @@ trait Pathfinding extends SyntaxSugar with Points with Collection { self: Lambda
               'checkCell := lam('p % Point, 'localState % LocalState) {
 
                 'localState.bind('parents, 'openList, 'gMap) {
-                  if_('inRange('p) and 'shouldConsider('p)) {
+                  if_('inRange('p) and not('alreadyHandled('p)) and 'shouldConsider('p)) {
                     if_(not('openList contains ('p, 'pointEq))) {
                       tuple(hashmap('parents).put('p, 'curCell, 'pointHash), 'p ::: 'openList, 'gMap)
                     } else_ {
                       letS(
-                          'gvalCur := 'G('curCell, 'gMap) + 'dg, //XXX do we want to keep + 'dg?
+                          'gvalCur := 'G('curCell, 'gMap) + 'pathParamDg,
                           'gvalP := 'G('p, 'gMap)
                           ) {
                         // Showing these values shows
@@ -416,7 +418,7 @@ trait Pathfinding extends SyntaxSugar with Points with Collection { self: Lambda
                  })
                },
 
-               'nextState := foldRight('cells, tuple('parents, 'openList, 'gMap), 'checkCell)
+               'nextState := foldRight('neighbours, tuple('parents, 'openList, 'gMap), 'checkCell)
             ) {
               'nextState.bind('parents, 'openList, 'gMap) {
                 if_('openList.isEmpty) {
@@ -427,7 +429,7 @@ trait Pathfinding extends SyntaxSugar with Points with Collection { self: Lambda
                     'nextOpenList   := 'openList.filterNot(lam('el){ 'pointEq('el, 'nextCell) }),
                     'nextClosedList := 'nextCell ::: 'closedList
                   ) {
-                    if_('pointEq('nextCell, 'target)) {
+                    if_('distance('nextCell) === 0) {
                       // Show map of weights.
                       // debug('gMap) ~:
                       'parents

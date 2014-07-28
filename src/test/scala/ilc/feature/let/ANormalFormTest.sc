@@ -2,7 +2,7 @@ package ilc
 package feature
 package let
 
-object ANormalFormTest extends WorksheetHelpers {
+object ANormalFormTest extends Instantiations {
   val v = buildBacchusWithLetSystem(true, true, true)
                                                   //> v  : ilc.language.Bacchus with ilc.feature.let.ANormalFormAdapter with ilc.f
                                                   //| eature.integers.ImplicitSyntaxSugar with ilc.feature.integers.Evaluation wit

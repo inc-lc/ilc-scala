@@ -41,7 +41,7 @@ extends FunSuite
 
   test("Should create maps of given size") {
     withLibraries {
-      (createMap(4, 8, tuple(-1, -1)) atPos ((2, 2))) === (-1, -1)
+      (createMap(4, 8, tuple(-1, -1)) atPos ((2, 2))) === ((-1, -1))
     }
   }
 

@@ -11,12 +11,12 @@ class ProgramBase extends GCC {
 
   // TODO add debug statement
 
-  val AIState: Type = (Dir, int, Point, int)
+  val AIState: Type = (Dir, int, Point, ListType(Point))
   val initialState = tuple(
       move.left, // current direction
       0, // tick
       (0, 0), //fruit position
-      0) ofType AIState
+      empty) ofType AIState
   val stateSize = 4
 
   val mapApi = Seq(
@@ -99,22 +99,36 @@ class ProgramBase extends GCC {
    * - pills
    */
   val targetPosition: UT = tuple(1, 1)
+  def otherTargetPositions(xSize: UT, ySize: UT) = list(tuple(xSize - 2, 1), tuple(1, ySize - 2), tuple(xSize - 2, ySize - 2))
 
   val main = letrec((all ++ helpers ++ program): _*)("main",
-      (initialState.bind('dir, 'tick, 'fruitPos, 'dum) {tuple('dir, 'tick, 'findFruitLocation('world_map('initWorld ofType WorldState)), 'dum)},
+    (initialState.bind('dir, 'tick, 'fruitPos, 'dum) {
+      letS(
+          'map := 'world_map('initWorld ofType WorldState),
+          'ySize := size('map),
+          'xSize := size('map.head)
+          ){
+        tuple('dir, 'tick,
+          targetPosition,
+          ///*'fruitPos 'findFruitLocation(*/'world_map('initWorld ofType WorldState),
+          otherTargetPositions('xSize, 'ySize))
+      }
+    },
           lam('_state % AIState, 'world % WorldState) {
 
-        '_state.bind('currDir % Dir, 'tick % int, '_3, '_4) {
+        '_state.bind('currDir % Dir, 'tick % int, 'dest, 'otherDests) {
 
           letS(
               'currentPos := 'location('world_lambdaStatus('world)),
-
+              'newDestsPair := if_ ('pointEq('currentPos, 'dest)) { ('otherDests.head, 'otherDests.tail) } else_ { ('dest, 'otherDests) },
+              'newDest := 'newDestsPair.first,
+              'newOtherDests := 'newDestsPair.second,
               // TODO this is really expensive, should not be computed every tick... only if strategy changes
-              'path := 'computePath('currentPos, targetPosition, 'world_map('world)),
+              'path := 'computePath('currentPos, 'newDest, 'world_map('world)),
               'nextPos := 'path.head, // TODO check for empty...
               'nextDir := 'currentPos moveTo 'nextPos/*'chooseFreeDir('world, '_state)*/
           ) {
-             (tuple('nextDir, 'mod('tick + 1, 1337), 0, 0), 'nextDir)
+             (tuple('nextDir, 'mod('tick + 1, 1337), 'newDest, 'newOtherDests), 'nextDir)
           }
         }
       }))

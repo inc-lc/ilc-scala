@@ -262,6 +262,8 @@ trait Pathfinding extends SyntaxSugar with Points with Collection { self: Lambda
   // used in loop body
   val LocalState = (ParentMap, Queue, GMap)
 
+  val initWalked = 0
+
   val pathfinding = Seq(
 
     fun('manhattan)('from % Point, 'to % Point) {
@@ -288,6 +290,7 @@ trait Pathfinding extends SyntaxSugar with Points with Collection { self: Lambda
 
     },
 
+    //Main function for A*.
     fun('computeParents)('start % Point, 'target % Point, 'map % GameMap) {
       letS(
         // parameters to control the algorithm
@@ -313,7 +316,8 @@ trait Pathfinding extends SyntaxSugar with Points with Collection { self: Lambda
         'gMapInit    := createMap('map.width, 'map.height, -1) ofType GMap
       ) {
         letrec {
-          fun('loop)('curCell % Point, 'openList % Queue, 'closedList % Queue, 'parents % ParentMap, 'gMap % GMap) {
+          //Invariant: 'curCell is inside 'closedList
+          fun('loop)('curCell % Point, 'openList % Queue, 'closedList % Queue, 'parents % ParentMap, 'gMap % GMap, 'walked % int) {
             letS(
               'Ncell := 'curCell |+| (( 0, -1)),
               'Scell := 'curCell |+| (( 0,  1)),
@@ -335,11 +339,23 @@ trait Pathfinding extends SyntaxSugar with Points with Collection { self: Lambda
                   if_('inRange('p) and 'shouldConsider('p)) {
                     if_(not('openList contains ('p, 'pointEq))) {
                       tuple('parents.update(Point)('p, 'curCell), 'p ::: 'openList, 'gMap)
-                    }. else_if (('G('curCell, 'gMap) + 'dg) < 'G('p, 'gMap)) {
-                      // update parents and gmap
-                      tuple('parents.update(Point)('p, 'curCell), 'openList, 'gMap.update(int)('p, 'G('curCell, 'gMap) + 'dg))
                     } else_ {
-                      tuple('parents, 'openList, 'gMap)
+                      letS(
+                          'gvalCur := 'G('curCell, 'gMap) + 'dg, //XXX do we want to keep + 'dg?
+                          'gvalP := 'G('p, 'gMap)
+                          ) {
+                        // Showing these values shows
+                        // we enter here seldom, if ever,
+                        // since we seldom compare different paths to the
+                        // same point.
+                        //debug('gvalCur) ~: debug('gvalP) ~:
+                        (if_('gvalCur < 'gvalP) {
+                          // update parents and gmap
+                          tuple('parents.update(Point)('p, 'curCell), 'openList, 'gMap.update(int)('p, 'gvalCur))
+                        } else_ {
+                          tuple('parents, 'openList, 'gMap)
+                        })
+                      }
                     }
                   } else_ {
                     tuple('parents, 'openList, 'gMap) // did not change anything
@@ -371,16 +387,24 @@ trait Pathfinding extends SyntaxSugar with Points with Collection { self: Lambda
                     'nextClosedList := 'nextCell ::: 'closedList
                   ) {
                     if_('pointEq('nextCell, 'target)) {
+                      // Show map of weights.
+                      // debug('gMap) ~:
                       'parents
                     } else_ {
-                      'loop('nextCell, 'nextOpenList, 'nextClosedList, 'parents, 'gMap)
+                      // Store in map how much it took to get to 'nextCell.
+                      // This makes the 'G cost function more precise.
+                      letS (
+                        'updGMap := 'gMap.update(int)('nextCell, 'walked)
+                      ) {
+                        'loop('nextCell, 'nextOpenList, 'nextClosedList, 'parents, 'updGMap, 'walked + 1)
+                      }
                     }
                   }
                 }
               }
             }
           }
-        }("pathfindingBody", 'loop('start, empty, 'start ::: empty, 'parentsInit, 'gMapInit))
+        }("pathfindingBody", 'loop('start, empty, 'start ::: empty, 'parentsInit, 'gMapInit, initWalked))
       }
     }
   )

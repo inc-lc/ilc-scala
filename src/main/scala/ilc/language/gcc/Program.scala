@@ -99,7 +99,7 @@ class ProgramBase extends GCC {
    * - pills
    */
   val targetPosition: UT = tuple(1, 1)
-  def otherTargetPositions(xSize: UT, ySize: UT) = list(tuple(xSize - 2, 1), tuple(1, ySize - 2), tuple(xSize - 2, ySize - 2))
+  def otherTargetPositions(xSize: UT, ySize: UT) = list(tuple(xSize - 2, 1), tuple(xSize - 2, ySize - 2), tuple(1, ySize - 2))
 
   val main = letrec((all ++ helpers ++ program): _*)("main",
     (initialState.bind('dir, 'tick, 'fruitPos, 'dum) {

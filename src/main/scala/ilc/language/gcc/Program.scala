@@ -27,7 +27,7 @@ class ProgramBase extends GCC {
       ('a or 'b) and 'a
     },
 
-    fun('findFruit)('map % WorldMap) {
+    fun('findFruitLocation)('map % WorldMap) {
       val foundColumns = map('map, lam('row) { 'row search { lam('cell)('isFruit('cell)) }})
       val foundFruit = foundColumns search { lam('row) { not('row.isEmpty) } }
       let('head, foundFruit.head) {

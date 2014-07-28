@@ -241,7 +241,7 @@ trait Collection extends SyntaxSugar { outer =>
 
     def search(comp: UT /* T =>: bool */)
       = foldRight(list, (empty, 0), lam('el, 'accPair) {
-        'acc.bind('acc, 'pos) {
+        'accPair.bind('acc, 'pos) {
           (if_(not(comp('el))) {
             ('el, 'pos) ::: 'acc
           } else_ {

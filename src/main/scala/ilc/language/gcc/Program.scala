@@ -98,8 +98,8 @@ class ProgramBase extends GCC {
    * - power pill [ if ghosts are nearby ? ]
    * - pills
    */
-  val targetPosition: UT = tuple(1, 1)
-  def otherTargetPositions(xSize: UT, ySize: UT) = list(tuple(xSize - 2, 1), tuple(xSize - 2, ySize - 2), tuple(1, ySize - 2))
+  def targetPosition(xSize: UT, ySize: UT): UT = tuple(1, ySize - 2)
+  def otherTargetPositions(xSize: UT, ySize: UT) = list(tuple(1, 1), tuple(xSize - 2, 1), tuple(xSize - 2, ySize - 2))
 
   val main = letrec((all ++ helpers ++ program): _*)("main",
     (initialState.bind('dir, 'tick, 'fruitPos, 'dum) {
@@ -109,7 +109,7 @@ class ProgramBase extends GCC {
           'xSize := size('map.head)
           ){
         tuple('dir, 'tick,
-          targetPosition,
+          targetPosition('xSize, 'ySize),
           ///*'fruitPos 'findFruitLocation(*/'world_map('initWorld ofType WorldState),
           otherTargetPositions('xSize, 'ySize))
       }

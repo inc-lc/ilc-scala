@@ -66,6 +66,26 @@ extends FunSuite
     }
   }
 
+  test("Should add elements to hashmap") {
+    withLibraries {
+      // Map from any to point
+      lam('map % HashMap(Point)) {
+        hashmap('map)
+          .put((0, 15), (1, 1), 'pointHash)
+          .put((8, 12), (2, 0), 'pointHash)
+      }
+    }
+  }
+
+  test("Should test whether hashmap contains element") {
+    withLibraries {
+      // Map from any to point
+      lam('map % HashMap(Point)) {
+        hashmap('map).isDefinedAt((0, 8), 'pointHash) or false
+      }
+    }
+  }
+
 
 
 }

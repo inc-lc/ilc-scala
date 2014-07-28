@@ -166,6 +166,42 @@ trait LambdaManApi extends SyntaxSugar with Math with Collection with Pathfindin
 
 trait Collection extends SyntaxSugar { outer =>
 
+  // The type of a very primitive hash map with O(n) lookup but O(1) update
+  // still should yield performance improvements on lists of lists which are mostly empty...
+  def HashMap(t: Type) = ListType((int, t))
+
+  implicit class HashMapOps[T <: UT](hmap: T /* Map[K, V] */) {
+
+    // we simply never GC old keys... Should work for short lived maps
+    def put(key: UT /* K */, value: UT /* V */, hashfun: UT /* K => int */) =
+      (hashfun(key), value) ::: hmap
+
+    def get(key: UT, hashfun: UT) =
+      letrec {
+        fun('hmapGet)('map, 'hashedKey % int) {
+          //XXX handle empty case and raise appropriate error
+          'map.head.bind('key, 'value) {
+            if_('key === 'hashedKey) { 'value } else_{ 'hmapGet('map.tail, 'hashedKey) }
+          }
+        }
+      }("hmapGet", 'hmapGet(hmap, hashfun(key)))
+
+    def isDefinedAt(key: UT, hashfun: UT) =
+      letrec {
+        fun('hmapisDefinedAt)('map, 'hashedKey % int) {
+          if_('map.isEmpty) {
+            false
+          } else_ {
+            'map.head.bind('key, 'value) {
+              ('key === 'hashedKey) or 'hmapisDefinedAt('map.tail, 'hashedKey)
+            }
+          }
+        }
+      }("hmapisDefinedAt", 'hmapisDefinedAt(hmap, hashfun(key)))
+  }
+  def hashmap(t: UT): HashMapOps[UT] = t
+
+
   def elemAt(list: UT, i: UT) =
     letrec {
         fun('goElemAt)('l, 'i % int) {
@@ -255,8 +291,8 @@ trait Collection extends SyntaxSugar { outer =>
 // requires Math and Points
 trait Pathfinding extends SyntaxSugar with Points with Collection { self: LambdaManApi =>
 
-  val ParentMap = ListType(ListType(Point))
-  val GMap      = ListType(ListType(int))
+  val ParentMap = HashMap(Point) // Map[Point, Point]
+  val GMap      = HashMap(int) // Map[Point, int]
   val Queue     = ListType(Point)
 
   // used in loop body
@@ -281,7 +317,7 @@ trait Pathfinding extends SyntaxSugar with Points with Collection { self: Lambda
           if_('pointEq('curr, 'from)) {
             'from ::: 'acc
           } else_{
-            let('next, 'parents atPos 'curr) {
+            let('next, hashmap('parents).get('curr, 'pointHash)) {
               'computePathGo('next, 'next ::: 'acc)
             }
           }
@@ -300,8 +336,10 @@ trait Pathfinding extends SyntaxSugar with Points with Collection { self: Lambda
         // distance measures
         'H := lam('a % Point) { 'dh * 'manhattan('a, 'target) },
         'G := lam('a % Point, 'gMap % GMap) {
-          let('value, 'gMap atPos 'a) {
-            if_('value === -1) { 'dg * 'manhattan('a, 'start) } else_{ 'value }
+          if_(hashmap('gMap) isDefinedAt ('a, 'pointHash)) {
+            hashmap('gMap).get('a, 'pointHash)
+          } else_ {
+            'dg * 'manhattan('a, 'start)
           }
         },
         'F := lam('a % Point, 'gMap % GMap) { 'G('a, 'gMap) + 'H('a) },
@@ -310,10 +348,10 @@ trait Pathfinding extends SyntaxSugar with Points with Collection { self: Lambda
         'limit := (('map.head.size - 1, 'map.size - 1)),
         'inRange := lam('p % Point) { 'p.x >= 0 and 'p.y >= 0 and 'p.x <= 'limit.x and 'p.y <= 'limit.y },
 
-        'isObstacle := lam('a % Point) { ('map atPos 'a) === 0 },
+        'isObstacle := lam('a % Point) { ('map atPos 'a) === 0 }
 
-        'parentsInit := createMap('map.width, 'map.height, (-1, -1)) ofType ParentMap,
-        'gMapInit    := createMap('map.width, 'map.height, -1) ofType GMap
+//        'parentsInit := createMap('map.width, 'map.height, (-1, -1)) ofType ParentMap,
+//        'gMapInit    := createMap('map.width, 'map.height, -1) ofType GMap
       ) {
         letrec {
           //Invariant: 'curCell is inside 'closedList
@@ -338,7 +376,7 @@ trait Pathfinding extends SyntaxSugar with Points with Collection { self: Lambda
                 'localState.bind('parents, 'openList, 'gMap) {
                   if_('inRange('p) and 'shouldConsider('p)) {
                     if_(not('openList contains ('p, 'pointEq))) {
-                      tuple('parents.update(Point)('p, 'curCell), 'p ::: 'openList, 'gMap)
+                      tuple(hashmap('parents).put('p, 'curCell, 'pointHash), 'p ::: 'openList, 'gMap)
                     } else_ {
                       letS(
                           'gvalCur := 'G('curCell, 'gMap) + 'dg, //XXX do we want to keep + 'dg?
@@ -351,7 +389,10 @@ trait Pathfinding extends SyntaxSugar with Points with Collection { self: Lambda
                         //debug('gvalCur) ~: debug('gvalP) ~:
                         (if_('gvalCur < 'gvalP) {
                           // update parents and gmap
-                          tuple('parents.update(Point)('p, 'curCell), 'openList, 'gMap.update(int)('p, 'gvalCur))
+                          tuple(
+                              hashmap('parents).put('p, 'curCell, 'pointHash),
+                              'openList,
+                              hashmap('gMap).put('p, 'gvalCur, 'pointHash))
                         } else_ {
                           tuple('parents, 'openList, 'gMap)
                         })
@@ -394,7 +435,7 @@ trait Pathfinding extends SyntaxSugar with Points with Collection { self: Lambda
                       // Store in map how much it took to get to 'nextCell.
                       // This makes the 'G cost function more precise.
                       letS (
-                        'updGMap := 'gMap.update(int)('nextCell, 'walked)
+                        'updGMap := hashmap('gMap).put('nextCell, 'walked, 'pointHash)
                       ) {
                         'loop('nextCell, 'nextOpenList, 'nextClosedList, 'parents, 'updGMap, 'walked + 1)
                       }
@@ -404,7 +445,7 @@ trait Pathfinding extends SyntaxSugar with Points with Collection { self: Lambda
               }
             }
           }
-        }("pathfindingBody", 'loop('start, empty, 'start ::: empty, 'parentsInit, 'gMapInit, initWalked))
+        }("pathfindingBody", 'loop('start, empty, 'start ::: empty, empty, empty, initWalked))
       }
     }
   )
@@ -490,6 +531,9 @@ trait Points extends SyntaxSugar with Collection { outer: LambdaManApi =>
 
   val points = Seq(
     fun('pointEq)('p1 % Point, 'p2 % Point) { ('p1.x === 'p2.x) and ('p1.y === 'p2.y) },
+
+    // We know that the map size is at most 256 * 256
+    fun('pointHash)('p % Point) { 'p.x * 256 + 'p.y },
 
     fun('vectorToMove)('v % Point) {
       if_('pointEq('v, (0, -1))) {

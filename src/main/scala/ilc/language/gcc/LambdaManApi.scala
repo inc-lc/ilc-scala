@@ -222,7 +222,7 @@ trait Collection extends SyntaxSugar { outer =>
         }
       )("containsBody", 'go(list, el, comp))
 
-    def filter[T](comp: UT /* T =>: bool */)
+    def filterNot[T](comp: UT /* T =>: bool */)
       = foldRight(list, empty, lam('el, 'acc) {
         if_(not(comp('el))) {
           'el ::: 'acc
@@ -242,7 +242,7 @@ trait Collection extends SyntaxSugar { outer =>
     def search(comp: UT /* T =>: bool */)
       = foldRight(list, (empty, 0), lam('el, 'accPair) {
         'accPair.bind('acc, 'pos) {
-          (if_(not(comp('el))) {
+          (if_(comp('el)) {
             ('el, 'pos) ::: 'acc
           } else_ {
             'acc
@@ -284,7 +284,7 @@ trait Pathfinding extends SyntaxSugar with Points with Collection { self: Lambda
             }
           }
         }
-      )("computePathBody", if_('parents.isEmpty) { empty } else_ { 'computePathGo('to, empty).filter(lam('el){ 'pointEq('el, 'from) }) })
+      )("computePathBody", if_('parents.isEmpty) { empty } else_ { 'computePathGo('to, empty).filterNot(lam('el){ 'pointEq('el, 'from) }) })
 
     },
 
@@ -367,7 +367,7 @@ trait Pathfinding extends SyntaxSugar with Points with Collection { self: Lambda
                 } else_{
                   letS(
                     'nextCell       := 'findCellWithSmallestF('openList, 'gMap),
-                    'nextOpenList   := 'openList.filter(lam('el){ 'pointEq('el, 'nextCell) }),
+                    'nextOpenList   := 'openList.filterNot(lam('el){ 'pointEq('el, 'nextCell) }),
                     'nextClosedList := 'nextCell ::: 'closedList
                   ) {
                     if_('pointEq('nextCell, 'target)) {

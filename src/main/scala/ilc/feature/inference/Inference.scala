@@ -23,7 +23,10 @@ extends base.Syntax
     new UnificationFailure(UnificationFailureDetails(unsat, remaining, substitutions))
 
   // Only use this for pattern matching. Create new TypeVariables with freshTypeVariable.
-  case class TypeVariable(name: Int, uterm: Option[UntypedTerm] = None) extends Type
+  case class TypeVariable(name: Int, uterm: Option[UntypedTerm] = None) extends Type {
+    // We don't want to hash uterm for every lookup.
+    override def hashCode() = name
+  }
 
   val typeVariableCounter: AtomicInteger = new AtomicInteger()
   def freshTypeVariable(uterm: UntypedTerm): TypeVariable = TypeVariable(typeVariableCounter.incrementAndGet(), Some(uterm))

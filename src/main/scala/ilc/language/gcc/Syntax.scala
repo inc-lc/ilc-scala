@@ -39,6 +39,10 @@ extends base.Syntax
     }
   }
 
+  case object Noop extends Term {
+    override lazy val getType: Type = UnitType
+  }
+
   case object Sequence extends ConstantWith2TypeParameters {
     val typeConstructor = TypeConstructor("leftType", "rightType") {
       case Seq(leftType, rightType) => rightType
@@ -133,6 +137,7 @@ trait SyntaxSugar
     def ~:(thn: UT) = asUntyped(Sequence)(thn, t)
   }
   def debug[T <% UT](t: T): UT = asUntyped(Debug)(t)
+  def noop = Noop
 
   // Symbol + TypeAnnotation
   type NameOrTyped = Either[Symbol, TypeAnnotation]

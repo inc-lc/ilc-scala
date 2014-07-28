@@ -292,9 +292,9 @@ trait ToProcessor extends BasicDefinitions with TopLevel with Instructions {
       List(LD(toIdx(v, frames)))
 
     case Debug(el) => List(DBUG)
+    case Noop => Nil
 
-    case _ =>
-      ???
+    case t => sys error s"Dont know how to generate code for $t"
   }
 
   val forGame = true

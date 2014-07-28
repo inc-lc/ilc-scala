@@ -33,7 +33,7 @@ extends FunSuite
 
   test("Tuples") {
     typecheck {
-     fun('go)('tuple % ((int, int, int))) {
+     lam('tuple % ((int, int, int))) {
         'tuple.bind('a, 'b, 'c) {
           'b
         }

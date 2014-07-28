@@ -75,18 +75,26 @@ class ProgramBase extends GCC {
 
     // pseudo-random move, depends on the tick
     fun('randomMove)('world % WorldState, '_state % AIState) {
-      'mod('getTick('_state), 4) ofType Dir
+      ('mod('getTick('_state), 4) ofType Dir)
     }
 
   )
 
+  val targetPosition: UT = tuple(1, 1)
 
   val main = letrec((all ++ helpers ++ program): _*)("main",
       (initialState, lam('_state % AIState, 'world % WorldState) {
 
         '_state.bind('currDir % Dir, 'tick % int, '_3, '_4) {
 
-          let('nextDir, 'chooseFreeDir('world, '_state)) {
+          letS(
+              'currentPos := 'location('world_lambdaStatus('world)),
+
+              // TODO this is really expensive, should not be computed every tick... only if strategy changes
+              'path := 'computePath('currentPos, targetPosition, 'world_map('world)),
+              'nextPos := 'path.head, // TODO check for empty...
+              'nextDir := 'currentPos moveTo 'nextPos/*'chooseFreeDir('world, '_state)*/
+          ) {
              (tuple('nextDir, 'mod('tick + 1, 1337), 0, 0), 'nextDir)
           }
         }

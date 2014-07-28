@@ -31,7 +31,12 @@ trait Instantiations {
       with inference.LetSyntaxSugar
       with ShowTerms
 
-  def buildCacher[T <: Syntax with IsAtomic with products.SyntaxSugar with unit.Syntax with Traversals](bacchus: T) =
+  /**
+    * This will produce an AddCaches2 component which shares the component type with its argument.
+    * The method type is inferred to have a dependent type: (bacchus: T): AddCaches { val mySyntax: bacchus.type }.
+    * This is why you can call this method without annotating T to be a singleton type.
+    */
+  def buildCacher(bacchus: Syntax with IsAtomic with products.SyntaxSugar with unit.Syntax with Traversals) =
     new AddCaches2 {
       val mySyntax: bacchus.type = bacchus
     }
@@ -40,4 +45,7 @@ trait Instantiations {
 object WorksheetHelpers extends Instantiations {
   val bacchus = buildBaseBacchus()
   val cacher = buildCacher(bacchus)
+
+  //Assert the equality of these two types as a test.
+  implicitly[bacchus.Term =:= cacher.mySyntax.Term]
 }

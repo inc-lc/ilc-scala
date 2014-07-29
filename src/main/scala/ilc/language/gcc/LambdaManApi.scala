@@ -3,7 +3,7 @@ package language
 package gcc
 
 import feature._
-import scala.language.implicitConversions
+import scala.language.{ implicitConversions, reflectiveCalls }
 import Predef.{any2stringadd => _, _}
 
 /**
@@ -21,13 +21,13 @@ trait LambdaManApi extends SyntaxSugar with Math with Collection with Pathfindin
 
   lazy val all = collectionApi ++ worldApi ++ enumApi ++ characterApi ++ directionApi ++ math ++ points ++ pathfinding
 
-  val Loc: Type = (int, int)
-  val Dir: Type = int
-  val Character: Type = (int, Loc, Dir, int, int)
-  val Ghost: Type = (int, Loc, Dir)
-  val Item: Type = int
-  val WorldMap: Type = ListType(ListType(Item))
-  val WorldState: Type = (WorldMap, Character, ListType(Ghost), int)
+  lazy val Loc: Type = (int, int)
+  lazy val Dir: Type = int
+  lazy val Character: Type = (int, Loc, Dir, int, int)
+  lazy val Ghost: Type = (int, Loc, Dir)
+  lazy val Item: Type = int
+  lazy val WorldMap: Type = ListType(ListType(Item))
+  lazy val WorldState: Type = (WorldMap, Character, ListType(Ghost), int)
 
   object move {
     val up    = 0
@@ -52,7 +52,7 @@ trait LambdaManApi extends SyntaxSugar with Math with Collection with Pathfindin
    * The map is encoded as a list of lists (row-major) representing the 2-d
    * grid. An enumeration represents the contents of each grid cell:
    */
-  val worldApi = Seq(
+  lazy val worldApi = Seq(
     fun('world_map)('world % WorldState) { 'world.at(0, 4) },
     fun('world_lambdaStatus)('world % WorldState) { 'world at(1, 4) },
     fun('world_itemAt)('world % WorldState, 'x % int, 'y % int) { elemAt(elemAt('world at(0, 4), 'y), 'x) },
@@ -89,15 +89,25 @@ trait LambdaManApi extends SyntaxSugar with Math with Collection with Pathfindin
    * - 5: Lambda-Man starting position
    * - 6: Ghost starting position
    */
-  val enumApi = Seq(
-    fun('isWall)('obj % Item) { 'obj === 0 },
-    fun('isEmptyField)('obj % Item) { 'obj === 1 },
-    fun('isPill)('obj % Item) { 'obj === 2 },
-    fun('isPowerPill)('obj % Item) { 'obj === 3 },
-    fun('isFruit)('obj % Item) { 'obj === 4 },
-    fun('isLambdaStart)('obj % Item) { 'obj === 5 },
-    fun('isGhostStart)('obj % Item) { 'obj === 6 }
+  lazy val enumApi = Seq(
+    fun('isWall)('obj % Item) { 'obj === item.wall },
+    fun('isEmptyField)('obj % Item) { 'obj === item.empty },
+    fun('isPill)('obj % Item) { 'obj === item.pill },
+    fun('isPowerPill)('obj % Item) { 'obj === item.powerpill },
+    fun('isFruit)('obj % Item) { 'obj === item.fruit },
+    fun('isLambdaStart)('obj % Item) { 'obj === item.lambdaStart },
+    fun('isGhostStart)('obj % Item) { 'obj === item.ghostStart }
   )
+
+  lazy val item = new {
+    val wall        = 0
+    val empty       = 1
+    val pill        = 2
+    val powerpill   = 3
+    val fruit       = 4
+    val lambdaStart = 5
+    val ghostStart  = 6
+  }
 
   /**
    * Lambda Man
@@ -127,7 +137,7 @@ trait LambdaManApi extends SyntaxSugar with Math with Collection with Pathfindin
    *   - n > 0: power pill mode: the number of game ticks remaining while the
    *            power pill will will be active
    */
-  val characterApi = Seq(
+  lazy val characterApi = Seq(
     fun('vitality)('char % Character) { 'char at(0, 5) },
     fun('location)('char % Character) { 'char at(1, 5) },
     fun('direction)('char % Character) { 'char at(2, 5) },
@@ -154,7 +164,7 @@ trait LambdaManApi extends SyntaxSugar with Math with Collection with Pathfindin
    * - 2: down;
    * - 3: left.
    */
-  val directionApi = Seq(
+  lazy val directionApi = Seq(
     fun('isUp)('obj % Dir) { 'obj === move.up },
     fun('isRight)('obj % Dir) { 'obj === move.right },
     fun('isDown)('obj % Dir) { 'obj === move.down },
@@ -291,16 +301,16 @@ trait Collection extends SyntaxSugar { outer =>
 // requires Math and Points
 trait Pathfinding extends SyntaxSugar with Points with Collection { self: LambdaManApi =>
 
-  val ParentMap = HashMap(Point) // Map[Point, Point]
-  val GMap      = HashMap(int) // Map[Point, int]
-  val Queue     = ListType(Point)
+  lazy val ParentMap = HashMap(Point) // Map[Point, Point]
+  lazy val GMap      = HashMap(int) // Map[Point, int]
+  lazy val Queue     = ListType(Point)
 
   // used in loop body
-  val LocalState = (ParentMap, Queue, GMap)
+  lazy val LocalState = (ParentMap, Queue, GMap)
 
-  val initWalked = 0
+  lazy val initWalked = 0
 
-  val pathfinding = Seq(
+  lazy val pathfinding = Seq(
 
     fun('manhattan)('from % Point, 'to % Point) {
       ('abs('from.x - 'to.x) + 'abs('from.y - 'to.y))
@@ -455,7 +465,7 @@ trait Pathfinding extends SyntaxSugar with Points with Collection { self: Lambda
 
 trait Math extends SyntaxSugar {
 
-  val math = Seq(
+  lazy val math = Seq(
     fun('mod)('x % int, 'y % int) { 'x - ('x / 'y * 'y) },
     fun('abs)('x % int) { if_('x < 0) { 'x * (-1) } else_ { 'x } }
   )
@@ -465,8 +475,8 @@ trait Math extends SyntaxSugar {
 
 trait Points extends SyntaxSugar with Collection { outer: LambdaManApi =>
 
-  val Point: Type = (int, int)
-  val GameMap: Type = ListType(ListType(int))
+  lazy val Point: Type = (int, int)
+  lazy val GameMap: Type = ListType(ListType(int))
 
   // macro for accessing points
   implicit class PointOps[T <% UT](pt: T) {
@@ -531,7 +541,7 @@ trait Points extends SyntaxSugar with Collection { outer: LambdaManApi =>
       }
     )("createListBody", 'go(length, init))
 
-  val points = Seq(
+  lazy val points = Seq(
     fun('pointEq)('p1 % Point, 'p2 % Point) { ('p1.x === 'p2.x) and ('p1.y === 'p2.y) },
 
     // We know that the map size is at most 256 * 256

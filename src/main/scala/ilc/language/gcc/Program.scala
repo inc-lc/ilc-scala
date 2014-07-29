@@ -2,27 +2,45 @@ package ilc.language
 package gcc
 
 import Predef.{any2stringadd => _, _}
+import scala.language.{ implicitConversions, reflectiveCalls }
 
 class ProgramBase extends GCC {
 
-  val program = Seq(
-    //fun('go)('world, 'ghosts) { }
+
+  lazy val Strategy: Type = Point =>: StrategyState =>: WorldMap =>: Path
+    // Recursive types don't work
+  lazy val StrategyState: Type = (Dir, int, Point, Path, ListType(Point))
+  lazy val Path: Type = ListType(Point)
+  lazy val AIState: Type = tupleType(Dir, int, Point, Path, Strategy, ListType(Point))
+  lazy val initialState = tuple(
+      move.left,    // current direction
+      0,            // tick
+      (0, 0),       // fruit position
+      empty,        // planned Path
+      'collectCoins, // active strategy,
+      empty          // unvisted locations
+  ) ofType AIState
+  lazy val stateSize = 6
+
+
+  lazy val aiStateApi = Seq(
+    fun('getMovement)('_state % AIState) { '_state.at(0, stateSize) },
+    fun('getTick)('_state % AIState) { '_state.at(1, stateSize) },
+    fun('getFruitPosition)('_state % AIState) { '_state.at(2, stateSize) }
+  )
+
+  lazy val mapApi = Seq(
   )
 
   // TODO add debug statement
 
-  val AIState: Type = (Dir, int, Point, ListType(Point))
-  val initialState = tuple(
-      move.left, // current direction
-      0, // tick
-      (0, 0), //fruit position
-      empty) ofType AIState
-  val stateSize = 4
+  // A tactic is a function that evaluates whether we need a new strategy
+  lazy val tactics = Seq(
 
   val mapApi = Seq(
   )
 
-  val helpers = Seq(
+  lazy val helpers = Seq(
     fun('test)('a % bool, 'b % bool) {
       ('a or 'b) and 'a
     },
@@ -101,8 +119,10 @@ class ProgramBase extends GCC {
   def targetPosition(xSize: UT, ySize: UT): UT = tuple(1, ySize - 2)
   def otherTargetPositions(xSize: UT, ySize: UT) = list(tuple(1, 1), tuple(xSize - 2, 1), tuple(xSize - 2, ySize - 2))
 
-  val main = letrec((all ++ helpers ++ program): _*)("main",
-    (initialState.bind('dir, 'tick, 'fruitPos, 'dum) {
+  lazy val main = letrec((all ++ helpers ++ strategies ++ aiStateApi ++ scores): _*)("main",
+
+    // First component: The initalized world state
+    (initialState.bind('dir, 'tick, 'fruitPos, '_, '_, '_) {
       letS(
           'map := 'world_map('initWorld ofType WorldState),
           'ySize := size('map),

@@ -224,7 +224,12 @@ trait SyntaxSugar
     def call(className: Symbol, methodName: Symbol)(args: UT*) = {
       val classTag = classTags(className)
       val methodList = classMethods(classTag)
-      term.at(methodList.indexOf(methodName) + 1, methodList.size + 1).apply(args.head, args.tail:_*)
+      val idx = methodList.indexOf(methodName)
+
+      if (idx == -1) sys error s"Cannot call method $methodName on $className, available methods: ${methodList mkString ", "}"
+      letS(
+        'method := term.at(idx + 1, methodList.size + 1)
+      )('method.apply(args.head, args.tail:_*))
     }
 
   }

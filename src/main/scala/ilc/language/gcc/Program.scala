@@ -18,7 +18,7 @@ class ProgramBase extends GCC {
       (0, 0),       // fruit position
       empty,        // planned Path
       'collectCoins, // active strategy,
-      empty          // unvisted locations
+      empty          // unvisited locations
   ) ofType AIState
   lazy val stateSize = 6
 
@@ -72,7 +72,7 @@ class ProgramBase extends GCC {
       'viewRadius := 5,
 
       'collectCoins := lam('currentPos % Point, 'state % StrategyState, 'map % WorldMap) {
-        'state.bind('currDir % Dir, 'tick % int, 'fruitPos % Point, 'plannedPath % Path, 'unvisted % ListType(Point)) {
+        'state.bind('currDir % Dir, 'tick % int, 'fruitPos % Point, 'plannedPath % Path, 'unvisited % ListType(Point)) {
 
           letS(
             // see what can be reached
@@ -100,11 +100,11 @@ class ProgramBase extends GCC {
         }
       } ofType Strategy,
 
-      // Strategy: Closest unvisted field
-      'closestUnvisted := lam('currentPos % Point, 'state % StrategyState, 'map % WorldMap) {
-        'state.bind('currDir % Dir, 'tick % int, 'fruitPos % Point, 'plannedPath % Path, 'unvisted % ListType(Point)) {
+      // Strategy: Closest unvisited field
+      'closestunvisited := lam('currentPos % Point, 'state % StrategyState, 'map % WorldMap) {
+        'state.bind('currDir % Dir, 'tick % int, 'fruitPos % Point, 'plannedPath % Path, 'unvisited % ListType(Point)) {
           let('target,
-            foldRight('unvisted, (999, (-1, -1)), lam('p, 'acc) { 'acc.bind('bestDist, 'bestPoint) {
+            foldRight('unvisited, (999, (-1, -1)), lam('p, 'acc) { 'acc.bind('bestDist, 'bestPoint) {
               let('thisDist, 'manhattan('currentPos, 'p)) {
                 if_('thisDist < 'bestDist) {
                   ('thisDist, 'p)
@@ -121,12 +121,6 @@ class ProgramBase extends GCC {
 //      fun('randomMove)('currentPos % Point, 'state % StrategyState, 'map % WorldMap) {
 //        ('mod('getTick('state), 4) ofType Dir) ::: empty
 //      }
-
-  )
-
-  // A tactic is a function that evaluates whether we need a new strategy
-  lazy val tactics = Seq(
-
   )
 
   lazy val helpers = Seq(
@@ -219,7 +213,7 @@ class ProgramBase extends GCC {
     /**
      * Collects all cells in the which could be used as targets
      */
-    fun('collectUnvistedCells)('map % GameMap) {
+    fun('collectunvisitedCells)('map % GameMap) {
       foldRight('map, ('map.size - 1, empty), lam('row, 'acc1) { 'acc1.bind('i, 'cells) {
         ('i - 1, foldRight('row, ('row.size - 1, 'cells), lam('cell, 'acc2) { 'acc2.bind('j, 'cells) {
           if_('cell === item.wall) { ('j - 1, 'cells) } else_ { ('j - 1, ('j, 'i) ::: 'cells) }
@@ -237,7 +231,7 @@ class ProgramBase extends GCC {
             'path     := 'strategy('currentPos, 'strategyState, 'map)
           ) (if_('path.isEmpty) { 'pickFrom('strategies.tail) } else_{ ('strategy, 'path) })
         } ofType( ListType(Strategy) =>: tupleType(Strategy, Path))
-      )("strategyPicking", 'pickFrom(list('collectCoins, 'closestUnvisted))) ofType ((Strategy, Path))
+      )("strategyPicking", 'pickFrom(list('collectCoins, 'closestunvisited))) ofType ((Strategy, Path))
     }
 
   )
@@ -262,39 +256,59 @@ class ProgramBase extends GCC {
           'ySize  := size('map),
           'xSize  := size('map.head),
 
-          'unvisited := 'collectUnvistedCells('map)
+          'unvisited := 'collectunvisitedCells('map)
         ){ tuple('dir, 'tick, 'fruitPos, empty, 'collectCoins, 'unvisited)  }
     },
 
     // second component: The step function
-    lam('state % AIState, 'world % WorldState) {
+    letrec(
+      /**
+       * Validates whether it is actually a good idea to take this step
+       */
+      fun('tactics)('state % AIState, 'world % WorldState) {
+        'state.bind('currDir % Dir, 'tick % int, 'fruitPos % Point, 'path % Path, 'strategy % Strategy, 'unvisited % ListType(Point)) {
+          // something didn't work... Start over again
+          if_('currDir === -1) {
+            'step(tuple('currDir, 'tick, 'fruitPos, empty, 'strategy, 'unvisited), 'world)
+          // Hey that's a ghost.. we need to evade
+          //}. else_if () {
 
-      'state.bind('currDir % Dir, 'tick % int, 'fruitPos % Point, 'path % Path, 'strategy % Strategy, 'unvisted % ListType(Point)) {
+          } else_ {
+            ('state, 'currDir) ofType ((AIState, Dir))
+          }
+        }
+      },
 
-        letS(
-            'currentPos    := 'location('world_lambdaStatus('world)),
-            'map           := 'world_map('world),
-            'nextUnvisted  := 'unvisted.filterNot(lam('el){ 'pointEq('el, 'currentPos) }),
-            'strategyState := tuple('currDir, 'tick, 'fruitPos, 'path, 'unvisted),
+      fun('step)('state % AIState, 'world % WorldState) {
+        'state.bind('currDir % Dir, 'tick % int, 'fruitPos % Point, 'path % Path, 'strategy % Strategy, 'unvisited % ListType(Point)) {
 
-            // potentially new path and strategy
-            'pathStrategy  := (if_('path.isEmpty) { 'pickStrategy('currentPos, 'strategyState, 'map) } else_ { ('strategy, 'path) }),
-            'strategy      := 'pathStrategy.first,
-            'path          := 'pathStrategy.second,
+          letS(
+              'currentPos    := 'location('world_lambdaStatus('world)),
+              'map           := 'world_map('world),
+              'nextunvisited  := 'unvisited.filterNot(lam('el){ 'pointEq('el, 'currentPos) }),
+              'strategyState := tuple('currDir, 'tick, 'fruitPos, 'path, 'unvisited),
 
-            'nextPos       := 'path.head,
+              // if path is empty try to find a new strategy
+              'pathStrategy  := (if_('path.isEmpty) { 'pickStrategy('currentPos, 'strategyState, 'map) } else_ { ('strategy, 'path) }),
+              'strategy      := 'pathStrategy.first,
+              'path          := 'pathStrategy.second,
 
-            // TODO insert tactics here (like: Avoid ghosts)
-            'nextDir       := 'currentPos moveTo 'nextPos
+              'nextPos       := 'path.head,
 
-            // TODO lambda man can die, then we have to reevaluate the strategy...
+              // TODO insert tactics here (like: Avoid ghosts)
+              'nextDir       := 'currentPos moveTo 'nextPos
 
-            // TODO if strategy does return empty path we have to switch to some other strategy like: "Try to go up/left/right/down"
-        ) {
-           (tuple('nextDir, 'mod('tick + 1, 1337), 'fruitPos, 'path.tail, 'strategy, 'nextUnvisted), 'nextDir)
+              // if nextDir is -1
+
+              // TODO !!!!!!!!!! lambda man can die, then we have to reevaluate the strategy...
+
+              // TODO if strategy does return empty path we have to switch to some other strategy like: "Try to go up/left/right/down"
+          ) {
+             'tactics(tuple('nextDir, 'mod('tick + 1, 1337), 'fruitPos, 'path.tail, 'strategy, 'nextunvisited), 'world)
+          }
         }
       }
-    }))
+    )("stepFunction", 'step)))
 
   lazy val cp @ CompiledProgram(prog, labels) = toProg(typecheck(main))
 

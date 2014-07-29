@@ -4,13 +4,16 @@ package gcc
 
 import org.scalatest.FunSuite
 import org.scalatest.Matchers
-import GCC._
+
+import Predef.{any2stringadd => _, _}
+import scala.language.{ implicitConversions, reflectiveCalls }
 
 class GCCPrimitivesSuite
 extends FunSuite
    with Matchers
    with Evaluation
 {
+  import GCC._
 
   test("Booleans") {
 
@@ -50,8 +53,26 @@ extends FunSuite
     }
 
     typecheck { prog }
+  }
 
-    println(showProg(prog))
+  test("Classes") {
+
+    val prog = letrec(
+      class_('Point)('x % int, 'y % int)(
+        fun('move)('a % int) {
+          { 'x <~ 'x + 'a }
+        }
+      ),
+
+      fun('buildPoints)('_) {
+        letS(
+          'p := asUntyped('new_Point)(0, 4)
+        )('p.call('Point, 'move)(42))
+      }
+    )("prog", 'buildPoints)
+
+    typecheck { prog }
+
   }
 
 }

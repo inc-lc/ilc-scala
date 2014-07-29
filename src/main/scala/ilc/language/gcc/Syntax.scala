@@ -5,6 +5,7 @@ package gcc
 import feature._
 import scala.language.implicitConversions
 import base.FreshGen
+import scala.collection.mutable
 
 trait GCCIntSyntax
 extends base.Syntax
@@ -200,6 +201,33 @@ trait SyntaxSugar
 
 
 
+  type ClassTag = Int
+  private val classTags = mutable.Map.empty[Symbol, ClassTag]
+  private val classMethods = mutable.Map.empty[ClassTag, Seq[Symbol]]
+
+  def class_(name: Symbol)(fields: NameOrTyped*)(members: (Symbol, UT)*) = {
+
+    val memberNames = members.map { _._1 }
+    val memberRefs = memberNames.map(m => asUntyped(m))
+
+    val classTag = classTags.size
+    classTags.update(name, classTag)
+    classMethods.update(classTag, memberNames)
+
+    // we return the constructor
+    Symbol("new_" + name.name) -> lam(fields.head, fields.tail:_*){
+      letrec( members:_* )(name.name, tuple(classTag , memberRefs:_*))
+    }
+  }
+
+  implicit class MethodCallOps[T <% UT](term: T) {
+    def call(className: Symbol, methodName: Symbol)(args: UT*) = {
+      val classTag = classTags(className)
+      val methodList = classMethods(classTag)
+      term.at(methodList.indexOf(methodName) + 1, methodList.size + 1).apply(args.head, args.tail:_*)
+    }
+
+  }
 
 
   // Type syntax

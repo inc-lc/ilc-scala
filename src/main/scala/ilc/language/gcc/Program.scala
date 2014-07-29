@@ -79,8 +79,8 @@ class ProgramBase extends GCC {
             'nearBy := 'distanceMapNearPOI('map, 'currentPos, 'viewRadius),
 
             // maybe this costs too much performance?
-            'allPaths := map('nearBy, lam('t) {
-              'extractPath('currentPos, 'decode('t.first), 'nearBy)
+            'allPaths := map('nearBy.call('PointPointMap, 'toList)(unit), lam('t) {
+              'extractPath('currentPos, 't.first, 'nearBy)
             }),
 
             'pathValue := lam('path) { foldRight('path, 0, lam('pos, 'sum) { 'sum + 'valueOfPos('pos, 'map) }) },

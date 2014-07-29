@@ -301,6 +301,7 @@ trait ToProcessor extends BasicDefinitions with TopLevel with Instructions {
 
     case Debug(el) => List(DBUG)
     case Noop => Nil
+    case UnitTerm => toProc(LiteralInt(0), frames, suggestedFunName)
 
     case t => sys error s"Dont know how to generate code for $t"
   }

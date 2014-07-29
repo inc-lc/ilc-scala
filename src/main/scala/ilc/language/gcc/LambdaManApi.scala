@@ -176,42 +176,6 @@ trait LambdaManApi extends SyntaxSugar with Math with Collection with Pathfindin
 
 trait Collection extends SyntaxSugar { outer =>
 
-  // The type of a very primitive hash map with O(n) lookup but O(1) update
-  // still should yield performance improvements on lists of lists which are mostly empty...
-  def HashMap(t: Type) = ListType((int, t))
-
-  implicit class HashMapOps[T <: UT](hmap: T /* Map[K, V] */) {
-
-    // we simply never GC old keys... Should work for short lived maps
-    def put(key: UT /* K */, value: UT /* V */, hashfun: UT /* K => int */) =
-      (hashfun(key), value) ::: hmap
-
-    def get(key: UT, hashfun: UT) =
-      letrec {
-        fun('hmapGet)('map, 'hashedKey % int) {
-          //XXX handle empty case and raise appropriate error
-          'map.head.bind('key, 'value) {
-            if_('key === 'hashedKey) { 'value } else_{ 'hmapGet('map.tail, 'hashedKey) }
-          }
-        }
-      }("hmapGet", 'hmapGet(hmap, hashfun(key)))
-
-    def isDefinedAt(key: UT, hashfun: UT) =
-      letrec {
-        fun('hmapisDefinedAt)('map, 'hashedKey % int) {
-          if_('map.isEmpty) {
-            false
-          } else_ {
-            'map.head.bind('key, 'value) {
-              ('key === 'hashedKey) or 'hmapisDefinedAt('map.tail, 'hashedKey)
-            }
-          }
-        }
-      }("hmapisDefinedAt", 'hmapisDefinedAt(hmap, hashfun(key)))
-  }
-  def hashmap(t: UT): HashMapOps[UT] = t
-
-
   def elemAt(list: UT, i: UT) =
     letrec {
         fun('goElemAt)('l, 'i % int) {
@@ -288,29 +252,36 @@ trait Collection extends SyntaxSugar { outer =>
   }
 
   def HashMapType(KeyType: Type, ValueType: Type) =
-    ClassType(KeyType =>: ValueType, KeyType =>: ValueType =>: UnitType, KeyType =>: bool, UnitType =>: tupleType(int, ListType((int, ValueType))))
+    ClassType(
+        KeyType =>: ValueType,
+        KeyType =>: ValueType =>: UnitType,
+        KeyType =>: bool,
+        UnitType =>: tupleType(int, ListType((KeyType, ValueType))),
+        UnitType =>: bool,
+        UnitType =>: ListType((KeyType, ValueType)))
 
   def HashMapClass(KeyType: Type, ValueType: Type)(name: Symbol): (Symbol, UT) =
-    class_(name)('store % ListType((int, ValueType)), 'hashfun % (KeyType =>: int)) (
+    class_(name)('store % ListType((KeyType, ValueType)), 'hashfun % (KeyType =>: int)) (
+
       fun('get)('key % KeyType) {
         letrec {
           fun('getHelper)('store, 'hashedKey % int) {
             'store.head.bind('key, 'value) {
-              if_('key === 'hashedKey) { 'value } else_{ 'getHelper('store.tail, 'hashedKey) }
+              if_('hashfun('key) === 'hashedKey) { 'value } else_{ 'getHelper('store.tail, 'hashedKey) }
             }
           }
         }("getImpl", 'getHelper('store, 'hashfun('key)))
       },
 
       fun('put)('key % KeyType, 'value % ValueType) {
-        'store <~ (('hashfun('key), 'value) ::: 'store)
+        'store <~ (('key, 'value) ::: 'store)
       },
 
       fun('isDefinedAt)('key % KeyType) {
         letrec {
           fun('definedAtHelper)('store, 'hashedKey % int) {
             not('store.isEmpty) and 'store.head.bind('key, 'value) {
-              ('key === 'hashedKey) or 'definedAtHelper('store.tail, 'hashedKey)
+              ('hashfun('key) === 'hashedKey) or 'definedAtHelper('store.tail, 'hashedKey)
             }
           }
         }("isDefinedAtImpl", 'definedAtHelper('store, 'hashfun('key)))
@@ -318,6 +289,14 @@ trait Collection extends SyntaxSugar { outer =>
 
       fun('print)('_) {
         (111111, 'store)
+      },
+
+      fun('isEmpty)('_) {
+        'store.isEmpty
+      },
+
+      fun('toList)('_) {
+        'store
       }
     )
 
@@ -341,12 +320,9 @@ trait Collection extends SyntaxSugar { outer =>
 // requires Math and Points
 trait Pathfinding extends SyntaxSugar with Points with Collection { self: LambdaManApi =>
 
-  lazy val ParentMap = HashMap(Point) // Map[Point, Point]
+  lazy val ParentMap = PointPointMap
   lazy val GMap      = PointIntMap
   lazy val Queue     = ListType(Point)
-
-  // used in loop body
-  lazy val LocalState = (ParentMap, Queue)
 
   lazy val initWalked = 0
 
@@ -370,12 +346,17 @@ trait Pathfinding extends SyntaxSugar with Points with Collection { self: Lambda
           if_('pointEq('curr, 'from)) {
             'from ::: 'acc
           } else_{
-            let('next, hashmap('parents).get('curr, 'pointHash)) {
+            let('next, 'parents.call('PointPointMap, 'get)('curr)) {
               'extractPathGo('next, 'next ::: 'acc)
             }
           }
         }
-      )("extractPathGo", if_('parents.isEmpty) { empty } else_ { 'extractPathGo('to, empty).filterNot(lam('el){ 'pointEq('el, 'from) }) })
+      )("extractPathGo",
+        if_('parents.call('PointPointMap, 'isEmpty)(unit)) {
+          empty
+        } else_ {
+          'extractPathGo('to, empty).filterNot(lam('el){ 'pointEq('el, 'from) })
+        })
     },
 
     'pathParamDg := 1,
@@ -402,7 +383,8 @@ trait Pathfinding extends SyntaxSugar with Points with Collection { self: Lambda
     fun('computeParents)('start % Point, 'map % GameMap, 'distance % (Point =>: int), 'shouldConsider % (Point =>: bool)) {
       letS(
 
-        'gMap := 'new_PointIntMap(empty, 'pointHash),
+        'parents := 'new_PointPointMap(empty, 'pointHash) ofType ParentMap,
+        'gMap    := 'new_PointIntMap(empty, 'pointHash) ofType GMap,
 
         // distance measures
         // TODO use getOrElseUpdate here
@@ -417,7 +399,7 @@ trait Pathfinding extends SyntaxSugar with Points with Collection { self: Lambda
       ) {
         letrec {
           //Invariant: 'curCell is inside 'closedList
-          fun('loop)('curCell % Point, 'openList % Queue, 'closedList % Queue, 'parents % ParentMap, 'walked % int) {
+          fun('loop)('curCell % Point, 'openList % Queue, 'closedList % Queue, 'walked % int) {
             letS(
               'Ncell := 'curCell |+| (( 0, -1)),
               'Scell := 'curCell |+| (( 0,  1)),
@@ -432,37 +414,36 @@ trait Pathfinding extends SyntaxSugar with Points with Collection { self: Lambda
                 *
                 * Returns the updated localState
                 */
-              'checkCell := lam('p % Point, 'localState % LocalState) {
+              'checkCell := lam('p % Point, 'openList % Queue) {
 
-                'localState.bind('parents, 'openList) {
-                  if_('inRange('map, 'p) and not('alreadyHandled('p)) and 'shouldConsider('p)) {
-                    if_(not('openList contains ('p, 'pointEq))) {
-                      tuple(hashmap('parents).put('p, 'curCell, 'pointHash), 'p ::: 'openList)
-                    } else_ {
-                      letS(
-                          'gvalCur := 'G('curCell) + 'pathParamDg,
-                          'gvalP := 'G('p)
-                          ) {
-                        // Showing these values shows
-                        // we enter here seldom, if ever,
-                        // since we seldom compare different paths to the
-                        // same point.
-                        //debug('gvalCur) ~: debug('gvalP) ~:
-                        (if_('gvalCur < 'gvalP) {
-                          // update parents and gmap
-                          'gMap.call('PointIntMap, 'put)('p, 'gvalCur) ~:
-                          tuple(
-                              hashmap('parents).put('p, 'curCell, 'pointHash),
-                              'openList)
-                        } else_ {
-                          tuple('parents, 'openList)
-                        })
-                      }
-                    }
+                if_('inRange('map, 'p) and not('alreadyHandled('p)) and 'shouldConsider('p)) {
+                  if_(not('openList contains ('p, 'pointEq))) {
+                    'parents.call('PointPointMap, 'put)('p, 'curCell) ~:
+                    ('p ::: 'openList)
                   } else_ {
-                    tuple('parents, 'openList) // did not change anything
+                    letS(
+                      'gvalCur := 'G('curCell) + 'pathParamDg,
+                      'gvalP := 'G('p)
+                    ) {
+                      // Showing these values shows
+                      // we enter here seldom, if ever,
+                      // since we seldom compare different paths to the
+                      // same point.
+                      //debug('gvalCur) ~: debug('gvalP) ~:
+                      (if_('gvalCur < 'gvalP) {
+                        // update parents and gmap
+                        'gMap.call('PointIntMap, 'put)('p, 'gvalCur) ~:
+                        'parents.call('PointPointMap, 'put)('p, 'curCell) ~:
+                        'openList
+                      } else_ {
+                        'openList
+                      })
+                    }
                   }
+                } else_ {
+                  'openList // did not change anything
                 }
+
               },
 
               /**
@@ -477,33 +458,31 @@ trait Pathfinding extends SyntaxSugar with Points with Collection { self: Lambda
                  })
                },
 
-               'nextState := foldRight('neighbours, tuple('parents, 'openList), 'checkCell)
+               'openList := foldRight('neighbours, 'openList, 'checkCell)
             ) {
-              'nextState.bind('parents, 'openList) {
-                if_('openList.isEmpty) {
-                  'parents //return error! nothing found...
-                } else_{
-                  letS(
-                    'nextCell       := 'findCellWithSmallestF('openList),
-                    'nextOpenList   := 'openList.filterNot(lam('el){ 'pointEq('el, 'nextCell) }),
-                    'nextClosedList := 'nextCell ::: 'closedList
-                  ) {
-                    if_('distance('nextCell) === 0) {
-                      // Show map of weights.
-                      // debug('gMap) ~:
-                      'parents
-                    } else_ {
-                      // Store in map how much it took to get to 'nextCell.
-                      // This makes the 'G cost function more precise.
-                      'gMap.call('PointIntMap, 'put)('nextCell, 'walked) ~:
-                      'loop('nextCell, 'nextOpenList, 'nextClosedList, 'parents, 'walked + 1)
-                    }
+              if_('openList.isEmpty) {
+                'parents // We are done, all cells have been visited
+              } else_{
+                letS(
+                  'nextCell       := 'findCellWithSmallestF('openList),
+                  'nextOpenList   := 'openList.filterNot(lam('el){ 'pointEq('el, 'nextCell) }),
+                  'nextClosedList := 'nextCell ::: 'closedList
+                ) {
+                  if_('distance('nextCell) === 0) {
+                    // Show map of weights.
+                    // debug('gMap) ~:
+                    'parents
+                  } else_ {
+                    // Store in map how much it took to get to 'nextCell.
+                    // This makes the 'G cost function more precise.
+                    'gMap.call('PointIntMap, 'put)('nextCell, 'walked) ~:
+                    'loop('nextCell, 'nextOpenList, 'nextClosedList, 'walked + 1)
                   }
                 }
               }
             }
           }
-        }("pathfindingBody", 'loop('start, empty, 'start ::: empty, empty, initWalked))
+        }("pathfindingBody", 'loop('start, empty, 'start ::: empty, initWalked))
       }
     }
   )

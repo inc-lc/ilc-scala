@@ -236,6 +236,7 @@ trait SyntaxSugar
 
   }
 
+  val unit = UnitTerm
 
   // Type syntax
 

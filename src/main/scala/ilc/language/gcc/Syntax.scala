@@ -49,6 +49,14 @@ extends base.Syntax
     }
   }
 
+  // TODO that's a bit hacky since the first argument has to be a
+  //   variable...
+  case object Assign extends ConstantWith1TypeParameter {
+    val typeConstructor = TypeConstructor("elemTyp") {
+      case elemType => elemType =>: elemType =>: UnitType
+    }
+  }
+
   implicit def intToTerm(n: Int): Term = LiteralInt(n)
 
   case object Not extends Term {
@@ -162,6 +170,9 @@ trait SyntaxSugar
   //letS('a := 1, 'b := 2){3}
   implicit class SymBindingOps(s: Symbol) {
     def :=(t: UntypedTerm) = s -> t
+
+    // For assignment
+    def <~(term: UT) = asUntyped(Assign)(s, term)
   }
 
   implicit def consSyntax[A <% UT, B <% UT](scalaPair: (A, B)): UntypedTerm =

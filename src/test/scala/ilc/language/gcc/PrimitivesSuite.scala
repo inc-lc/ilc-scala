@@ -41,4 +41,17 @@ extends FunSuite
     }
   }
 
+  test("Assignments") {
+    val prog = lam('a % bool, 'b % int) {
+      { 'a <~ true  } ~:
+      { debug('a)   } ~:
+      { 'b <~ 42 } ~:
+      { debug('b)   }
+    }
+
+    typecheck { prog }
+
+    println(showProg(prog))
+  }
+
 }

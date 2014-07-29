@@ -72,6 +72,11 @@ trait Instructions {
   case class LD(idx: DeBrujinIdx) extends Instr {
     override def showArgs(forHaskell: Boolean) = s"${idx.n} ${idx.i}${showComment(forHaskell, Some(s"var ${idx.v}"))}"
   }
+  // Store is a prim instruction that pops one value of the stack and stores it into the environment at n i
+  case class ST(idx: DeBrujinIdx) extends PrimInstr {
+    override def showArgs(forHaskell: Boolean) = s"${idx.n} ${idx.i}${showComment(forHaskell, Some(s"${idx.v} <-"))}"
+  }
+
   case class DUM(n: Int) extends Instr
   case class LDC(n: Int) extends Instr
   case class RAP(n: Int) extends Instr
@@ -205,6 +210,9 @@ trait ToProcessor extends BasicDefinitions with TopLevel with Instructions {
 
       toProc(cond, frames, suggestedFunName) ++ List(SEL(trueLabel, falseLabel))
     }
+
+    case App(App(Assign(tpe), v: Var), body) => toProc(body, frames, suggestedFunName) ++ List(ST(toIdx(v, frames)))
+
 
     //Pairs
     case Pair(car, cdr) => List(CONS)

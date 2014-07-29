@@ -287,23 +287,11 @@ trait Collection extends SyntaxSugar { outer =>
       }).first
   }
 
-  val KeyType   = (int, int)
-  val ValueType = int
-  val IntHashMap = ClassType(KeyType =>: ValueType, KeyType =>: ValueType =>: UnitType, KeyType =>: bool, UnitType =>: tupleType(int, ListType((int, ValueType))))
+  def HashMapType(KeyType: Type, ValueType: Type) =
+    ClassType(KeyType =>: ValueType, KeyType =>: ValueType =>: UnitType, KeyType =>: bool, UnitType =>: tupleType(int, ListType((int, ValueType))))
 
-  // This contains only monomorphic functions, all polymorphic ones must be macros as above!
-  val collectionApi = Seq(
-    fun('all)('list % ListType(BooleanType)) {
-      foldRight('list, true, lam('b1, 'b2) { 'b1 and 'b2 })
-    },
-    fun('any)('list % ListType(BooleanType)) {
-      foldRight('list, false, lam('b1, 'b2) { 'b1 or 'b2 })
-    },
-
-    // A mutable hashmap specialized to store int-values (maybe turn into macro later)
-    // We cannot use trees yet, since they are a recursive datastructure...
-    //XXX handle empty case and raise appropriate error
-    class_('IntHashMap)('store % ListType((int, ValueType)), 'hashfun % (KeyType =>: int)) (
+  def HashMapClass(KeyType: Type, ValueType: Type)(name: Symbol): (Symbol, UT) =
+    class_(name)('store % ListType((int, ValueType)), 'hashfun % (KeyType =>: int)) (
       fun('get)('key % KeyType) {
         letrec {
           fun('getHelper)('store, 'hashedKey % int) {
@@ -333,6 +321,20 @@ trait Collection extends SyntaxSugar { outer =>
       }
     )
 
+  lazy val PointIntMap = HashMapType((int, int), int)
+  lazy val PointPointMap = HashMapType((int, int), (int, int))
+
+  // This contains only monomorphic functions, all polymorphic ones must be macros as above!
+  lazy val collectionApi = Seq(
+    fun('all)('list % ListType(BooleanType)) {
+      foldRight('list, true, lam('b1, 'b2) { 'b1 and 'b2 })
+    },
+    fun('any)('list % ListType(BooleanType)) {
+      foldRight('list, false, lam('b1, 'b2) { 'b1 or 'b2 })
+    },
+
+    HashMapClass((int, int), int)('PointIntMap),
+    HashMapClass((int, int), (int, int))('PointPointMap)
   )
 }
 
@@ -340,7 +342,7 @@ trait Collection extends SyntaxSugar { outer =>
 trait Pathfinding extends SyntaxSugar with Points with Collection { self: LambdaManApi =>
 
   lazy val ParentMap = HashMap(Point) // Map[Point, Point]
-  lazy val GMap      = IntHashMap //HashMap(int) // Map[Point, int]
+  lazy val GMap      = PointIntMap
   lazy val Queue     = ListType(Point)
 
   // used in loop body
@@ -400,13 +402,13 @@ trait Pathfinding extends SyntaxSugar with Points with Collection { self: Lambda
     fun('computeParents)('start % Point, 'map % GameMap, 'distance % (Point =>: int), 'shouldConsider % (Point =>: bool)) {
       letS(
 
-        'gMap := 'new_IntHashMap(empty, 'pointHash),
+        'gMap := 'new_PointIntMap(empty, 'pointHash),
 
         // distance measures
         // TODO use getOrElseUpdate here
         'G := lam('a % Point) {
-          if_('gMap.call('IntHashMap, 'isDefinedAt)('a)) {
-            'gMap.call('IntHashMap, 'get)('a)
+          if_('gMap.call('PointIntMap, 'isDefinedAt)('a)) {
+            'gMap.call('PointIntMap, 'get)('a)
           } else_ {
             'pathParamDg * 'manhattan('a, 'start)
           }
@@ -448,7 +450,7 @@ trait Pathfinding extends SyntaxSugar with Points with Collection { self: Lambda
                         //debug('gvalCur) ~: debug('gvalP) ~:
                         (if_('gvalCur < 'gvalP) {
                           // update parents and gmap
-                          'gMap.call('IntHashMap, 'put)('p, 'gvalCur) ~:
+                          'gMap.call('PointIntMap, 'put)('p, 'gvalCur) ~:
                           tuple(
                               hashmap('parents).put('p, 'curCell, 'pointHash),
                               'openList)
@@ -493,7 +495,7 @@ trait Pathfinding extends SyntaxSugar with Points with Collection { self: Lambda
                     } else_ {
                       // Store in map how much it took to get to 'nextCell.
                       // This makes the 'G cost function more precise.
-                      'gMap.call('IntHashMap, 'put)('nextCell, 'walked) ~:
+                      'gMap.call('PointIntMap, 'put)('nextCell, 'walked) ~:
                       'loop('nextCell, 'nextOpenList, 'nextClosedList, 'parents, 'walked + 1)
                     }
                   }

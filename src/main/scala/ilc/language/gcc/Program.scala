@@ -278,9 +278,9 @@ class ProgramBase extends GCC {
             'strategyState := tuple('currDir, 'tick, 'fruitPos, 'path, 'unvisted),
 
             // potentially new path and strategy
-            'pathStrategy  := (if_('path.isEmpty) { 'pickStrategy('currentPos, 'strategyState, 'map) } else_ { ('path, 'strategy) }),
-            'path          := 'pathStrategy.first,
-            'strategy      := 'pathStrategy.second,
+            'pathStrategy  := (if_('path.isEmpty) { 'pickStrategy('currentPos, 'strategyState, 'map) } else_ { ('strategy, 'path) }),
+            'strategy      := 'pathStrategy.first,
+            'path          := 'pathStrategy.second,
 
             'nextPos       := 'path.head,
 

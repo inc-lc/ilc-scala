@@ -61,15 +61,24 @@ extends FunSuite
       class_('Point)('x % int, 'y % int)(
         fun('move)('a % int) {
           { 'x <~ 'x + 'a }
-        }
+        },
+        fun('getX)('_) { 'x }
       ),
 
       fun('buildPoints)('_) {
         letS(
-          'p := asUntyped('new_Point)(0, 4)
-        )('p.call('Point, 'move)(42))
+          'p := asUntyped('new_Point)(1, 4)
+        )('p.call('Point, 'move)(42) ~: 'p)
       }
-    )("prog", 'buildPoints)
+    )("prog", asUntyped('buildPoints)(0).call('Point, 'getX)(0))
+
+    val progSimple  = letS(
+      class_('Point)('x % int, 'y % int)(
+        fun('move)('a % int) {
+          { 'x <~ 'x + 'a }
+        },
+        fun('getX)('_) { 'x }
+      ))(debug(asUntyped('new_Point)(1, 4).call('Point, 'getX)(0)))
 
     typecheck { prog }
 

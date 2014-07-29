@@ -205,6 +205,8 @@ trait SyntaxSugar
   private val classTags = mutable.Map.empty[Symbol, ClassTag]
   private val classMethods = mutable.Map.empty[ClassTag, Seq[Symbol]]
 
+  def ClassType(memberTypes: Type*) = tupleType((int +: memberTypes):_*)
+
   def class_(name: Symbol)(fields: NameOrTyped*)(members: (Symbol, UT)*) = {
 
     val memberNames = members.map { _._1 }

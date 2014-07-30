@@ -256,47 +256,89 @@ trait Collection extends SyntaxSugar { outer =>
         KeyType =>: ValueType,
         KeyType =>: ValueType =>: UnitType,
         KeyType =>: bool,
-        UnitType =>: tupleType(int, ListType((KeyType, ValueType))),
+        UnitType =>: tupleType(int, BinTreeType((KeyType, ValueType))),
         UnitType =>: bool,
         UnitType =>: ListType((KeyType, ValueType)))
 
   def HashMapClass(KeyType: Type, ValueType: Type)(name: Symbol): (Symbol, UT) =
-    class_(name)('store % ListType((KeyType, ValueType)), 'hashfun % (KeyType =>: int)) (
+    class_(name)('store % BinTreeType((KeyType, ValueType)), 'compare % (KeyType =>: KeyType =>: int)) (
 
       fun('get)('key % KeyType) {
         letrec {
-          fun('getHelper)('store, 'hashedKey % int) {
-            'store.head.bind('key, 'value) {
-              if_('hashfun('key) === 'hashedKey) { 'value } else_{ 'getHelper('store.tail, 'hashedKey) }
+          fun('getHelper)('store) {
+            (if_('store.isEmptyTree) { debug(777) } else_ { noop }) ~:
+            let('cmp, 'compare('store.nodeValue.first, 'key)) {
+              if_('cmp === 0) {
+                'store.nodeValue.second
+              }. else_if ('cmp > 0) {
+                'getHelper('store.rightTree)
+              } else_ {
+                'getHelper('store.leftTree)
+              }
             }
           }
-        }("getImpl", 'getHelper('store, 'hashfun('key)))
+        }("getImpl", 'getHelper('store))
       },
 
       fun('put)('key % KeyType, 'value % ValueType) {
-        'store <~ (('key, 'value) ::: 'store)
+        letrec {
+          fun('putHelper)('store) {
+            if_('store.isEmptyTree) {
+              leaf(('key, 'value))
+            } else_ {
+              let('cmp, 'compare('store.nodeValue.first, 'key)) {
+                if_('cmp === 0) {
+                  tree('store.leftTree, ('key, 'value), 'store.rightTree)
+                }. else_if ('cmp > 0) {
+                  tree('store.leftTree, 'store.nodeValue, 'putHelper('store.rightTree))
+                } else_ {
+                  tree('putHelper('store.leftTree), 'store.nodeValue, 'store.rightTree)
+                }
+              }
+            }
+          }
+        }("putImpl", 'store <~ 'putHelper('store))
       },
 
       fun('isDefinedAt)('key % KeyType) {
         letrec {
-          fun('definedAtHelper)('store, 'hashedKey % int) {
-            not('store.isEmpty) and 'store.head.bind('key, 'value) {
-              ('hashfun('key) === 'hashedKey) or 'definedAtHelper('store.tail, 'hashedKey)
+          fun('definedAtHelper)('store) {
+            not('store.isEmptyTree) and
+            let('cmp, 'compare('store.nodeValue.first, 'key)) {
+              if_('cmp === 0) {
+                true
+              }. else_if ('cmp > 0) {
+                'definedAtHelper('store.rightTree)
+              } else_ {
+                'definedAtHelper('store.leftTree)
+              }
             }
           }
-        }("isDefinedAtImpl", 'definedAtHelper('store, 'hashfun('key)))
+        }("isDefinedAtImpl", 'definedAtHelper('store))
       },
 
-      fun('print)('_) {
+      fun('print)('_ % UnitType) {
         (111111, 'store)
       },
 
-      fun('isEmpty)('_) {
-        'store.isEmpty
+      fun('isEmpty)('_ % UnitType) {
+        'store.isEmptyTree
       },
 
-      fun('toList)('_) {
-        'store
+      fun('toList)('_ % UnitType) {
+        letrec (
+          'listResult := empty ofType ListType((KeyType, ValueType)),
+
+          fun('toListHelper)('store) {
+            if_('store.isEmptyTree) {
+              noop
+            } else_ {
+              'toListHelper('store.leftTree) ~:
+              ('listResult <~ 'store.nodeValue ::: 'listResult) ~:
+              'toListHelper('store.rightTree)
+            }
+          }
+        )("toListImpl", 'toListHelper('store) ~: 'listResult)
       }
     )
 
@@ -383,8 +425,8 @@ trait Pathfinding extends SyntaxSugar with Points with Collection { self: Lambda
     fun('computeParents)('start % Point, 'map % GameMap, 'distance % (Point =>: int), 'shouldConsider % (Point =>: bool)) {
       letS(
 
-        'parents := 'new_PointPointMap(empty, 'pointHash) ofType ParentMap,
-        'gMap    := 'new_PointIntMap(empty, 'pointHash) ofType GMap,
+        'parents := 'new_PointPointMap(emptyTree, 'pointCompare) ofType ParentMap,
+        'gMap    := 'new_PointIntMap(emptyTree, 'pointCompare) ofType GMap,
 
         // distance measures
         // TODO use getOrElseUpdate here
@@ -572,6 +614,9 @@ trait Points extends SyntaxSugar with Collection { outer: LambdaManApi =>
     // We know that the map size is at most 256 * 256
     fun('pointHash)('p % Point) { 'p.x * 256 + 'p.y },
     fun('decode)('hash % int) { ('hash / 256, 'mod('hash, 256)) },
+
+    // 0 if p1 == p2
+    fun('pointCompare)('p1 % Point, 'p2 % Point) { 'pointHash('p2) - 'pointHash('p1) },
 
     fun('vectorToMove)('v % Point) {
       if_('pointEq('v, (0, -1))) {

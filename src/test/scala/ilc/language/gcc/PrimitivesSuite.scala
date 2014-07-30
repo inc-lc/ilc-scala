@@ -84,4 +84,14 @@ extends FunSuite
 
   }
 
+  test("Should build bin trees as tuples") {
+    val prog = tree(leaf(4), 42, tree(leaf(4), 8, leaf(6)))
+
+    // should be the same code as
+    val prog2: UT = tuple(tuple(0, 4, 0), 42, tuple(tuple(0, 4, 0), 8, tuple(0, 6, 0)))
+
+    toProg(prog).code shouldEqual toProg(prog2).code
+
+  }
+
 }

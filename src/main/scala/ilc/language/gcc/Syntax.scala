@@ -75,6 +75,7 @@ extends functions.Syntax
    with booleans.SyntaxSugar
    with functions.LetRecSyntax
    with products.InferenceSyntaxSugar
+   with bintrees.Syntax
 
 trait SyntaxSugar
   extends Syntax
@@ -84,6 +85,7 @@ trait SyntaxSugar
   with inference.LetRecInference
   with products.StdLib
   with lists.InferenceSyntaxSugar
+  with bintrees.InferenceSyntaxSugar
 {
   outer =>
   implicit def intToUTerm(n: Int): UntypedTerm = asUntyped(LiteralInt(n))
@@ -198,8 +200,6 @@ trait SyntaxSugar
       }
     }
   }
-
-
 
   type ClassTag = Int
   private val classTags = mutable.Map.empty[Symbol, ClassTag]

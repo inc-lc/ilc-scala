@@ -228,8 +228,19 @@ trait ToProcessor extends BasicDefinitions with TopLevel with Instructions {
     case Tail(elemT) => List(CDR)
     case IsEmpty(elemT) => List(ATOM)
 
+    case EmptyTree(elemT) => toProc(LiteralInt(0), frames, suggestedFunName)
+    case App(App(App(Tree(elemT), lhs), value), rhs) =>
+      toProc(lhs, frames, suggestedFunName) ++
+      toProc(value, frames, suggestedFunName) ++
+      toProc(rhs, frames, suggestedFunName) ++ List(CONS, CONS)
+    case LeftTree(elemT) => List(CAR)
+    case App(NodeValue(elemT), tree) => toProc(tree, frames, suggestedFunName) ++ List(CDR, CAR)
+    case App(RightTree(elemT), tree) => toProc(tree, frames, suggestedFunName) ++ List(CDR, CDR)
+    case IsEmptyTree(elemT) => List(ATOM)
+
     case App(App(Sequence(_, _), fst), thn) =>
       toProc(fst, frames, suggestedFunName) ++ toProc(thn, frames, suggestedFunName)
+
 
     //Core: lambda-calculus with letrec*.
     /* TODOs:

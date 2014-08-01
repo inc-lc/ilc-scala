@@ -151,7 +151,7 @@ extends base.Syntax
     def typeVariableAndAnythingElse(tn: TypeVariable, a: Type, remaining: Set[Constraint], substitutions: Map[TypeVariable, Type]) = {
       val nextRemaining = remaining.tail
       val nextSubstitutions = substitutions.mapValues(substituteInType(Map(tn -> a))) + (tn -> a)
-      unificationHelper(nextRemaining map substituteInConstraint(nextSubstitutions), nextSubstitutions)
+      (nextRemaining map substituteInConstraint(nextSubstitutions), nextSubstitutions)
     }
     def getTypes(p: Product) = p.productIterator.asInstanceOf[Iterator[Type]].toStream
     @tailrec
@@ -161,8 +161,12 @@ extends base.Syntax
       else
         remaining.head match {
           case Constraint(a, b, _, _) if a == b => unificationHelper(remaining.tail, substitutions)
-          case Constraint(tn: TypeVariable, a, _, _) if !occurs(tn, a) => typeVariableAndAnythingElse(tn, a, remaining, substitutions)
-          case Constraint(a, tn: TypeVariable, _, _) if !occurs(tn, a) => typeVariableAndAnythingElse(tn, a, remaining, substitutions)
+          case Constraint(tn: TypeVariable, a, _, _) if !occurs(tn, a) =>
+            val (nextRemaining, nextSubstitutions) = typeVariableAndAnythingElse(tn, a, remaining, substitutions)
+            unificationHelper(nextRemaining, nextSubstitutions)
+          case Constraint(a, tn: TypeVariable, _, _) if !occurs(tn, a) =>
+            val (nextRemaining, nextSubstitutions) = typeVariableAndAnythingElse(tn, a, remaining, substitutions)
+            unificationHelper(nextRemaining, nextSubstitutions)
           case c @ Constraint(a, b, ctx, _) if a.getClass == b.getClass => unificationHelper(remaining.tail ++ (getTypes(a), getTypes(b)).zipped.map(Constraint(_, _,
               ctx, Some(c))).toSet, substitutions)
           case unsat => throw UnificationFailure(unsat, remaining, substitutions)

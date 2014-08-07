@@ -9,7 +9,7 @@ trait Syntax extends base.Syntax {
   case class App(operator: Term, operand: Term) extends Term {
     override lazy val getType = (operator.getType, operand.getType) match {
       case (expectedDomain =>: range, actualDomain) =>
-        if (expectedDomain == actualDomain)
+        if (expectedDomain == actualDomain || !TypeChecking.value)
           range
         else
           typeErrorNotTheSame(

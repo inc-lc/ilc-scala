@@ -2,21 +2,16 @@ package ilc
 package feature
 package let
 
-object ANormalFormTest {
-  println("Welcome to the Scala worksheet")       //> Welcome to the Scala worksheet
-  import language._
-  val v = new Bacchus with let.ANormalFormStateful with integers.ImplicitSyntaxSugar with inference.LetInference
-    with BetaReduction with Pretty
-    //with inference.SyntaxSugar //Or with:
-    with inference.LetSyntaxSugar                 //> v  : ilc.language.Bacchus with ilc.feature.let.ANormalFormStateful with ilc.
-                                                  //| feature.integers.ImplicitSyntaxSugar with ilc.feature.inference.LetInference
-                                                  //|  with ilc.feature.let.BetaReduction with ilc.feature.let.Pretty with ilc.fea
-                                                  //| ture.inference.LetSyntaxSugar = ilc.feature.let.ANormalFormTest$$anonfun$mai
-                                                  //| n$1$$anon$1@7b3bf06d
-    //Both work, but the output is different.
-
-  //def tests(v: Bacchus with feature.let.ANormalFormStateful with integers.ImplicitSyntaxSugar with inference.LetInference
-    //with BetaReduction) {
+object ANormalFormTest extends Instantiations {
+  val v = buildBacchusWithLetSystem(true, true, true)
+                                                  //> v  : ilc.language.Bacchus with ilc.feature.let.ANormalFormAdapter with ilc.f
+                                                  //| eature.integers.ImplicitSyntaxSugar with ilc.feature.integers.Evaluation wit
+                                                  //| h ilc.feature.let.Evaluation with ilc.feature.let.Pretty with ilc.feature.in
+                                                  //| ference.LetInference with ilc.feature.let.BetaReduction with ilc.feature.inf
+                                                  //| erence.LetSyntaxSugar with ilc.feature.inference.InferenceTestHelper with il
+                                                  //| c.feature.let.ShowTerms{val aNormalizer: ilc.feature.let.ANormalFormStateful
+                                                  //| {val mySyntax: ilc.feature.let.Instantiations.<refinement>.type}} = ilc.feat
+                                                  //| ure.let.Instantiations$$anon$1@6c15f918
   import v._
 
   //Taken from http://matt.might.net/articles/a-normalization/, but was ill-typed!
@@ -45,17 +40,22 @@ object ANormalFormTest {
      x))
  */
   val test2 =
-    let('x, let('y, 20: Term)('y))('x)            //> test2  : ilc.feature.let.ANormalFormTest.v.UntypedTerm = ULet(x,ULet(y,UMon
-                                                  //| omorphicConstant(LiteralInt(20)),UVar(y)),UVar(x))
+    let('x, let('y, 20: Term)('y))('x)            //> test2  : ilc.feature.let.ANormalFormTest.v.UntypedTerm = ULet(x,ULet(y,UMono
+                                                  //| morphicConstant(LiteralInt(20)),UVar(y)),UVar(x))
+  val test2Bis =
+    let('x, let('y, (PlusInt ! (20: Term) ! (30: Term)): Term)('y))('x)
+                                                  //> test2Bis  : ilc.feature.let.ANormalFormTest.v.UntypedTerm = ULet(x,ULet(y,UM
+                                                  //| onomorphicConstant(App(App(PlusInt,LiteralInt(20)),LiteralInt(30))),UVar(y))
+                                                  //| ,UVar(x))
 /*
 (define t3
   '(let ([x (if #t 1 2)])
      x))
 */
   val test3 =
-    let('x, ifThenElse(True, 1, 2): Term)('x)     //> test3  : ilc.feature.let.ANormalFormTest.v.UntypedTerm = ULet(x,UMonomorphi
-                                                  //| cConstant(App(App(App(IfThenElse(ℤ),True),Abs(Var(unit,UnitType),LiteralI
-                                                  //| nt(1))),Abs(Var(unit,UnitType),LiteralInt(2)))),UVar(x))
+    let('x, ifThenElse(True, 1, 2): Term)('x)     //> test3  : ilc.feature.let.ANormalFormTest.v.UntypedTerm = ULet(x,UMonomorphic
+                                                  //| Constant(App(App(App(IfThenElse(ℤ),True),Abs(Var(unit,UnitType),LiteralInt
+                                                  //| (1))),Abs(Var(unit,UnitType),LiteralInt(2)))),UVar(x))
   try {
     println(pretty(test1))
   } catch { case e: inference.Inference#UnificationFailure =>
@@ -79,7 +79,7 @@ object ANormalFormTest {
                                                   //|   id_i
                                                   //|   (id_i2lit
                                                   //|      LiteralInt(3))
-  "\n" + pretty(test1)                            //> res0: String = "
+  show(test1)                                     //> res0: String = "
                                                   //| id =
                                                   //|   λx.
                                                   //|     x;
@@ -99,7 +99,7 @@ object ANormalFormTest {
                                                   //|   id_i
                                                   //|   (id_i2lit
                                                   //|      LiteralInt(3))"
-  "\n" + pretty(aNormalizeTerm(test1))            //> res1: String = "
+  show(aNormalizeTerm(test1))                     //> res1: String = "
                                                   //| id =
                                                   //|   λx.
                                                   //|     x;
@@ -109,36 +109,60 @@ object ANormalFormTest {
                                                   //| apply =
                                                   //|   λf.
                                                   //|   λx.
-                                                  //|     f
-                                                  //|       x;
-                                                  //| a_1 =
-                                                  //|   id
-                                                  //|     apply;
+                                                  //|     a_1 =
+                                                  //|       f
+                                                  //|         x;
+                                                  //|     a_1;
                                                   //| a_2 =
-                                                  //|   a_1
-                                                  //|     id_i;
-                                                  //| a_3 =
                                                   //|   id_i
                                                   //|     LiteralInt(3);
-                                                  //| a_2
-                                                  //|   a_3"
-  "\n" + pretty(normalize(aNormalizeTerm(test1))) //> res2: String = "
+                                                  //| a_3 =
+                                                  //|   id
+                                                  //|     apply
+                                                  //|     id_i
+                                                  //|     a_2;
+                                                  //| a_3"
+  show(normalize(aNormalizeTerm(test1)))          //> res2: String = "
                                                   //| LiteralInt(3)"
-  "\n" + pretty(aNormalizeTerm(normalize(test1))) //> res3: String = "
+  show(aNormalizeTerm(normalize(test1)))          //> res3: String = "
                                                   //| LiteralInt(3)"
-  "\n" + pretty(test2)                            //> res4: String = "
+  show(test2)                                     //> res4: String = "
                                                   //| x =
                                                   //|   y =
                                                   //|     LiteralInt(20);
                                                   //|   y;
                                                   //| x"
-  "\n" + pretty(aNormalizeTerm(test2))            //> res5: String = "
+  show(aNormalizeTerm(test2))                     //> res5: String = "
                                                   //| LiteralInt(20)"
-  "\n" + pretty(normalize(aNormalizeTerm(test2))) //> res6: String = "
+  show(normalize(aNormalizeTerm(test2)))          //> res6: String = "
                                                   //| LiteralInt(20)"
-  "\n" + pretty(aNormalizeTerm(normalize(test2))) //> res7: String = "
+  show(aNormalizeTerm(normalize(test2)))          //> res7: String = "
                                                   //| LiteralInt(20)"
-  "\n" + pretty(test3)                            //> res8: String = "
+  show(test2Bis)                                  //> res8: String = "
+                                                  //| x =
+                                                  //|   y =
+                                                  //|     PlusInt
+                                                  //|       LiteralInt(20)
+                                                  //|       LiteralInt(30);
+                                                  //|   y;
+                                                  //| x"
+  show(aNormalizeTerm(test2Bis))                  //> res9: String = "
+                                                  //| a_7 =
+                                                  //|   PlusInt
+                                                  //|     LiteralInt(20)
+                                                  //|     LiteralInt(30);
+                                                  //| a_7"
+  show(normalize(aNormalizeTerm(test2Bis)))       //> res10: String = "
+                                                  //| PlusInt
+                                                  //|   LiteralInt(20)
+                                                  //|   LiteralInt(30)"
+  show(aNormalizeTerm(normalize(test2Bis)))       //> res11: String = "
+                                                  //| a_9 =
+                                                  //|   PlusInt
+                                                  //|     LiteralInt(20)
+                                                  //|     LiteralInt(30);
+                                                  //| a_9"
+  show(test3)                                     //> res12: String = "
                                                   //| x =
                                                   //|   IfThenElse(ℤ)
                                                   //|     True
@@ -147,38 +171,30 @@ object ANormalFormTest {
                                                   //|     (λunit.
                                                   //|        LiteralInt(2));
                                                   //| x"
-  "\n" + pretty(aNormalizeTerm(test3))            //> res9: String = "
-                                                  //| a_7 =
-                                                  //|   IfThenElse(ℤ)
-                                                  //|     True;
-                                                  //| a_8 =
-                                                  //|   λunit.
-                                                  //|     LiteralInt(1);
-                                                  //| a_9 =
-                                                  //|   a_7
-                                                  //|     a_8;
+  show(aNormalizeTerm(test3))                     //> res13: String = "
                                                   //| a_10 =
                                                   //|   λunit.
-                                                  //|     LiteralInt(2);
-                                                  //| x =
-                                                  //|   a_9
-                                                  //|     a_10;
-                                                  //| x"
-  "\n" + pretty(aNormalizeTerm(normalize(test3))) //> res10: String = "
+                                                  //|     LiteralInt(1);
                                                   //| a_11 =
-                                                  //|   IfThenElse(ℤ)
-                                                  //|     True;
+                                                  //|   λunit.
+                                                  //|     LiteralInt(2);
                                                   //| a_12 =
+                                                  //|   IfThenElse(ℤ)
+                                                  //|     True
+                                                  //|     a_10
+                                                  //|     a_11;
+                                                  //| a_12"
+  show(aNormalizeTerm(normalize(test3)))          //> res14: String = "
+                                                  //| a_13 =
                                                   //|   λunit_1.
                                                   //|     LiteralInt(1);
-                                                  //| a_13 =
-                                                  //|   a_11
-                                                  //|     a_12;
                                                   //| a_14 =
                                                   //|   λunit_2.
                                                   //|     LiteralInt(2);
-                                                  //| a_13
-                                                  //|   a_14"
-  //}
-  //tests(v)
+                                                  //| a_15 =
+                                                  //|   IfThenElse(ℤ)
+                                                  //|     True
+                                                  //|     a_13
+                                                  //|     a_14;
+                                                  //| a_15"
 }

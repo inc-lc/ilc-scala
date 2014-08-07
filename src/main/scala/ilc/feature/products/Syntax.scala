@@ -38,22 +38,20 @@ trait StdLib extends Syntax with inference.PrettySyntax {
 trait SyntaxSugar extends Syntax with functions.Syntax
 {
   def tuple(n: Int): TermBuilder = {
-    def loop(i: Int, prefix: TermBuilder): TermBuilder = {
-      if (i == 2)
-        lambda(s"x${n - 1}", s"x$n") { case Seq(penult, last) =>
-          prefix ! (Pair ! penult ! last)
+    def loop(i: Int, vars: List[Name]): TermBuilder = {
+      if (i == 0) {
+        vars.reverse.map(x => x: TermBuilder).reduceRight(Pair ! _ ! _)
+      } else {
+        lambda(s"x${n - i + 1}") { x_i =>
+          loop(i - 1, x_i :: vars)
         }
-      else
-        lambda(s"x${n - i + 1}") { x_j =>
-          loop(i - 1, prefix composeWithBuilder (Pair ! x_j))
-        }
+      }
     }
-    if (n == 2)
-      Pair
-    else if (n > 2)
-      lambda("x1") { x1 => loop(n - 1, Pair ! x1) }
-    else
+    if (n < 2)
       sys error s"${n}-tuples are not supported"
+    else {
+      loop(n, Nil)
+    }
   }
 
   def project(i: Int): TermBuilder = new PolymorphicTerm {

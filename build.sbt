@@ -1,5 +1,3 @@
-browserTask
-
 lazy val ilc = project in file(".")
 
 lazy val clients = project in file("clients") dependsOn (ilc % "test->test;compile->test")

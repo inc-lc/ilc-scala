@@ -42,18 +42,18 @@ extends DBToasterExample
   val eqq: UntypedTerm = Eq
 
   //All of this is missing aggregation.
-  def untypedProgram0 = 'r ->: 's ->: join('r, 's, 'rEl ->: 'sEl ->: eqq(proj1('rEl), proj1('sEl)), pair)
+  def untypedProgram0 = 'r ->: 's ->: join('r, 's, 'rEl ->: 'sEl ->: eqq(first('rEl), first('sEl)), pair)
   def untypedProgram =
     'r ->: 's ->: {
     letS (
-      ('idxR, groupByGen(proj1, proj2, 'r)),
-      ('idxS, groupByGen(proj1, proj2, 's))
+      ('idxR, groupByGen(first, second, 'r)),
+      ('idxS, groupByGen(first, second, 's))
     ) {
       'idxR
-      //filter (proj1('r) == proj1('s)) ...
+      //filter (first('r) == first('s)) ...
       //dictFlatMap('k ->: 'v ->: bagDictKeyFilter('k2 ->: eqq('k, 'k2), 'idxS))('idxR)
     }
-    //mapFlatMap apply ('k ->: 'v ->: mapFilter('k2 ->: 'v2 ->: eqq('k, 'k2), groupByGen('s, proj1, proj2))) apply groupByGen('r, proj1, proj2)
+    //mapFlatMap apply ('k ->: 'v ->: mapFilter('k2 ->: 'v2 ->: eqq('k, 'k2), groupByGen('s, first, second))) apply groupByGen('r, first, proj2)
   }
   override val program: Term = 'x ->: 'x //untypedProgram
 

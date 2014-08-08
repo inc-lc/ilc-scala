@@ -48,7 +48,7 @@ extends products.Derivation
   val groupByKey: UntypedTerm =
     foldGroup(
       liftGroup(freeAbelianGroup),
-      'k2v2Pair ->: singletonMap(proj1('k2v2Pair), singleton(proj2('k2v2Pair)))
+      'k2v2Pair ->: singletonMap(first('k2v2Pair), singleton(second('k2v2Pair)))
     )
 
   /** Output of userReduce is v₃, but it corresponds to (Maybe v₃).

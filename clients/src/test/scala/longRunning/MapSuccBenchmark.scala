@@ -16,4 +16,3 @@ class MapSuccBenchmark extends NonReplacementChangeBenchmark(
     override def last = 2500
     override def step = 500
   })
-

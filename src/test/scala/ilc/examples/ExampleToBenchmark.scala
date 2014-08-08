@@ -224,7 +224,6 @@ abstract class OnlyRecomputationBenchmark(benchData: BenchData) extends ExampleT
   testRecomputation()
 }
 
-/*
 // This must be a class because one can't define tests in a trait.
 abstract class ReplacementChangeBenchmark(override val benchData: BenchData with ReplacementChangeData) extends ExampleToBenchmark(benchData) {
   import benchData._
@@ -243,4 +242,3 @@ abstract class ReplacementChangeBenchmark(override val benchData: BenchData with
 
   testRecomputation()
 }
-*/

@@ -11,7 +11,7 @@ import feature._
   *
   * Many function are inspired (to some extent) from Haskell ones.
   */
-trait Prelude extends bacchus.Syntax with functions.SyntaxSugar
+trait Prelude extends bacchus.Syntax
 {
   def succ: Term = PlusInt ! LiteralInt(1)
 }

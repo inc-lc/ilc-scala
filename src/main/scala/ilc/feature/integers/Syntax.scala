@@ -28,7 +28,6 @@ extends base.Syntax
 trait SyntaxSugar
 extends Syntax
    with abelianGroups.SyntaxSugar
-   with functions.SyntaxSugar
 {
   // code for addition = big-endian encoding of "add!"
 

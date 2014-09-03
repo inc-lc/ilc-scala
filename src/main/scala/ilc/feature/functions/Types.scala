@@ -24,7 +24,7 @@ trait Types extends base.Types {
   }
 
   object =>: {
-    val arrow = "->"
+    val arrow = UnicodeOutput.choose("→", "->")
   }
 
   def getArgumentTypes(functionType: Type): List[Type] =

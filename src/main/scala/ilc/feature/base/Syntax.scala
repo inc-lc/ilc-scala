@@ -239,8 +239,6 @@ Please do not declare getType as an abstract `val`.
       if (argumentTypesMatch(argumentTypes, toTerm.getType))
         toTerm
       else {
-        def arrow = =>:.arrow
-
         val term = toTerm.toString
         val actual = toTerm.getType
         val expected = argumentTypes.foldRight(Underscore: Type)(_ =>: _).toString

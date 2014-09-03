@@ -14,17 +14,13 @@ trait Types extends base.Types {
    */
   case class =>: (domain: Type, range: Type) extends Type {
     override def toString: String = {
-      def arrow = =>:.arrow
+      val arrow = UnicodeOutput.choose("→", "->")
       domain match {
         case _ =>: _ => s"($domain) $arrow $range"
         case _ => s"$domain $arrow $range"
       }
     }
     override def traverse(f: Type => Type) = copy(f(domain), f(range))
-  }
-
-  object =>: {
-    val arrow = UnicodeOutput.choose("→", "->")
   }
 
   def getArgumentTypes(functionType: Type): List[Type] =

@@ -9,7 +9,12 @@ trait Zipper {
 
   type Tree
 
-  /** Assume by default that a tree node has no children.
+  /** Takes a tree node $tree and returns a sequence of locations representing
+    * the children of $tree.
+    *
+    * The default implementation assumes that a tree node has no children.
+    * This method ought to be overriden by `trait Context` inside the relevant
+    * feature (see `ilc.feature.functions.Context`).
     *
     * CAUTION:
     * If a subclass forgets to define it for tree nodes
@@ -21,7 +26,7 @@ trait Zipper {
     */
   def getChildren(tree: Tree): Seq[Location] = Seq.empty
 
-  /** inside-out context */
+  /** inside-out context. XXX Also called `Context` in some subclasses through a type alias. */
   trait Path
   {
     /** go-up for paths */
@@ -54,8 +59,9 @@ trait Zipper {
     def holePosition: Int = 0
   }
 
-  /** Huet's Top
-    * "Hole" is more suggestive.
+  /** Huet's Top.
+    * This represents the empty path, leading to the top of the represented tree.
+    * "Hole" is more suggestive, if you think of the upward path as
     */
   case object Hole extends Path {
     override def parent: Path =
@@ -72,6 +78,10 @@ trait Zipper {
     override def prepend(superpath: Path): Path = superpath
   }
 
+  /**
+    * A location is a pair of a Tree contained in the location, together
+    * with a Path/Context, that is a tree with a hole.
+    */
   case class Location(subtree: Tree, pathToRoot: Path) {
     def root: Tree = pathToRoot plugin subtree
 

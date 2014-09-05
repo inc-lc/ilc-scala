@@ -1,5 +1,5 @@
 package ilc
-package utils
+package util
 
 //Using a trait makes life harder for the inliner and gives annoying warnings.
 abstract class BooleanFlag {

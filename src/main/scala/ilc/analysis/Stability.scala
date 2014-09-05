@@ -58,6 +58,25 @@ extends functions.Context
       else {
         val parent = subterm.parent
         val ContextStability(pVarStability, pArgStability) = parent.getStability
+        subterm.pathToRoot match {
+          case AbsBodyContext(parent, x) =>
+            ContextStability(pVarStability.updated(x, pArgStability.head),
+                      pArgStability.tail)
+          case AppOperatorContext(newParent, operandTerm) =>
+            //XXX we need to build the parent zipper.
+            val operand2 = Location(operandTerm, newParent)
+            val operand = parent.children(1)
+            assert (operand == operand2)
+
+            ContextStability(pVarStability,
+                      operand.isStableGiven(pVarStability) #::
+                        pArgStability)
+          case AppOperandContext(_, operatorTerm) =>
+            //For arguments, we punt, and just say that we don't know if their arguments are stable or not.
+            ContextStability(pVarStability, ContextStability.unknownArguments)
+        }
+
+        /*
         parent.toTerm match {
           case Abs(x, _) =>
             ContextStability(pVarStability.updated(x, pArgStability.head),
@@ -77,6 +96,7 @@ extends functions.Context
             }
           }
         }
+        */
       }
 
     // A term is stable if all its free variables are stable.

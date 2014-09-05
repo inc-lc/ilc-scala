@@ -64,7 +64,7 @@ extends functions.Context
                       pArgStability.tail)
 
           case App(_, _) => {
-            val Seq(operator, operand) = parent.children
+            val Seq(_, operand) = parent.children
             subterm.siblingOrdinalPosition match {
               case 0 =>
                 ContextStability(pVarStability,

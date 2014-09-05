@@ -23,13 +23,13 @@ extends functions.Context
     * - whether its arguments are stable.
     * - which variables are stable.
     */
-  case class Stability(
+  case class ContextStability(
     ofVariables: Map[Var, Boolean],
     ofArguments: Stream[Boolean]
   )
 
 
-  object Stability {
+  object ContextStability {
     /**
       * This is the stability of the program f. This value asserts that we know
       * nothing about the stability of arguments, and that all arguments are
@@ -38,8 +38,8 @@ extends functions.Context
       * This does not mean that f itself is unstable. In fact, f itself is
       * always stable, and its body might be stable if f is a constant function.
       */
-    def entirelyUnstable: Stability =
-      Stability(Map.empty.withDefaultValue(false), unknownArguments)
+    def entirelyUnstable: ContextStability =
+      ContextStability(Map.empty.withDefaultValue(false), unknownArguments)
 
     def unknownArguments: Stream[Boolean] =
       Stream.continually(false)
@@ -52,28 +52,28 @@ extends functions.Context
     def hasStableArgument(i: Int): Boolean =
       this.getStability.ofArguments(i)
 
-    def getStability: Stability =
+    def getStability: ContextStability =
       if (subterm.isRoot)
-        Stability.entirelyUnstable
+        ContextStability.entirelyUnstable
       else {
         val parent = subterm.parent
-        val Stability(pVarStability, pArgStability) = parent.getStability
+        val ContextStability(pVarStability, pArgStability) = parent.getStability
         parent.toTerm match {
           case Abs(x, _) =>
-            Stability(pVarStability.updated(x, pArgStability.head),
+            ContextStability(pVarStability.updated(x, pArgStability.head),
                       pArgStability.tail)
 
           case App(_, _) => {
             val Seq(operator, operand) = parent.children
             subterm.siblingOrdinalPosition match {
               case 0 =>
-                Stability(pVarStability,
+                ContextStability(pVarStability,
                           operand.isStableGiven(pVarStability) #::
                             pArgStability)
 
               case 1 =>
                 //For arguments, we punt, and just say that we don't know if their arguments are stable or not.
-                Stability(pVarStability, Stability.unknownArguments)
+                ContextStability(pVarStability, ContextStability.unknownArguments)
             }
           }
         }

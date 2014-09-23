@@ -62,9 +62,8 @@ extends functions.Context
             case AbsBodyContext(newParent, x) =>
               ContextStability(pVarStability.updated(x, pArgStability.head),
                         pArgStability.tail)
-            case AppOperatorContext(newParent, operandTerm) =>
-              //Right sibling:
-              val operand = Subtree(operandTerm, AppOperandContext(newParent, subtree.subtree))
+            case AppOperatorContext(_, _) =>
+              val operand = goRight(subtree)
 
               ContextStability(pVarStability,
                         operand.isStableGiven(pVarStability) #::

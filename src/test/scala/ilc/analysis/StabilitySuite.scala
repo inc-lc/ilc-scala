@@ -23,6 +23,19 @@ extends FunSuite
 
   val Seq(f1, x1, f2, x2) = variables
 
+  //x should be an application node.
+  def testNavigation(x: Subtree) {
+    assert(goLeft(goRight(x.children(0))) == x.children(0))
+    assert(goRight(goLeft(x.children(1))) == x.children(1))
+  }
+
+  test("goLeft and goRight are partial inverses") {
+    testNavigation(app2)
+    testNavigation(app2.children(0).children(0).children(0))
+    testNavigation(app2.children(1).children(0).children(0))
+    //testNavigation(app2.children(1).children(0))
+  }
+
   test("app2's bound variables are stable, unstable, unstable, unstable") {
     assert(variables.map(_.isStable) === Seq(true, false, false, false))
   }

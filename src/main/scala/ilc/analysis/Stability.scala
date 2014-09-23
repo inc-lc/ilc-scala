@@ -63,10 +63,8 @@ extends functions.Context
             ContextStability(pVarStability.updated(x, pArgStability.head),
                       pArgStability.tail)
           case AppOperatorContext(newParent, operandTerm) =>
-            //XXX we need to build the parent zipper.
-            val operand2 = Location(operandTerm, newParent)
-            val operand = parent.children(1)
-            assert (operand == operand2)
+            //Right sibling:
+            val operand = Location(operandTerm, AppOperandContext(newParent, subterm.subtree))
 
             ContextStability(pVarStability,
                       operand.isStableGiven(pVarStability) #::

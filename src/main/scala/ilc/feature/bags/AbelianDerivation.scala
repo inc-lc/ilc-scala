@@ -32,7 +32,7 @@ extends Syntax
   private def changeTypes(valueType: Type): (Type, Type) =
     (groupBasedChangeType(BagType(valueType)), BagType(valueType))
 
-  override def deriveSubterm(s: Subterm): Term = s.toTerm match {
+  override def deriveSubtree(s: Subtree): Term = s.toTerm match {
     case EmptyBag(valueType) =>
       freeGroupBasedChange ! EmptyBag(valueType)
 
@@ -52,7 +52,7 @@ extends Syntax
         // Evaluating the replacement value eagerly cannot be
         // what we want.
         val replacement =
-          super.deriveSubterm(s) ! bag1 ! dbag1 ! bag2 ! dbag2
+          super.deriveSubtree(s) ! bag1 ! dbag1 ! bag2 ! dbag2
         case4(dbag1, dbag2,
           lambda(grp, grp) { case Seq(grp1, grp2) =>
             ifThenElse(
@@ -75,7 +75,7 @@ extends Syntax
         val (grp, rep) = changeTypes(valueType)
         val freeAbelianGroup = FreeAbelianGroup(valueType)
         val replacement =
-          super.deriveSubterm(s) ! bag ! dbag
+          super.deriveSubtree(s) ! bag ! dbag
         case2(dbag,
           lambda(grp) { case grp0 =>
             ifThenElse(
@@ -94,7 +94,7 @@ extends Syntax
         val (grp, rep) = changeTypes(valueType)
         val freeAbelianGroup = FreeAbelianGroup(valueType)
         val replacement =
-          super.deriveSubterm(s) ! _G ! dG ! f ! df ! bag ! dbag
+          super.deriveSubtree(s) ! _G ! dG ! f ! df ! bag ! dbag
         ifEqualGroups((_G, dG)) {
           case2(dbag,
             lambda(Var("grp0" ,grp)) { case grp0 =>
@@ -112,6 +112,6 @@ extends Syntax
       }
 
     case _ =>
-      super.deriveSubterm(s)
+      super.deriveSubtree(s)
   }
 }

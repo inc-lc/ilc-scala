@@ -15,8 +15,8 @@ extends FunSuite
   val appType = (ℕ =>: ℕ) =>: ℕ =>: ℕ
 
   // app2 = (λ f x → f x) (λ f x → f x)
-  val app2: Subterm =
-    Location.ofRoot((app ofType appType =>: appType) ! (app ofType appType))
+  val app2: Subtree =
+    Subtree.ofRoot((app ofType appType =>: appType) ! (app ofType appType))
 
   val variables = app2.children flatMap
     (_.children) flatMap (_.children) flatMap (_.children)
@@ -41,6 +41,6 @@ extends FunSuite
   }
 
   test("free variables are unstable") {
-    assert(Location.ofRoot(Var("x", ℕ)).isStable === false)
+    assert(Subtree.ofRoot(Var("x", ℕ)).isStable === false)
   }
 }

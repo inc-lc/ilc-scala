@@ -6,8 +6,8 @@ import ilc.feature.functions
 trait FreeVariables
 extends functions.Context
 {
-  implicit class FreeVariablesOfSubterms(subterm: Subterm) {
-    def freeVariables: Set[Var] = subterm.toTerm.freeVariables
+  implicit class FreeVariablesOfSubtrees(subtree: Subtree) {
+    def freeVariables: Set[Var] = subtree.toTerm.freeVariables
   }
 
   def termFreeVariables(term: Term): Set[Var] = term match {

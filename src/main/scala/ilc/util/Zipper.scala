@@ -24,7 +24,7 @@ trait Zipper {
     * out there so as to declare that the constants
     * introduced by that feature have no children.
     */
-  def getChildren(tree: Tree): Seq[Location] = Seq.empty
+  def getChildren(tree: Tree): Seq[Subtree] = Seq.empty
 
   /** inside-out context. */
   trait Context
@@ -81,26 +81,26 @@ trait Zipper {
     * A location is a pair of a Tree contained in the location, together
     * with a Context, that is a tree with a hole.
     */
-  case class Location(subtree: Tree, pathToRoot: Context) {
+  case class Subtree(subtree: Tree, pathToRoot: Context) {
     def root: Tree = pathToRoot plugin subtree
 
     def isRoot: Boolean = pathToRoot == Top
 
-    def parent: Location =
-      Location(pathToRoot instantiate subtree, pathToRoot.parent)
+    def parent: Subtree =
+      Subtree(pathToRoot instantiate subtree, pathToRoot.parent)
 
     def siblingOrdinalPosition: Int = pathToRoot.holePosition
 
-    def children: Seq[Location] =
+    def children: Seq[Subtree] =
       getChildren(subtree) map {
-        case Location(childTerm, pathToThis) =>
-          Location(childTerm, pathToThis prepend this.pathToRoot)
+        case Subtree(childTerm, pathToThis) =>
+          Subtree(childTerm, pathToThis prepend this.pathToRoot)
       }
   }
 
-  object Location {
-    def ofRoot(root: Tree): Location =
-      Location(root, Top)
+  object Subtree {
+    def ofRoot(root: Tree): Subtree =
+      Subtree(root, Top)
   }
 
   class ZipperException(message: String)

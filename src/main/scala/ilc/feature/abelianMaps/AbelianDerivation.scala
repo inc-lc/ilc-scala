@@ -24,7 +24,7 @@ extends Syntax
       super.isAbelianType(tau)
   }
 
-  override def deriveSubterm(s: Subterm): Term = s.toTerm match {
+  override def deriveSubtree(s: Subtree): Term = s.toTerm match {
     case term @ FoldByHom(k, a, b)
         if isAbelianType(b) &&
            s.hasStableArgument(2) => // f : k → a → b
@@ -32,7 +32,7 @@ extends Syntax
         val grp = ProductType(AbelianGroupType(MapType(k, a)), MapType(k, a))
         val rep = MapType(k, a)
         val replacement: TermBuilder =
-          super.deriveSubterm(s) ! _Ga ! dGa ! _Gb ! dGb ! f ! df ! m ! dm
+          super.deriveSubtree(s) ! _Ga ! dGa ! _Gb ! dGb ! f ! df ! m ! dm
 
         case2(dm,
           lambda(grp) { case grp0 =>
@@ -49,6 +49,6 @@ extends Syntax
       }
 
     case _ =>
-      super.deriveSubterm(s)
+      super.deriveSubtree(s)
   }
 }

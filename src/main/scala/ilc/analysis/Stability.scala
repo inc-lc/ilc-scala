@@ -53,27 +53,28 @@ extends functions.Context
       this.getStability.ofArguments(i)
 
     def getStability: ContextStability =
-      if (subtree.isRoot)
-        ContextStability.entirelyUnstable
-      else {
-        val parent = subtree.parent
-        val ContextStability(pVarStability, pArgStability) = parent.getStability
-        subtree.pathToRoot match {
-          case AbsBodyContext(parent, x) =>
-            ContextStability(pVarStability.updated(x, pArgStability.head),
-                      pArgStability.tail)
-          case AppOperatorContext(newParent, operandTerm) =>
-            //Right sibling:
-            val operand = Subtree(operandTerm, AppOperandContext(newParent, subtree.subtree))
+      subtree.pathToRoot match {
+        case Top =>
+            ContextStability.entirelyUnstable
+        case _ =>
+          val parent = subtree.parent
+          val ContextStability(pVarStability, pArgStability) = parent.getStability
+          subtree.pathToRoot match {
+            case AbsBodyContext(parent, x) =>
+              ContextStability(pVarStability.updated(x, pArgStability.head),
+                        pArgStability.tail)
+            case AppOperatorContext(newParent, operandTerm) =>
+              //Right sibling:
+              val operand = Subtree(operandTerm, AppOperandContext(newParent, subtree.subtree))
 
-            ContextStability(pVarStability,
-                      operand.isStableGiven(pVarStability) #::
-                        pArgStability)
-          case AppOperandContext(_, operatorTerm) =>
-            //For arguments, we punt, and just say that we don't know if their arguments are stable or not.
-            ContextStability(pVarStability, ContextStability.unknownArguments)
-        }
-      }
+              ContextStability(pVarStability,
+                        operand.isStableGiven(pVarStability) #::
+                          pArgStability)
+            case AppOperandContext(_, operatorTerm) =>
+              //For arguments, we punt, and just say that we don't know if their arguments are stable or not.
+              ContextStability(pVarStability, ContextStability.unknownArguments)
+          }
+    }
 
     // A term is stable if all its free variables are stable.
     def isStableGiven(pVarStability: Map[Var, Boolean]): Boolean =

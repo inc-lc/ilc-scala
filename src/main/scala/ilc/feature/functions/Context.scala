@@ -6,11 +6,11 @@ trait Context extends base.Context with Syntax {
   override def getChildren(term: Term): Seq[Location] =
     term match {
       case Abs(variable, body) =>
-        Seq(Location(body, AbsBodyContext(Hole, variable)))
+        Seq(Location(body, AbsBodyContext(Top, variable)))
 
       case App(operator, operand) =>
-        Seq(Location(operator, AppOperatorContext(Hole, operand)),
-            Location(operand, AppOperandContext(Hole, operator)))
+        Seq(Location(operator, AppOperatorContext(Top, operand)),
+            Location(operand, AppOperandContext(Top, operator)))
 
       case _ =>
         super.getChildren(term)

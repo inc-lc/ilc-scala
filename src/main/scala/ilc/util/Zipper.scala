@@ -44,9 +44,9 @@ trait Zipper {
       *
       * Examples (in top-down syntax):
       * {{{
-      * Hole(5) = 5
-      * Abs(x, Hole)(5) = Abs(x, 5)
-      * App(f, Hole)(5) = App(f, 5)
+      * Top(5) = 5
+      * Abs(x, Top)(5) = Abs(x, 5)
+      * App(f, Top)(5) = App(f, 5)
       * }}}
       */
     def plugin(subtree: Tree): Tree =
@@ -59,19 +59,18 @@ trait Zipper {
     def holePosition: Int = 0
   }
 
-  /** Huet's Top.
+  /**
     * This represents the empty path, leading to the top of the represented tree.
-    * "Hole" is more suggestive, if you think of the upward path as
     */
-  case object Hole extends Path {
+  case object Top extends Path {
     override def parent: Path =
-      throw ParentOfHoleException
+      throw ParentOfTopException
 
     override def updateParent(newParent: Path): Path =
-      throw UpdateParentOfHoleException
+      throw UpdateParentOfTopException
 
     override def instantiate(subtree: Tree): Tree =
-      throw InstantiateOfHoleException
+      throw InstantiateOfTopException
 
     override def plugin(subtree: Tree): Tree = subtree
 
@@ -85,7 +84,7 @@ trait Zipper {
   case class Location(subtree: Tree, pathToRoot: Path) {
     def root: Tree = pathToRoot plugin subtree
 
-    def isRoot: Boolean = pathToRoot == Hole
+    def isRoot: Boolean = pathToRoot == Top
 
     def parent: Location =
       Location(pathToRoot instantiate subtree, pathToRoot.parent)
@@ -101,20 +100,20 @@ trait Zipper {
 
   object Location {
     def ofRoot(root: Tree): Location =
-      Location(root, Hole)
+      Location(root, Top)
   }
 
   class ZipperException(message: String)
   extends Exception(message)
 
-  object ParentOfHoleException
-  extends ZipperException("parent of Hole")
+  object ParentOfTopException
+  extends ZipperException("parent of Top")
 
-  object UpdateParentOfHoleException
-  extends ZipperException("can't update the parent of Hole" +
+  object UpdateParentOfTopException
+  extends ZipperException("can't update the parent of Top" +
     " because it has none")
 
-  object InstantiateOfHoleException
-  extends ZipperException("can't instantiate at Hole" +
+  object InstantiateOfTopException
+  extends ZipperException("can't instantiate at Top" +
     " because we lack contextual information")
 }

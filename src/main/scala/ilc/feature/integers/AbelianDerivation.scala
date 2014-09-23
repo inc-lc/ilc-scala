@@ -17,7 +17,7 @@ extends abelianGroups.AbelianDerivation
     case _       => super.isAbelianType(tau)
   }
 
-  override def deriveSubterm(s: Subterm): Term = s.toTerm match {
+  override def deriveSubtree(s: Subtree): Term = s.toTerm match {
     case term @ LiteralInt(i) =>
       replacementChange ! term
 
@@ -25,6 +25,6 @@ extends abelianGroups.AbelianDerivation
     // integers, so calling `updateTerm` and `diffTerm` is okay.
 
     case _ =>
-      super.deriveSubterm(s)
+      super.deriveSubtree(s)
   }
 }

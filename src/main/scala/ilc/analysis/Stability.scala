@@ -45,7 +45,7 @@ extends functions.Context
       Stream.continually(false)
   }
 
-  implicit class StabilityOfSubterms(subterm: Subterm) {
+  implicit class StabilityOfSubtrees(subtree: Subtree) {
     def isStable: Boolean =
       this.isStableGiven(this.getStability.ofVariables)
 
@@ -53,18 +53,18 @@ extends functions.Context
       this.getStability.ofArguments(i)
 
     def getStability: ContextStability =
-      if (subterm.isRoot)
+      if (subtree.isRoot)
         ContextStability.entirelyUnstable
       else {
-        val parent = subterm.parent
+        val parent = subtree.parent
         val ContextStability(pVarStability, pArgStability) = parent.getStability
-        subterm.pathToRoot match {
+        subtree.pathToRoot match {
           case AbsBodyContext(parent, x) =>
             ContextStability(pVarStability.updated(x, pArgStability.head),
                       pArgStability.tail)
           case AppOperatorContext(newParent, operandTerm) =>
             //Right sibling:
-            val operand = Location(operandTerm, AppOperandContext(newParent, subterm.subtree))
+            val operand = Subtree(operandTerm, AppOperandContext(newParent, subtree.subtree))
 
             ContextStability(pVarStability,
                       operand.isStableGiven(pVarStability) #::
@@ -77,6 +77,6 @@ extends functions.Context
 
     // A term is stable if all its free variables are stable.
     def isStableGiven(pVarStability: Map[Var, Boolean]): Boolean =
-      (subterm.freeVariables map pVarStability).fold(true)(_ && _)
+      (subtree.freeVariables map pVarStability).fold(true)(_ && _)
   }
 }

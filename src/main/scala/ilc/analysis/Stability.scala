@@ -57,10 +57,9 @@ extends functions.Context
         case Top =>
             ContextStability.entirelyUnstable
         case _ =>
-          val parent = subtree.parent
-          val ContextStability(pVarStability, pArgStability) = parent.getStability
+          val ContextStability(pVarStability, pArgStability) = subtree.parent.getStability
           subtree.pathToRoot match {
-            case AbsBodyContext(parent, x) =>
+            case AbsBodyContext(newParent, x) =>
               ContextStability(pVarStability.updated(x, pArgStability.head),
                         pArgStability.tail)
             case AppOperatorContext(newParent, operandTerm) =>

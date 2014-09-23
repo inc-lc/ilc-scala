@@ -26,16 +26,16 @@ trait Zipper {
     */
   def getChildren(tree: Tree): Seq[Location] = Seq.empty
 
-  /** inside-out context. XXX Also called `Context` in some subclasses through a type alias. */
-  trait Path
+  /** inside-out context. */
+  trait Context
   {
     /** go-up for paths */
-    def parent: Path
+    def parent: Context
 
     /** copy self with new parent
       * boilerplate obligation of subclasses
       */
-    def updateParent(newParent: Path): Path
+    def updateParent(newParent: Context): Context
 
     /** make a tree node appropriate for this location */
     def instantiate(subtree: Tree): Tree
@@ -53,7 +53,7 @@ trait Zipper {
       parent plugin instantiate(subtree)
 
     /** put this path on the inside of the other path */
-    def prepend(superpath: Path): Path =
+    def prepend(superpath: Context): Context =
       this updateParent (parent prepend superpath)
 
     def holePosition: Int = 0
@@ -62,11 +62,11 @@ trait Zipper {
   /**
     * This represents the empty path, leading to the top of the represented tree.
     */
-  case object Top extends Path {
-    override def parent: Path =
+  case object Top extends Context {
+    override def parent: Context =
       throw ParentOfTopException
 
-    override def updateParent(newParent: Path): Path =
+    override def updateParent(newParent: Context): Context =
       throw UpdateParentOfTopException
 
     override def instantiate(subtree: Tree): Tree =
@@ -74,14 +74,14 @@ trait Zipper {
 
     override def plugin(subtree: Tree): Tree = subtree
 
-    override def prepend(superpath: Path): Path = superpath
+    override def prepend(superpath: Context): Context = superpath
   }
 
   /**
     * A location is a pair of a Tree contained in the location, together
-    * with a Path/Context, that is a tree with a hole.
+    * with a Context, that is a tree with a hole.
     */
-  case class Location(subtree: Tree, pathToRoot: Path) {
+  case class Location(subtree: Tree, pathToRoot: Context) {
     def root: Tree = pathToRoot plugin subtree
 
     def isRoot: Boolean = pathToRoot == Top

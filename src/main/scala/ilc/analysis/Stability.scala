@@ -73,28 +73,6 @@ extends functions.Context
             //For arguments, we punt, and just say that we don't know if their arguments are stable or not.
             ContextStability(pVarStability, ContextStability.unknownArguments)
         }
-
-        /*
-        parent.toTerm match {
-          case Abs(x, _) =>
-            ContextStability(pVarStability.updated(x, pArgStability.head),
-                      pArgStability.tail)
-
-          case App(_, _) => {
-            val Seq(_, operand) = parent.children
-            subterm.siblingOrdinalPosition match {
-              case 0 =>
-                ContextStability(pVarStability,
-                          operand.isStableGiven(pVarStability) #::
-                            pArgStability)
-
-              case 1 =>
-                //For arguments, we punt, and just say that we don't know if their arguments are stable or not.
-                ContextStability(pVarStability, ContextStability.unknownArguments)
-            }
-          }
-        }
-        */
       }
 
     // A term is stable if all its free variables are stable.

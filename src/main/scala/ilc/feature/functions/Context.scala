@@ -45,4 +45,14 @@ trait Context extends base.Context with Syntax {
 
     override def holePosition: Int = 1
   }
+
+  def goRight(subtree: Subtree) = subtree match {
+    case Subtree(operator, AppOperatorContext(parent, operand)) =>
+      Subtree(operand, AppOperandContext(parent, operator))
+  }
+
+  def goLeft(subtree: Subtree) = subtree match {
+    case Subtree(operand, AppOperandContext(parent, operator)) =>
+      Subtree(operator, AppOperatorContext(parent, operand))
+  }
 }

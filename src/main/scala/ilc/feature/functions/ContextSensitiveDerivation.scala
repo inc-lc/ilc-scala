@@ -14,9 +14,9 @@ package functions
   * is there to ensure that the `derive` called from within a
   * calculus with ContextSensitiveDerivation is the one defined
   * in base.ContextSensitiveDerivation for sure, who delegates
-  * its duties to `deriveSubterm` immediately.
+  * its duties to `deriveSubtree` immediately.
   *
-  * The base deriveSubterm will then default to context-free derivation
+  * The base deriveSubtree will then default to context-free derivation
   * in the superclass - ignoring code of context-free derivation traits
   * in subtraits.
   */
@@ -26,18 +26,18 @@ extends Derivation
    with functions.Context
    with base.ContextSensitiveDerivation
 {
-  override def deriveSubterm(s: Subterm): Term = s.toTerm match {
+  override def deriveSubtree(s: Subtree): Term = s.toTerm match {
     case Abs(x, _) => {
       val Seq(body) = s.children
-      lambdaTerm(x, DVar(x)) { deriveSubterm(body) }
+      lambdaTerm(x, DVar(x)) { deriveSubtree(body) }
     }
 
     case App(_, _) => {
       val Seq(operator, operand) = s.children
-      deriveSubterm(operator) ! operand.toTerm ! deriveSubterm(operand)
+      deriveSubtree(operator) ! operand.toTerm ! deriveSubtree(operand)
     }
 
     case _ =>
-      super.deriveSubterm(s)
+      super.deriveSubtree(s)
   }
 }

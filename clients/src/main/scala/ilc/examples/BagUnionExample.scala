@@ -34,7 +34,7 @@ extends Example
   //   λ pair : inputType.
   //      union (proj₁ pair) (proj₂ pair)
   def untypedProgram: UntypedTerm =
-    'pair % inputType ->: union(proj1('pair), proj2('pair))
+    'pair % inputType ->: union(first('pair), second('pair))
 
   def program: Term = untypedTermToTerm(untypedProgram)
 

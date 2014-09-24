@@ -5,4 +5,4 @@ jdk:
   - openjdk6
   - openjdk7
   - oraclejdk7
-script: sbt ++$TRAVIS_SCALA_VERSION test "project clients" "testOnly ilc.*" "project bigClients" "testOnly ilc.*"
+script: sbt ++$TRAVIS_SCALA_VERSION test "project clients" "testOnly ilc.*" "project bigClients" "testOnly ilc.*" "project icfp2014" test

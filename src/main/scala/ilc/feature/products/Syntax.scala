@@ -31,8 +31,31 @@ extends base.Syntax
 
 trait StdLib extends Syntax with inference.PrettySyntax {
   val pair: UntypedTerm = Pair
-  val proj1: UntypedTerm = Proj1
-  val proj2: UntypedTerm = Proj2
+  val first: UntypedTerm = Proj1
+  val second: UntypedTerm = Proj2
+}
+
+trait InferenceSyntaxSugar extends Syntax with functions.Syntax with StdLib with inference.SyntaxSugar
+{
+  def tuple(firstArg: UntypedTerm, args: UntypedTerm*) =
+    (firstArg +: args).reduceRight(pair(_, _))
+
+  //i is 0-based.
+  def project(i: Int, n: Int, t: UntypedTerm): UntypedTerm =
+    if (i < 0)
+      sys error s"${i}-th tuple projections are not supported (tuple indexes start from 0)"
+    else if (i >= n)
+      sys error s"Can't project ${i}-th element out of ${n}-ary tuple, valid indexes are from 0 to ${n - 1}"
+    else if (n < 2)
+      sys error s"${n}-tuples are not supported"
+    else {
+      if (i == 0)
+        first(t)
+      else if (i == 1 && n == 2)
+        second(t)
+      else
+        project(i - 1, n - 1, second(t))
+    }
 }
 
 trait SyntaxSugar extends Syntax with functions.Syntax

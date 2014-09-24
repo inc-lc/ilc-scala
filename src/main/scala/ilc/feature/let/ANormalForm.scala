@@ -30,7 +30,7 @@ trait ANormalForm extends ANormalFormInterface {
   type MySyntax = mySyntax.type
   import mySyntax._
 
-  private val freshGen = new FreshGen { lazy val syntax: mySyntax.type = mySyntax }
+  private val freshGen = new base.FreshGen { lazy val syntax: mySyntax.type = mySyntax }
   import freshGen._
 
   override def aNormalizeTerm(t: Term): Term = aNormalize(t)(identity)
@@ -68,7 +68,7 @@ trait ANormalFormStateful extends ANormalFormInterface {
   type MySyntax = mySyntax.type
   import mySyntax._
 
-  protected val freshGen = new FreshGen {
+  protected val freshGen = new base.FreshGen {
     //This must be lazy because at this time mySyntax is not initialized yet.
     lazy val syntax: mySyntax.type = mySyntax
   }
@@ -252,7 +252,7 @@ trait AddCaches2 {
       })
     }
   }
-  protected val freshGen = new FreshGen {
+  protected val freshGen = new base.FreshGen {
     //This must be lazy because at this time mySyntax is not initialized yet.
     lazy val syntax: mySyntax.type = mySyntax
   }

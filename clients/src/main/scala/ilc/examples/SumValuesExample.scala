@@ -37,9 +37,9 @@ extends Example
   val G: UntypedTerm = additiveGroupOnIntegers
   val foldByHom: UntypedTerm = FoldByHom
   // Need to annotate the first argument. It is not used, so type inference leaves it open, but code generation does not cope with type variables.
-  val second: UntypedTerm = 'first % ℤ ->: 'second ->: 'second
+  val _flipConst: UntypedTerm = 'first % ℤ ->: 'second ->: 'second
 
   val program: Term = untypedTermToTerm(
-    'inputMap ->: pair(foldByHom(G, G, second, 'inputMap), G)
+    'inputMap ->: pair(foldByHom(G, G, _flipConst, 'inputMap), G)
   )
 }

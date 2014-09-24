@@ -15,7 +15,7 @@ trait ProgramSize extends Syntax {
 
 trait BetaReduction extends Syntax with FreeVariables with analysis.Occurrences with Traversals with IsAtomic {
   outer =>
-  val freshGen = new FreshGen {
+  val freshGen = new base.FreshGen {
     /*
      * The singleton type annotation encodes a "sharing constraint"*:
      * freshGen.syntax.type =:= outer.type. The typechecker can deduce then
@@ -228,35 +228,4 @@ trait BetaReduction extends Syntax with FreeVariables with analysis.Occurrences 
         }
       }
   }
-}
-
-/**
- * A reusable freshname generator. Since this contains mutable state, this module
- * is designed to be imported via composition, not by mixing it in.
- */
-trait FreshGen {
-  val syntax: Syntax
-  import syntax._
-
-  //Have a very simple and reliable fresh variable generator. Tracking free
-  //variables might have been the performance killer of the other normalizer.
-  var index = 0
-  def resetIndex() {
-    index = 0
-  }
-
-  def fresh(varName: Name, varType: Type): Var = {
-    index += 1
-    //Var(IndexedName("z", index), varType)
-    val compress = false
-    val baseName =
-      if (compress)
-        "z": NonIndexedName
-      else
-        //Keep names, for extra readability.
-        decomposeName(varName)._1
-    Var(IndexedName(baseName, index), varType)
-  }
-
-  def fresh(v: Var): Var = fresh(v.getName, v.getType)
 }

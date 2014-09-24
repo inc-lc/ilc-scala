@@ -11,7 +11,6 @@ trait AbelianDerivation
 extends Syntax
    with analysis.Stability
    with abelianGroups.SyntaxSugar
-   with functions.SyntaxSugar // for let-bindings
    with booleans.SyntaxSugar  // for ifThenElse, andTerm
    with abelianGroups.AbelianDerivation
    with functions.ContextSensitiveDerivation

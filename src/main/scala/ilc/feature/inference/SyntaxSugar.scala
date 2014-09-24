@@ -4,7 +4,17 @@ package inference
 
 trait SyntaxSugar extends PrettySyntax with booleans.Syntax {
   //Basic utils.
+  //Force implicit conversions.
+  def asTerm(t: Term) = t
   def asUntyped(t: UntypedTerm) = t
+
+  def typecheck(t: UntypedTerm) =
+    try {
+      asTerm(t)
+    } catch { case e: inference.Inference#UnificationFailure =>
+      println(e.details)
+      throw e
+    }
 
   //"Macros"
   /** Usage:

@@ -11,7 +11,6 @@ trait AbelianDerivation
 extends Syntax
    with abelianGroups.SyntaxSugar
    with booleans.SyntaxSugar
-   with functions.SyntaxSugar
    with abelianGroups.Derivation
    with abelianGroups.AbelianDerivation
    with functions.ContextSensitiveDerivation

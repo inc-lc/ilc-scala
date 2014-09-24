@@ -3,14 +3,14 @@ package feature
 package functions
 
 trait Context extends base.Context with Syntax {
-  override def getChildren(term: Term): Seq[Location] =
+  override def getChildren(term: Term): Seq[Subtree] =
     term match {
       case Abs(variable, body) =>
-        Seq(Location(body, AbsBodyContext(Hole, variable)))
+        Seq(Subtree(body, AbsBodyContext(Top, variable)))
 
       case App(operator, operand) =>
-        Seq(Location(operator, AppOperatorContext(Hole, operand)),
-            Location(operand, AppOperandContext(Hole, operator)))
+        Seq(Subtree(operator, AppOperatorContext(Top, operand)),
+            Subtree(operand, AppOperandContext(Top, operator)))
 
       case _ =>
         super.getChildren(term)
@@ -44,5 +44,15 @@ trait Context extends base.Context with Syntax {
     def instantiate(operand: Term): Term = App(operator, operand)
 
     override def holePosition: Int = 1
+  }
+
+  def goRight(subtree: Subtree) = subtree match {
+    case Subtree(operator, AppOperatorContext(parent, operand)) =>
+      Subtree(operand, AppOperandContext(parent, operator))
+  }
+
+  def goLeft(subtree: Subtree) = subtree match {
+    case Subtree(operand, AppOperandContext(parent, operator)) =>
+      Subtree(operator, AppOperatorContext(parent, operand))
   }
 }

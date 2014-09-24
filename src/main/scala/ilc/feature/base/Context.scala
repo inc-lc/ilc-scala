@@ -8,10 +8,8 @@ import ilc.util.Zipper
 
 trait Context extends Syntax with Zipper {
   type Tree = Term
-  type Context = Path
-  type Subterm = Location
 
-  implicit class SubtermOps(subterm: Subterm) {
-    def toTerm: Term = subterm.subtree
+  implicit class SubtreeOps(subtree: Subtree) {
+    def toTerm: Term = subtree.subtree
   }
 }

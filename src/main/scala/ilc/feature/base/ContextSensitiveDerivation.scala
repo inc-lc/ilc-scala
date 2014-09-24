@@ -7,10 +7,10 @@ extends Derivation
    with Context
 {
   final override def derive(t: Term): Term =
-    deriveSubterm(Location.ofRoot(t))
+    deriveSubtree(Subtree.ofRoot(t))
 
   // subclass should override this one instead
-  def deriveSubterm(subterm: Subterm): Term =
+  def deriveSubtree(subtree: Subtree): Term =
     // default to 
-    super.derive(subterm.toTerm)
+    super.derive(subtree.toTerm)
 }

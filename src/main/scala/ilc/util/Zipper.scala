@@ -9,7 +9,12 @@ trait Zipper {
 
   type Tree
 
-  /** Assume by default that a tree node has no children.
+  /** Takes a tree node $tree and returns a sequence of locations representing
+    * the children of $tree.
+    *
+    * The default implementation assumes that a tree node has no children.
+    * This method ought to be overriden by `trait Context` inside the relevant
+    * feature (see `ilc.feature.functions.Context`).
     *
     * CAUTION:
     * If a subclass forgets to define it for tree nodes
@@ -19,18 +24,18 @@ trait Zipper {
     * out there so as to declare that the constants
     * introduced by that feature have no children.
     */
-  def getChildren(tree: Tree): Seq[Location] = Seq.empty
+  def getChildren(tree: Tree): Seq[Subtree] = Seq.empty
 
-  /** inside-out context */
-  trait Path
+  /** inside-out context. */
+  trait Context
   {
     /** go-up for paths */
-    def parent: Path
+    def parent: Context
 
     /** copy self with new parent
       * boilerplate obligation of subclasses
       */
-    def updateParent(newParent: Path): Path
+    def updateParent(newParent: Context): Context
 
     /** make a tree node appropriate for this location */
     def instantiate(subtree: Tree): Tree
@@ -39,72 +44,76 @@ trait Zipper {
       *
       * Examples (in top-down syntax):
       * {{{
-      * Hole(5) = 5
-      * Abs(x, Hole)(5) = Abs(x, 5)
-      * App(f, Hole)(5) = App(f, 5)
+      * Top(5) = 5
+      * Abs(x, Top)(5) = Abs(x, 5)
+      * App(f, Top)(5) = App(f, 5)
       * }}}
       */
     def plugin(subtree: Tree): Tree =
       parent plugin instantiate(subtree)
 
     /** put this path on the inside of the other path */
-    def prepend(superpath: Path): Path =
+    def prepend(superpath: Context): Context =
       this updateParent (parent prepend superpath)
 
     def holePosition: Int = 0
   }
 
-  /** Huet's Top
-    * "Hole" is more suggestive.
+  /**
+    * This represents the empty path, leading to the top of the represented tree.
     */
-  case object Hole extends Path {
-    override def parent: Path =
-      throw ParentOfHoleException
+  case object Top extends Context {
+    override def parent: Context =
+      throw ParentOfTopException
 
-    override def updateParent(newParent: Path): Path =
-      throw UpdateParentOfHoleException
+    override def updateParent(newParent: Context): Context =
+      throw UpdateParentOfTopException
 
     override def instantiate(subtree: Tree): Tree =
-      throw InstantiateOfHoleException
+      throw InstantiateOfTopException
 
     override def plugin(subtree: Tree): Tree = subtree
 
-    override def prepend(superpath: Path): Path = superpath
+    override def prepend(superpath: Context): Context = superpath
   }
 
-  case class Location(subtree: Tree, pathToRoot: Path) {
+  /**
+    * A location is a pair of a Tree contained in the location, together
+    * with a Context, that is a tree with a hole.
+    */
+  case class Subtree(subtree: Tree, pathToRoot: Context) {
     def root: Tree = pathToRoot plugin subtree
 
-    def isRoot: Boolean = pathToRoot == Hole
+    def isRoot: Boolean = pathToRoot == Top
 
-    def parent: Location =
-      Location(pathToRoot instantiate subtree, pathToRoot.parent)
+    def parent: Subtree =
+      Subtree(pathToRoot instantiate subtree, pathToRoot.parent)
 
     def siblingOrdinalPosition: Int = pathToRoot.holePosition
 
-    def children: Seq[Location] =
+    def children: Seq[Subtree] =
       getChildren(subtree) map {
-        case Location(childTerm, pathToThis) =>
-          Location(childTerm, pathToThis prepend this.pathToRoot)
+        case Subtree(childTerm, pathToThis) =>
+          Subtree(childTerm, pathToThis prepend this.pathToRoot)
       }
   }
 
-  object Location {
-    def ofRoot(root: Tree): Location =
-      Location(root, Hole)
+  object Subtree {
+    def ofRoot(root: Tree): Subtree =
+      Subtree(root, Top)
   }
 
   class ZipperException(message: String)
   extends Exception(message)
 
-  object ParentOfHoleException
-  extends ZipperException("parent of Hole")
+  object ParentOfTopException
+  extends ZipperException("parent of Top")
 
-  object UpdateParentOfHoleException
-  extends ZipperException("can't update the parent of Hole" +
+  object UpdateParentOfTopException
+  extends ZipperException("can't update the parent of Top" +
     " because it has none")
 
-  object InstantiateOfHoleException
-  extends ZipperException("can't instantiate at Hole" +
+  object InstantiateOfTopException
+  extends ZipperException("can't instantiate at Top" +
     " because we lack contextual information")
 }

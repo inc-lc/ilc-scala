@@ -1,7 +1,5 @@
 language: scala
-scala:
-  - 2.11.1
 jdk:
   - openjdk6
   - openjdk7
-script: sbt ++$TRAVIS_SCALA_VERSION test "project clients" "testOnly ilc.*" "project bigClients" "testOnly ilc.*" "project icfp2014" test
+script: sbt test "project clients" "testOnly ilc.*" "project bigClients" "testOnly ilc.*" "project icfp2014" test

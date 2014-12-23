@@ -31,7 +31,7 @@ trait ANormalForm extends ANormalFormInterface {
   import mySyntax._
 
   private val freshGen = new base.FreshGen { lazy val syntax: mySyntax.type = mySyntax }
-  import freshGen._
+  import freshGen.fresh
 
   override def aNormalizeTerm(t: Term): Term = aNormalize(t)(identity)
   def aNormalize(t: Term)(k: Term => Term): Term = t match {
@@ -72,7 +72,7 @@ trait ANormalFormStateful extends ANormalFormInterface {
     //This must be lazy because at this time mySyntax is not initialized yet.
     lazy val syntax: mySyntax.type = mySyntax
   }
-  import freshGen._
+  import freshGen.fresh
 
   abstract class Bindings(var substs: immutable.Map[Var, Term]) {
     val bindings: mutable.Traversable[(Term, Var)] with Growable[(Term, Var)]
@@ -257,7 +257,7 @@ trait AddCaches2 {
     lazy val syntax: mySyntax.type = mySyntax
   }
   import aNormalizer._
-  import freshGen._
+  import freshGen.fresh
 
   def addCaches: Term => Term =
     t => extendReturns(aNormalizeTerm(t))

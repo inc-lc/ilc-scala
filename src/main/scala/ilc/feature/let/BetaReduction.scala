@@ -27,7 +27,7 @@ trait BetaReduction extends Syntax with FreeVariables with analysis.Occurrences 
   }
   implicitly[freshGen.syntax.type =:= outer.type] //A type equality assertion.
   implicitly[freshGen.syntax.Term =:= outer.Term]
-  import freshGen._
+  import freshGen.fresh
 
   val shouldNormalize = true
 
@@ -63,7 +63,7 @@ trait BetaReduction extends Syntax with FreeVariables with analysis.Occurrences 
     //Let's run this to convergence.
     //Since I'm too lazy to implement alpha-equivalence testing, especially
     //in an efficient way, just reset the freshness index.
-    resetIndex()
+    freshGen.resetIndex()
     val u = normalizeEverywhereOnce(t)
     if (t == u)
       t

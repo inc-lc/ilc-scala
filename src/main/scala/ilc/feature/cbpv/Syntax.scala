@@ -2,13 +2,14 @@ package ilc
 package feature
 package cbpv
 
+/*
 trait Syntax extends functions.Syntax with Types with TypeUtils {
-  case class Produce(v: Term) extends Term {
+  case class Return(v: Term) extends Term {
     val getType: Type = FProducerType(v.getType)
   }
 
   //Aaargh.... names!
-  //case class Bind(v: Term, )
+  //case class Bind(e1: Term, v: Term, e2: Term)
 
   case class Thunk(v: Term) extends Term {
     val getType: Type = UThunkType(v.getType)
@@ -19,6 +20,7 @@ trait Syntax extends functions.Syntax with Types with TypeUtils {
       stripFType(v.getType)
   }
 }
+*/
 
 trait CBPVSyntax extends CBPVTypes with base.Names {
   trait CompTerm

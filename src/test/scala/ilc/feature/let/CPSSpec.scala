@@ -12,27 +12,35 @@ trait CPSTestingHelper extends Instantiations {
     val typ = t.getType
     verboseShowTerm(t, "source")
 
-    println(s"Type from CBPV CPS transformation: ${cbvTypeToCPS(typ)}")
-    println()
-
-    println("Untyped CPS transformation plus type inference")
+//    println(s"Type from CBPV CPS transformation: ${cbvTypeToCPS(typ)}")
+//    println()
+//
+//    println("Untyped CPS transformation plus type inference")
 
     val untypedCPS = asTerm(toCPSU(t)) //XXX without asTerm, inference will be repeated (and give equivalent but different results).
     val cpsInferredType = untypedCPS.getType
 
-    verboseShowTerm(untypedCPS, "untyped CPS")
-    println()
+//    verboseShowTerm(untypedCPS, "untyped CPS")
+//    println()
 
     println("Typed CPS transformation without type inference")
 
     val cpsTau = cpsTransformType(typ)
     println(s"Expected CPS result type: ${cpsTau}")
-    println(s"Unifying result of type inference with expected type: ${unification(Set(Constraint(cpsInferredType, cpsTau, "")))}")
+    val unificationRes = unification(Set(Constraint(cpsInferredType, cpsTau, "")))
+    println(s"Unifying result of type inference with expected type: ${unificationRes}")
 
     val typedCPS = toCPS(t)
     verboseShowTerm(typedCPS, "typed CPS")
     //XXX how do I reuse this inside and outside tests elegantly (that is, without the kludge of abstracting over assert)?
     assert(cpsTau == cpsTransformType(typ))
+    verboseShowTerm(normalize(typedCPS), "normalized typed CPS")
+    println()
+
+    println("One-step untyped CPS transformation plus type inference")
+    val untypedCPSOnePass = toCPSUntypedOnePass(t)
+    verboseShowTerm(untypedCPSOnePass, "one-step untyped CPS")
+    verboseShowTerm(normalize(untypedCPSOnePass), "normalized one-step untyped CPS")
   }
 
   val examples: List[Term] =

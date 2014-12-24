@@ -113,4 +113,72 @@ trait CPS extends functions.Syntax with CPSTypes with inference.Inference /* XXX
         kVar(toCPSContType(v.getType))
       Abs(k, App(k, varTransf(v)))
   }
+
+  //Danvy & Filinski's one-step CBV CPS transformation from Representing Control.
+  //This version optionally avoids eta-redexes, like Fig. 3 in that paper.
+  //Instead of duplicating most of the transformation, I've decided to abstract
+  //over the difference between static continuations and dynamic ones.
+  case class UntypedCont(k: Either[UntypedTerm, UntypedTerm => UntypedTerm]) {
+    def apply(t: UntypedTerm): UntypedTerm = k match {
+      case Left(k) => k(t)
+      case Right(k) => k(t)
+    }
+  }
+
+  def doCPSUntypedOnePass(t: Term)(k: UntypedCont): UntypedTerm =
+    t match {
+      case Abs(xV, body) =>
+        val kV = freshName("k")
+        k(xV.getName ->: kV ->: doCPSUntypedOnePass(body)(UntypedCont(Left(kV))))
+      case t @ App(f, arg) =>
+        val avoidEtaRedexes = true
+        val tail = k match {
+          case UntypedCont(Left(kT)) if avoidEtaRedexes =>
+            kT
+          case _ =>
+            val aV = freshName("a")
+            aV ->: k(aV)
+        }
+        doCPSUntypedOnePass(f)(UntypedCont(Right(m =>
+          doCPSUntypedOnePass(arg)(UntypedCont(Right(n =>
+            m(n)(tail)))))))
+      case v: Var =>
+        k(v.getName)
+    }
+
+  //CPS transform for a dynamic context.
+  def toCPSUntypedOnePass(t: Term) = ('k ->: doCPSUntypedOnePass(t)(UntypedCont(Left('k)))): Term
+  //CPS transform for empty context.
+  def toCPSUntypedOnePassTopLevel(t: Term) = doCPSUntypedOnePass(t)(UntypedCont(Right(identity))): Term
+
+  /*
+   * Danvy & Filinski give a basic transform in Sec. 2.5, and later (in Sec.
+   * 2.6) extend it to avoid producing eta-redexes for function calls in tail
+   * position (that is, to be "properly tail-recursive"). The result of the
+   * properly tail-recursive transform is eta-equivalent to the basic transform.
+   *
+   * Theorem 1 shows that the result of their basic transform, in the version
+   * for a dynamic context, is beta-eta-equivalent to Plotkin-Fischer's
+   * transformation. We implement the properly tail-recursive version, but since
+   * its result is eta-equivalent, the result of toCPSUntypedOnePass is
+   * equivalent to Plotkin-Fischer's result. Furthermore, when starting from
+   * terms in normal form, all redexes in Plotkin-Fischer's result must be
+   * administrative, so normalizing this result gives a term alpha-equivalent to
+   * the result of the one-pass transformation.
+   */
+
+  /*
+  def toCPSCore: (Term => Term) => Term => Term =
+    k => {
+      case Abs(xV, body) =>
+        k(lambda(xV, Var("k", body.getType =>: AnswerT)) {
+          case Seq(x, k1) =>
+            doCPSOnePass(body)(m => k1 ! m)
+        })
+      case t @ App(f, arg) =>
+        doCPSOnePass(f)(m => doCPSOnePass(arg)(n => m ! n ! (lambda(Var("a", t.getType))(a => k(a)))))
+      case v: Var => k(v)
+    }
+  def doCPSOnePass(t: Term): (Term => Term) => Term = toCPSCore(_)(t)
+  */
 }

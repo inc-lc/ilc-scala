@@ -88,11 +88,11 @@ Please do not declare getType as an abstract `val`.
     *         of `context`
     *
     * {{{
-    * freshName(englishMonachs, "Attila")    = "Attila"
-    * freshName(englishMonachs, "Elisabeth") = "Elizabeth_3"
+    * ctxToFreshName(englishMonachs, "Attila")    = "Attila"
+    * ctxToFreshName(englishMonachs, "Elisabeth") = "Elizabeth_3"
     * }}}
     */
-  def freshName(context: TypingContext, _default: Name): Name = {
+  def ctxToFreshName(context: TypingContext, _default: Name): Name = {
     val (default, startIdx) = decomposeName(_default)
     var newName: Name = default
     var index = startIdx

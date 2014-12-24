@@ -3,6 +3,7 @@ package feature
 package cbpv
 
 trait Types extends functions.Types {
+  /*
   //U
   case class UThunkType(t: Type) extends Type {
     override def toString = s"U($t)"
@@ -15,15 +16,16 @@ trait Types extends functions.Types {
     override def traverse(f: Type => Type): Type =
       copy(f(t))
   }
+  */
 }
 
 trait TypeUtils {
   this: Types =>
 
-  def stripFType(ct: Type): Type = ct match {
+  /*def stripFType(ct: Type): Type = ct match {
     case FProducerType(vt) => vt
     case _ => ???
-  }
+  }*/
 }
 
 //For now, just the very core type language.
@@ -77,6 +79,7 @@ trait TypeConversions extends CBPVTypes with Types with unit.Types with sums.Typ
       SumVT(UnitVT, UnitVT)
   }
 
+  /*
   def compTypeToType(t: CompType): Type = t match {
     case FProducerCT(t) => FProducerType(valTypeToType(t))
     case FunCT(s, t) =>
@@ -92,6 +95,7 @@ trait TypeConversions extends CBPVTypes with Types with unit.Types with sums.Typ
     case SumVT(a, b) => SumType(valTypeToType(a), valTypeToType(b))
     case ProdVT(a, b) => ProductType(valTypeToType(a), valTypeToType(b))
   }
+  */
 
   def stripUVal(vt: ValType): CompType = vt match {
     case UThunkVT(ct) => ct

@@ -310,9 +310,8 @@ trait FreshGen {
     index = 0
   }
 
-  def fresh(varName: Name, varType: Type): Var = {
+  def freshName(varName: Name): Name = {
     index += 1
-    //Var(IndexedName("z", index), varType)
     val compress = false
     val baseName =
       if (compress)
@@ -320,7 +319,12 @@ trait FreshGen {
       else
         //Keep names, for extra readability.
         decomposeName(varName)._1
-    Var(IndexedName(baseName, index), varType)
+    //IndexedName("z", index)
+    IndexedName(baseName, index)
+  }
+
+  def fresh(varName: Name, varType: Type): Var = {
+    Var(freshName(varName), varType)
   }
 
   def fresh(v: Var): Var = fresh(v.getName, v.getType)

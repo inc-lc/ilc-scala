@@ -29,7 +29,7 @@ trait TypeUtils {
 }
 
 //For now, just the very core type language.
-trait CBPVTypes {
+trait CBPVTypes extends base.Types {
   sealed trait ValType
   case class UThunkVT(t: CompType) extends ValType
   case object UnitVT extends ValType
@@ -37,6 +37,7 @@ trait CBPVTypes {
 
   //The original language has indexed sums, not binary ones.
   case class SumVT(a: ValType, b: ValType) extends ValType
+  case class BaseVT(t: Type) extends ValType
 
   sealed trait CompType
   case class FProducerCT(t: ValType) extends CompType
@@ -77,6 +78,11 @@ trait TypeConversions extends CBPVTypes with Types with unit.Types with sums.Typ
       UnitVT
     case BooleanType =>
       SumVT(UnitVT, UnitVT)
+
+    //XXX This allows sticking in, among others, type variables.
+    //Since we don't require them to be value types in the source language,
+    //this might lead to problems.
+    case _ => BaseVT(t)
   }
 
   /*

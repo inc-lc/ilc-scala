@@ -42,7 +42,7 @@ trait PrettySyntax extends Inference {
     def ->:(param: TypeAnnotation): UntypedTerm =
       UAbs(param.name, Some(param.typ), untypedTerm)
 
-    def ->:(param: String): UntypedTerm =
+    def ->:(param: Name): UntypedTerm =
       UAbs(param, None, untypedTerm)
 
     // Require at least one argument.

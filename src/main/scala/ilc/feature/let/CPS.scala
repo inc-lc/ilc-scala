@@ -2,9 +2,13 @@ package ilc
 package feature
 package let
 
-object CPS extends functions.Syntax {
-  //An implementation of Plotkin-Fisher's CBV CPS transformation.
+//An implementation of Plotkin-Fisher's CBV CPS transformation.
+
+trait CPSTypes extends base.Types {
   case object AnswerT extends Type
+}
+
+trait CPS extends functions.Syntax with CPSTypes {
   def toCPST(t: Type) = (t =>: AnswerT) =>: AnswerT
   def kVar(t: Term): Var = Var("k", toCPST(t.getType))
 

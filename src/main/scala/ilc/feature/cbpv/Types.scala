@@ -113,3 +113,34 @@ trait TypeConversions extends CBPVTypes with Types with unit.Types with sums.Typ
     case _ => ???
   }
 }
+
+trait CBPVToCPS extends TypeConversions with let.CPSTypes {
+  def cbvTypeToCPS(t: Type) = valTypeToCPS(cbvTypeToCBPV(t))
+
+  def valTypeToCPS(vt: ValType): Type = vt match {
+    case UThunkVT(ct) =>
+      compTypeToCPS(ct) =>: AnswerT
+    //These are value types, so they aren't serious
+    case UnitVT =>
+      UnitType
+    case SumVT(a, b) => SumType(valTypeToCPS(a), valTypeToCPS(b))
+    case ProdVT(a, b) => ProductType(valTypeToCPS(a), valTypeToCPS(b))
+    case BaseVT(t) => t
+  }
+
+  def compTypeToCPS(ct: CompType): Type = ct match {
+    case FProducerCT(vt) =>
+      valTypeToCPS(vt) =>: AnswerT
+    case FunCT(srcVt, dstCt) =>
+      // Tempting, but wrong:
+      //valTypeToCPS(srcVt) =>: compTypeToCPS(dstCt)
+
+      // According to the literature, we need the product of the types, which
+      // happens to be the adjoint (in fact, unsurprisingly, that's how this arises).
+      ProductType(valTypeToCPS(srcVt), compTypeToCPS(dstCt))
+    case ProdCT(a, b) =>
+      ???
+      //Heck, ProdCT is a pair of continuations.
+      //ProductType(compTypeToType(a), compTypeToType(b))
+  }
+}

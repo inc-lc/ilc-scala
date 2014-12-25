@@ -8,7 +8,8 @@ trait PrettySyntax extends Inference {
   implicit def polymorphicConstantToUPolymorphicConstant(x: PolymorphicConstant): UntypedTerm = UPolymorphicConstant(x)
   implicit def monomorphicConstantToUMonomorphicConstant(x: Term): UntypedTerm = UMonomorphicConstant(x)
   implicit def symbolToUVar(x: Symbol): UVar = UVar(x.name)
-  implicit def stringToUVar(x: String): UVar = UVar(x)
+  implicit def nameToUVar(x: Name): UVar = UVar(x)
+  implicit def stringToUVar(x: String): UVar = (x: Name): UVar
 
   /*
    * The point of this implicit conversion is to trigger ambiguity errors in

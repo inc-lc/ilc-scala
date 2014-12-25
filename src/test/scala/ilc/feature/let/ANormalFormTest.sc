@@ -3,6 +3,7 @@ package feature
 package let
 
 object ANormalFormTest extends Instantiations {
+
   val v = buildBacchusWithLetSystem(true, true, true)
                                                   //> v  : ilc.language.Bacchus with ilc.feature.let.ANormalFormAdapter with ilc.f
                                                   //| eature.integers.ImplicitSyntaxSugar with ilc.feature.integers.Evaluation wit
@@ -11,7 +12,7 @@ object ANormalFormTest extends Instantiations {
                                                   //| erence.LetSyntaxSugar with ilc.feature.inference.InferenceTestHelper with il
                                                   //| c.feature.let.ShowTerms{val aNormalizer: ilc.feature.let.ANormalFormStateful
                                                   //| {val mySyntax: ilc.feature.let.Instantiations.<refinement>.type}} = ilc.feat
-                                                  //| ure.let.Instantiations$$anon$1@6c15f918
+                                                  //| ure.let.Instantiations$$anon$1@731a74c
   import v._
 
   //Taken from http://matt.might.net/articles/a-normalization/, but was ill-typed!
@@ -54,8 +55,8 @@ object ANormalFormTest extends Instantiations {
 */
   val test3 =
     let('x, ifThenElse(True, 1, 2): Term)('x)     //> test3  : ilc.feature.let.ANormalFormTest.v.UntypedTerm = ULet(x,UMonomorphic
-                                                  //| Constant(App(App(App(IfThenElse(ℤ),True),Abs(Var(unit,UnitType),LiteralInt
-                                                  //| (1))),Abs(Var(unit,UnitType),LiteralInt(2)))),UVar(x))
+                                                  //| Constant(App(App(App(IfThenElse(Z),True),Abs(Var(unit,1),LiteralInt(1))),Abs
+                                                  //| (Var(unit,1),LiteralInt(2)))),UVar(x))
   try {
     println(pretty(test1))
   } catch { case e: inference.Inference#UnificationFailure =>
@@ -164,7 +165,7 @@ object ANormalFormTest extends Instantiations {
                                                   //| a_9"
   show(test3)                                     //> res12: String = "
                                                   //| x =
-                                                  //|   IfThenElse(ℤ)
+                                                  //|   IfThenElse(Z)
                                                   //|     True
                                                   //|     (λunit.
                                                   //|        LiteralInt(1))
@@ -179,7 +180,7 @@ object ANormalFormTest extends Instantiations {
                                                   //|   λunit.
                                                   //|     LiteralInt(2);
                                                   //| a_12 =
-                                                  //|   IfThenElse(ℤ)
+                                                  //|   IfThenElse(Z)
                                                   //|     True
                                                   //|     a_10
                                                   //|     a_11;
@@ -192,7 +193,7 @@ object ANormalFormTest extends Instantiations {
                                                   //|   λunit_2.
                                                   //|     LiteralInt(2);
                                                   //| a_15 =
-                                                  //|   IfThenElse(ℤ)
+                                                  //|   IfThenElse(Z)
                                                   //|     True
                                                   //|     a_13
                                                   //|     a_14;

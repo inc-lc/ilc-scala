@@ -46,26 +46,26 @@ extends base.Syntax
 
   def emptyConstraintSet = Set[Constraint]()
 
-  type InferenceContext = List[(String, Type)]
-  def lookup(context: InferenceContext, name: String): Option[Type] =
+  type InferenceContext = List[(Name, Type)]
+  def lookup(context: InferenceContext, name: Name): Option[Type] =
     context.find(p => p._1 == name).map(_._2)
 
-  def extend(context: InferenceContext, name: String, typ: Type): InferenceContext =
+  def extend(context: InferenceContext, name: Name, typ: Type): InferenceContext =
     (name, typ) :: context
 
   def initVars: List[Var] = Nil
 
   lazy val emptyContext: InferenceContext = initVars map {
-    case Var(name, typ) => (name.toString, typ)
+    case Var(name, typ) => (name, typ)
   }
 
   sealed trait TypedTerm extends Product {
     def getType: Type
   }
-  case class TVar(name: String, typ: Type) extends TypedTerm {
+  case class TVar(name: Name, typ: Type) extends TypedTerm {
     override def getType = typ
   }
-  case class TAbs(argumentName: String, argumentType: Type, body: TypedTerm) extends TypedTerm {
+  case class TAbs(argumentName: Name, argumentType: Type, body: TypedTerm) extends TypedTerm {
     override def getType = argumentType =>: body.getType
   }
   case class TApp(t1: TypedTerm, t2: TypedTerm, typ: Type) extends TypedTerm {
@@ -79,11 +79,11 @@ extends base.Syntax
   }
   //XXX this should be in LetInference, but let's not unseal stuff for now, that might break shapeless.
   //However, the handling is only
-  case class TLet(variable: String, varType: Type, exp: TypedTerm, body: TypedTerm) extends TypedTerm {
+  case class TLet(variable: Name, varType: Type, exp: TypedTerm, body: TypedTerm) extends TypedTerm {
     override def getType = body.getType
   }
-  case class TBinding(variable: String, varType: Type, exp: TypedTerm)
-  case class TLetRec(bindings: List[TBinding], bodyName: String, body: TypedTerm) extends TypedTerm {
+  case class TBinding(variable: Name, varType: Type, exp: TypedTerm)
+  case class TLetRec(bindings: List[TBinding], bodyName: Name, body: TypedTerm) extends TypedTerm {
     override def getType = body.getType
   }
 
@@ -223,7 +223,7 @@ trait LetInference extends Inference with LetUntypedSyntax with let.Syntax {
 trait LetRecInference extends Inference with LetRecUntypedSyntax with functions.LetRecSyntax {
   override def collectConstraints(term: UntypedTerm, context: InferenceContext = emptyContext): (TypedTerm, Set[Constraint]) = term match {
     case ULetRec(pairs, bodyName, body) =>
-      val tVars: List[(String, TypeVariable)] = pairs map (_._1) map ((_, freshTypeVariable(term)))
+      val tVars: List[(Name, TypeVariable)] = pairs map (_._1) map ((_, freshTypeVariable(term)))
       val extCtx = tVars.foldLeft(context) {
         (ctx, newTVar) => extend(ctx, newTVar._1, newTVar._2)
       }
@@ -240,7 +240,7 @@ trait LetRecInference extends Inference with LetRecUntypedSyntax with functions.
     case _ => super.collectConstraints(term, context)
   }
 
-  //  case class TLetRec(bindings: List[(String, Type, TypedTerm)], body: TypedTerm)
+  //  case class TLetRec(bindings: List[(Name, Type, TypedTerm)], body: TypedTerm)
 
   override def substitute(substitutions: Map[TypeVariable, Type], term: TypedTerm): TypedTerm = term match {
     case TLetRec(bindings, bodyName, body) =>

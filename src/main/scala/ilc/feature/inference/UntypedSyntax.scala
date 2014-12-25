@@ -7,8 +7,8 @@ trait UntypedSyntax {
 
   trait UntypedTerm
 
-  case class UVar(getName: String) extends UntypedTerm
-  case class UAbs(argumentName: String, typeAnnotation: Option[Type], body: UntypedTerm) extends UntypedTerm
+  case class UVar(getName: Name) extends UntypedTerm
+  case class UAbs(argumentName: Name, typeAnnotation: Option[Type], body: UntypedTerm) extends UntypedTerm
   case class UApp(operator: UntypedTerm, operand: UntypedTerm) extends UntypedTerm
   case class UMonomorphicConstant(term: Term) extends UntypedTerm
   case class UPolymorphicConstant(term: PolymorphicConstant) extends UntypedTerm
@@ -18,11 +18,11 @@ trait UntypedSyntax {
 trait LetUntypedSyntax extends UntypedSyntax {
   this: base.Syntax with functions.Syntax =>
 
-  case class ULet(variable: String, exp: UntypedTerm, body: UntypedTerm) extends UntypedTerm
+  case class ULet(variable: Name, exp: UntypedTerm, body: UntypedTerm) extends UntypedTerm
 }
 
 trait LetRecUntypedSyntax extends UntypedSyntax {
   this: base.Syntax with functions.Syntax =>
 
-  case class ULetRec(pairs: List[(String, UntypedTerm)], bodyName: String, body: UntypedTerm) extends UntypedTerm
+  case class ULetRec(pairs: List[(Name, UntypedTerm)], bodyName: Name, body: UntypedTerm) extends UntypedTerm
 }

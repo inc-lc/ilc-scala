@@ -29,7 +29,9 @@ extends base.Syntax
   }
 
   val typeVariableCounter: AtomicInteger = new AtomicInteger()
-  def freshTypeVariable(uterm: UntypedTerm): TypeVariable = TypeVariable(typeVariableCounter.incrementAndGet(), Some(uterm))
+  def _freshTypeVariable(uterm: Option[UntypedTerm]): TypeVariable = TypeVariable(typeVariableCounter.incrementAndGet(), uterm)
+  def freshTypeVariable(uterm: UntypedTerm): TypeVariable = _freshTypeVariable(Some(uterm))
+  def freshTypeVariable: TypeVariable = _freshTypeVariable(None)
 
   case class Constraint(_1: Type, _2: Type, ctx: String = "", parent: Option[Constraint] = None) {
     def pretty(showTerm: Boolean = true): String =

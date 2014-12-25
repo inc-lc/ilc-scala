@@ -13,6 +13,7 @@ trait Instantiations {
   def buildBacchusWithLetSystem(doCSE_ : Boolean, copyPropagation_ : Boolean, partialApplicationsAreSpecial_ : Boolean) =
     new language.Bacchus with let.ANormalFormAdapter with integers.ImplicitSyntaxSugar
       with integers.Evaluation with let.Evaluation with let.Pretty
+      with let.CPS with cbpv.CBPVToCPS //XXX added to also test CPS in worksheets
       with inference.LetInference
       with BetaReduction with inference.LetSyntaxSugar with inference.InferenceTestHelper with ShowTerms {
         outer =>

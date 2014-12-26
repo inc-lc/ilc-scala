@@ -33,10 +33,10 @@ extends base.Syntax
   def freshTypeVariable(uterm: UntypedTerm): TypeVariable = _freshTypeVariable(Some(uterm))
   def freshTypeVariable: TypeVariable = _freshTypeVariable(None)
 
-  case class Constraint(_1: Type, _2: Type, ctx: String = "", parent: Option[Constraint] = None) {
+  case class Constraint(actual: Type, expected: Type, ctx: String = "", parent: Option[Constraint] = None) {
     def pretty(showTerm: Boolean = true): String =
-      s"""|Actual: ${_1}
-          |Expected: ${_2}
+      s"""|Actual: ${actual}
+          |Expected: ${expected}
           |${if (showTerm) s"From context: $ctx" else ""}
           |From constraint stack:
           |${parent.fold("")(_.pretty(false)) }
@@ -137,8 +137,8 @@ extends base.Syntax
     }
 
   def substituteInConstraint(substitutions: Map[TypeVariable, Type])(constraint: Constraint): Constraint =
-    Constraint(substituteInType(substitutions)(constraint._1),
-     substituteInType(substitutions)(constraint._2), constraint.ctx)
+    Constraint(substituteInType(substitutions)(constraint.actual),
+     substituteInType(substitutions)(constraint.expected), constraint.ctx)
 
   def substitute(substitutions: Map[TypeVariable, Type], term: TypedTerm): TypedTerm = term match {
     case TVar(name, typ) => TVar(name, substituteInType(substitutions)(typ))

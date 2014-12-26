@@ -7,6 +7,15 @@ trait ShowTerms {
 
   def show(t: Term) =
     "\n" + pretty(t)
+
+  def verboseShowTerm(t: Term, qual: String) =
+    println(
+      s"""|Raw $qual term: ${t}
+          |Pretty $qual term:
+          |${pretty(t)}
+          |Type: ${t.getType}
+          |""".stripMargin)
+
 }
 
 trait Instantiations {

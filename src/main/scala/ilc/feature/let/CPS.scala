@@ -52,9 +52,9 @@ trait CPS extends functions.Syntax with CPSTypes with inference.Inference /* XXX
         toCPS(f) ! lambda(Var("a", f.getType))(a =>
           toCPS(arg) ! lambda(Var("b", arg.getType))(b =>
             a ! b ! k)))*/
-      val kV = freshName("k").toString
-      val aV = freshName("a").toString
-      val bV = freshName("b").toString
+      val kV = freshName("k")
+      val aV = freshName("a")
+      val bV = freshName("b")
       UAbs(kV, None,
         UApp(toCPSU(f), UAbs(aV, None,
           UApp(toCPSU(arg), UAbs(bV, None,
@@ -70,13 +70,13 @@ trait CPS extends functions.Syntax with CPSTypes with inference.Inference /* XXX
      * computations.
      */
     case t @ Abs(v, body) =>
-      val k = freshName("k").toString
+      val k = freshName("k")
       UAbs(k, None,
-          UApp(k, UAbs(v.getName.toString, None, toCPSU(body))))
+          UApp(k, UAbs(v.getName, None, toCPSU(body))))
     case Var(name, _) =>
-      val k = freshName("k").toString
+      val k = freshName("k")
           //toCPSContType(value.getType)
-      UAbs(k, None, UApp(k, name.toString))
+      UAbs(k, None, UApp(k, name))
   }
   def toCPS: Term => Term = {
     case t @ App(f, arg) =>

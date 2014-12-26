@@ -26,6 +26,7 @@ extends base.Syntax
   case class TypeVariable(name: Int, uterm: Option[UntypedTerm] = None) extends Type {
     // We don't want to hash uterm for every lookup.
     override def hashCode() = name
+    override def toString = s"T$name"
   }
 
   val typeVariableCounter: AtomicInteger = new AtomicInteger()

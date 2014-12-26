@@ -65,7 +65,7 @@ extends base.Syntax
     override def getType = typ
   }
   case class TAbs(argumentName: Name, argumentType: Type, body: TypedTerm) extends TypedTerm {
-    override def getType = =>:(argumentType, body.getType)
+    override def getType = argumentType =>: body.getType
   }
   case class TApp(t1: TypedTerm, t2: TypedTerm, typ: Type) extends TypedTerm {
     override def getType = typ

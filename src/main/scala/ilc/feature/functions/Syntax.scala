@@ -17,11 +17,11 @@ trait Syntax extends base.Syntax {
             expectedDomain,
             s"$operand : $actualDomain")
 
-      case _ =>
+      case (operatorType, actualDomain) =>
         typeErrorNotTheSame(
-          "operator position",
-          "function",
-          operator.getType)
+          s"operator position for operand $operand : $actualDomain",
+          s"function (with domain $actualDomain)",
+          s"$operator : $operatorType")
     }
   }
 

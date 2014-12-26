@@ -25,10 +25,14 @@ trait CPS extends functions.Syntax with CPSTypes with inference.Inference /* XXX
     tau traverse toCPSTRec match {
       case s =>: t =>
         //toCPST(s) =>: toCPST(t)
-        s =>: cpsMonad(t)
         //retToCPS(t)
+        s =>: cpsMonad(t)
+        //(t =>: AnswerT) =>: s =>: AnswerT
       case t =>
         t
+        //We need to know whether the context of this type is "value"
+        //or "computation" — that is, indeed, the polarity of the context.
+        //For a value, we should do nothing, but for a computation, we should (probably?) do something.
         //cpsMonad(t)
     }
   def toCPST(tau: Type): Type =
@@ -36,12 +40,13 @@ trait CPS extends functions.Syntax with CPSTypes with inference.Inference /* XXX
 
   def toCPSContType(t: Type) = {
     //(t =>: AnswerT)
-    val v = toCPST(t)
-    println(v)
-    v match {
+    val v = toCPSTRec(t)
+    //println(v)
+    /*v match {
       case src =>: dst =>
         src
-    }
+    }*/
+    v =>: AnswerT
   }
 
   def kVar(t: Type): Var = Var(freshName("k"), t)
@@ -78,15 +83,24 @@ trait CPS extends functions.Syntax with CPSTypes with inference.Inference /* XXX
           //toCPSContType(value.getType)
       UAbs(k, None, UApp(k, name))
   }
+
+  def varTransf: Var => Var = {
+    case Var(name, typ) =>
+      Var(name, toCPSTRec(typ))
+  }
+
   def toCPS: Term => Term = {
     case t @ App(f, arg) =>
       /*lambda(kVar(t))(k =>
         toCPS(f) ! lambda(Var("a", f.getType))(a =>
           toCPS(arg) ! lambda(Var("b", arg.getType))(b =>
             a ! b ! k)))*/
-      val kV = kVar(toCPST(t.getType))
-      val aV = Var(freshName("a"), toCPSContType(f.getType))
-      val bV = Var(freshName("b"), toCPSContType(arg.getType))
+      val kV = kVar(toCPSContType(t.getType))
+      /* These variables are not bound to continuations! We're building
+       * continuations, so they are the continuation parameters!
+       */
+      val aV = Var(freshName("a"), toCPSTRec(f.getType))
+      val bV = Var(freshName("b"), toCPSTRec(arg.getType))
       Abs(kV,
         App(toCPS(f), Abs(aV,
           App(toCPS(arg), Abs(bV,
@@ -102,11 +116,12 @@ trait CPS extends functions.Syntax with CPSTypes with inference.Inference /* XXX
      * computations.
      */
     case t @ Abs(v, body) =>
-      val k = kVar(toCPST(t.getType))
-      Abs(k, App(k, Abs(v, toCPS(body))))
-    case value =>
-      val k = kVar(value.getType =>: AnswerT)
-          //toCPSContType(value.getType)
-      Abs(k, App(k, value))
+      val k = kVar(toCPSContType(t.getType))
+      Abs(k, App(k, Abs(varTransf(v), toCPS(body))))
+    case v: Var =>
+      val k =
+        //kVar(value.getType =>: AnswerT)
+        kVar(toCPSContType(v.getType))
+      Abs(k, App(k, varTransf(v)))
   }
 }

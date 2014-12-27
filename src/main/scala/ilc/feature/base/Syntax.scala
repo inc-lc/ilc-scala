@@ -264,6 +264,10 @@ Please do not declare getType as an abstract `val`.
   implicit def closeTermBuilder(builder: TermBuilder): Term =
     builder(TypingContext.empty).toTerm
 
+  //Chain implicit conversions
+  implicit def closeNameTermBuilder(name: Name): Term =
+    (name: TermBuilder): Term
+
   /** Convenient operator to give polymorphic terms arguments */
   implicit class BaseTermBuilderOps[T <% TermBuilder](t: T) {
     // activates implicit conversion

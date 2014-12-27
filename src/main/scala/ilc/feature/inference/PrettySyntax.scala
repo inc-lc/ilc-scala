@@ -30,6 +30,7 @@ trait PrettySyntax extends Inference {
    * much work and I'm not sure it'd actually work).
    */
   implicit def symbolToUTOps(x: Symbol) = UTOps(x)
+  implicit def nameToUTOps(x: Name) = UTOps(x)
   implicit def stringToUTOps(x: String) = UTOps(x)
 
   case class TypeAnnotation(name: Name, typ: Type)
@@ -50,6 +51,8 @@ trait PrettySyntax extends Inference {
     def apply(that: UntypedTerm, more: UntypedTerm*): UApp =
       more.foldLeft(UApp(untypedTerm, that))((acc: UApp, arg: UntypedTerm) => UApp(acc, arg))
 
+    //I decided that TypeAnnotations and TypeAscriptions should be separate,
+    //but I'm less sure whether that's a good idea for the surface syntax. PG.
     def ofType(typ: Type): TypeAscription = TypeAscription(untypedTerm, typ)
 
     def composeWith(second: UntypedTerm): UntypedTerm =

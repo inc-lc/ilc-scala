@@ -15,17 +15,13 @@ trait CPS extends functions.Syntax with CPSTypes with inference.Inference /* XXX
   outer =>
   private val freshGen = new base.FreshGen { val syntax: outer.type = outer }
   import freshGen.freshName
+
   def cpsMonad(t: Type) =
     (t =>: AnswerT) =>: AnswerT
-
-  //def argToCPS(tau: Type): Type = tau traverse toCPST
-  //def retToCPS(tau: Type): Type = ???
 
   def toCPSTRec(tau: Type): Type =
     tau traverse toCPSTRec match {
       case s =>: t =>
-        //toCPST(s) =>: toCPST(t)
-        //retToCPS(t)
         s =>: cpsMonad(t)
         //(t =>: AnswerT) =>: s =>: AnswerT
       case t =>
@@ -38,25 +34,13 @@ trait CPS extends functions.Syntax with CPSTypes with inference.Inference /* XXX
   def toCPST(tau: Type): Type =
     cpsMonad(toCPSTRec(tau))
 
-  def toCPSContType(t: Type) = {
-    //(t =>: AnswerT)
-    val v = toCPSTRec(t)
-    //println(v)
-    /*v match {
-      case src =>: dst =>
-        src
-    }*/
-    v =>: AnswerT
-  }
+  def toCPSContType(t: Type) =
+    toCPSTRec(t) =>: AnswerT
 
   def kVar(t: Type): Var = Var(freshName("k"), t)
 
   def toCPSU: Term => UntypedTerm = {
     case t @ App(f, arg) =>
-      /*lambda(kVar(t))(k =>
-        toCPS(f) ! lambda(Var("a", f.getType))(a =>
-          toCPS(arg) ! lambda(Var("b", arg.getType))(b =>
-            a ! b ! k)))*/
       val kV = freshName("k")
       val aV = freshName("a")
       val bV = freshName("b")
@@ -77,10 +61,9 @@ trait CPS extends functions.Syntax with CPSTypes with inference.Inference /* XXX
     case t @ Abs(v, body) =>
       val k = freshName("k")
       UAbs(k, None,
-          UApp(k, UAbs(v.getName, None, toCPSU(body))))
+        UApp(k, UAbs(v.getName, None, toCPSU(body))))
     case Var(name, _) =>
       val k = freshName("k")
-          //toCPSContType(value.getType)
       UAbs(k, None, UApp(k, name))
   }
 
@@ -91,14 +74,15 @@ trait CPS extends functions.Syntax with CPSTypes with inference.Inference /* XXX
 
   def toCPS: Term => Term = {
     case t @ App(f, arg) =>
-      /*lambda(kVar(t))(k =>
-        toCPS(f) ! lambda(Var("a", f.getType))(a =>
-          toCPS(arg) ! lambda(Var("b", arg.getType))(b =>
-            a ! b ! k)))*/
-      val kV = kVar(toCPSContType(t.getType))
-      /* These variables are not bound to continuations! We're building
+      /* Variables 'a' and 'b' are not bound to continuations! We're building
        * continuations, so they are the continuation parameters!
        */
+      /*lambda(kVar(toCPSContType(t.getType)))(k =>
+        toCPS(f) ! lambda(Var("a", toCPSTRec(f.getType)))(a =>
+          toCPS(arg) ! lambda(Var("b", toCPSTRec(arg.getType)))(b =>
+            a ! b ! k)))*/
+
+      val kV = kVar(toCPSContType(t.getType))
       val aV = Var(freshName("a"), toCPSTRec(f.getType))
       val bV = Var(freshName("b"), toCPSTRec(arg.getType))
       Abs(kV,
@@ -120,7 +104,6 @@ trait CPS extends functions.Syntax with CPSTypes with inference.Inference /* XXX
       Abs(k, App(k, Abs(varTransf(v), toCPS(body))))
     case v: Var =>
       val k =
-        //kVar(value.getType =>: AnswerT)
         kVar(toCPSContType(v.getType))
       Abs(k, App(k, varTransf(v)))
   }

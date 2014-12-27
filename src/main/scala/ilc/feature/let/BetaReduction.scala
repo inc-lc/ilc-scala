@@ -63,6 +63,7 @@ trait BetaReduction extends Syntax with FreeVariables with analysis.Occurrences 
     //Let's run this to convergence.
     //Since I'm too lazy to implement alpha-equivalence testing, especially
     //in an efficient way, just reset the freshness index.
+    //XXX now I did implement linear-time alpha-equivalence.
     freshGen.resetIndex()
     val u = normalizeEverywhereOnce(t)
     if (t == u)

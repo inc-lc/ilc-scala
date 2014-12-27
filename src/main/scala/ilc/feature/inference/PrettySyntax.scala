@@ -32,7 +32,7 @@ trait PrettySyntax extends Inference {
   implicit def symbolToUTOps(x: Symbol) = UTOps(x)
   implicit def stringToUTOps(x: String) = UTOps(x)
 
-  case class TypeAnnotation(name: String, typ: Type)
+  case class TypeAnnotation(name: Name, typ: Type)
 
   implicit class UTOps[T <% UntypedTerm](untypedTerm: T) {
 
@@ -58,5 +58,8 @@ trait PrettySyntax extends Inference {
 
   implicit class SymbolOps(name: Symbol) {
     def %(typ: Type): TypeAnnotation = TypeAnnotation(name.name, typ)
+  }
+  implicit class NameOps(name: Name) {
+    def %(typ: Type): TypeAnnotation = TypeAnnotation(name, typ)
   }
 }

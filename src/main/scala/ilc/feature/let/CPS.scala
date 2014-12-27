@@ -129,7 +129,9 @@ trait CPS extends functions.Syntax with CPSTypes with inference.Inference /* XXX
     t match {
       case Abs(xV, body) =>
         val kV = freshName("k")
-        k(xV.getName ->: kV ->: doCPSUntypedOnePass(body)(UntypedCont(Left(kV))))
+        k(xV.getName % cpsTransformValueType(xV.getType) ->:
+          kV % toCPSContType(body.getType) ->:
+          doCPSUntypedOnePass(body)(UntypedCont(Left(kV))))
       case t @ App(f, arg) =>
         val avoidEtaRedexes = true
         val tail = k match {
@@ -137,17 +139,17 @@ trait CPS extends functions.Syntax with CPSTypes with inference.Inference /* XXX
             kT
           case _ =>
             val aV = freshName("a")
-            aV ->: k(aV)
+            aV % cpsTransformValueType(t.getType) ->: k(aV)
         }
         doCPSUntypedOnePass(f)(UntypedCont(Right(m =>
           doCPSUntypedOnePass(arg)(UntypedCont(Right(n =>
             m(n)(tail)))))))
       case v: Var =>
-        k(v.getName)
+        k(v.getName ofType cpsTransformValueType(v.getType))
     }
 
   //CPS transform for a dynamic context.
-  def toCPSUntypedOnePass(t: Term) = ('k ->: doCPSUntypedOnePass(t)(UntypedCont(Left('k)))): Term
+  def toCPSUntypedOnePass(t: Term) = ('k % toCPSContType(t.getType) ->: doCPSUntypedOnePass(t)(UntypedCont(Left('k)))): Term
   //CPS transform for empty context.
   def toCPSUntypedOnePassTopLevel(t: Term) = doCPSUntypedOnePass(t)(UntypedCont(Right(identity))): Term
 

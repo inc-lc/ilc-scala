@@ -10,7 +10,8 @@ trait CPSTypes extends base.Types {
 
 //XXX: I can't import SyntaxSugar only, because it's written as a trait. If I
 //want to allow importing hierarchically, I need to write the module
-//differently! For modules with local state, that does make sense.
+//differently! For modules with local state, that does make sense, but less so for
+//hiding implicit conversions.
 trait CPS extends functions.Syntax with CPSTypes with inference.Inference /* XXX for traverse!*/ with inference.PrettySyntax {
   outer =>
   private val freshGen = new base.FreshGen { val syntax: outer.type = outer }

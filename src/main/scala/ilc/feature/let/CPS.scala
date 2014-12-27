@@ -3,7 +3,7 @@ package feature
 package let
 
 object CPS extends functions.Syntax {
-  //An implementation of Plotkin's CBV CPS transformation.
+  //An implementation of Plotkin-Fisher's CBV CPS transformation.
   case object AnswerT extends Type
   def toCPST(t: Type) = (t =>: AnswerT) =>: AnswerT
   def kVar(t: Term): Var = Var("k", toCPST(t.getType))

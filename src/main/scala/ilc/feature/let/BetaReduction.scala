@@ -15,7 +15,7 @@ trait ProgramSize extends Syntax {
 
 trait BetaReduction extends Syntax with FreeVariables with analysis.Occurrences with Traversals with IsAtomic {
   outer =>
-  val freshGen = new base.FreshGen {
+  private val freshGen = new base.FreshGen {
     /*
      * The singleton type annotation encodes a "sharing constraint"*:
      * freshGen.syntax.type =:= outer.type. The typechecker can deduce then

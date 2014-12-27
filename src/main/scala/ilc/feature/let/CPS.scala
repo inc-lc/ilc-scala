@@ -16,11 +16,13 @@ trait CPS extends functions.Syntax with CPSTypes with inference.Inference /* XXX
   private val freshGen = new base.FreshGen { val syntax: outer.type = outer }
   import freshGen.freshName
 
-  def cpsMonad(t: Type) =
-    (t =>: AnswerT) =>: AnswerT
+  private def cpsNot(t: Type) =
+    t =>: AnswerT
+  private def cpsMonad(t: Type) =
+    cpsNot(cpsNot(t))
 
-  def toCPSTRec(tau: Type): Type =
-    tau traverse toCPSTRec match {
+  private def cpsTransformValueType(tau: Type): Type =
+    tau traverse cpsTransformValueType match {
       case s =>: t =>
         s =>: cpsMonad(t)
         //(t =>: AnswerT) =>: s =>: AnswerT
@@ -31,11 +33,14 @@ trait CPS extends functions.Syntax with CPSTypes with inference.Inference /* XXX
         //For a value, we should do nothing, but for a computation, we should (probably?) do something.
         //cpsMonad(t)
     }
-  def toCPST(tau: Type): Type =
-    cpsMonad(toCPSTRec(tau))
+  private def toCPSContType(t: Type) =
+    cpsNot(cpsTransformValueType(t))
 
-  def toCPSContType(t: Type) =
-    toCPSTRec(t) =>: AnswerT
+  //Name for internal perspective
+  private def cpsTransformCompType(tau: Type): Type =
+    cpsMonad(cpsTransformValueType(tau))
+
+  def cpsTransformType(tau: Type) = cpsTransformCompType(tau)
 
   def kVar(t: Type): Var = Var(freshName("k"), t)
 
@@ -69,7 +74,7 @@ trait CPS extends functions.Syntax with CPSTypes with inference.Inference /* XXX
 
   def varTransf: Var => Var = {
     case Var(name, typ) =>
-      Var(name, toCPSTRec(typ))
+      Var(name, cpsTransformValueType(typ))
   }
 
   def toCPS: Term => Term = {
@@ -78,13 +83,13 @@ trait CPS extends functions.Syntax with CPSTypes with inference.Inference /* XXX
        * continuations, so they are the continuation parameters!
        */
       /*lambda(kVar(toCPSContType(t.getType)))(k =>
-        toCPS(f) ! lambda(Var("a", toCPSTRec(f.getType)))(a =>
-          toCPS(arg) ! lambda(Var("b", toCPSTRec(arg.getType)))(b =>
+        toCPS(f) ! lambda(Var("a", cpsTransformValueType(f.getType)))(a =>
+          toCPS(arg) ! lambda(Var("b", cpsTransformValueType(arg.getType)))(b =>
             a ! b ! k)))*/
 
       val kV = kVar(toCPSContType(t.getType))
-      val aV = Var(freshName("a"), toCPSTRec(f.getType))
-      val bV = Var(freshName("b"), toCPSTRec(arg.getType))
+      val aV = Var(freshName("a"), cpsTransformValueType(f.getType))
+      val bV = Var(freshName("b"), cpsTransformValueType(arg.getType))
       Abs(kV,
         App(toCPS(f), Abs(aV,
           App(toCPS(arg), Abs(bV,

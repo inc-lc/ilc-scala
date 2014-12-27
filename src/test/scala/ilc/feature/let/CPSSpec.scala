@@ -25,14 +25,14 @@ trait CPSTestingHelper extends Instantiations {
 
     println("Typed CPS transformation without type inference")
 
-    val cpsTau = toCPST(typ)
+    val cpsTau = cpsTransformType(typ)
     println(s"Expected CPS result type: ${cpsTau}")
     println(s"Unifying result of type inference with expected type: ${unification(Set(Constraint(cpsInferredType, cpsTau, "")))}")
 
     val typedCPS = toCPS(t)
     verboseShowTerm(typedCPS, "typed CPS")
     //XXX how do I reuse this inside and outside tests elegantly (that is, without the kludge of abstracting over assert)?
-    assert(cpsTau == toCPST(typ))
+    assert(cpsTau == cpsTransformType(typ))
   }
 
   val examples: List[Term] =

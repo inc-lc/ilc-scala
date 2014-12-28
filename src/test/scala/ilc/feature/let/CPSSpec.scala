@@ -43,13 +43,19 @@ trait CPSTestingHelper extends Instantiations {
     val untypedCPSOnePass = toCPSUntypedOnePass(t)
     verboseShowTerm(untypedCPSOnePass, "one-step untyped CPS")
     val untypedCPSOnePassNorm = normalize(untypedCPSOnePass)
-    verboseShowTerm(untypedCPSOnePass, "normalized one-step untyped CPS")
+//    verboseShowTerm(untypedCPSOnePassNorm, "normalized one-step untyped CPS")
     assert(alphaEquiv(untypedCPSOnePass, untypedCPSOnePassNorm))
     assert(alphaEquiv(untypedCPSOnePass, normTypedCPS, true))
 
     val cpsOnePassInferredType = untypedCPSOnePass.getType
     val unificationRes2 = unification(Set(Constraint(cpsOnePassInferredType, cpsTau, "")))
     println(s"Unifying result of type inference with expected type: ${unificationRes2}")
+
+    println("One-step typed CPS transformation without type inference")
+    val typedCPSOnePass = toCPSOnePass(t)
+    verboseShowTerm(typedCPSOnePass, "one-step typed CPS")
+    val typedCPSOnePassNorm = normalize(typedCPSOnePass)
+    assert(alphaEquiv(typedCPSOnePassNorm, typedCPSOnePass))
   }
 
   val examples: List[Term] =

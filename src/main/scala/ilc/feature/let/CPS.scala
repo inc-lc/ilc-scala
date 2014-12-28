@@ -169,6 +169,43 @@ trait CPS extends functions.Syntax with CPSTypes with inference.Inference /* XXX
    * the result of the one-pass transformation.
    */
 
+  case class Cont(k: Either[Term, Term => Term]) {
+    def apply(t: Term): Term = k match {
+      case Left(k) => k(t)
+      case Right(k) => k(t)
+    }
+  }
+
+  def doCPSOnePass(t: Term)(k: Cont): Term =
+    t match {
+      case Abs(xV, body) =>
+        val kV = Var(freshName("k"), toCPSContType(body.getType))
+        k(Abs(Var(xV.getName, cpsTransformValueType(xV.getType)),
+          Abs(kV,
+            doCPSOnePass(body)(Cont(Left(kV))))))
+      case t @ App(f, arg) =>
+        val avoidEtaRedexes = true
+        val tail = k match {
+          case Cont(Left(kT)) if avoidEtaRedexes =>
+            kT
+          case _ =>
+            val aV = Var(freshName("a"),  cpsTransformValueType(t.getType))
+            Abs(aV, k(aV))
+        }
+        doCPSOnePass(f)(Cont(Right(m =>
+          doCPSOnePass(arg)(Cont(Right(n =>
+            m(n)(tail)))))))
+      case v: Var =>
+        k(Var(v.getName, cpsTransformValueType(v.getType)))
+    }
+
+  //CPS transform for a dynamic context.
+  def toCPSOnePass(t: Term): Term = {
+    val kV = Var(freshName("k"), toCPSContType(t.getType))
+    Abs(kV, doCPSOnePass(t)(Cont(Left(kV))))
+  }
+  //CPS transform for empty context.
+  def toCPSOnePassTopLevel(t: Term): Term = doCPSOnePass(t)(Cont(Right(identity)))
   /*
   def toCPSCore: (Term => Term) => Term => Term =
     k => {

@@ -59,7 +59,7 @@ trait CPS extends functions.Syntax with CPSTypes with inference.PrettySyntax {
   //This is an alias, just to offer a name which makes more sense for clients.
   def cpsTransformType(tau: Type) = cpsTransformCompType(tau)
 
-  private def kVar(t: Type): Var = Var(freshName("k"), t)
+  private def kVar(t: Term): Var = Var(freshName("k"), toCPSContType(t.getType))
 
   def toCPSU: Term => UntypedTerm = {
     case t @ App(f, arg) =>
@@ -92,7 +92,7 @@ trait CPS extends functions.Syntax with CPSTypes with inference.PrettySyntax {
       /* Variables 'a' and 'b' are not bound to continuations! We're building
        * continuations, so they are the continuation parameters!
        */
-      val kV = kVar(toCPSContType(t.getType))
+      val kV = kVar(t)
       val aV = Var(freshName("a"), cpsTransformValueType(f.getType))
       val bV = Var(freshName("b"), cpsTransformValueType(arg.getType))
       Abs(kV,
@@ -110,11 +110,11 @@ trait CPS extends functions.Syntax with CPSTypes with inference.PrettySyntax {
      * computations.
      */
     case t @ Abs(v, body) =>
-      val k = kVar(toCPSContType(t.getType))
+      val k = kVar(t)
       Abs(k, App(k, Abs(varTransf(v), toCPS(body))))
     case v: Var =>
       val k =
-        kVar(toCPSContType(v.getType))
+        kVar(v)
       Abs(k, App(k, varTransf(v)))
   }
 
@@ -185,7 +185,7 @@ trait CPS extends functions.Syntax with CPSTypes with inference.PrettySyntax {
   def doCPSOnePass(t: Term)(k: Cont): Term =
     t match {
       case Abs(xV, body) =>
-        val kV = Var(freshName("k"), toCPSContType(body.getType))
+        val kV = kVar(body)
         k(Abs(Var(xV.getName, cpsTransformValueType(xV.getType)),
           Abs(kV,
             doCPSOnePass(body)(Cont(Left(kV))))))
@@ -207,7 +207,7 @@ trait CPS extends functions.Syntax with CPSTypes with inference.PrettySyntax {
 
   //CPS transform for a dynamic context.
   def toCPSOnePass(t: Term): Term = {
-    val kV = Var(freshName("k"), toCPSContType(t.getType))
+    val kV = kVar(t)
     Abs(kV, doCPSOnePass(t)(Cont(Left(kV))))
   }
   //CPS transform for empty context.

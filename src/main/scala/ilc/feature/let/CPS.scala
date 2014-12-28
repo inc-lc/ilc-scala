@@ -2,26 +2,37 @@ package ilc
 package feature
 package let
 
-//An implementation of Plotkin-Fisher's CBV CPS transformation.
-
 trait CPSTypes extends base.Types {
   case object AnswerT extends Type
 }
+
+/**
+ * Implementations of several CPS transformation.
+ * Among others, there are Plotkin-Fisher's CBV and Danvy-Filinski's one-pass
+ * CBV transforms.
+ */
 
 //XXX: I can't import SyntaxSugar only, because it's written as a trait. If I
 //want to allow importing hierarchically, I need to write the module
 //differently! For modules with local state, that does make sense, but less so for
 //hiding implicit conversions.
-trait CPS extends functions.Syntax with CPSTypes with inference.Inference /* XXX for traverse!*/ with inference.PrettySyntax {
+//However, I could still mix Syntax & SyntaxSugar in a subcomponent.
+trait CPS extends functions.Syntax with CPSTypes with inference.PrettySyntax {
   outer =>
   private val freshGen = new base.FreshGen { val syntax: outer.type = outer }
   import freshGen.freshName
 
+  /*
+   * Transformers for types.
+   */
   private def cpsNot(t: Type) =
     t =>: AnswerT
   private def cpsMonad(t: Type) =
     cpsNot(cpsNot(t))
 
+  /**
+    * Transform the value type {@code tau} to the corresponding CPS type.
+    */
   private def cpsTransformValueType(tau: Type): Type =
     tau traverse cpsTransformValueType match {
       case s =>: t =>
@@ -29,21 +40,26 @@ trait CPS extends functions.Syntax with CPSTypes with inference.Inference /* XXX
         //(t =>: AnswerT) =>: s =>: AnswerT
       case t =>
         t
-        //We need to know whether the context of this type is "value"
-        //or "computation" — that is, indeed, the polarity of the context.
-        //For a value, we should do nothing, but for a computation, we should (probably?) do something.
-        //cpsMonad(t)
     }
   private def toCPSContType(t: Type) =
     cpsNot(cpsTransformValueType(t))
 
-  //Name for internal perspective
+  /**
+    * Transform the computation type (in the sense of CBPV or Moggi's calculus)
+    * {@code F tau} to the corresponding CPS type.
+    */
   private def cpsTransformCompType(tau: Type): Type =
     cpsMonad(cpsTransformValueType(tau))
 
+  /**
+   * Transforms a type {@code tau} to the type of the result of the CPS transform.
+   * In other words, if a term {@code term} has type {@code tau}, CPS-transforming
+   * {@code term} will produce a term with type {@cpsTransformType(tau)}.
+   */
+  //This is an alias, just to offer a name which makes more sense for clients.
   def cpsTransformType(tau: Type) = cpsTransformCompType(tau)
 
-  def kVar(t: Type): Var = Var(freshName("k"), t)
+  private def kVar(t: Type): Var = Var(freshName("k"), t)
 
   def toCPSU: Term => UntypedTerm = {
     case t @ App(f, arg) =>
@@ -56,21 +72,14 @@ trait CPS extends functions.Syntax with CPSTypes with inference.Inference /* XXX
             UApp(
               UApp(aV, bV),
               kV))))))
-    /*
-     * Plotkin's paper has three separate identical cases. However, they are
-     * the same (ahem, save the recursive visit...), and once one looks at how
-     * one does a CPS transformation by going
-     * to CBPV first, that becomes obvious: computations need to be
-     * sequentialized, while values simply need to be turned into trivial
-     * computations.
-     */
     case t @ Abs(v, body) =>
       val k = freshName("k")
-      UAbs(k, None,
-        UApp(k, UAbs(v.getName, None, toCPSU(body))))
+      UAbs(k, None, UApp(k,
+        UAbs(v.getName, None, toCPSU(body))))
     case Var(name, _) =>
       val k = freshName("k")
-      UAbs(k, None, UApp(k, name))
+      UAbs(k, None, UApp(k,
+        name))
   }
 
   def varTransf: Var => Var = {
@@ -83,11 +92,6 @@ trait CPS extends functions.Syntax with CPSTypes with inference.Inference /* XXX
       /* Variables 'a' and 'b' are not bound to continuations! We're building
        * continuations, so they are the continuation parameters!
        */
-      /*lambda(kVar(toCPSContType(t.getType)))(k =>
-        toCPS(f) ! lambda(Var("a", cpsTransformValueType(f.getType)))(a =>
-          toCPS(arg) ! lambda(Var("b", cpsTransformValueType(arg.getType)))(b =>
-            a ! b ! k)))*/
-
       val kV = kVar(toCPSContType(t.getType))
       val aV = Var(freshName("a"), cpsTransformValueType(f.getType))
       val bV = Var(freshName("b"), cpsTransformValueType(arg.getType))
@@ -149,7 +153,9 @@ trait CPS extends functions.Syntax with CPSTypes with inference.Inference /* XXX
     }
 
   //CPS transform for a dynamic context.
-  def toCPSUntypedOnePass(t: Term) = ('k % toCPSContType(t.getType) ->: doCPSUntypedOnePass(t)(UntypedCont(Left('k)))): Term
+  def toCPSUntypedOnePass(t: Term) =
+    ('k % toCPSContType(t.getType) ->:
+      doCPSUntypedOnePass(t)(UntypedCont(Left('k)))): Term
   //CPS transform for empty context.
   def toCPSUntypedOnePassTopLevel(t: Term) = doCPSUntypedOnePass(t)(UntypedCont(Right(identity))): Term
 
@@ -206,18 +212,4 @@ trait CPS extends functions.Syntax with CPSTypes with inference.Inference /* XXX
   }
   //CPS transform for empty context.
   def toCPSOnePassTopLevel(t: Term): Term = doCPSOnePass(t)(Cont(Right(identity)))
-  /*
-  def toCPSCore: (Term => Term) => Term => Term =
-    k => {
-      case Abs(xV, body) =>
-        k(lambda(xV, Var("k", body.getType =>: AnswerT)) {
-          case Seq(x, k1) =>
-            doCPSOnePass(body)(m => k1 ! m)
-        })
-      case t @ App(f, arg) =>
-        doCPSOnePass(f)(m => doCPSOnePass(arg)(n => m ! n ! (lambda(Var("a", t.getType))(a => k(a)))))
-      case v: Var => k(v)
-    }
-  def doCPSOnePass(t: Term): (Term => Term) => Term = toCPSCore(_)(t)
-  */
 }

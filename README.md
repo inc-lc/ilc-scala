@@ -74,10 +74,10 @@ with
 ```
   val value = false
 ```
-in `scala-prototype/src/test/scala/ilc/examples/bench/FastBenchmarksFlag.scala`
+in `src/test/scala/ilc/examples/bench/FastBenchmarksFlag.scala`
 (this will affect the actual parameters set in
-`scala-prototype/src/test/scala/ilc/examples/bench/HistogramBenchmark.scala` and
-`scala-prototype/src/test/scala/ilc/examples/ExampleToBenchmark.scala`).
+`src/test/scala/ilc/examples/bench/HistogramBenchmark.scala` and
+`src/test/scala/ilc/examples/ExampleToBenchmark.scala`).
 
 
 Cross reference

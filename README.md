@@ -11,7 +11,8 @@ Building
 ========
 
 This code can be compiled using [SBT](http://www.scala-sbt.org/). Development
-should follow the style guide available at http://docs.scala-lang.org/style/.
+should follow the style guide available at http://docs.scala-lang.org/style/ and
+the project-specific guidelines at <Development.md>.
 
 [![Build Status](https://travis-ci.org/inc-lc/ilc-scala.svg?branch=master)](https://travis-ci.org/inc-lc/ilc-scala)
 

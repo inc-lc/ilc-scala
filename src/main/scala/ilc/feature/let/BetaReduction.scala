@@ -83,6 +83,9 @@ trait BetaReduction extends Syntax with FreeVariables with analysis.Occurrences 
    * A "custom" implementation of normalization by evaluation.
    * The initial code was written and tested based on a faint recollection of the basic algorithm,
    * but it worked surprisingly well.
+   * Warning: this is completely syntax-directed, so it neither eta-expands not
+   * eta-reduces terms; in other words, it does not compute a beta-eta-normal form,
+   * only a beta-normal form.
    *
    * Unusual features:
    * - instead of producing standard normal forms, it performs let conversion and shrinking reductions.

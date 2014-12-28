@@ -48,6 +48,8 @@ trait PrettySyntax extends Inference {
       UAbs(param, None, untypedTerm)
 
     // Require at least one argument.
+    //XXX Names can't be applied because of a conflict between different
+    //implicit conversions.
     def apply(that: UntypedTerm, more: UntypedTerm*): UApp =
       more.foldLeft(UApp(untypedTerm, that))((acc: UApp, arg: UntypedTerm) => UApp(acc, arg))
 

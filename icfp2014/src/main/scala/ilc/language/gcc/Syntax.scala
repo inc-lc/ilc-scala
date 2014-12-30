@@ -168,12 +168,7 @@ trait SyntaxSugar
     (name -> lam(firstArg, args: _*)(body))
 
 
-  //For use within letS.
-  //Example:
-  //letS('a := 1, 'b := 2){3}
-  implicit class SymBindingOps(s: Symbol) {
-    def :=(t: UntypedTerm) = s -> t
-
+  implicit class SymAssignOps(s: Symbol) {
     // For assignment
     def <~(term: UT) = asUntyped(Assign)(s, term)
   }

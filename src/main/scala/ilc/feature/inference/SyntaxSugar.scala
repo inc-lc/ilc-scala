@@ -37,6 +37,14 @@ trait SyntaxSugar extends PrettySyntax with booleans.Syntax {
     }
   }
 
+  //For use within letS.
+  //Example:
+  //letS('a := 1, 'b := 2){3}
+  implicit class NameBindingOps(s: Symbol) {
+    def :=(t: UntypedTerm) = s -> t
+  }
+
+
   //XXX Should use a macro version of const_.
   def ifThenElse_(condition: UntypedTerm, thenBranch: UntypedTerm, elseBranch: UntypedTerm) =
     asUntyped(IfThenElse)(condition, const_(thenBranch), const_(elseBranch))

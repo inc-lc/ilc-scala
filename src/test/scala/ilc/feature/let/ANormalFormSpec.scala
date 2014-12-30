@@ -19,10 +19,10 @@ class ANormalFormSpec extends FlatSpec with Instantiations {
     */
     val test1 =
       letS(
-        'id -> ('x ->: 'x),
-        'id_i -> ('x ->: 'x),
-        'id_i2 -> ('x ->: 'x),
-        'apply -> ('f ->: 'x ->: 'f('x))
+        'id := ('x ->: 'x),
+        'id_i := ('x ->: 'x),
+        'id_i2 := ('x ->: 'x),
+        'apply := ('f ->: 'x ->: 'f('x))
       ) {
           'id('apply, 'id_i, 'id_i2(3: Term))
         }

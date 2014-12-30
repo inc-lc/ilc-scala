@@ -260,7 +260,7 @@ trait Collection extends SyntaxSugar { outer =>
         UnitType =>: bool,
         UnitType =>: ListType((KeyType, ValueType)))
 
-  def HashMapClass(KeyType: Type, ValueType: Type)(name: Symbol): (Symbol, UT) =
+  def HashMapClass(KeyType: Type, ValueType: Type)(name: Symbol): (Name, UT) =
     class_(name)('store % BinTreeType((KeyType, ValueType)), 'compare % (KeyType =>: KeyType =>: int)) (
 
       fun('get)('key % KeyType) {

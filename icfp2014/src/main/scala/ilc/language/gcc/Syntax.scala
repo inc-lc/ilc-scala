@@ -220,7 +220,7 @@ trait SyntaxSugar
   }
 
   implicit class MethodCallOps[T <% UT](term: T) {
-    def call(className: Symbol, methodName: Symbol)(args: UT*) = {
+    def call(className: Symbol, methodName: Name)(args: UT*) = {
       val classTag = classTags(className)
       val methodList = classMethods(classTag)
       val idx = methodList.indexOf(methodName)

@@ -12,10 +12,7 @@ trait FullErasure {
   //But whatever, the types are narrow enough to ensure needed recursive calls
   //are done.
 
-  def convName(n: Name) =
-    n.toString //XXX
-
-  def varName(v: Var) = convName(v.getName)
+  def varName(v: Var) = v.getName
   def fullErasure: Term => UntypedTerm = {
     case v: Var =>
       UVar(varName(v))

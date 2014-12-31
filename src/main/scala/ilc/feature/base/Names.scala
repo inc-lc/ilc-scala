@@ -20,6 +20,7 @@ trait Names {
 
   implicit def stringAsLiteralName(string: String): NonIndexedName =
     LiteralName(string)
+  implicit def symToName(s: Symbol): Name = s.name
 
   // NAME CLASSES IN ALPHABETIC ORDER
 

@@ -88,11 +88,11 @@ Please do not declare getType as an abstract `val`.
     *         of `context`
     *
     * {{{
-    * freshName(englishMonachs, "Attila")    = "Attila"
-    * freshName(englishMonachs, "Elisabeth") = "Elizabeth_3"
+    * ctxToFreshName(englishMonachs, "Attila")    = "Attila"
+    * ctxToFreshName(englishMonachs, "Elisabeth") = "Elizabeth_3"
     * }}}
     */
-  def freshName(context: TypingContext, _default: Name): Name = {
+  def ctxToFreshName(context: TypingContext, _default: Name): Name = {
     val (default, startIdx) = decomposeName(_default)
     var newName: Name = default
     var index = startIdx
@@ -264,6 +264,10 @@ Please do not declare getType as an abstract `val`.
   implicit def closeTermBuilder(builder: TermBuilder): Term =
     builder(TypingContext.empty).toTerm
 
+  //Chain implicit conversions
+  implicit def closeNameTermBuilder(name: Name): Term =
+    (name: TermBuilder): Term
+
   /** Convenient operator to give polymorphic terms arguments */
   implicit class BaseTermBuilderOps[T <% TermBuilder](t: T) {
     // activates implicit conversion
@@ -310,9 +314,8 @@ trait FreshGen {
     index = 0
   }
 
-  def fresh(varName: Name, varType: Type): Var = {
+  def freshName(varName: Name): Name = {
     index += 1
-    //Var(IndexedName("z", index), varType)
     val compress = false
     val baseName =
       if (compress)
@@ -320,7 +323,12 @@ trait FreshGen {
       else
         //Keep names, for extra readability.
         decomposeName(varName)._1
-    Var(IndexedName(baseName, index), varType)
+    //IndexedName("z", index)
+    IndexedName(baseName, index)
+  }
+
+  def fresh(varName: Name, varType: Type): Var = {
+    Var(freshName(varName), varType)
   }
 
   def fresh(v: Var): Var = fresh(v.getName, v.getType)

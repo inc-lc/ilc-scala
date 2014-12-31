@@ -59,7 +59,7 @@ with integers.Syntax
     val (typedTerm, constraints) = collectConstraints(UApp(id, id), List())
     val solved = unification(constraints)
     val finalTerm = substitute(solved, typedTerm)
-    assert(dropSourceInfo(finalTerm.getType) === =>:(TypeVariable(2), TypeVariable(2)))
+    assert(dropSourceInfo(finalTerm.getType) === (TypeVariable(2) =>: TypeVariable(2)))
   }
 }
 

@@ -89,11 +89,9 @@ trait SyntaxSugar
 {
   outer =>
   implicit def intToUTerm(n: Int): UntypedTerm = asUntyped(LiteralInt(n))
-  def letrec(pairs: (Symbol, UntypedTerm)*)
+  def letrec(pairs: (Name, UntypedTerm)*)
         (bodyName: String, body: UntypedTerm): UntypedTerm = {
-    ULetRec(pairs.toList map {
-      case (sym, t) => (sym.name, t)
-    }, bodyName, body)
+    ULetRec(pairs.toList, bodyName, body)
   }
 
   type UT = UntypedTerm
@@ -131,7 +129,7 @@ trait SyntaxSugar
   def switch(value: UntypedTerm)(branches: (UntypedTerm, UntypedTerm)*) = WithDefault(value, branches)
   case class WithDefault(value: UntypedTerm, branches: Seq[(UntypedTerm, UntypedTerm)]) {
     def withDefault(default: UntypedTerm): UntypedTerm = {
-      val condName = Symbol(freshener.fresh("cond", int).getName.toString)
+      val condName = freshener.fresh("cond", int).getName.toString
       let(condName, value)(branches.foldRight(default) {
         case ((comp, body), els) => if_(condName === comp)(body) else_(els)
       })
@@ -151,7 +149,7 @@ trait SyntaxSugar
   def noop = Noop
 
   // Symbol + TypeAnnotation
-  type NameOrTyped = Either[Symbol, TypeAnnotation]
+  type NameOrTyped = Either[Name, TypeAnnotation]
   implicit def symbolIsLeft(s: Symbol): NameOrTyped = Left(s)
   implicit def annotationIsRight(anno: TypeAnnotation): NameOrTyped = Right(anno)
 
@@ -165,18 +163,17 @@ trait SyntaxSugar
   // creates a pair to be used immediately in letrec like
   //   letrec(fun('go)('n) { 'to('n + 1) })
   def fun(name: Symbol)(firstArg: NameOrTyped, args: NameOrTyped*)(body: UntypedTerm) =
-    (name -> lam(firstArg, args: _*)(body))
+    name := lam(firstArg, args: _*)(body)
 
 
   //For use within letS.
   //Example:
   //letS('a := 1, 'b := 2){3}
-  implicit class SymBindingOps(s: Symbol) {
-    def :=(t: UntypedTerm) = s -> t
-
+  implicit class NameAssignOps(s: Name) {
     // For assignment
     def <~(term: UT) = asUntyped(Assign)(s, term)
   }
+  implicit def symToNameAssignOps(s: Symbol) = (s: Name): NameAssignOps
 
   implicit def consSyntax[A <% UT, B <% UT](scalaPair: (A, B)): UntypedTerm =
     pair(scalaPair._1, scalaPair._2)
@@ -195,7 +192,7 @@ trait SyntaxSugar
         letS(
          (firstName +: names).zipWithIndex.map {
            case (Left(name), i) => name := tuple at(i, size)
-           case (Right(TypeAnnotation(name, tpe)), i) => Symbol(name) := tuple at(i, size) ofType (tpe)
+           case (Right(TypeAnnotation(name, tpe)), i) => Symbol(name.toString) := tuple at(i, size) ofType (tpe)
          }: _*)(body)
       }
     }
@@ -203,11 +200,11 @@ trait SyntaxSugar
 
   type ClassTag = Int
   private val classTags = mutable.Map.empty[Symbol, ClassTag]
-  private val classMethods = mutable.Map.empty[ClassTag, Seq[Symbol]]
+  private val classMethods = mutable.Map.empty[ClassTag, Seq[Name]]
 
-  def ClassType(memberTypes: Type*) = tupleType((int +: memberTypes):_*)
+  def ClassType(memberTypes: Type*) = tupleType((int +: memberTypes): _*)
 
-  def class_(name: Symbol)(fields: NameOrTyped*)(members: (Symbol, UT)*) = {
+  def class_(name: Symbol)(fields: NameOrTyped*)(members: (Name, UT)*) = {
 
     val memberNames = members.map { _._1 }
     val memberRefs = memberNames.map(m => asUntyped(m))
@@ -217,13 +214,13 @@ trait SyntaxSugar
     classMethods.update(classTag, memberNames)
 
     // we return the constructor
-    Symbol("new_" + name.name) -> lam(fields.head, fields.tail:_*){
-      letrec( members:_* )(name.name, tuple(classTag , memberRefs:_*))
+    Symbol("new_" + name.name) := lam(fields.head, fields.tail: _*){
+      letrec(members: _*)(name.name, tuple(classTag , memberRefs: _*))
     }
   }
 
   implicit class MethodCallOps[T <% UT](term: T) {
-    def call(className: Symbol, methodName: Symbol)(args: UT*) = {
+    def call(className: Symbol, methodName: Name)(args: UT*) = {
       val classTag = classTags(className)
       val methodList = classMethods(classTag)
       val idx = methodList.indexOf(methodName)

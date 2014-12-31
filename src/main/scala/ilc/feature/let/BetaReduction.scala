@@ -15,7 +15,7 @@ trait ProgramSize extends Syntax {
 
 trait BetaReduction extends Syntax with FreeVariables with analysis.Occurrences with Traversals with IsAtomic {
   outer =>
-  val freshGen = new base.FreshGen {
+  private val freshGen = new base.FreshGen {
     /*
      * The singleton type annotation encodes a "sharing constraint"*:
      * freshGen.syntax.type =:= outer.type. The typechecker can deduce then
@@ -27,7 +27,7 @@ trait BetaReduction extends Syntax with FreeVariables with analysis.Occurrences 
   }
   implicitly[freshGen.syntax.type =:= outer.type] //A type equality assertion.
   implicitly[freshGen.syntax.Term =:= outer.Term]
-  import freshGen._
+  import freshGen.fresh
 
   val shouldNormalize = true
 
@@ -63,7 +63,8 @@ trait BetaReduction extends Syntax with FreeVariables with analysis.Occurrences 
     //Let's run this to convergence.
     //Since I'm too lazy to implement alpha-equivalence testing, especially
     //in an efficient way, just reset the freshness index.
-    resetIndex()
+    //XXX now I did implement linear-time alpha-equivalence.
+    freshGen.resetIndex()
     val u = normalizeEverywhereOnce(t)
     if (t == u)
       t
@@ -82,6 +83,9 @@ trait BetaReduction extends Syntax with FreeVariables with analysis.Occurrences 
    * A "custom" implementation of normalization by evaluation.
    * The initial code was written and tested based on a faint recollection of the basic algorithm,
    * but it worked surprisingly well.
+   * Warning: this is completely syntax-directed, so it neither eta-expands not
+   * eta-reduces terms; in other words, it does not compute a beta-eta-normal form,
+   * only a beta-normal form.
    *
    * Unusual features:
    * - instead of producing standard normal forms, it performs let conversion and shrinking reductions.

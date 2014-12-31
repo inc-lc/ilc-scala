@@ -8,7 +8,8 @@ trait PrettySyntax extends Inference {
   implicit def polymorphicConstantToUPolymorphicConstant(x: PolymorphicConstant): UntypedTerm = UPolymorphicConstant(x)
   implicit def monomorphicConstantToUMonomorphicConstant(x: Term): UntypedTerm = UMonomorphicConstant(x)
   implicit def symbolToUVar(x: Symbol): UVar = UVar(x.name)
-  implicit def stringToUVar(x: String): UVar = UVar(x)
+  implicit def nameToUVar(x: Name): UVar = UVar(x)
+  implicit def stringToUVar(x: String): UVar = (x: Name): UVar
 
   /*
    * The point of this implicit conversion is to trigger ambiguity errors in
@@ -29,9 +30,10 @@ trait PrettySyntax extends Inference {
    * much work and I'm not sure it'd actually work).
    */
   implicit def symbolToUTOps(x: Symbol) = UTOps(x)
+  implicit def nameToUTOps(x: Name) = UTOps(x)
   implicit def stringToUTOps(x: String) = UTOps(x)
 
-  case class TypeAnnotation(name: String, typ: Type)
+  case class TypeAnnotation(name: Name, typ: Type)
 
   implicit class UTOps[T <% UntypedTerm](untypedTerm: T) {
 
@@ -42,13 +44,17 @@ trait PrettySyntax extends Inference {
     def ->:(param: TypeAnnotation): UntypedTerm =
       UAbs(param.name, Some(param.typ), untypedTerm)
 
-    def ->:(param: String): UntypedTerm =
+    def ->:(param: Name): UntypedTerm =
       UAbs(param, None, untypedTerm)
 
     // Require at least one argument.
+    //XXX Names can't be applied because of a conflict between different
+    //implicit conversions.
     def apply(that: UntypedTerm, more: UntypedTerm*): UApp =
       more.foldLeft(UApp(untypedTerm, that))((acc: UApp, arg: UntypedTerm) => UApp(acc, arg))
 
+    //I decided that TypeAnnotations and TypeAscriptions should be separate,
+    //but I'm less sure whether that's a good idea for the surface syntax. PG.
     def ofType(typ: Type): TypeAscription = TypeAscription(untypedTerm, typ)
 
     def composeWith(second: UntypedTerm): UntypedTerm =
@@ -57,5 +63,8 @@ trait PrettySyntax extends Inference {
 
   implicit class SymbolOps(name: Symbol) {
     def %(typ: Type): TypeAnnotation = TypeAnnotation(name.name, typ)
+  }
+  implicit class NameOps(name: Name) {
+    def %(typ: Type): TypeAnnotation = TypeAnnotation(name, typ)
   }
 }

@@ -60,5 +60,11 @@ with integers.Syntax
     val finalTerm = substitute(solved, typedTerm)
     assert(dropSourceInfo(finalTerm.getType) === (TypeVariable(2) =>: TypeVariable(2)))
   }
+
+  it should "work on open terms" in {
+    val vU: UntypedTerm = UVar("x")
+    val vT: Term = vU
+    assert(dropSourceInfo(vT.getType) === TypeVariable(4))
+  }
 }
 

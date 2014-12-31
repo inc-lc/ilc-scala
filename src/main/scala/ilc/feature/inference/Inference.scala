@@ -96,7 +96,11 @@ extends base.Syntax
     case UVar(name) =>
       lookup(context, name) match {
         case Some(typ) => (TVar(name, typ), emptyConstraintSet)
-        case None => sys error s"Unbound variable ${UVar(name)}"
+        case None =>
+          //sys error s"Unbound variable ${UVar(name)}"
+          // This change should switch to principal typings. It certainly enables
+          // inference on open terms.
+          (TVar(name, freshTypeVariable(term)), emptyConstraintSet)
       }
     case UAbs(argumentName, annotatedArgumentType, body) =>
       val argumentType = annotatedArgumentType.getOrElse(freshTypeVariable(term))

@@ -6,11 +6,15 @@ import ilc.feature._
 class InferenceSuite
 extends FlatSpec
    with Inference
+   with SyntaxSugar
+   with LetSyntaxSugar
+   with LetInference
+   with LetRecInference
 
 // Stuff for testing old inference
 with InferenceTestHelper
 with bags.Syntax
-with integers.Syntax
+with integers.ImplicitSyntaxSugar
 {
   val (t0, t1, t2, t3, t4, t5, t6, t7, t8, t9) = (TypeVariable(0), TypeVariable(1), TypeVariable(2), TypeVariable(3), TypeVariable(4), TypeVariable(5), TypeVariable(6), TypeVariable(7), TypeVariable(8), TypeVariable(9))
 
@@ -58,6 +62,45 @@ with integers.Syntax
     val solved = unification(constraints)
     val finalTerm = substitute(solved, typedTerm)
     assert(dropSourceInfo(finalTerm.getType) === (TypeVariable(2) =>: TypeVariable(2)))
+  }
+
+  it should "work on open terms" in {
+    val vU: UntypedTerm = UVar("x")
+    val vT: Term = vU
+    assert(dropSourceInfo(vT.getType) === TypeVariable(4))
+  }
+  it should "assign consistent types for repeated variables" in {
+    val vU: UntypedTerm = UApp(UVar("x"), UVar("x"))
+    intercept[Throwable] {
+      typecheck(vU)
+    }
+  }
+
+  it should "work on LetRec" in {
+    val vU = ULetRec(List(("fac", 'x ->: 'fac('fac('x)))), "", 'fac(1: Term))
+    typecheck(vU)
+  }
+
+  /*
+   * When inferring principal typings, the thing I keep forgetting is dropping
+   * identifiers from contexts, and it shows up only when it tries to unify
+   * types for different bound variables sharing a name.
+   * Hence the two tests below.
+   */
+  it should "not relate identifiers bounds in different Lets" in {
+    val vU =
+      letS(
+      'h := 'x ->: letS('f := 'x ->: 'x)('f(1: Term)),
+      'i := 'x ->: letS('f := 'x ->: 'x)('f(EmptyBag)))('h)
+    typecheck(vU)
+  }
+
+  it should "not relate identifiers bounds in different LetRec" in {
+    val vU =
+      letS(
+      'g := 'x ->: ULetRec(List(("f", 'x ->: 'f('f('x)))), "", 'f(1: Term)),
+      'h := 'x ->: ULetRec(List(("f", 'x ->: 'f('f('x)))), "", 'f(EmptyBag)))('g)
+    typecheck(vU)
   }
 }
 

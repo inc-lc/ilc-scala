@@ -138,6 +138,18 @@ trait CBPVToCPS extends TypeConversions with let.CPSTypes {
       // According to the literature, we need the product of the types, which
       // happens to be the adjoint (in fact, unsurprisingly, that's how this arises).
       ProductType(valTypeToCPS(srcVt), compTypeToCPS(dstCt))
+      // In fact, we can even flip the operands, to pass the continuation first
+      // (and confusingly flip all other operands, but do we care?), as follows:
+      //ProductType(compTypeToCPS(dstCt), valTypeToCPS(srcVt))
+      //
+      //However, what's the matching change for the code transformation?
+      //Finally, taking continuations first (as in Fischer's transform) or last
+      //(as in Plotkin's transform) makes an amazing amount of difference
+      //theoretically. (See for instance Sabry and Wadler's "A Reflection on
+      //Call-by-Value"; see also footnote 12 of Hatcliff and Danvy's "A Generic
+      //Account of Continuation-Passing Style"). Apparently, taking
+      //continuations first enables doing more administrative reductions (for
+      //some purposes, too many).
     case ProdCT(a, b) =>
       ???
       //Heck, ProdCT is a pair of continuations.

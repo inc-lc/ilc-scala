@@ -66,5 +66,12 @@ with integers.Syntax
     val vT: Term = vU
     assert(dropSourceInfo(vT.getType) === TypeVariable(4))
   }
+  it should "assign consistent types for repeated variables" in {
+    val vU: UntypedTerm = UApp(UVar("x"), UVar("x"))
+    a[Throwable] should be thrownBy {
+      val vT: Term = vU
+      println(vT)
+    }
+  }
 }
 

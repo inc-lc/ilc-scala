@@ -57,7 +57,7 @@ trait BetaReduction extends Syntax with FreeVariables with analysis.Occurrences 
     reify(eval(t, Map.empty))
   }
 
-  def doNormalize(t: Term): Term = {
+  @annotation.tailrec final def doNormalize(t: Term): Term = {
     //Because of how usage counts are computed (before normalization), this is not idempotent.
     //That's also typical in shrinking reductions.
     //Let's run this to convergence.
@@ -69,7 +69,7 @@ trait BetaReduction extends Syntax with FreeVariables with analysis.Occurrences 
     if (t == u)
       t
     else
-      normalize(u)
+      doNormalize(u)
   }
 
   def normalize(t: Term) =

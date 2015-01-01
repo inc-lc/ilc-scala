@@ -5,7 +5,6 @@ package integers
 import org.scalatest.FunSuite
 import ilc.util.EvalGenerated
 import ilc.language.bacchus
-import scala.language.implicitConversions
 
 class IntegerSuite
 extends FunSuite

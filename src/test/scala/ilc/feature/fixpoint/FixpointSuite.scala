@@ -8,8 +8,6 @@ import org.scalatest.Matchers
 import language.bacchus
 import util.EvalGenerated
 
-import scala.language.implicitConversions
-
 class FixpointSuite
 extends FunSuite
     with Matchers

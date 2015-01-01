@@ -2,6 +2,8 @@ package ilc
 package feature
 package inference
 
+import scala.language.implicitConversions
+
 trait SyntaxSugar extends PrettySyntax with booleans.Syntax {
   //Basic utils.
   //Force implicit conversions.
@@ -26,16 +28,25 @@ trait SyntaxSugar extends PrettySyntax with booleans.Syntax {
     * }
     * }}}
     */
-  def let(v: Symbol, meaning: UntypedTerm)
+  def let(v: Name, meaning: UntypedTerm)
          (body: UntypedTerm): UntypedTerm =
     (v ->: body)(meaning)
 
-  def letS(pairs: (Symbol, UntypedTerm)*)
+  def letS(pairs: (Name, UntypedTerm)*)
           (body: UntypedTerm): UntypedTerm = {
     pairs.foldRight(body){ (pair, body) =>
       let(pair._1, pair._2)(body)
     }
   }
+
+  //For use within letS.
+  //Example:
+  //letS('a := 1, 'b := 2){3}
+  implicit class NameBindingOps(s: Name) {
+    def :=(t: UntypedTerm) = s -> t
+  }
+  implicit def symToNameBindingOps(s: Symbol) = (s: Name): NameBindingOps
+
 
   //XXX Should use a macro version of const_.
   def ifThenElse_(condition: UntypedTerm, thenBranch: UntypedTerm, elseBranch: UntypedTerm) =
@@ -46,7 +57,7 @@ trait SyntaxSugar extends PrettySyntax with booleans.Syntax {
 }
 
 trait LetSyntaxSugar extends SyntaxSugar with LetUntypedSyntax {
-  override def let(v: Symbol, meaning: UntypedTerm)
+  override def let(v: Name, meaning: UntypedTerm)
          (body: UntypedTerm): UntypedTerm =
-    ULet(v.name, meaning, body)
+    ULet(v, meaning, body)
 }

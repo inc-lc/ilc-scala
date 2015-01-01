@@ -10,7 +10,7 @@ trait ToHaskell {
 
   def untypedToHaskell: UntypedTerm => String = {
     case UVar(name) =>
-      name
+      name.toString
     case UApp(s, t) =>
       s"${untypedToHaskell(s)} ${untypedToHaskell(t)}"
     case UAbs(v, None, body) =>

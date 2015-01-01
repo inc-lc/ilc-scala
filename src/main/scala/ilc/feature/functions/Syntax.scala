@@ -86,7 +86,7 @@ trait Syntax extends base.Syntax {
   def mkLambda(nameSuggestion: Name, argumentType: Option[Type])
     (body: Name => TermBuilder): TermBuilder =
     context => {
-      val name = freshName(context, nameSuggestion)
+      val name = ctxToFreshName(context, nameSuggestion)
       argumentType match {
         case Some(knownType) =>
           new SpecializedAbs(name, context, body, knownType)

@@ -1,7 +1,6 @@
 package ilc.feature.inference
 
 import org.scalatest._
-import scala.language.implicitConversions
 import ilc.feature._
 
 class InferenceSuite

@@ -1,6 +1,5 @@
 package longRunning.feature.abelianMaps
 
-import scala.language.implicitConversions
 import org.scalatest.FunSuite
 import org.scalatest.Matchers
 

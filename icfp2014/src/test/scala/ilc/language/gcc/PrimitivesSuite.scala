@@ -6,7 +6,7 @@ import org.scalatest.FunSuite
 import org.scalatest.Matchers
 
 import Predef.{any2stringadd => _, _}
-import scala.language.{ implicitConversions, reflectiveCalls }
+import scala.language.reflectiveCalls
 
 class GCCPrimitivesSuite
 extends FunSuite

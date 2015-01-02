@@ -185,14 +185,14 @@ Please do not declare getType as an abstract `val`.
     }
 
     def getConstantName: String = {
-        // objectName = "ilc.feature.maps.Lookup$" for example
-        val objectName = theConstant.getClass.getName
-        // simpleName = "Lookup"
-        // we can't use java.lang.Class.getSimpleName because
-        // it throws java.lang.InternalError: Malformed class name
-        // at java.lang.Class.getSimpleName(Class.java:1153)
-        // (java version "1.7.0_05")
-        objectName split """[\.\$]""" last
+      // objectName = "ilc.feature.maps.Lookup$" for example
+      val objectName = theConstant.getClass.getName
+      // simpleName = "Lookup"
+      // we can't use java.lang.Class.getSimpleName because
+      // it throws java.lang.InternalError: Malformed class name
+      // at java.lang.Class.getSimpleName(Class.java:1153)
+      // (java version "1.7.0_05")
+      objectName split """[\.\$]""" last
     }
   }
 

@@ -15,7 +15,7 @@ trait ClashingImplicitConversion {
 
 class PrettySuite
 extends FlatSpec
-   with PrettySyntax
+   with SyntaxSugar
    with ilc.feature.maps.Syntax
    with ilc.feature.integers.Syntax
    with ilc.util.EvalScala
@@ -85,9 +85,8 @@ extends FlatSpec
   }
 
   it should "work when even more complicated" in {
-    val foldGroup: UntypedTerm = FoldGroup // from bags
-    val liftGroup: UntypedTerm = LiftGroup // own apply // from abelianMaps
-    val singletonMap: UntypedTerm = SingletonMap // from abelianMaps
+    val liftGroup = asUntyped(LiftGroup) // own apply // from abelianMaps
+    val singletonMap = asUntyped(SingletonMap) // from abelianMaps
 
     assert(
       'f ->: 'g ->: foldGroup(liftGroup(freeAbelianGroup),

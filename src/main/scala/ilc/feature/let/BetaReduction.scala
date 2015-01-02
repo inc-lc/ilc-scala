@@ -13,7 +13,7 @@ trait ProgramSize extends Syntax {
   }
 }
 
-trait BetaReduction extends Syntax with FreeVariables with analysis.Occurrences with Traversals with IsAtomic {
+trait BetaReduction extends Syntax with FreeVariables with analysis.Occurrences with Traversals with IsAtomic with metaprogs.AlphaEquivLet {
   outer =>
   private val freshGen = new base.FreshGen {
     /*
@@ -57,19 +57,15 @@ trait BetaReduction extends Syntax with FreeVariables with analysis.Occurrences 
     reify(eval(t, Map.empty))
   }
 
-  def doNormalize(t: Term): Term = {
+  @annotation.tailrec final def doNormalize(t: Term): Term = {
     //Because of how usage counts are computed (before normalization), this is not idempotent.
     //That's also typical in shrinking reductions.
     //Let's run this to convergence.
-    //Since I'm too lazy to implement alpha-equivalence testing, especially
-    //in an efficient way, just reset the freshness index.
-    //XXX now I did implement linear-time alpha-equivalence.
-    freshGen.resetIndex()
     val u = normalizeEverywhereOnce(t)
-    if (t == u)
+    if (alphaEquiv(t, u))
       t
     else
-      normalize(u)
+      doNormalize(u)
   }
 
   def normalize(t: Term) =

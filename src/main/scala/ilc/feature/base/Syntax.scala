@@ -168,14 +168,14 @@ Please do not declare getType as an abstract `val`.
       * }}}
       */
     def apply(typeArguments: Type*): Term =
-      Constant(typeArguments)
+      Constant(this, typeArguments)
 
     // inverting the type constructor is necessary
     // to specialize a polymorphic constant according to the
     // types of its arguments, hence the class TypeConstructor
     // below.
     def specialize(argumentTypes: Type*): Term =
-      Constant(typeConstructor inferTypeArgumentsFrom argumentTypes)
+      Constant(this, typeConstructor inferTypeArgumentsFrom argumentTypes)
 
     override def ofType(expectedType: Type): Term = {
       val typeArguments = typeConstructor.inverse(expectedType)
@@ -184,48 +184,48 @@ Please do not declare getType as an abstract `val`.
       term
     }
 
-    /** the constant with all type parameters supplied */
-    protected[this] case class Constant(typeArguments: Seq[Type])
-    extends Term
-    {
-      lazy val getType: Type = typeConstructor(typeArguments)
-
-      /** mimic the generated toString method of case classes */
-      override def toString: String = {
-        val printedTypeArguments = typeArguments mkString ", "
-        s"$getConstantName($printedTypeArguments)"
-      }
+    def getConstantName: String = {
+      // objectName = "ilc.feature.maps.Lookup$" for example
+      val objectName = theConstant.getClass.getName
+      // simpleName = "Lookup"
+      // we can't use java.lang.Class.getSimpleName because
+      // it throws java.lang.InternalError: Malformed class name
+      // at java.lang.Class.getSimpleName(Class.java:1153)
+      // (java version "1.7.0_05")
+      objectName split """[\.\$]""" last
     }
+  }
 
-    protected[this] def getConstantName: String = {
-        // objectName = "ilc.feature.maps.Lookup$" for example
-        val objectName = theConstant.getClass.getName
-        // simpleName = "Lookup"
-        // we can't use java.lang.Class.getSimpleName because
-        // it throws java.lang.InternalError: Malformed class name
-        // at java.lang.Class.getSimpleName(Class.java:1153)
-        // (java version "1.7.0_05")
-        objectName split """[\.\$]""" last
+  /** the constant with all type parameters supplied */
+  case class Constant(pc: PolymorphicConstant, typeArguments: Seq[Type])
+  extends Term
+  {
+    lazy val getType: Type = pc.typeConstructor(typeArguments)
+
+    /** mimic the generated toString method of case classes */
+    override def toString: String = {
+      val printedTypeArguments = typeArguments mkString ", "
+      s"${pc.getConstantName}($printedTypeArguments)"
     }
   }
 
   trait ConstantWith1TypeParameter extends PolymorphicConstant {
     def unapply(t: Term): Option[Type] = t match {
-      case Constant(Seq(t1)) => Some(t1)
+      case Constant(pc, Seq(t1)) if pc eq this => Some(t1)
       case _ => None
     }
   }
 
   trait ConstantWith2TypeParameters extends PolymorphicConstant {
     def unapply(t: Term): Option[(Type, Type)] = t match {
-      case Constant(Seq(t1, t2)) => Some((t1, t2))
+      case Constant(pc, Seq(t1, t2)) if pc eq this => Some((t1, t2))
       case _ => None
     }
   }
 
   trait ConstantWith3TypeParameters extends PolymorphicConstant {
     def unapply(t: Term): Option[(Type, Type, Type)] = t match {
-      case Constant(Seq(t1, t2, t3)) => Some((t1, t2, t3))
+      case Constant(pc, Seq(t1, t2, t3)) if pc eq this => Some((t1, t2, t3))
       case _ => None
     }
   }

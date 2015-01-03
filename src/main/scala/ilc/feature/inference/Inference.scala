@@ -92,7 +92,10 @@ extends base.Syntax
   //This line must be after all case classes subtypes of TypedTerm, because it uses macros, so all expectations for equational reasoning are lost.
   //implicit def GenericTypedTerm = Generic[TypedTerm]
 
-  def collectConstraints(term: UntypedTerm, context: InferenceContext = emptyContext): (TypedTerm, Set[Constraint]) = term match {
+  def collectConstraints(term: UntypedTerm): (TypedTerm, Set[Constraint]) =
+    doCollectConstraints(term, emptyContext)
+
+  def doCollectConstraints(term: UntypedTerm, context: InferenceContext): (TypedTerm, Set[Constraint]) = term match {
     case UVar(name) =>
       lookup(context, name) match {
         case Some(typ) => (TVar(name, typ), emptyConstraintSet)
@@ -100,11 +103,11 @@ extends base.Syntax
       }
     case UAbs(argumentName, annotatedArgumentType, body) =>
       val argumentType = annotatedArgumentType.getOrElse(freshTypeVariable(term))
-      val (typedBody, c) = collectConstraints(body, extend(context, argumentName, argumentType))
+      val (typedBody, c) = doCollectConstraints(body, extend(context, argumentName, argumentType))
       (TAbs(argumentName, argumentType, typedBody), c)
     case UApp(t1, t2) =>
-      val (tt1, c1) = collectConstraints(t1, context)
-      val (tt2, c2) = collectConstraints(t2, context)
+      val (tt1, c1) = doCollectConstraints(t1, context)
+      val (tt2, c2) = doCollectConstraints(t2, context)
       val x = freshTypeVariable(term)
       val c = c1 ++ c2 + Constraint(tt1.getType, tt2.getType =>: x, s"applying $t1 to $t2")
       (TApp(tt1, tt2, x), c)
@@ -115,7 +118,7 @@ extends base.Syntax
       val typ = t.typeConstructor(typeArguments)
       (TPolymorphicConstant(t, typ, typeArguments), emptyConstraintSet)
     case TypeAscription(innerTerm, typ) =>
-      val (tt, c) = collectConstraints(innerTerm, context)
+      val (tt, c) = doCollectConstraints(innerTerm, context)
       (tt, c + Constraint(tt.getType, typ, term.toString()))
     case _ => sys error s"Cannot infer type for $term"
   }
@@ -195,16 +198,16 @@ extends base.Syntax
 }
 
 trait LetInference extends Inference with LetUntypedSyntax with let.Syntax {
-  override def collectConstraints(term: UntypedTerm, context: InferenceContext = emptyContext): (TypedTerm, Set[Constraint]) = term match {
+  override def doCollectConstraints(term: UntypedTerm, context: InferenceContext): (TypedTerm, Set[Constraint]) = term match {
     case ULet(variable, exp, body) =>
       //collectConstraints( ... desugared node ...)
       //desugaring result: UApp(UAbs(variable, body), exp)
-      val (typedExp, c1) = collectConstraints(exp, context)
+      val (typedExp, c1) = doCollectConstraints(exp, context)
       val argType = freshTypeVariable(term)
-      val (typedBody, c2) = collectConstraints(body, extend(context, variable, argType))
+      val (typedBody, c2) = doCollectConstraints(body, extend(context, variable, argType))
       val c = c1 ++ c2 + Constraint(argType, typedExp.getType, term.toString())
       (TLet(variable, argType, typedExp, typedBody), c)
-    case _ => super.collectConstraints(term, context)
+    case _ => super.doCollectConstraints(term, context)
   }
 
   override def substitute(substitutions: Map[TypeVariable, Type], term: TypedTerm): TypedTerm = term match {
@@ -221,14 +224,14 @@ trait LetInference extends Inference with LetUntypedSyntax with let.Syntax {
 }
 
 trait LetRecInference extends Inference with LetRecUntypedSyntax with functions.LetRecSyntax {
-  override def collectConstraints(term: UntypedTerm, context: InferenceContext = emptyContext): (TypedTerm, Set[Constraint]) = term match {
+  override def doCollectConstraints(term: UntypedTerm, context: InferenceContext): (TypedTerm, Set[Constraint]) = term match {
     case ULetRec(pairs, bodyName, body) =>
       val tVars: List[(Name, TypeVariable)] = pairs map (_._1) map ((_, freshTypeVariable(term)))
       val extCtx = tVars.foldLeft(context) {
         (ctx, newTVar) => extend(ctx, newTVar._1, newTVar._2)
       }
-      val (typedExps, constraintss) = (pairs map { case (variable, exp) => collectConstraints(exp, extCtx)}).unzip
-      val (typedBody, c2) = collectConstraints(body, extCtx)
+      val (typedExps, constraintss) = (pairs map { case (variable, exp) => doCollectConstraints(exp, extCtx)}).unzip
+      val (typedBody, c2) = doCollectConstraints(body, extCtx)
       val expMatchConstraints = typedExps zip tVars map {
         case (exp, v@(varName, varT)) => Constraint(varT, (exp: TypedTerm).getType, s"binding $varName — $exp's type should be $varT")
       }
@@ -237,7 +240,7 @@ trait LetRecInference extends Inference with LetRecUntypedSyntax with functions.
         case ((a, b), c) => TBinding(a, b, c)
       }
       (TLetRec(bindings, bodyName, typedBody), c)
-    case _ => super.collectConstraints(term, context)
+    case _ => super.doCollectConstraints(term, context)
   }
 
   //  case class TLetRec(bindings: List[(Name, Type, TypedTerm)], body: TypedTerm)

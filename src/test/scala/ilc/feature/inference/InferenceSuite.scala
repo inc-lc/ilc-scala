@@ -55,7 +55,7 @@ with integers.Syntax
 
   "Type inference" should "infer α -> α for (id id)" in {
     val id: UntypedTerm = UAbs("x", None, UVar("x"))
-    val (typedTerm, constraints) = collectConstraints(UApp(id, id), List())
+    val (typedTerm, constraints) = collectConstraints(UApp(id, id))
     val solved = unification(constraints)
     val finalTerm = substitute(solved, typedTerm)
     assert(dropSourceInfo(finalTerm.getType) === (TypeVariable(2) =>: TypeVariable(2)))

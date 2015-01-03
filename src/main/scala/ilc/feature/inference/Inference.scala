@@ -106,7 +106,7 @@ extends base.Syntax
       val (tt1, c1) = collectConstraints(t1, context)
       val (tt2, c2) = collectConstraints(t2, context)
       val x = freshTypeVariable(term)
-      val c = c1 ++ c2 + Constraint(tt1.getType, =>:(tt2.getType, x), s"applying $t1 to $t2")
+      val c = c1 ++ c2 + Constraint(tt1.getType, tt2.getType =>: x, s"applying $t1 to $t2")
       (TApp(tt1, tt2, x), c)
     case UMonomorphicConstant(term) =>
       (TMonomorphicConstant(term), emptyConstraintSet)

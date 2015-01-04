@@ -5,7 +5,6 @@ import ilc.feature._
 
 class InferenceSuite
 extends FlatSpec
-   with Matchers
    with Inference
 
 // Stuff for testing old inference
@@ -48,7 +47,7 @@ with integers.Syntax
   }
 
   it should "fail for inputs where no substitution is possible" in {
-    a [UnificationFailure] should be thrownBy {
+    intercept[UnificationFailure] {
       unification(Set(Constraint(t0, =>:(t1, t2)), Constraint(t0, t1)))
     }
   }

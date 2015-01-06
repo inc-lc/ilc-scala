@@ -222,7 +222,7 @@ trait Collection extends SyntaxSugar { outer =>
         }
       )("containsBody", 'go(list, el, comp))
 
-    def filterNot[T](comp: UT /* T =>: bool */)
+    def filterNot(comp: UT /* T =>: bool */)
       = foldRight(list, empty, lam('el, 'acc) {
         if_(not(comp('el))) {
           'el ::: 'acc

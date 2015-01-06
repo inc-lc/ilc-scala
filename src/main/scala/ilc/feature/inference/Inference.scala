@@ -99,15 +99,19 @@ extends base.Syntax
   def collectConstraints(term: UntypedTerm): (TypedTerm, Set[Constraint]) = {
     //XXX
     val (tt, c, ctx) = doCollectConstraints(term)
-    (tt, c)
+    val (_, newConstraints) = mergeInferenceContexts(ctx, initContext)
+    (tt, c ++ newConstraints)
   }
 
-  //This is "commutative" if we quotient types by the equations we produce.
+  //This is "commutative" if we quotient types by the equations we produce,
+  //has emptyContext as unit, and should probably be "associative" (types don't match,
+  //but we just need to use the Set[Constraint] output with their monoid to fix this).
   def mergeInferenceContexts(ctx1: InferenceContext, ctx2: InferenceContext): (InferenceContext, Set[Constraint]) = {
     val commonNames = ctx1.keySet intersect ctx2.keySet
     val cSet = commonNames map (name => Constraint(ctx1(name), (ctx2)(name)))
     val ctx = (ctx1 -- commonNames) ++ (ctx2 -- commonNames) ++
-      //we could pick ctx2Map, but we output equality constraints.
+      //we could pick ctx2, but we output equality constraints such that the
+      //two choices are equivalent.
       (ctx1 filterKeys commonNames)
     (ctx, cSet)
   }

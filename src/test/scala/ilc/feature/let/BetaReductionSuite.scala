@@ -83,8 +83,8 @@ extends FlatSpec
   val duplicating = lambda(Var("f", NatType =>: NatType), Var("expensive", NatType)) {
     case Seq(arg, expensive) => PlusNat ! (arg ! expensive) ! (arg ! expensive)
   } ! u ! (PlusNat ! 42 ! 84)
-  pretty(duplicating)
-  pretty(normalize(duplicating))
+  info("\n" + pretty(duplicating))
+  info("\n" + pretty(normalize(duplicating)))
   /*
   val t =
     lambda(Var("param", NatType)) { param =>

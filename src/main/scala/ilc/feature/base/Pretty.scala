@@ -5,9 +5,21 @@
   *
   * Subclass are obligated to override:
   *
+  * - operatorPrecedence
+  *     assign to each term constructor an integer
+  *     signifying how loosely the term constructor binds
+  *
   * - toPrettyExpresion:
   *     convert declared term constructors
   *     to an operator with arity, fixity and precedence
+  *
+  * If a new term constructor's case is not overridden in
+  * operatorPrecedence, then future subclasses won't be
+  * able to look up that constructor's precedence.
+  *
+  * If a new term constructor's case is not overridden in
+  * toPrettyExpression, then that constructor will be
+  * printed by calling `toString`.
   */
 
 package ilc

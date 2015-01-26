@@ -150,6 +150,16 @@ trait Pretty extends Syntax with PrettyPrinterInterfaceFromKiama {
 
   def pretty(t: Term, width: Width): Layout =
     ParenPrettyPrinter.pretty(toDoc(t), width)
+
+  def toDoc(t: Type): Doc =
+    toParenDoc(toPrettyExpression(t))
+
+  /** support pretty printing on terms */
+  def pretty(t: Type): Layout =
+    pretty(t, defaultWidth)
+
+  def pretty(t: Type, width: Width): Layout =
+    ParenPrettyPrinter.pretty(toDoc(t), width)
 }
 
 trait PrettyPrinterInterfaceFromKiama {

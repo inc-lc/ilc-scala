@@ -62,9 +62,9 @@ trait Pretty extends Syntax with PrettyPrinterInterfaceFromKiama {
           toParenDoc(e)
       }
       if (u.fixity == Prefix)
-        group(u.op <> line <> nest(ed))
+        group(u.op <> nest(line <> ed))
       else
-        group(ed <> line <> nest(u.op))
+        group(ed <> nest(line <> u.op))
 
     // override default implementation of binary operation
     case b: output.PrettyBinaryExpression =>
@@ -85,9 +85,9 @@ trait Pretty extends Syntax with PrettyPrinterInterfaceFromKiama {
       }
 
       if (b.op.nonEmpty)
-        group(ld <+> text(b.op) <> line <> nest(rd))
+        group(ld <+> text(b.op) <> nest(line <> rd))
       else
-        group(ld <> line <> nest(rd))
+        group(ld <> nest(line <> rd))
 
     case _ =>
       super.toParenDoc(e)

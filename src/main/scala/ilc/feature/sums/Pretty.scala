@@ -2,10 +2,6 @@ package ilc
 package feature
 package sums
 
-/**
- * Pretty printing for first-class functions.
- */
-
 trait Pretty extends base.Pretty with Syntax {
   override def operatorPrecedence(tau: Type): Int = tau match {
     case SumType(leftType, rightType) =>

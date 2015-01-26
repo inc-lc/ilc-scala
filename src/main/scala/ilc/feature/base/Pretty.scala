@@ -7,7 +7,7 @@
   *
   * - operatorPrecedence, for terms and types:
   *     assign to each term constructor an integer
-  *     signifying how loosely the term constructor binds
+  *     signifying how tightly the term constructor binds
   *
   * - toPrettyExpresion, for terms and types:
   *     convert declared term constructors
@@ -61,12 +61,12 @@ trait Pretty extends Syntax with PrettyPrinterInterfaceFromKiama {
   }
 
   def operatorPrecedence(tau: Type): Int =
-    Int.MinValue // by default, do not parenthesize types
+    Int.MaxValue // by default, do not parenthesize types
 
   /** look up the operator precedence of a term */
   def operatorPrecedence(t: Term): Int = t match {
     case Var(_, _) =>
-      Int.MinValue // variables are never parenthesized
+      Int.MaxValue // variables are never parenthesized
   }
 
   /** @return org.kiama.output.PrettyExpression
@@ -185,9 +185,9 @@ trait PrettyPrinterInterfaceFromKiama {
       side : output.Side):
         Boolean =
       if (matchingAssoc(outer.fixity, side))
-        inner.priority <= outer.priority
+        inner.priority >= outer.priority
       else
-        inner.priority <  outer.priority
+        inner.priority >  outer.priority
 
   def matchingAssoc(fixity: output.Fixity, side: output.Side): Boolean =
     fixity match {

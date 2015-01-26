@@ -12,6 +12,11 @@ trait Pretty extends base.Pretty with Syntax {
   override def operatorPrecedence(tau: Type): Int = tau match {
     case domain =>: range =>
       5
+      // like in ILC's Agda code base: Parametric.Syntax.Type:
+      // infixr 5 _⇒_
+      //
+      // Ref.
+      // http://www.informatik.uni-marburg.de/~pgiarrusso/ILC/AEC/agda/Parametric.Syntax.Type.html
 
     case _ =>
       super.operatorPrecedence(tau)
@@ -19,10 +24,10 @@ trait Pretty extends base.Pretty with Syntax {
 
   override def operatorPrecedence(t: Term): Int = t match {
     case Abs(_, _) =>
-      10 // looser than Haskell's default operator (9)
+      0 // looser than everything
 
     case App(_, _) =>
-      0  // tighter than every positive precedence
+      10 // tighter than Haskell's default operator precedence (9)
 
     case _ =>
       super.operatorPrecedence(t)

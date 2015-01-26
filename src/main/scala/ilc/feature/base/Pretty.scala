@@ -14,8 +14,8 @@
   *     to an operator with arity, fixity and precedence
   *
   * If a new term constructor's case is not overridden in
-  * operatorPrecedence, then future subclasses won't be
-  * able to look up that constructor's precedence.
+  * operatorPrecedence, then that constructor will be
+  * considered atomic and bind the tightest.
   *
   * If a new term constructor's case is not overridden in
   * toPrettyExpression, then that constructor will be

@@ -6,7 +6,7 @@ trait Pretty extends Syntax with base.Pretty {
   override def toPrettyExpression(tau: Type): PrettyExpression = tau match {
     case ListType(elemType) =>
       PrettyNullaryExpression {
-        text("[") <> toDoc(tau) <> text("]")
+        text("[") <> toDoc(elemType) <> text("]")
       }
 
     case _ =>

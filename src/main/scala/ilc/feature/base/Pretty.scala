@@ -1,15 +1,15 @@
-/** Pretty-printing infrastructure
+/** Pretty-printing infrastructure using Kiama
   *
   * For each feature declaring a new Term constructor,
   * it should extend this trait.
   *
   * Subclass are obligated to override:
   *
-  * - operatorPrecedence
+  * - operatorPrecedence, for terms and types:
   *     assign to each term constructor an integer
   *     signifying how loosely the term constructor binds
   *
-  * - toPrettyExpresion:
+  * - toPrettyExpresion, for terms and types:
   *     convert declared term constructors
   *     to an operator with arity, fixity and precedence
   *
@@ -20,6 +20,18 @@
   * If a new term constructor's case is not overridden in
   * toPrettyExpression, then that constructor will be
   * printed by calling `toString`.
+  *
+  * CAUTION: due to interface conflict between Kiama and
+  * Scalatest, trait Pretty cannot be a subclass of
+  * kiama.output.ParenPrettyPrinter. We have to delegate
+  * instead.
+  *
+  * Subclasses may import from ParenPrettyPrinter.
+  * However, directly imported methods won't perform
+  * dynamic dispatch. If dynamic dispatch/open method
+  * is desired, then one must define an alias in
+  * trait PrettyPrinterInterfaceFromKiama, similar to
+  * `bracket`, `line`, `nest` etc.
   */
 
 package ilc
@@ -48,10 +60,34 @@ trait Pretty extends Syntax with PrettyPrinterInterfaceFromKiama {
     def exp: PrettyExpression
   }
 
+  def operatorPrecedence(tau: Type): Int =
+    Int.MinValue // by default, do not parenthesize types
+
   /** look up the operator precedence of a term */
   def operatorPrecedence(t: Term): Int = t match {
     case Var(_, _) =>
       Int.MinValue // variables are never parenthesized
+  }
+
+  /** @return org.kiama.output.PrettyExpression
+    *         representing the given type
+    *
+    * By default, render type `tau` by calling `tau.toString`
+    */
+  def toPrettyExpression(tau: Type): PrettyExpression =
+    PrettyNullaryExpression(text(tau.toString))
+
+  /** @return org.kiama.output.PrettyExpression
+    *         representing the given term
+    *
+    * By default, render term `t` by calling `t.toString`.
+    */
+  def toPrettyExpression(t: Term): PrettyExpression = t match {
+    case Var(name, tpe) =>
+      PrettyNullaryExpression(text(name.toString))
+
+    case unknownTerm =>
+      PrettyNullaryExpression(text(unknownTerm.toString))
   }
 
   /** `ParenPrettyPrinter.toParenDoc`
@@ -103,19 +139,6 @@ trait Pretty extends Syntax with PrettyPrinterInterfaceFromKiama {
 
     case _ =>
       super.toParenDoc(e)
-  }
-
-  /** @return org.kiama.output.PrettyExpression
-    *         representing the given term
-    *
-    * By default, render term `t` by calling `t.toString`.
-    */
-  def toPrettyExpression(t: Term): PrettyExpression = t match {
-    case Var(name, tpe) =>
-      PrettyNullaryExpression(text(name.toString))
-
-    case unknownTerm =>
-      PrettyNullaryExpression(text(unknownTerm.toString))
   }
 
   def toDoc(t: Term): Doc =

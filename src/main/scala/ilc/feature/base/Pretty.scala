@@ -17,21 +17,30 @@ package base
 import org.kiama.output
 
 
-/** Unary expressions with space beind */
-trait SpacedPrettyUnaryExpression extends output.PrettyUnaryExpression
-
-/** Juxtaposition */
-trait PrettyJuxtaposedExpression extends output.PrettyBinaryExpression {
-  def left : output.PrettyExpression
-  def right: output.PrettyExpression
-
-  override def op = ""
-}
-
 trait Pretty extends Syntax with PrettyPrinterInterfaceFromKiama {
+  /** Juxtaposition */
+  trait PrettyJuxtaposedExpression extends output.PrettyBinaryExpression {
+    def left : output.PrettyExpression
+    def right: output.PrettyExpression
+
+    override def op = ""
+  }
+
   /** Things that are never parenthesized */
   case class PrettyNullaryExpression(toDoc: Doc)
       extends PrettyExpression
+
+  /** mixfix operator with prefix/postfix keyword */
+  abstract class PrettyEnclosingExpression extends output.PrettyOperatorExpression {
+    def op: Doc
+    def exp: PrettyExpression
+  }
+
+  /** look up the operator precedence of a term */
+  def operatorPrecedence(t: Term): Int = t match {
+    case Var(_, _) =>
+      Int.MinValue // variables are never parenthesized
+  }
 
   /** `ParenPrettyPrinter.toParenDoc`
     * extended to handle PrettyNullaryExpression
@@ -40,8 +49,7 @@ trait Pretty extends Syntax with PrettyPrinterInterfaceFromKiama {
     case PrettyNullaryExpression(doc) =>
       doc
 
-    case u: SpacedPrettyUnaryExpression =>
-      import ParenPrettyPrinter.{bracket, group, indent, line}
+    case u: PrettyEnclosingExpression =>
       val ed = u.exp match {
         case e: output.PrettyOperatorExpression =>
           val assoc = u.fixity match {
@@ -54,14 +62,12 @@ trait Pretty extends Syntax with PrettyPrinterInterfaceFromKiama {
           toParenDoc(e)
       }
       if (u.fixity == Prefix)
-        group(text(u.op) <> line <> indent(ed))
+        group(u.op <> line <> nest(ed))
       else
-        group(ed <> line <> indent(text(u.op)))
+        group(ed <> line <> nest(u.op))
 
     // override default implementation of binary operation
     case b: output.PrettyBinaryExpression =>
-      import ParenPrettyPrinter.{bracket, group, indent, line}
-
       val ld = b.left match {
         case l: output.PrettyOperatorExpression =>
           bracket(l, b, LeftAssoc)
@@ -79,9 +85,9 @@ trait Pretty extends Syntax with PrettyPrinterInterfaceFromKiama {
       }
 
       if (b.op.nonEmpty)
-        group(ld <+> text(b.op) <> line <> indent(rd))
+        group(ld <+> text(b.op) <> line <> nest(rd))
       else
-        group(ld <> line <> indent(rd))
+        group(ld <> line <> nest(rd))
 
     case _ =>
       super.toParenDoc(e)
@@ -100,12 +106,15 @@ trait Pretty extends Syntax with PrettyPrinterInterfaceFromKiama {
       PrettyNullaryExpression(text(unknownTerm.toString))
   }
 
+  def toDoc(t: Term): Doc =
+    toParenDoc(toPrettyExpression(t))
+
   /** support pretty printing on terms */
   def pretty(t: Term): Layout =
     pretty(t, defaultWidth)
 
   def pretty(t: Term, width: Width): Layout =
-    ParenPrettyPrinter.pretty(toParenDoc(toPrettyExpression(t)), width)
+    ParenPrettyPrinter.pretty(toDoc(t), width)
 }
 
 trait PrettyPrinterInterfaceFromKiama {
@@ -144,15 +153,13 @@ trait PrettyPrinterInterfaceFromKiama {
       case _                 => false
     }
 
-    // override defaults here:
+    // override defaults here
     override val defaultIndent = 2
   }
 
   // aliases such that subclasses need not be aware of Kiama
-  type SpacedPrettyUnaryExpression = ilc.feature.base.SpacedPrettyUnaryExpression
-  type PrettyJuxtaposedExpression  = ilc.feature.base.PrettyJuxtaposedExpression
-
   import org.kiama.output
+
   trait PrettyUnaryExpression  extends output.PrettyUnaryExpression
   trait PrettyBinaryExpression extends output.PrettyBinaryExpression
 
@@ -168,8 +175,19 @@ trait PrettyPrinterInterfaceFromKiama {
   type Width  = ParenPrettyPrinter.Width
   type Layout = ParenPrettyPrinter.Layout
 
+  def bracket(
+    inner: output.PrettyOperatorExpression,
+    outer: output.PrettyOperatorExpression,
+    side : output.Side): Doc
+                      = ParenPrettyPrinter.bracket(inner, outer, side)
+  def group(d: Doc)   = ParenPrettyPrinter.group(d)
+  def nest(d: Doc, i: Int = defaultIndent)
+                      = ParenPrettyPrinter.nest(d, i)
+  def line: Doc       = ParenPrettyPrinter.line
   def text(s: String) = ParenPrettyPrinter.text(s)
+
   def defaultWidth    = ParenPrettyPrinter.defaultWidth
+  def defaultIndent   = ParenPrettyPrinter.defaultIndent
 
   def toParenDoc(e: PrettyExpression): Doc =
     ParenPrettyPrinter.defaultToParenDoc(e)

@@ -91,19 +91,14 @@ class NestedLoop1 extends Serializable {
 
 class MyBenchmarkingSetup extends BaseBenchmark {
   override def reporters = Seq(LoggingReporter())
-  override def buildExecutor = separateExecutor
-  //To make tests fast and have lots of memory
+  //Config. for real measurements.
+  //def myBenchConfig = testConfig
+  //To make tests fast, while still having lots of memory
   def myBenchConfig =
     Context(
       //reports.regression.significance -> 0.01, //Confidence level = 99 %
-      exec.jvmflags -> s"-Xmx${memorySizeMB}m -Xms${memorySizeMB}m -XX:CompileThreshold=100",
-      exec.minWarmupRuns -> 1,
-      exec.maxWarmupRuns -> 1,
-      exec.warmupCovThreshold -> 1.0,
-      exec.benchRuns -> 1,
-      exec.independentSamples -> 1,
-      exec.reinstantiation.fullGC -> false,
-      verbose -> false)
+      exec.jvmflags -> s"-Xmx${memorySizeMB}m -Xms${memorySizeMB}m -XX:CompileThreshold=100"
+    ) ++ verificationConfig
 }
 
 

@@ -89,15 +89,11 @@ class NestedLoop1 extends Serializable {
   }
 }
 
-class NestedLoop1Bench extends BaseBenchmark {
-  val n = new NestedLoop1()
-  import n._
-  val (res1, res1Cache) = nestedLoop3Memo(coll1Init, coll2Init)
-
+class MyBenchmarkingSetup extends BaseBenchmark {
   override def reporters = Seq(LoggingReporter())
   override def buildExecutor = separateExecutor
   //To make tests fast and have lots of memory
-  def myConfig =
+  def myBenchConfig =
     Context(
       //reports.regression.significance -> 0.01, //Confidence level = 99 %
       exec.jvmflags -> s"-Xmx${memorySizeMB}m -Xms${memorySizeMB}m -XX:CompileThreshold=100",
@@ -108,34 +104,41 @@ class NestedLoop1Bench extends BaseBenchmark {
       exec.independentSamples -> 1,
       exec.reinstantiation.fullGC -> false,
       verbose -> false)
+}
+
+
+class NestedLoop1Bench extends MyBenchmarkingSetup {
+  val n = new NestedLoop1()
+  import n._
+  val (res1, res1Cache) = nestedLoop3Memo(coll1Init, coll2Init)
 
   performance of "nestedLoop1" in {
-    using(Gen.unit("dummy")) config myConfig in { _ =>
+    using(Gen.unit("dummy")) config myBenchConfig in { _ =>
       nestedLoop1(coll1Init, coll2Init)
     }
   }
 
   performance of "nestedLoop3" in {
-    using(Gen.unit("dummy")) config myConfig in { _ =>
+    using(Gen.unit("dummy")) config myBenchConfig in { _ =>
       nestedLoop3(coll1Init, coll2Init)
     }
   }
 
   performance of "nestedLoop3Memo" in {
-    using(Gen.unit("dummy")) config myConfig in { _ =>
+    using(Gen.unit("dummy")) config myBenchConfig in { _ =>
       nestedLoop3Memo(coll1Init, coll2Init)
     }
   }
 
   performance of "nestedLoop3Incr" in {
-    using(Gen.unit("dummy")) config myConfig in { _ =>
+    using(Gen.unit("dummy")) config myBenchConfig in { _ =>
       nestedLoop3Incr(coll1Init, coll2Init)(res1, res1Cache)(0, N, true)
     }
   }
 
   //Cheat a lot, to get closer to the performance we'd hope with proper data structures.
   performance of "nestedLoop3IncrSimulated" in {
-    using(Gen.unit("dummy")) config myConfig in { _ =>
+    using(Gen.unit("dummy")) config myBenchConfig in { _ =>
       nestedLoop3Incr(coll1Init, coll2Init)(res1, res1Cache)(0, N, false)
     }
   }

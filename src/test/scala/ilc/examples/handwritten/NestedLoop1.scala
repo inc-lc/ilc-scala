@@ -89,7 +89,7 @@ class NestedLoop1 extends Serializable {
   }
 }
 
-class MyBenchmarkingSetup extends BaseBenchmark {
+trait MyBenchmarkingSetup extends BaseBenchmark {
   override def reporters = Seq(LoggingReporter())
   //Config. for real measurements.
   //def myBenchConfig = testConfig

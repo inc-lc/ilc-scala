@@ -5,10 +5,12 @@ package bags
 import collection.immutable.HashMap
 import collection.mutable.Stack
 
-object Library extends base.Library {
-  import abelianGroups.Library._
-
+class LibraryHelper {
   type Bag[T] = HashMap[T, Int]
+}
+
+object Library extends LibraryHelper with base.Library {
+  import abelianGroups.Library._
 
   object Bag {
     def apply[T](elements: T*) =

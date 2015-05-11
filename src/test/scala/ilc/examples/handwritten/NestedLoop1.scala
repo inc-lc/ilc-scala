@@ -4,10 +4,39 @@ package handwritten
 
 
 import util._
-import feature.bags.Library._
-
 import collection.{mutable, immutable}
 import org.scalameter.api._
+
+/*
+ * Warning: does not implement any actual collection interface.
+ * I still aim for this to support for-comprehensions.
+ */
+class Bag[A](private val contents: immutable.Map[A, Int] = immutable.HashMap()) {
+  import feature.bags.{Library => BagLib}
+
+  private def mapCommon[B](f: A => B) = {
+     for {
+      (el, count) <- contents.toSeq
+    } yield (f(el), count)
+  }
+
+  def mapInjective[B](f: A => B): Bag[B] = {
+    new Bag(mapCommon(f).toMap)
+  }
+
+  /**
+   * This implements the expected map interface.
+   * By far not the most efficient implementation possible.
+   * Untested.
+   */
+  def map[B](f: A => B): Bag[B] = {
+    val internalMap = mapCommon(f).
+      //F might not be injective
+      map { case (el, count) => immutable.HashMap((el, count)) }.
+      fold(immutable.HashMap())(BagLib.bagUnionInt[B] _)
+    new Bag(internalMap)
+  }
+}
 
 class NestedLoop1 extends Serializable {
   val N = 1000

@@ -13,9 +13,7 @@ object Library extends base.Library {
   object Bag {
     def apply[T](elements: T*) =
       elements.foldRight(bagEmpty[T]) { (element, bag) =>
-        bag.get(element).fold(bag.updated(element, 1)) { i =>
-          bag.updated(element, i + 1)
-        }
+        bag.updated(element, 1 + bag.get(element).fold(0) { i => i })
       }
   }
 

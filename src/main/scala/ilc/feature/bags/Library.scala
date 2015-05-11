@@ -7,28 +7,10 @@ import collection.mutable.Stack
 
 class LibraryHelper {
   type Bag[T] = HashMap[T, Int]
-}
-
-object Library extends LibraryHelper with base.Library {
-  import abelianGroups.Library._
-
-  object Bag {
-    def apply[T](elements: T*) =
-      elements.foldRight(bagEmpty[T]) { (element, bag) =>
-        bag.updated(element, 1 + bag.get(element).fold(0) { i => i })
-      }
-  }
-
-  def bagEmpty[T]: Bag[T] = HashMap.empty[T, Int]
-
-  def bagSingleton[T]: (=>T) => Bag[T] = t => HashMap(t -> 1)
 
   //XXX: Could be made much faster by using builders (avoiding immutable
   //copies), but this shouldn't be necessary.
-  def bagUnion[T]:
-      (=>Bag[T]) => (=>Bag[T]) => Bag[T] = b1Param => b2Param => {
-    lazy val b1 = b1Param
-    lazy val b2 = b2Param
+  def bagUnionInt[T](b1: Bag[T], b2: Bag[T]): Bag[T] = {
     val toDelete = Stack.empty[T]
     val collisionHandler: (((T, Int), (T, Int))) => (T, Int) = {
       case ((el1, count1), (el2, count2)) =>
@@ -52,6 +34,29 @@ object Library extends LibraryHelper with base.Library {
       case otherwise =>
         collisionHandler(otherwise)
     } -- toDelete
+  }
+}
+
+object Library extends LibraryHelper with base.Library {
+  import abelianGroups.Library._
+
+  object Bag {
+    def apply[T](elements: T*) =
+      elements.foldRight(bagEmpty[T]) { (element, bag) =>
+        bag.updated(element, 1 + bag.get(element).fold(0) { i => i })
+      }
+  }
+
+  def bagEmpty[T]: Bag[T] = HashMap.empty[T, Int]
+
+  def bagSingleton[T]: (=>T) => Bag[T] = t => HashMap(t -> 1)
+
+  //This function only maps between calling conventions.
+  def bagUnion[T]:
+      (=>Bag[T]) => (=>Bag[T]) => Bag[T] = b1Param => b2Param => {
+    lazy val b1 = b1Param
+    lazy val b2 = b2Param
+    bagUnionInt(b1, b2)
   }
 
   def bagFoldGroup[G, T]:

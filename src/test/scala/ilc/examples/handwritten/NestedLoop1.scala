@@ -50,6 +50,8 @@ class NestedLoop1 extends Serializable {
       j <- coll2
     } yield (i * N + j)
 
+  //def nestedLoopBags1(coll1: Bag[Int], coll2: Bag[Int])
+
   def nestedLoop2(coll1: List[Int], coll2: List[Int]): List[Int] = {
     val g = (i: Int) => (j: Int) => i * N + j
     val f = (i: Int) => coll2.map(g(i))

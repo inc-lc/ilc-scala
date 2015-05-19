@@ -11,7 +11,7 @@ import org.scalameter.api._
  * Warning: does not implement any actual collection interface.
  * I still aim for this to support for-comprehensions.
  */
-case class Bag[A](private val contents: immutable.Map[A, Int] = immutable.HashMap()) {
+case class Bag[A](contents: immutable.Map[A, Int] = immutable.HashMap()) {
   import feature.bags.{Library => BagLib}
 
   private def mapCommon[B](f: A => B) = {
@@ -89,8 +89,7 @@ object Bag {
     new Bag(t.map(BagLib.bagSingletonInt).fold(BagLib.bagEmpty)(BagLib.bagUnionInt _))
 }
 
-class NestedLoop1 extends Serializable {
-  val N = 1000
+class NestedLoop1(val N: Int = 1000) extends Serializable {
   val coll1Init = List[Int](0 to N - 1: _*)
   val coll2Init = List[Int](1 to N: _*)
   val coll1Upd = coll2Init
@@ -295,7 +294,7 @@ class NestedLoop1Bench extends MyBenchmarkingSetup {
 
 import org.scalatest._
 class NestedLoop1Test extends FlatSpec {
-  val n = new NestedLoop1()
+  val n = new NestedLoop1(3)
   import n._
 
   "nestedLoop1" should "be equivalent to nestedLoop3 and incremental variants" in {

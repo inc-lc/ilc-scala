@@ -16,16 +16,20 @@ class Bag[A](private val contents: immutable.Map[A, Int] = immutable.HashMap()) 
 
   private def mapCommon[B](f: A => B) = {
      for {
-      (el, count) <- contents.toSeq
+      (el, count) <- contents.toSeq //.toSeq is just to change the result type. Alternatively, just use breakOut.
     } yield (f(el), count)
   }
 
+  /**
+   * Maps f over the bag content.
+   * Precondition: f is injective. Otherwise, resort to map.
+   */
   def mapInjective[B](f: A => B): Bag[B] = {
     new Bag(mapCommon(f).toMap)
   }
 
   /**
-   * This implements the expected map interface.
+   * This implements the expected map interface, sufficient for for-comprehension (though not CanBuildFrom-compliant).
    * By far not the most efficient implementation possible.
    * Untested.
    */
@@ -33,7 +37,7 @@ class Bag[A](private val contents: immutable.Map[A, Int] = immutable.HashMap()) 
     val internalMap = mapCommon(f).
       //F might not be injective
       map { case (el, count) => immutable.HashMap((el, count)) }.
-      fold(immutable.HashMap())(BagLib.bagUnionInt[B] _)
+      fold(BagLib.bagEmpty[B])(BagLib.bagUnionInt _)
     new Bag(internalMap)
   }
 }

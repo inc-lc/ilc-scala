@@ -93,6 +93,11 @@ class NestedLoop1 extends Serializable {
   val N = 1000
   val coll1Init = List[Int](0 to N - 1: _*)
   val coll2Init = List[Int](1 to N: _*)
+  val coll1Upd = coll2Init
+
+  val bag1Init = Bag[Int](0 to N - 1: _*)
+  val bag2Init = Bag[Int](1 to N: _*)
+  val bag1Upd = bag2Init
 
   //On lists first. Bag[T] is a Map[T, Int], so it's less clear how to write this on maps.
   def nestedLoop1(coll1: List[Int], coll2: List[Int]): List[Int] =
@@ -101,7 +106,13 @@ class NestedLoop1 extends Serializable {
       j <- coll2
     } yield (i * N + j)
 
-  //def nestedLoopBags1(coll1: Bag[Int], coll2: Bag[Int])
+
+  //Yes!
+  def nestedLoopBags1(coll1: Bag[Int], coll2: Bag[Int]): Bag[Int] =
+    for {
+      i <- coll1
+      j <- coll2
+    } yield (i * N + j)
 
   def nestedLoop2(coll1: List[Int], coll2: List[Int]): List[Int] = {
     val g = (i: Int) => (j: Int) => i * N + j
@@ -109,7 +120,19 @@ class NestedLoop1 extends Serializable {
     coll1.flatMap(f)
   }
 
+  def nestedLoopBags2(coll1: Bag[Int], coll2: Bag[Int]): Bag[Int] = {
+    val g = (i: Int) => (j: Int) => i * N + j
+    val f = (i: Int) => coll2.map(g(i))
+    coll1.flatMap(f)
+  }
+
   def nestedLoop3(coll1: List[Int], coll2: List[Int]): List[Int] = {
+    val g = (i: Int) => (j: Int) => i * N + j
+    val f = (i: Int) => coll2.map(g(i))
+    coll1.map(f).flatten
+  }
+
+  def nestedLoopBags3(coll1: Bag[Int], coll2: Bag[Int]): Bag[Int] = {
     val g = (i: Int) => (j: Int) => i * N + j
     val f = (i: Int) => coll2.map(g(i))
     coll1.map(f).flatten
@@ -142,6 +165,19 @@ class NestedLoop1 extends Serializable {
     ret
   }
 
+  //Also return the cache.
+  def nestedLoopBags3Memo(coll1: Bag[Int], coll2: Bag[Int]) /*: (List[Int], Any)*/ = {
+    val g = (i: Int) => (j: Int) => i * N + j
+    val f = (i: Int) => coll2.map(g(i))
+    //memo(coll1 => coll1.map(f))(coll1).flatten
+    //coll1.map(memoInt(f)).flatten
+    val cache = getIdentityMap[Int, Bag[Int]]
+    val ret = (coll1.map(x => cache.getOrElseUpdate(x, f(x))).flatten, cache)
+
+    Util.assertType[Bag[Int]](ret._1)
+    ret
+  }
+
   /*
    * This code kind-of implements what I described in
    * https://github.com/Blaisorblade/ilc-ldiff/issues/14#issuecomment-99446136
@@ -159,7 +195,7 @@ class NestedLoop1 extends Serializable {
     val g = (i: Int) => (j: Int) => i * N + j
     val f = (i: Int) => coll2.map(g(i))
 
-    val toDrop = cache.get(removedFromColl1)
+    val toDrop = cache.getOrElse(removedFromColl1, List())
     val toAdd = //Correct result, but too slow with these data structures.
       memoedF(cache)(f)(addedToCol1)
 
@@ -168,6 +204,17 @@ class NestedLoop1 extends Serializable {
     else
       //The result here is *not* good. But at least, return all pieces, to prevent optimizations from getting in the way of microbenchmarking.
       (toAdd, toDrop)
+  }
+
+  def nestedLoopBags3Incr(coll1: Bag[Int], coll2: Bag[Int])(oldOut: Bag[Int], cache: mutable.Map[Int, Bag[Int]])(removedFromColl1: Int, addedToCol1: Int) /*List[Int]*/ = {
+    val g = (i: Int) => (j: Int) => i * N + j
+    val f = (i: Int) => coll2.map(g(i))
+
+    val toDrop = cache.getOrElse(removedFromColl1, Bag())
+    val toAdd = //Correct result, but too slow with these data structures.
+      memoedF(cache)(f)(addedToCol1)
+
+    oldOut -- toDrop ++ toAdd
   }
 }
 
@@ -188,6 +235,7 @@ class NestedLoop1Bench extends MyBenchmarkingSetup {
   val n = new NestedLoop1()
   import n._
   val (res1, res1Cache) = nestedLoop3Memo(coll1Init, coll2Init)
+  val (resBag1, resBag1Cache) = nestedLoopBags3Memo(bag1Init, bag2Init)
 
   performance of "nestedLoop1" in {
     using(Gen.unit("dummy")) config myBenchConfig in { _ =>
@@ -218,5 +266,51 @@ class NestedLoop1Bench extends MyBenchmarkingSetup {
     using(Gen.unit("dummy")) config myBenchConfig in { _ =>
       nestedLoop3Incr(coll1Init, coll2Init)(res1, res1Cache)(0, N, false)
     }
+  }
+
+  performance of "nestedLoopBags1" in {
+    using(Gen.unit("dummy")) config myBenchConfig in { _ =>
+      nestedLoopBags1(bag1Init, bag2Init)
+    }
+  }
+
+  performance of "nestedLoopBags3" in {
+    using(Gen.unit("dummy")) config myBenchConfig in { _ =>
+      nestedLoopBags3(bag1Init, bag2Init)
+    }
+  }
+
+  performance of "nestedLoopBags3Memo" in {
+    using(Gen.unit("dummy")) config myBenchConfig in { _ =>
+      nestedLoopBags3Memo(bag1Init, bag2Init)
+    }
+  }
+
+  performance of "nestedLoopBags3Incr" in {
+    using(Gen.unit("dummy")) config myBenchConfig in { _ =>
+      nestedLoopBags3Incr(bag1Init, bag2Init)(resBag1, resBag1Cache)(0, N)
+    }
+  }
+}
+
+import org.scalatest._
+class NestedLoop1Test extends FlatSpec {
+  val n = new NestedLoop1()
+  import n._
+
+  "nestedLoop1" should "be equivalent to nestedLoop3 and incremental variants" in {
+    val (res1, res1Cache) = nestedLoop3Memo(coll1Init, coll2Init)
+    val nl1 = nestedLoop1(coll1Init, coll2Init)
+    assert(nl1 == nestedLoop3(coll1Init, coll2Init))
+    assert(nl1 == res1)
+    assert(nestedLoop3Incr(coll1Init, coll2Init)(res1, res1Cache)(0, N, true) == nestedLoop1(coll1Upd, coll2Init))
+  }
+
+  "nestedLoopBags1" should "be equivalent to nestedLoopBags3 and incremental variants" in {
+    val (resBag1, resBag1Cache) = nestedLoopBags3Memo(bag1Init, bag2Init)
+    val nl1 = nestedLoopBags1(bag1Init, bag2Init)
+    assert(nl1 == nestedLoopBags3(bag1Init, bag2Init))
+    assert(nl1 == resBag1)
+    assert(nestedLoopBags3Incr(bag1Init, bag2Init)(resBag1, resBag1Cache)(0, N) == nestedLoopBags1(bag1Upd, bag2Init))
   }
 }

@@ -11,7 +11,7 @@ import org.scalameter.api._
  * Warning: does not implement any actual collection interface.
  * I still aim for this to support for-comprehensions.
  */
-class Bag[A](private val contents: immutable.Map[A, Int] = immutable.HashMap()) {
+case class Bag[A](private val contents: immutable.Map[A, Int] = immutable.HashMap()) {
   import feature.bags.{Library => BagLib}
 
   private def mapCommon[B](f: A => B) = {
@@ -40,6 +40,53 @@ class Bag[A](private val contents: immutable.Map[A, Int] = immutable.HashMap()) 
       fold(BagLib.bagEmpty[B])(BagLib.bagUnionInt _)
     new Bag(internalMap)
   }
+
+  def flatten[B](implicit p: A <:< Bag[B]): Bag[B] = {
+    new Bag(for {
+      (outerEl, count) <- contents
+      innerBag = p(outerEl)
+      (el, count2) <- innerBag.contents
+    } yield (el, count * count2))
+  }
+
+  /**
+   * This implements the expected flatMap interface (though not CanBuildFrom-compliant).
+   * By far not the most efficient implementation possible.
+   * Untested.
+   */
+  def flatMap[B](f: A => Bag[B]): Bag[B] = {
+    map(f).flatten
+  }
+
+  //Complexity: quadratic?
+  def --(toDrop: Bag[A]): Bag[A] = {
+    new Bag(toDrop.contents.foldLeft(contents) {
+      case (newContents, (el, count)) =>
+        val newCount = newContents.getOrElse(el, 0) - count
+        if (newCount != 0)
+          newContents.updated(el, newCount)
+        else
+          newContents - el
+    })
+  }
+
+  def ++(toAdd: Bag[A]): Bag[A] = {
+    new Bag(toAdd.contents.foldLeft(contents) {
+      case (newContents, (el, count)) =>
+        val newCount = newContents.getOrElse(el, 0) + count
+        if (newCount != 0)
+          newContents.updated(el, newCount)
+        else
+          newContents - el
+    })
+  }
+}
+
+object Bag {
+  import feature.bags.{Library => BagLib}
+
+  def apply[T](t: T*): Bag[T] =
+    new Bag(t.map(BagLib.bagSingletonInt).fold(BagLib.bagEmpty)(BagLib.bagUnionInt _))
 }
 
 class NestedLoop1 extends Serializable {

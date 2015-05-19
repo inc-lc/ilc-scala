@@ -35,6 +35,8 @@ class LibraryHelper {
         collisionHandler(otherwise)
     } -- toDelete
   }
+  def bagSingletonInt[T](t: T): Bag[T] =
+    HashMap(t -> 1)
 }
 
 object Library extends LibraryHelper with base.Library {
@@ -49,7 +51,8 @@ object Library extends LibraryHelper with base.Library {
 
   def bagEmpty[T]: Bag[T] = HashMap.empty[T, Int]
 
-  def bagSingleton[T]: (=>T) => Bag[T] = t => HashMap(t -> 1)
+  def bagSingleton[T]: (=>T) => Bag[T] =
+    t => bagSingletonInt(t)
 
   //This function only maps between calling conventions.
   def bagUnion[T]:

@@ -217,6 +217,11 @@ class NestedLoop1(val N: Int = 1000) extends Serializable {
   }
 }
 
+class NestedLoop1BenchInput(N: Int) extends NestedLoop1(N) {
+  val (res1, res1Cache) = nestedLoop3Memo(coll1Init, coll2Init)
+  val (resBag1, resBag1Cache) = nestedLoopBags3Memo(bag1Init, bag2Init)
+}
+
 trait MyBenchmarkingSetup extends BaseBenchmark {
   override def reporters = Seq(LoggingReporter())
   //Config. for real measurements.
@@ -231,62 +236,72 @@ trait MyBenchmarkingSetup extends BaseBenchmark {
 
 
 class NestedLoop1Bench extends MyBenchmarkingSetup {
-  val n = new NestedLoop1()
-  import n._
-  val (res1, res1Cache) = nestedLoop3Memo(coll1Init, coll2Init)
-  val (resBag1, resBag1Cache) = nestedLoopBags3Memo(bag1Init, bag2Init)
+  val sizes = Gen.range("n")(250, 1000, 250)
+  val inputs = for {
+    i <- sizes
+    n = new NestedLoop1BenchInput(i)
+  } yield (i, n)
 
   performance of "nestedLoop1" in {
-    using(Gen.unit("dummy")) config myBenchConfig in { _ =>
+    using(inputs) config myBenchConfig in { case (i, n) =>
+      import n._
       nestedLoop1(coll1Init, coll2Init)
     }
   }
 
   performance of "nestedLoop3" in {
-    using(Gen.unit("dummy")) config myBenchConfig in { _ =>
+    using(inputs) config myBenchConfig in { case (i, n) =>
+      import n._
       nestedLoop3(coll1Init, coll2Init)
     }
   }
 
   performance of "nestedLoop3Memo" in {
-    using(Gen.unit("dummy")) config myBenchConfig in { _ =>
+    using(inputs) config myBenchConfig in { case (i, n) =>
+      import n._
       nestedLoop3Memo(coll1Init, coll2Init)
     }
   }
 
   performance of "nestedLoop3Incr" in {
-    using(Gen.unit("dummy")) config myBenchConfig in { _ =>
+    using(inputs) config myBenchConfig in { case (i, n) =>
+      import n._
       nestedLoop3Incr(coll1Init, coll2Init)(res1, res1Cache)(0, N, true)
     }
   }
 
   //Cheat a lot, to get closer to the performance we'd hope with proper data structures.
   performance of "nestedLoop3IncrSimulated" in {
-    using(Gen.unit("dummy")) config myBenchConfig in { _ =>
+    using(inputs) config myBenchConfig in { case (i, n) =>
+      import n._
       nestedLoop3Incr(coll1Init, coll2Init)(res1, res1Cache)(0, N, false)
     }
   }
 
   performance of "nestedLoopBags1" in {
-    using(Gen.unit("dummy")) config myBenchConfig in { _ =>
+    using(inputs) config myBenchConfig in { case (i, n) =>
+      import n._
       nestedLoopBags1(bag1Init, bag2Init)
     }
   }
 
   performance of "nestedLoopBags3" in {
-    using(Gen.unit("dummy")) config myBenchConfig in { _ =>
+    using(inputs) config myBenchConfig in { case (i, n) =>
+      import n._
       nestedLoopBags3(bag1Init, bag2Init)
     }
   }
 
   performance of "nestedLoopBags3Memo" in {
-    using(Gen.unit("dummy")) config myBenchConfig in { _ =>
+    using(inputs) config myBenchConfig in { case (i, n) =>
+      import n._
       nestedLoopBags3Memo(bag1Init, bag2Init)
     }
   }
 
   performance of "nestedLoopBags3Incr" in {
-    using(Gen.unit("dummy")) config myBenchConfig in { _ =>
+    using(inputs) config myBenchConfig in { case (i, n) =>
+      import n._
       nestedLoopBags3Incr(bag1Init, bag2Init)(resBag1, resBag1Cache)(0, N)
     }
   }

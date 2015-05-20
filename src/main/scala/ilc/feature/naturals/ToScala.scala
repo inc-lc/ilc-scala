@@ -3,9 +3,6 @@ package feature
 package naturals
 
 trait ToScala extends base.ToScala with Syntax {
-  private[this] val natType: String =
-    toScala(NatType)
-
   override def toUntypedScala(t: Term): String = t match {
     case Nat(n) =>
       n.toString

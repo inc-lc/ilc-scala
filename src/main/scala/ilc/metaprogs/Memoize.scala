@@ -9,6 +9,10 @@ package metaprogs
 import feature._
 import collection.mutable
 
+// ***
+// Library code {{{
+// ***
+
 //This should be in some standard library — it's a thread-unsafe version of scala.concurrent.SyncVar
 class Cell[T](initialContent: T) {
   var value: T = initialContent
@@ -41,63 +45,56 @@ object OptCell {
   def apply[T]() = new OptCell[T]
 }
 
+// ***
+// Library code }}}
+// ***
 
-//We need identity hash maps here!!!
-case class DefaultedMap[K, V]() extends mutable.HashMap[K, V] {
+trait MemoizeBase {
+  outer: base.Syntax with analysis.FreeVariables with base.ToScala =>
 
-}
+  //Use custom name to avoid conflicts
 
-trait MemoizeSyntax extends maps.SyntaxSugar {
-  //Mutable maps.
-  case class Summon(n: Name) extends ConstantWith1TypeParameter {
-    val typeConstructor = TypeConstructor("contentType") {
-      case contentType => contentType
+  protected val mFreshGen = new base.FreshGen { val syntax: outer.type = outer }
+  def freshCacheName() = mFreshGen.freshName("cache")
+  def newCacheEntry(t: Term): CacheEntry = {
+    val cacheNameForT = freshCacheName()
+    val freeVars = t.freeVariables.toSeq
+    val baseScalaType = t.getType
+    val scalaType = freeVars.foldRight[String](s"OptCell[${toScala(baseScalaType)}]") {
+      (newVar, scalaTyp) =>
+        val t = toScala(newVar.getType)
+        t match {
+          //Have special support for primitives.
+          //XXX for now, just Int.
+          //Later, allow using LongMap and coercing every other primitive to
+          //Long, a bit like in the miniboxing plugin for the Scala compiler.
+          case "Int" =>  //XXX: AAAAAAARGH!
+            s"mutable.IntMap[$scalaTyp]"
+          case _ => s"mutable.HashMap[$t, $scalaTyp]"
+        }
     }
+    // In fact, we might want them ordered according to binding position, like with deBrujin levels, if we wanted to share
+    // lookups across different subexpressions.
+    val ret = new CacheEntry(cacheNameForT, /*baseScalaType, */ freeVars, scalaType)
+    //XXX: What happens here if t is duplicated?
+    cacheMap(t) = ret
+    ret
   }
+  val cacheMap = mutable.Map[Term, CacheEntry]()
 
-  case class Memo(n: Name) extends ConstantWith1TypeParameter {
+  case class CacheEntry(val name: Name, /*val type22: Type, */ val freeVariables: Seq[Var], val scalaType: String)
+}
+trait MemoizeSyntax extends maps.SyntaxSugar with MemoizeBase {
+  this: base.ToScala with analysis.FreeVariables =>
+  case class Memo(cacheEntry: CacheEntry, updateCache: Boolean) extends ConstantWith1TypeParameter {
     val typeConstructor = TypeConstructor("contentType") {
       case contentType => contentType =>: contentType
     }
   }
-
-  /*
-  case object GetOrElseUpdate extends ConstantWith2TypeParameters {
-    val typeConstructor = TypeConstructor("keyType", "valueType") {
-      case Seq(keyType, valueType) => MapType(keyType, valueType) =>: keyType =>: valueType =>: valueType
-    }
-  }
-  */
-  //def doLookup(cache: Term)
 }
 
 trait MemoizeToScala extends MemoizeSyntax with base.ToScala {
   this: functions.Syntax with analysis.FreeVariables =>
-  override def toUntypedScala(t: Term): String = t match {
-    case App(Constant(Memo(n), cType), subTerm) =>
-      n.toString + subTerm.freeVariables.foldRight((s".getOrElseUpdate(${toUntypedScala(subTerm)})", "OptCell()")) ({
-        case (newVar, (lookups, initExp)) => (s".getOrElseUpdate(${newVar.getName}, ${initExp})", "scala.collection.mutable.HashMap()")
-      })
-    case _ => super.toUntypedScala(t)
-  }
-}
-
-trait Memoize {
-  //In fact, we should get the output of CSE probably, so we have good reasons to support let.
-
-  outerM: ilc.feature.functions.Syntax with base.Derivation with MemoizeSyntax =>
-
-  //Use custom name to avoid conflicts
-  protected val mFreshGen = new base.FreshGen { val syntax: outerM.type = outerM }
-  def freshCacheName() = mFreshGen.freshName("cache")
-  val cacheNameMap = mutable.Map[Term, Name]()
-
-  //Example code:
-  {
-    val v = mutable.Map[Int, mutable.Map[Int, OptCell[Term]]]()
-    v.getOrElseUpdate(1, mutable.Map()).getOrElseUpdate(2, OptCell(???))
-  }
-  //That's what we want to generate for a lookup.
 
   //This needs to create a special term that used benign side effects.
   /*def createLookup(cacheName: Name, memoizedT: Term, freeVars: List[Var], updateCache: Boolean): Term =
@@ -105,16 +102,48 @@ trait Memoize {
       GetOrElseUpdate ! cache ! newVar ! ??? //memoizedT
     }*/
 
+
+  /*
+  //Some intended example output:
+  //val v = mutable.Map[Int, mutable.Map[Int, OptCell[Term]]]()
+  //v.getOrElseUpdate(1, mutable.Map()).getOrElseUpdate(2, OptCell(???))
+  {
+    val cache_1: OptCell[Any => Any] = null
+    val cache_2: mutable.HashMap[Any, OptCell[Any => Any]] = null
+
+    (cache_1.getOrElseUpdate((x_param => {
+      lazy val x = x_param
+      (cache_2.getOrElseUpdate(x, OptCell()))
+    })))
+  }
+  */
+  //Warning: No Barendregt convention around to save us!
+  override def toUntypedScala(t: Term): String = t match {
+    case App(Constant(Memo(ce, _), cType), subTerm) =>
+      val (lookups, _) = ce.freeVariables.foldRight((s".getOrElseUpdate(${toUntypedScala(subTerm)})", "OptCell()")) ({
+        case (newVar, (lookups, initExp)) => (s".getOrElseUpdate(${newVar.getName}, ${initExp})$lookups", "scala.collection.mutable.HashMap()")
+      })
+      //ce.name.toString + lookups
+      s"(${ce.name.toString}: ${ce.scalaType})${lookups}"
+    case _ => super.toUntypedScala(t)
+  }
+}
+
+trait Memoize extends MemoizeBase {
+  //In fact, we should get the output of CSE probably, so we have good reasons to support let.
+  outer: ilc.feature.functions.Syntax with base.Derivation with MemoizeSyntax with analysis.FreeVariables with base.ToScala =>
+
   def memoizedDerive(t: Term): Term = t match {
     case Abs(x, body) =>
       lambdaTerm(x, DVar(x)) { memoizedDerive(body) }
 
     case App(operator, operand) =>
-      val memoizedOperand: Term = Memo(cacheNameMap(operand)) ! operand
-        //operand // In old-style derivation
-        //createLookup(operand, cacheNameMap(t)
-        //createLookup(cacheNameMap(operand), operand /* ??? or try lookup recursively for failure??? */, ??? /*freeVars*/, updateCache = false)
-      memoizedDerive(operator) ! memoizedOperand ! memoizedDerive(operand)
+      //XXX: What happens here if we have two instances of the same term around?
+      val memoizedOperand: Term = Memo(cacheMap(operand), updateCache = false) ! operand
+      memoizedDerive(operator) !
+        //operand ! // In non-memoizing derivation
+        memoizedOperand ! // Main (only) change from non-memoizing derivation!
+        memoizedDerive(operand)
 
     case v: Var =>
       DVar(v)
@@ -127,17 +156,33 @@ trait Memoize {
   }
 
   def doTransform(t: Term, freeVars: List[Var], m: Map[Term, Name] = Map.empty): Term = {
-    val cacheNameForT = freshCacheName()
-    cacheNameMap(t) = cacheNameForT
+    val cacheEntry = newCacheEntry(t)
 
+    /*
     val memoizedSubterms: Term = t match {
+      //XXX add support for Let here.
       case App(s, t) => App(doTransform(s, freeVars), doTransform(t, freeVars))
       case Abs(x, t) => Abs(x, doTransform(t, x :: freeVars))
-      case x: Var => x
+      //case x: Var => x
+      case x => x
     }
 
-    //createLookup(cacheNameForT, memoizedSubterms, freeVars /* or get only the free variables actually used in the term, instead of the ones from outside? */, updateCache = true)
-    Memo(cacheNameForT) ! memoizedSubterms
+    Memo(cacheEntry) ! memoizedSubterms
+    */
+    t match {
+      //XXX add support for Let here.
+      case App(s, t) =>
+        Memo(cacheEntry, updateCache = true) !
+          App(doTransform(s, freeVars), doTransform(t, freeVars))
+      case Abs(x, t) =>
+        //XXX This will memoize each function in a chain of nested lambdas.
+        Memo(cacheEntry, updateCache = true) !
+          Abs(x, doTransform(t, x :: freeVars))
+      //case x: Var => x
+      //Otherwise, for atoms (variables and constants), do *no* memoization.
+      case x => x
+    }
+
   }
 
   def transform(t: Term) = doTransform(t, List())

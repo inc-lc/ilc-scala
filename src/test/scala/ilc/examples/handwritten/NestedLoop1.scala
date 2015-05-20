@@ -89,6 +89,22 @@ object Bag {
     new Bag(t.map(BagLib.bagSingletonInt).fold(BagLib.bagEmpty)(BagLib.bagUnionInt _))
 }
 
+object MemoUtils {
+  def getIdentityMap[Key, Value]: mutable.Map[Key, Value] = {
+    import java.util.IdentityHashMap
+    import scala.collection.JavaConverters._
+    new IdentityHashMap[Key, Value]().asScala
+  }
+
+  def memoedF[I, O](cache: mutable.Map[I, O])(f: I => O): I => O =
+    x => cache.getOrElseUpdate(x, f(x))
+
+  def memo[A, B](f: A => B): A => B = {
+    val cache = getIdentityMap[A, B]
+    memoedF(cache)(f)
+  }
+}
+
 class NestedLoop1(val N: Int = 1000) extends Serializable {
   val coll1Init = List[Int](0 to N - 1: _*)
   val coll2Init = List[Int](1 to N: _*)
@@ -137,19 +153,7 @@ class NestedLoop1(val N: Int = 1000) extends Serializable {
     coll1.map(f).flatten
   }
 
-  def getIdentityMap[Key, Value]: mutable.Map[Key, Value] = {
-    import java.util.IdentityHashMap
-    import scala.collection.JavaConverters._
-    new IdentityHashMap[Key, Value]().asScala
-  }
-
-  def memoedF[I, O](cache: mutable.Map[I, O])(f: I => O): I => O =
-    x => cache.getOrElseUpdate(x, f(x))
-
-  def memo[A, B](f: A => B): A => B = {
-    val cache = getIdentityMap[A, B]
-    memoedF(cache)(f)
-  }
+  import MemoUtils._
 
   //Also return the cache.
   def nestedLoop3Memo(coll1: List[Int], coll2: List[Int]) /*: (List[Int], Any)*/ = {

@@ -26,4 +26,9 @@ trait ToScala extends base.ToScala with Syntax {
     case _ =>
       super.toScala(tau)
   }
+
+  override def isScalaPrimitive(tau: Type) = tau match {
+    case NatType => true
+    case _ => super.isScalaPrimitive(tau)
+  }
 }

@@ -58,11 +58,10 @@ trait MemoizeBase {
 
   def varToScalaMapType(v: Var, argScalaTyp: Option[String]) = {
     val t = toScala(v.getType)
-    //Have special support for primitives. (XXX for now, just Int.)
+    //Have special support for primitives.
     //To this end, use LongMap and coerce every other primitive to
     //Long, a bit like in the miniboxing plugin for the Scala compiler.
-    val isPrimitive = t == "Int" //XXX: AAAAAAARGH! We want to know if the generated Scala type is a primitive. String matching is a very fragile way of doing that.
-    if (isPrimitive)
+    if (isScalaPrimitive(v.getType))
       //XXX: Fully qualified classnames are required when using evalScala, because of https://issues.scala-lang.org/browse/SI-6393.
       //But otherwise, I'd shorten the output by mapping `scm` to `scala.collection.mutable` and selecting from `scm`.
       "LongMap" + argScalaTyp.fold("") { scalaTyp => s"[$scalaTyp]" }

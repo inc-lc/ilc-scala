@@ -34,4 +34,12 @@ object Library {
     }
     def apply[T]() = new OptCell[T]
   }
+
+  //Reexport relevant maps.
+  import scala.collection.{mutable => scm}
+
+  type HashMap[K, V] = scm.HashMap[K, V]
+  val HashMap = scm.HashMap
+  type LongMap[V] = scm.LongMap[V]
+  val LongMap = scm.LongMap
 }

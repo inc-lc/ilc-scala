@@ -44,16 +44,11 @@ class MemoizeSpec extends FlatSpec with Memoize
     println(cacheMap)
   }
 
-  def addImports(code: String): String =
-    s"""|{ // add imports here
-        |  import ilc.feature.abelianGroups.Library._
-        |  import ilc.feature.memoize.Library._
-        |  import scala.collection.mutable.{HashMap, LongMap}
-        |  $code
-        |}""".stripMargin
-
   def compile[T](t: Term): T = {
-    val source = addImports(addCaches(toScala(t)))
+    val source = s"""|{
+        |  ${imports}
+        |  ${addCaches(toScala(t))}
+        |}""".stripMargin
     println(s"source:\n$source")
     evalScala(source).asInstanceOf[T]
   }

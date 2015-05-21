@@ -56,23 +56,27 @@ trait MemoizeBase {
 
   protected val mFreshGen = new base.FreshGen { val syntax: outer.type = outer }
   def freshCacheName() = mFreshGen.freshName("cache")
+  def varToScalaMapType(v: Var, argScalaTyp: Option[String]) = {
+    val t = toScala(v.getType)
+    t match {
+      //Have special support for primitives.
+      //XXX for now, just Int.
+      //Later, allow using LongMap and coercing every other primitive to
+      //Long, a bit like in the miniboxing plugin for the Scala compiler.
+      case "Int" =>  //XXX: AAAAAAARGH! We want to know if the generated Scala type is a primitive. String matching is a very fragile way of doing that.
+        //`scm` should map to `scala.collection.mutable`.
+        "scm.LongMap" + argScalaTyp.fold(""){scalaTyp => s"[$scalaTyp]"}
+      case _ =>
+        "scm.HashMap" + argScalaTyp.fold(""){scalaTyp => s"[$t, $scalaTyp]"}
+    }
+  }
   def newCacheEntry(t: Term): CacheEntry = {
     val cacheNameForT = freshCacheName()
     val freeVars = t.freeVariables.toSeq
     val baseScalaType = t.getType
     val scalaType = freeVars.foldRight[String](s"OptCell[${toScala(baseScalaType)}]") {
       (newVar, scalaTyp) =>
-        val t = toScala(newVar.getType)
-        t match {
-          //Have special support for primitives.
-          //XXX for now, just Int.
-          //Later, allow using LongMap and coercing every other primitive to
-          //Long, a bit like in the miniboxing plugin for the Scala compiler.
-          case "Int" =>  //XXX: AAAAAAARGH! We want to know if the generated Scala type is a primitive. String matching is a very fragile way of doing that.
-            //`scm` should map to `scala.collection.mutable`.
-            s"scm.LongMap[$scalaTyp]"
-          case _ => s"scm.HashMap[$t, $scalaTyp]"
-        }
+        varToScalaMapType(newVar, Some(scalaTyp))
     }
     // In fact, we might want them ordered according to binding position, like with deBrujin levels, if we wanted to share
     // lookups across different subexpressions.
@@ -122,7 +126,8 @@ trait MemoizeToScala extends MemoizeSyntax with base.ToScala {
   override def toUntypedScala(t: Term): String = t match {
     case App(Constant(Memo(ce, _), cType), subTerm) =>
       val (lookups, _) = ce.freeVariables.foldRight((s".getOrElseUpdate(${toUntypedScala(subTerm)})", "OptCell()")) ({
-        case (newVar, (lookups, initExp)) => (s".getOrElseUpdate(${newVar.getName}, ${initExp})$lookups", "scala.collection.mutable.HashMap()")
+        case (newVar, (lookups, initExp)) => (s".getOrElseUpdate(${newVar.getName}, ${initExp})$lookups",
+            varToScalaMapType(newVar, None) + "()")
       })
       //ce.name.toString + lookups
       s"(${ce.name.toString}: ${ce.scalaType})${lookups}"

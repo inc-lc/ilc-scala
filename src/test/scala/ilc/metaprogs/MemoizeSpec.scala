@@ -54,6 +54,7 @@ class MemoizeSpec extends FlatSpec with Memoize
 
   def compile[T](t: Term): T = {
     val source = addImports(addCaches(toScala(t)))
+    println(s"source:\n$source")
     evalScala(source).asInstanceOf[T]
   }
 
@@ -61,6 +62,26 @@ class MemoizeSpec extends FlatSpec with Memoize
     val t = asTerm(('x % IntType) ->: ('y % IntType) ->: (PlusInt('x, 'y)))
     compile[Any](memoizedDerive(t))
   }
+  // The generated output looks now even more correct.
+//source:
+{ // add imports here
+  import ilc.feature.abelianGroups.Library._
+  import ilc.metaprogs._ // for OptCell etc. living in this package temporarily
+  import scala.collection.{mutable => scm}
+  val cache_15 = scm.LongMap[OptCell[Int]]()
+val cache_11 = scm.LongMap[OptCell[((=>Int) => Int)]]()
+val cache_14 = scm.LongMap[OptCell[Int]]()
+val cache_2 = scm.LongMap[OptCell[((=>Int) => Int)]]()
+val cache_4 = OptCell[((=>Int) => ((=>Int) => ((=>Int) => Int)))]()
+val cache_12 = OptCell[((=>Int) => ((=>Int) => Int))]()
+val cache_13 = scm.LongMap[OptCell[Int]]()
+val cache_1 = OptCell[((=>Int) => ((=>Int) => Int))]()
+val cache_5 = scm.LongMap[OptCell[((=>Int) => ((=>Int) => Int))]]()
+val cache_7 = scm.LongMap[scm.LongMap[scm.LongMap[OptCell[Int]]]]()
+val cache_10 = scm.LongMap[scm.LongMap[OptCell[Int]]]()
+val cache_6 = scm.LongMap[scm.LongMap[OptCell[((=>Int) => Int)]]]()
+val cache_8 = scm.LongMap[scm.LongMap[OptCell[((=>Int) => Int)]]]()
+}
 
   ignore should "produce correct results for multivariate functions" in {
     import abelianGroups.Library._

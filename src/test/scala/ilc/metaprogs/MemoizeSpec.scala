@@ -52,7 +52,10 @@ class MemoizeSpec extends FlatSpec with Memoize
         |  $code
         |}""".stripMargin
 
-  def compile[T](t: Term): T = evalScala(addImports(toScala(t))).asInstanceOf[T]
+  def compile[T](t: Term): T = {
+    val source = addImports(addCaches(toScala(t)))
+    evalScala(source).asInstanceOf[T]
+  }
 
   "memoizedDerive" should "produce code that compiles to well-typed Scala" in {
     val t = asTerm(('x % IntType) ->: ('y % IntType) ->: (PlusInt('x, 'y)))

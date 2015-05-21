@@ -133,6 +133,14 @@ trait MemoizeToScala extends MemoizeSyntax with base.ToScala {
       s"(${ce.name.toString}: ${ce.scalaType})${lookups}"
     case _ => super.toUntypedScala(t)
   }
+
+  def addCaches(code: String): String = {
+    val cacheDecls = for {
+      CacheEntry(name, _, scalaType) <- cacheMap.values
+    } yield s"val ${name} = ${scalaType}()"
+    cacheDecls.mkString("\n") + "\n" + code
+  }
+
 }
 
 trait Memoize extends MemoizeBase {

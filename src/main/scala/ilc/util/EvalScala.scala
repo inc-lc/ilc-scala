@@ -22,7 +22,11 @@ import scala.tools.reflect.ToolBox
 
 trait EvalScala
 {
-  // evaluate scala code and load the class
+  /**
+    * Evaluate scala code and load the class.
+    * Warning: because of a ToolBox bug (https://issues.scala-lang.org/browse/SI-6393),
+    * using imports is only partly supported.
+    */
   def evalScala(scalaCode: String): Any = {
     toolBox.eval(toolBox.parse(scalaCode))
   }

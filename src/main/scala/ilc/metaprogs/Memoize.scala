@@ -64,10 +64,11 @@ trait MemoizeBase {
       //Later, allow using LongMap and coercing every other primitive to
       //Long, a bit like in the miniboxing plugin for the Scala compiler.
       case "Int" =>  //XXX: AAAAAAARGH! We want to know if the generated Scala type is a primitive. String matching is a very fragile way of doing that.
-        //`scm` should map to `scala.collection.mutable`.
-        "scm.LongMap" + argScalaTyp.fold(""){scalaTyp => s"[$scalaTyp]"}
+        //XXX: Fully qualified classnames are required when using evalScala, because of https://issues.scala-lang.org/browse/SI-6393.
+        //But otherwise, I'd shorten the output by mapping `scm` to `scala.collection.mutable` and selecting from `scm`.
+        "scala.collection.mutable.LongMap" + argScalaTyp.fold(""){scalaTyp => s"[$scalaTyp]"}
       case _ =>
-        "scm.HashMap" + argScalaTyp.fold(""){scalaTyp => s"[$t, $scalaTyp]"}
+        "scala.collection.mutable.HashMap" + argScalaTyp.fold(""){scalaTyp => s"[$t, $scalaTyp]"}
     }
   }
   def newCacheEntry(t: Term): CacheEntry = {

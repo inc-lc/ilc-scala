@@ -6,7 +6,7 @@ import feature._
 import util.EvalScala
 
 class MemoizeSpec extends FlatSpec with Memoize
-    with MemoizeSyntax
+    with memoize.Syntax
     with functions.Derivation //with let.Derivation
 
     with integers.ImplicitSyntaxSugar with integers.ToScala with integers.AbelianDerivation
@@ -15,7 +15,7 @@ class MemoizeSpec extends FlatSpec with Memoize
     with inference.LetInference
     with let.Pretty
     with analysis.FreeVariables
-    with functions.ToScala with sums.ToScala with abelianGroups.ToScala with products.ToScala with MemoizeToScala
+    with functions.ToScala with sums.ToScala with abelianGroups.ToScala with products.ToScala with memoize.ToScala
 
     with EvalScala
 {
@@ -47,7 +47,7 @@ class MemoizeSpec extends FlatSpec with Memoize
   def addImports(code: String): String =
     s"""|{ // add imports here
         |  import ilc.feature.abelianGroups.Library._
-        |  import ilc.metaprogs._ // for OptCell etc. living in this package temporarily
+        |  import ilc.feature.memoize.Library._
         |  import scala.collection.mutable.{HashMap, LongMap}
         |  $code
         |}""".stripMargin

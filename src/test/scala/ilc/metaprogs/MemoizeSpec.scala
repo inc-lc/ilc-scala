@@ -48,6 +48,7 @@ class MemoizeSpec extends FlatSpec with Memoize
     s"""|{ // add imports here
         |  import ilc.feature.abelianGroups.Library._
         |  import ilc.metaprogs._ // for OptCell etc. living in this package temporarily
+        |  import scala.collection.mutable.{HashMap, LongMap}
         |  $code
         |}""".stripMargin
 

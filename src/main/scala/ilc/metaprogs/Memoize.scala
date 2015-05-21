@@ -53,24 +53,23 @@ trait MemoizeBase {
   outer: base.Syntax with analysis.FreeVariables with base.ToScala =>
 
   //Use custom name to avoid conflicts
-
   protected val mFreshGen = new base.FreshGen { val syntax: outer.type = outer }
   def freshCacheName() = mFreshGen.freshName("cache")
+
   def varToScalaMapType(v: Var, argScalaTyp: Option[String]) = {
     val t = toScala(v.getType)
-    t match {
-      //Have special support for primitives.
-      //XXX for now, just Int.
-      //Later, allow using LongMap and coercing every other primitive to
-      //Long, a bit like in the miniboxing plugin for the Scala compiler.
-      case "Int" =>  //XXX: AAAAAAARGH! We want to know if the generated Scala type is a primitive. String matching is a very fragile way of doing that.
-        //XXX: Fully qualified classnames are required when using evalScala, because of https://issues.scala-lang.org/browse/SI-6393.
-        //But otherwise, I'd shorten the output by mapping `scm` to `scala.collection.mutable` and selecting from `scm`.
-        "LongMap" + argScalaTyp.fold(""){scalaTyp => s"[$scalaTyp]"}
-      case _ =>
-        "HashMap" + argScalaTyp.fold(""){scalaTyp => s"[$t, $scalaTyp]"}
-    }
+    //Have special support for primitives. (XXX for now, just Int.)
+    //To this end, use LongMap and coerce every other primitive to
+    //Long, a bit like in the miniboxing plugin for the Scala compiler.
+    val isPrimitive = t == "Int" //XXX: AAAAAAARGH! We want to know if the generated Scala type is a primitive. String matching is a very fragile way of doing that.
+    if (isPrimitive)
+      //XXX: Fully qualified classnames are required when using evalScala, because of https://issues.scala-lang.org/browse/SI-6393.
+      //But otherwise, I'd shorten the output by mapping `scm` to `scala.collection.mutable` and selecting from `scm`.
+      "LongMap" + argScalaTyp.fold("") { scalaTyp => s"[$scalaTyp]" }
+    else
+      "HashMap" + argScalaTyp.fold("") { scalaTyp => s"[$t, $scalaTyp]" }
   }
+
   def newCacheEntry(t: Term): CacheEntry = {
     val cacheNameForT = freshCacheName()
     val freeVars = t.freeVariables.toSeq
@@ -95,6 +94,7 @@ trait MemoizeBase {
 
   case class CacheEntry(val name: Name, /*val type22: Type, */ val freeVariables: Seq[Var], val scalaType: String)
 }
+
 trait MemoizeSyntax extends maps.SyntaxSugar with MemoizeBase {
   this: base.ToScala with analysis.FreeVariables =>
   case class Memo(cacheEntry: CacheEntry, updateCache: Boolean) extends ConstantWith1TypeParameter {

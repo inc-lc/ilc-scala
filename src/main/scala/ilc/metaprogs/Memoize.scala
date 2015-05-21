@@ -68,9 +68,10 @@ trait MemoizeBase {
           //XXX for now, just Int.
           //Later, allow using LongMap and coercing every other primitive to
           //Long, a bit like in the miniboxing plugin for the Scala compiler.
-          case "Int" =>
-            s"scala.collection.mutable.LongMap[$scalaTyp]"
-          case _ => s"scala.collection.mutable.HashMap[$t, $scalaTyp]"
+          case "Int" =>  //XXX: AAAAAAARGH! We want to know if the generated Scala type is a primitive. String matching is a very fragile way of doing that.
+            //`scm` should map to `scala.collection.mutable`.
+            s"scm.LongMap[$scalaTyp]"
+          case _ => s"scm.HashMap[$t, $scalaTyp]"
         }
     }
     // In fact, we might want them ordered according to binding position, like with deBrujin levels, if we wanted to share

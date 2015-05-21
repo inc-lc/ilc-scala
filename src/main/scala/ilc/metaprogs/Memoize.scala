@@ -85,6 +85,11 @@ trait MemoizeBase {
     cacheMap(t) = ret
     ret
   }
+
+  // XXX: This should not really survive forever; instead, it appears that this
+  // should be reset for each program (which is fragile), or a different mutable
+  // one should be created and threaded around for each independent input
+  // program.
   val cacheMap = mutable.Map[Term, CacheEntry]()
 
   case class CacheEntry(val name: Name, /*val type22: Type, */ val freeVariables: Seq[Var], val scalaType: String)

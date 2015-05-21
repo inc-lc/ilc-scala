@@ -61,6 +61,9 @@ class MemoizeSpec extends FlatSpec with Memoize
   ignore should "produce correct results for multivariate functions" in {
     import abelianGroups.Library._
 
+    //XXX: This kind of code will not produce the desired effect.
+    //One needs to first run the transformed base program and then memoizedDerive, in a shared context (where the caches are bound), to have the cache contain values.
+    //Code along the lines below should also give the correct result, but that's not expected to be fast.
     type DInt = ((=> Int) => Either[(AbelianGroup[Int], Int), Int])
     val t  = asTerm(('x % IntType) ->: ('y % IntType) ->: (PlusInt('x, 'y)))
     val dt = memoizedDerive(t)

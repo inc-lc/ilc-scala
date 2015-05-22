@@ -12,6 +12,11 @@ extends functions.ToScala
     case _           => super.toScala(tau)
   }
 
+  override def isScalaPrimitive(tau: Type) = tau match {
+    case BooleanType => true
+    case _ => super.isScalaPrimitive(tau)
+  }
+
   override def toUntypedScala(t: Term): String = t match {
     case True  => "true"
     case False => "false"

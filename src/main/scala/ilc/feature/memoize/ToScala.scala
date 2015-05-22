@@ -28,11 +28,21 @@ trait ToScala extends Syntax with base.ToScala {
     })))
   }
   */
+
+  def toScalaWidened(v: Var): String = {
+    val tAsScala = v.getName.toString
+    if (isScalaPrimitive(v.getType)) {
+      s"widenToLong($tAsScala)"
+    } else {
+      tAsScala
+    }
+  }
+
   //Warning: No Barendregt convention around to save us!
   override def toUntypedScala(t: Term): String = t match {
     case App(Constant(Memo(ce, _), cType), subTerm) =>
       val (lookups, _) = ce.freeVariables.foldRight((s".getOrElseUpdate(${toUntypedScala(subTerm)})", "OptCell()")) ({
-        case (newVar, (lookups, initExp)) => (s".getOrElseUpdate(${newVar.getName}, ${initExp})$lookups",
+        case (newVar, (lookups, initExp)) => (s".getOrElseUpdate(${toScalaWidened(newVar)}, ${initExp})$lookups",
             varToScalaMapType(newVar, None) + "()")
       })
       //ce.name.toString + lookups

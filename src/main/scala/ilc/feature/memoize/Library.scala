@@ -47,4 +47,11 @@ object Library {
     import scala.collection.JavaConverters._
     new IdentityHashMap[Key, Value]().asScala
   }
+
+  def widenToLong(v: Long): Long = v
+  def widenToLong(v: Boolean): Long = if (v) 1 else 0
+  def widenToLong(v: Double): Long =
+    java.lang.Double.doubleToRawLongBits(v)
+  def widenToLong(v: Char): Long =
+    v.toLong
 }

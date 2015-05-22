@@ -19,7 +19,7 @@ class MemoizeSpec extends FlatSpec with Memoize
 
     with EvalScala
 {
-  "stuff" should "work" in {
+  "memoizedDerive & transform" should "complete" in {
     val t = asTerm(('x % IntType) ->: ('y % IntType) ->: 'x)
     val tTransf = transform(t)
     println(tTransf)
@@ -53,12 +53,13 @@ class MemoizeSpec extends FlatSpec with Memoize
     evalScala(source).asInstanceOf[T]
   }
 
-  "memoizedDerive" should "produce code that compiles to well-typed Scala" in {
+  it should "produce code that compiles to well-typed Scala" in {
     val t = asTerm(('x % IntType) ->: ('y % IntType) ->: (PlusInt('x, 'y)))
+    compile[Any](transform(t))
     compile[Any](memoizedDerive(t))
   }
 
-  "memoizedDerive" should "produce correct results for multivariate functions" in {
+  it should "produce correct results for multivariate functions" in {
     import abelianGroups.Library._
 
     //XXX: This kind of code will not produce the desired effect.

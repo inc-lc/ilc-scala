@@ -14,10 +14,10 @@ import org.scalameter.api._
 case class Bag[A](contents: immutable.Map[A, Int] = immutable.HashMap()) {
   import feature.bags.{Library => BagLib}
 
-  private def mapCommon[B](f: A => B) = {
-     for {
-      (el, count) <- contents.toSeq //.toSeq is just to change the result type. Alternatively, just use breakOut.
-    } yield (f(el), count)
+  private def mapCommon[B](f: A => B): Seq[(B, Int)] = {
+    contents.map {
+      case (el, count) => (f(el), count)
+    } (collection.breakOut)
   }
 
   /**

@@ -58,7 +58,7 @@ class MemoizeSpec extends FlatSpec with Memoize
     compile[Any](memoizedDerive(t))
   }
 
-  ignore should "produce correct results for multivariate functions" in {
+  "memoizedDerive" should "produce correct results for multivariate functions" in {
     import abelianGroups.Library._
 
     //XXX: This kind of code will not produce the desired effect.

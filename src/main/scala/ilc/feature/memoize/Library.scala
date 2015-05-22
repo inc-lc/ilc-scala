@@ -38,8 +38,13 @@ object Library {
   //Reexport relevant maps.
   import scala.collection.{mutable => scm}
 
-  type HashMap[K, V] = scm.HashMap[K, V]
-  val HashMap = scm.HashMap
-  type LongMap[V] = scm.LongMap[V]
-  val LongMap = scm.LongMap
+  type MemoizePrimMap[V] = scm.LongMap[V]
+  val MemoizePrimMap = scm.LongMap
+
+  type MemoizeObjMap[K, V] = scm.Map[K, V]
+  def MemoizeObjMap[Key, Value](): MemoizeObjMap[Key, Value] = {
+    import java.util.IdentityHashMap
+    import scala.collection.JavaConverters._
+    new IdentityHashMap[Key, Value]().asScala
+  }
 }

@@ -90,11 +90,9 @@ object Bag {
 }
 
 object MemoUtils {
-  def getIdentityMap[Key, Value]: mutable.Map[Key, Value] = {
-    import java.util.IdentityHashMap
-    import scala.collection.JavaConverters._
-    new IdentityHashMap[Key, Value]().asScala
-  }
+  import feature.memoize.Library._
+
+  def getIdentityMap[Key, Value]: mutable.Map[Key, Value] = MemoizeObjMap()
 
   def memoedF[I, O](cache: mutable.Map[I, O])(f: I => O): I => O =
     x => cache.getOrElseUpdate(x, f(x))

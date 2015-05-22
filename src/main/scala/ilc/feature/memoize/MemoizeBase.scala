@@ -20,9 +20,9 @@ trait MemoizeBase {
     if (isScalaPrimitive(v.getType))
       //XXX: Because of evalScala and https://issues.scala-lang.org/browse/SI-6393, pay attention modifying these names.
       //The classes are supposed to come from the scala.collection.mutable package.
-      "LongMap" + argScalaTyp.fold("") { scalaTyp => s"[$scalaTyp]" }
+      "MemoizePrimMap" + argScalaTyp.fold("") { scalaTyp => s"[$scalaTyp]" }
     else
-      "HashMap" + argScalaTyp.fold("") { scalaTyp => s"[$t, $scalaTyp]" }
+      "MemoizeObjMap" + argScalaTyp.fold("") { scalaTyp => s"[$t, $scalaTyp]" }
   }
 
   def newCacheEntry(t: Term): CacheEntry = {

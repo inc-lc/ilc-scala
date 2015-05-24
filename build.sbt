@@ -42,6 +42,8 @@ libraryDependencies +=
 libraryDependencies +=
   "org.scalaz" %% "scalaz-core" % "7.0.6"
 
+libraryDependencies += "io.github.nicolasstucki" %% "multisets" % "0.2"
+
 initialCommands in console in ThisBuild := """
 import ilc.examples._
 import ilc._; import language._; import feature._

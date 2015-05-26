@@ -35,6 +35,13 @@ case class Bag[A](contents: immutable.Map[A, Int] = immutable.HashMap()) {
    * Untested.
    */
   def map[B](f: A => B): Bag[B] = {
+    /*
+    import mutable.MapBuilder
+    val b = new MapBuilder(immutable.HashMap())
+    for {
+      (el, count) <- contents
+    }
+    */
     val internalMap = (mapCommon(f)(collection.breakOut): Seq[(B, Int)]).
       //F might not be injective
       map { case (el, count) => immutable.HashMap((el, count)) }.

@@ -6,12 +6,14 @@ package handwritten
 import util._
 import collection.{mutable, immutable}
 import org.scalameter.api._
+//import scala.collection.Bag
+import scala.collection.immutable.{HashBag=>Bag}
 
 /*
  * Warning: does not implement any actual collection interface.
  * I still aim for this to support for-comprehensions.
  */
-case class Bag[A](contents: immutable.Map[A, Int] = immutable.HashMap()) {
+/*case class Bag[A](contents: immutable.Map[A, Int] = immutable.HashMap()) {
   import feature.bags.{Library => BagLib}
 
   private def mapCommon[B](f: A => B) = {
@@ -80,14 +82,28 @@ case class Bag[A](contents: immutable.Map[A, Int] = immutable.HashMap()) {
           newContents - el
     })
   }
-}
+}*/
 
+/*
 object Bag {
   import feature.bags.{Library => BagLib}
 
   def apply[T](t: T*): Bag[T] =
     new Bag(t.map(BagLib.bagSingletonInt).fold(BagLib.bagEmpty)(BagLib.bagUnionInt _))
 }
+*/
+object BagUtils {
+  implicit def config[T] = Bag.configuration.compact[T]
+  implicit class FlattenOps[T](b: Bag[Bag[T]]) {
+    def flattenB: Bag[T] = {
+      val builder = Bag.newBuilder[T]
+      for (baglet <- b)
+        builder ++= baglet
+      builder.result
+    }
+  }
+}
+import BagUtils._
 
 class NestedLoop1(val N: Int = 1000) extends Serializable {
   val coll1Init = List[Int](0 to N - 1: _*)
@@ -134,7 +150,8 @@ class NestedLoop1(val N: Int = 1000) extends Serializable {
   def nestedLoopBags3(coll1: Bag[Int], coll2: Bag[Int]): Bag[Int] = {
     val g = (i: Int) => (j: Int) => i * N + j
     val f = (i: Int) => coll2.map(g(i))
-    coll1.map(f).flatten
+    coll1.map(f).flattenB
+    //coll1.flatMap(f)
   }
 
   def getIdentityMap[Key, Value]: mutable.Map[Key, Value] = {
@@ -171,7 +188,7 @@ class NestedLoop1(val N: Int = 1000) extends Serializable {
     //memo(coll1 => coll1.map(f))(coll1).flatten
     //coll1.map(memoInt(f)).flatten
     val cache = getIdentityMap[Int, Bag[Int]]
-    val ret = (coll1.map(x => cache.getOrElseUpdate(x, f(x))).flatten, cache)
+    val ret = (coll1.map(x => cache.getOrElseUpdate(x, f(x))).flattenB, cache)
 
     Util.assertType[Bag[Int]](ret._1)
     ret
@@ -209,7 +226,7 @@ class NestedLoop1(val N: Int = 1000) extends Serializable {
     val g = (i: Int) => (j: Int) => i * N + j
     val f = (i: Int) => coll2.map(g(i))
 
-    val toDrop = cache.getOrElse(removedFromColl1, Bag())
+    val toDrop = cache.getOrElse(removedFromColl1, Bag[Int]())
     val toAdd = //Correct result, but too slow with these data structures.
       memoedF(cache)(f)(addedToCol1)
 

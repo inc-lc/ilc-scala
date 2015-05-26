@@ -13,11 +13,12 @@ import org.scalameter.api._
  */
 case class Bag[A](contents: immutable.Map[A, Int] = immutable.HashMap()) {
   import feature.bags.{Library => BagLib}
+  import collection.generic.CanBuildFrom
 
-  private def mapCommon[B](f: A => B): Seq[(B, Int)] = {
+  private def mapCommon[B, To](f: A => B)(implicit cbf: CanBuildFrom[Map[A, Int], (B, Int), To]): To = {
     contents.map {
       case (el, count) => (f(el), count)
-    } (collection.breakOut)
+    } (cbf)
   }
 
   /**
@@ -25,7 +26,7 @@ case class Bag[A](contents: immutable.Map[A, Int] = immutable.HashMap()) {
    * Precondition: f is injective. Otherwise, resort to map.
    */
   def mapInjective[B](f: A => B): Bag[B] = {
-    new Bag(mapCommon(f).toMap)
+    new Bag(mapCommon(f))
   }
 
   /**
@@ -34,7 +35,7 @@ case class Bag[A](contents: immutable.Map[A, Int] = immutable.HashMap()) {
    * Untested.
    */
   def map[B](f: A => B): Bag[B] = {
-    val internalMap = mapCommon(f).
+    val internalMap = (mapCommon(f)(collection.breakOut): Seq[(B, Int)]).
       //F might not be injective
       map { case (el, count) => immutable.HashMap((el, count)) }.
       fold(BagLib.bagEmpty[B])(BagLib.bagUnionInt _)

@@ -54,7 +54,7 @@ trait ToScala extends Syntax with base.ToScala {
     val cacheDecls = for {
       CacheEntry(name, _, scalaType) <- cacheMap.values
     } yield s"val ${name} = ${scalaType}()"
-    cacheDecls.mkString("\n")
+    cacheDecls.mkString(s"${indent}")
   }
 
 }

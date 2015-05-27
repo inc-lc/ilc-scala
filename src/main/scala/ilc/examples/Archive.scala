@@ -103,7 +103,7 @@ extends functions.Pretty with let.Pretty
           |
           |$imports
           |
-          |trait ${Archive.toGenName(name)}UtilBase extends ${Archive.toGenName(name)}ProgBase {
+          |trait ${Archive.toGenName(name)}UtilBase extends ExampleGenerated {
           |  override val updateInput = $updateInputCode
           |  override val updateOutput = $updateOutputCode
           |
@@ -124,7 +124,7 @@ extends functions.Pretty with let.Pretty
           |
           |$imports
           |
-          |trait ${Archive.toGenName(name)}DerivBase extends ${Archive.toGenName(name)}UtilBase {
+          |trait ${Archive.toGenName(name)}DerivBase extends ${Archive.toGenName(name)}ProgBase with ${Archive.toGenName(name)}UtilBase {
           |  override val derivative = $derivativeCode
           |}
           |""".stripMargin

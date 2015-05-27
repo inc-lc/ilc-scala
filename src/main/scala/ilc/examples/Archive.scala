@@ -46,6 +46,7 @@ extends functions.Pretty with let.Pretty
    with let.ANormalFormAdapter
    with let.ProgramSize
    with let.ToScala
+   with metaprogs.Memoize with memoize.Syntax with memoize.ToScala
 {
   outer: base.ToScala
     with base.Derivation =>
@@ -58,6 +59,8 @@ extends functions.Pretty with let.Pretty
 
   def program: Term
   lazy val derivative: Term = derive(program)
+  lazy val memoProgram: Term = transform(program)
+  lazy val memoDerivative: Term = memoizedDerive(program)
   lazy val normalizedProgram = aNormalizeTerm(normalize(program))
   lazy val normalizedDerivative = aNormalizeTerm(normalize(derivative))
 
@@ -81,6 +84,27 @@ extends functions.Pretty with let.Pretty
           |
           |trait ${Archive.toGenName(name)}ProgBase extends ${Archive.toGenName(name)}UtilBase {
           |  override val program = $programCode
+          |}
+          |""".stripMargin
+    }),
+    Source(this, new File(base, Archive.toGenName(name) + "ProgMemo.scala"), () => {
+      assert(indentDiff == 2)
+      setIndentDepth(2)
+
+      val memoProgramCode = toScala(memoProgram)
+      val caches = declareCaches()
+
+      //The output template in toSource relies on this value.
+      setIndentDepth(4)
+
+      s"""|package ilc.examples
+          |
+          |$imports
+          |
+          |trait ${Archive.toGenName(name)}ProgMemo extends ${Archive.toGenName(name)}UtilBase {
+          |  ${caches}
+          |
+          |  override val program = $memoProgramCode
           |}
           |""".stripMargin
     }),
@@ -131,6 +155,24 @@ extends functions.Pretty with let.Pretty
           |
           |trait ${Archive.toGenName(name)}DerivBase extends ${Archive.toGenName(name)}ProgBase with ${Archive.toGenName(name)}UtilBase {
           |  override val derivative = $derivativeCode
+          |}
+          |""".stripMargin
+    }),
+    Source(this, new File(base, Archive.toGenName(name) + "DerivMemo.scala"), () => {
+      assert(indentDiff == 2)
+      setIndentDepth(2)
+
+      val memoDerivativeCode = toScala(memoDerivative)
+
+      //The output template in toSource relies on this value.
+      setIndentDepth(4)
+
+      s"""|package ilc.examples
+          |
+          |$imports
+          |
+          |trait ${Archive.toGenName(name)}DerivMemo extends ${Archive.toGenName(name)}ProgMemo with ${Archive.toGenName(name)}UtilBase {
+          |  override val derivative = $memoDerivativeCode
           |}
           |""".stripMargin
     }),

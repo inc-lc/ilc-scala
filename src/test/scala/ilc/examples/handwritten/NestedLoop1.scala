@@ -96,6 +96,9 @@ object BagUtils {
   implicit def config[T] = Bag.configuration.compact[T]
   implicit class FlattenOps[T](b: Bag[Bag[T]]) {
     def flattenB: Bag[T] = {
+      //Alternative implementation, but quadratic because of
+      //https://github.com/nicolasstucki/multisets/issues/7
+      //b.fold[Bag[T]](Bag.empty)(_ union _)
       val builder = Bag.newBuilder[T]
       for (baglet <- b)
         builder ++= baglet

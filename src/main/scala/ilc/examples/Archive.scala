@@ -79,11 +79,8 @@ extends functions.Pretty with let.Pretty
           |
           |$imports
           |
-          |trait ${Archive.toGenName(name)}ProgBase extends ExampleGenerated {
+          |trait ${Archive.toGenName(name)}ProgBase extends ${Archive.toGenName(name)}UtilBase {
           |  override val program = $programCode
-          |
-          |  type InputType = $inputTypeCode
-          |  type OutputType = $outputTypeCode
           |}
           |""".stripMargin
     }),
@@ -93,6 +90,9 @@ extends functions.Pretty with let.Pretty
 
       val deltaInputTypeCode = toScala(deltaType(inputType))
       val deltaOutputTypeCode = toScala(deltaType(outputType))
+
+      val inputTypeCode = toScala(inputType)
+      val outputTypeCode = toScala(outputType)
 
       val updateInputCode = toScala(updateTerm(inputType))
       val updateOutputCode = toScala(updateTerm(outputType))
@@ -107,6 +107,9 @@ extends functions.Pretty with let.Pretty
           |trait ${Archive.toGenName(name)}UtilBase extends ExampleGenerated {
           |  override val updateInput = $updateInputCode
           |  override val updateOutput = $updateOutputCode
+          |
+          |  type InputType = $inputTypeCode
+          |  type OutputType = $outputTypeCode
           |
           |  type DeltaInputType = $deltaInputTypeCode
           |  type DeltaOutputType = $deltaOutputTypeCode

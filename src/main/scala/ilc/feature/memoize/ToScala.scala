@@ -50,11 +50,11 @@ trait ToScala extends Syntax with base.ToScala {
     case _ => super.toUntypedScala(t)
   }
 
-  def addCaches(code: String): String = {
+  def declareCaches(): String = {
     val cacheDecls = for {
       CacheEntry(name, _, scalaType) <- cacheMap.values
     } yield s"val ${name} = ${scalaType}()"
-    cacheDecls.mkString("\n") + "\n" + code
+    cacheDecls.mkString("\n")
   }
 
 }

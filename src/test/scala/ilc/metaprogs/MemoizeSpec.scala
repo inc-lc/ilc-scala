@@ -47,7 +47,8 @@ class MemoizeSpec extends FlatSpec with Memoize
   def compile[T](t: Term): T = {
     val source = s"""|{
         |  ${imports}
-        |  ${addCaches(toScala(t))}
+        |  ${declareCaches()}
+        |  ${toScala(t)}
         |}""".stripMargin
     println(s"source:\n$source")
     evalScala(source).asInstanceOf[T]

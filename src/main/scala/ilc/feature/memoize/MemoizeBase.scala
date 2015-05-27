@@ -38,6 +38,7 @@ trait MemoizeBase {
     val ret = new CacheEntry(cacheNameForT, /*baseScalaType, */ freeVars, scalaType)
     //XXX: What happens here if t is duplicated?
     cacheMap(t) = ret
+    cacheList += ret
     ret
   }
 
@@ -46,6 +47,7 @@ trait MemoizeBase {
   // one should be created and threaded around for each independent input
   // program.
   val cacheMap = mutable.Map[Term, CacheEntry]()
+  val cacheList = mutable.ArrayBuffer[CacheEntry]()
 
   case class CacheEntry(val name: Name, /*val type22: Type, */ val freeVariables: Seq[Var], val scalaType: String)
 }

@@ -86,7 +86,8 @@ extends functions.Pretty with let.Pretty
           |  type OutputType = $outputTypeCode
           |}
           |""".stripMargin
-    }), Source(this, new File(base, Archive.toGenName(name) + "UtilBase.scala"), () => {
+    }),
+    Source(this, new File(base, Archive.toGenName(name) + "UtilBase.scala"), () => {
       assert(indentDiff == 2)
       setIndentDepth(2)
 
@@ -111,7 +112,8 @@ extends functions.Pretty with let.Pretty
           |  type DeltaOutputType = $deltaOutputTypeCode
           |}
           |""".stripMargin
-    }), Source(this, new File(base, Archive.toGenName(name) + "DerivBase.scala"), () => {
+    }),
+    Source(this, new File(base, Archive.toGenName(name) + "DerivBase.scala"), () => {
       assert(indentDiff == 2)
       setIndentDepth(2)
 
@@ -128,7 +130,8 @@ extends functions.Pretty with let.Pretty
           |  override val derivative = $derivativeCode
           |}
           |""".stripMargin
-    }), Source(this, new File(base, Archive.toGenName(name) + ".scala"), () => {
+    }),
+    Source(this, new File(base, Archive.toGenName(name) + ".scala"), () => {
       assert(indentDiff == 2)
       setIndentDepth(2)
 
@@ -145,7 +148,8 @@ extends functions.Pretty with let.Pretty
           |  override val normDerivative = $normalizedDerivCode
           |}
           |""".stripMargin
-    }), Source(this, new File(base, Archive.toGenName(name) + ".txt"), () => {
+    }),
+    Source(this, new File(base, Archive.toGenName(name) + ".txt"), () => {
       assert(indentDiff == 2)
       setIndentDepth(2)
 

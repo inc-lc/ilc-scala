@@ -121,4 +121,8 @@ class MemoizeSpec extends FlatSpec with Memoize
     assert(res3 == val3)
     assert(res4 == val4)
   }
+
+  it should "make derivatives read from cache" in pending
+  // inject cache modification code between base program and
+  // derivative. check that the result of the derivative changes.
 }

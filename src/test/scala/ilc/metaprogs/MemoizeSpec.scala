@@ -44,14 +44,17 @@ class MemoizeSpec extends FlatSpec with Memoize
     println(cacheMap)
   }
 
-  def compile[T](t: Term): T = {
+  def compileCode[T](code: String): T = {
     val source = s"""|{
         |  ${imports}
         |  ${declareCaches()}
-        |  ${toScala(t)}
+        |  $code
         |}""".stripMargin
     evalScala(source).asInstanceOf[T]
   }
+
+  def compile[T](t: Term): T =
+    compileCode[T](toScala(t))
 
   // compile programs in a shared context,
   // return right-biased nested tuples

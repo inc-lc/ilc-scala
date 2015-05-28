@@ -29,19 +29,10 @@ trait SyntaxSugar
 extends Syntax
    with abelianGroups.SyntaxSugar
 {
-  // code for addition = big-endian encoding of "add!"
-
-  private val additionCode : Int = {
-    val bytes = Array('a', 'd', 'd', '!').map(_.toInt)
-    (0 until bytes.length).map(i =>
-      bytes(i) << 8*(bytes.length - i - 1)
-    ).sum
-  }
-
-  assert(additionCode == 0x61646421)
+  import Library._
 
   val additiveGroupOnIntegers: Term =
-    AbelianGroup ! LiteralInt(additionCode) !
+    AbelianGroup ! LiteralInt(additionIndexedGroupStamp) !
       PlusInt ! NegateInt ! LiteralInt(0)
 }
 

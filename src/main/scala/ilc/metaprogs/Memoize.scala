@@ -36,7 +36,7 @@ trait Memoize extends memoize.MemoizeBase {
   }
 
   def doTransform(t: Term, freeVars: List[Var], m: Map[Term, Name] = Map.empty): Term = {
-    val cacheEntry = newCacheEntry(t)
+    val cacheEntry = getOrElseNewCacheEntry(t)
 
     /*
     val memoizedSubterms: Term = t match {

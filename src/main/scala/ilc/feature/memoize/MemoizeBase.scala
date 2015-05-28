@@ -25,7 +25,17 @@ trait MemoizeBase {
       "MemoizeObjMap" + argScalaTyp.fold("") { scalaTyp => s"[$t, $scalaTyp]" }
   }
 
-  def newCacheEntry(t: Term): CacheEntry = {
+  def getOrElseNewCacheEntry(t: Term): CacheEntry = {
+    // If a term appears again, since expressions are pure, it is safe (correctness-wise)
+    // to reuse the cache.
+    // Caveat #1: This would break down if we started reducing the lifetime of caches.
+    // Caveat #2: This tests syntactic equality of expressions, which is rather
+    // narrow; sharing of caches can be affected by alpha-renaming variables in
+    // the source program. Later we might want to do something about that.
+    cacheMap.getOrElseUpdate(t, newCacheEntry(t))
+  }
+
+  private def newCacheEntry(t: Term): CacheEntry = {
     val cacheNameForT = freshCacheName()
     val freeVars = t.freeVariables.toSeq
     val baseScalaType = t.getType
@@ -33,13 +43,9 @@ trait MemoizeBase {
       (newVar, scalaTyp) =>
         varToScalaMapType(newVar, Some(scalaTyp))
     }
-    // In fact, we might want them ordered according to binding position, like with deBrujin levels, if we wanted to share
-    // lookups across different subexpressions.
-    val ret = new CacheEntry(cacheNameForT, /*baseScalaType, */ freeVars, scalaType)
-    //XXX: What happens here if t is duplicated?
-    cacheMap(t) = ret
-    cacheList += ret
-    ret
+    // In fact, we might want free variables to be ordered according to binding position, like with deBrujin levels, if we wanted to share
+    // lookups across different subexpressions. (That is, if caches mapped variables to subcaches).
+    new CacheEntry(cacheNameForT, /*baseScalaType, */ freeVars, scalaType)
   }
 
   // XXX: This should not really survive forever; instead, it appears that this
@@ -47,7 +53,8 @@ trait MemoizeBase {
   // one should be created and threaded around for each independent input
   // program.
   val cacheMap = mutable.Map[Term, CacheEntry]()
-  val cacheList = mutable.ArrayBuffer[CacheEntry]()
+  // However, not clearing the cache properly won't hurt correctness, only
+  // increase overhead.
 
   case class CacheEntry(val name: Name, /*val type22: Type, */ val freeVariables: Seq[Var], val scalaType: String)
 }

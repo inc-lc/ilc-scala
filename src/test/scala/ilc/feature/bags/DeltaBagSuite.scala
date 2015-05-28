@@ -5,7 +5,7 @@ package bags
 import org.scalatest.FunSuite
 import org.scalatest.Matchers
 
-class LibrarySuite
+class DeltaBagSuite
 extends FunSuite with Matchers
 {
   import Library._

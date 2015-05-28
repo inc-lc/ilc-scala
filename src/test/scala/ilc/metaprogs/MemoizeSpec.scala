@@ -50,7 +50,6 @@ class MemoizeSpec extends FlatSpec with Memoize
         |  ${declareCaches()}
         |  ${toScala(t)}
         |}""".stripMargin
-    println(s"source:\n$source")
     evalScala(source).asInstanceOf[T]
   }
 

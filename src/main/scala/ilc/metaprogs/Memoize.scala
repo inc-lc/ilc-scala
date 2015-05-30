@@ -58,6 +58,7 @@ trait Memoize extends memoize.MemoizeBase {
           App(doTransform(s, freeVars), doTransform(t, freeVars))
       case Abs(x, t) =>
         //XXX This will memoize each function in a chain of nested lambdas.
+        // But this can only be solved through CBPV.
         memoNode !
           Abs(x, doTransform(t, x :: freeVars))
       //case x: Var => x

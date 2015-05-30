@@ -58,9 +58,10 @@ extends functions.Pretty with let.Pretty
     this.getClass().getSimpleName().stripSuffix("Example")
 
   def program: Term
+  val memoContext = new MemoContext()
   lazy val derivative: Term = derive(program)
-  lazy val memoProgram: Term = transform(program)
-  lazy val memoDerivative: Term = memoizedDerive(program)
+  lazy val memoProgram: Term = memoContext.transform(program)
+  lazy val memoDerivative: Term = memoContext.memoizedDerive(program)
   lazy val normalizedProgram = aNormalizeTerm(normalize(program))
   lazy val normalizedDerivative = aNormalizeTerm(normalize(derivative))
 
@@ -92,7 +93,7 @@ extends functions.Pretty with let.Pretty
       setIndentDepth(2)
 
       val memoProgramCode = toScala(memoProgram)
-      val caches = declareCaches()
+      val caches = declareCaches(memoContext)
 
       //The output template in toSource relies on this value.
       setIndentDepth(4)

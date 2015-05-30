@@ -50,9 +50,9 @@ trait ToScala extends Syntax with base.ToScala {
     case _ => super.toUntypedScala(t)
   }
 
-  def declareCaches(): String = {
+  def declareCaches(mc: MemoContextBase): String = {
     val cacheDecls = for {
-      CacheEntry(name, _, scalaType) <- cacheMap.values
+      CacheEntry(name, _, scalaType) <- mc.cacheMap.values
     } yield s"val ${name} = ${scalaType}()"
     cacheDecls.mkString(s"${indent}")
   }

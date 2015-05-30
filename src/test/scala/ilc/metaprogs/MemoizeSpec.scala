@@ -20,6 +20,8 @@ class MemoizeSpec extends FlatSpec with Memoize
     with EvalScala
 {
   "memoizedDerive & transform" should "complete" in {
+    val memoCtx = new MemoContext()
+    import memoCtx._
     val t = asTerm(('x % IntType) ->: ('y % IntType) ->: 'x)
     val tTransf = transform(t)
     println(tTransf)
@@ -44,22 +46,22 @@ class MemoizeSpec extends FlatSpec with Memoize
     println(cacheMap)
   }
 
-  def compileCode[T](code: String): T = {
+  def compileCode[T](memoCtx: MemoContext, code: String): T = {
     val source = s"""|{
         |  ${imports}
-        |  ${declareCaches()}
+        |  ${declareCaches(memoCtx)}
         |  $code
         |}""".stripMargin
     evalScala(source).asInstanceOf[T]
   }
 
-  def compile[T](t: Term): T =
-    compileCode[T](toScala(t))
+  def compile[T](memoCtx: MemoContext, t: Term): T =
+    compileCode[T](memoCtx, toScala(t))
 
   // compile programs in a shared context,
   // return right-biased nested tuples
-  def compileSeq[T](t: Term, ts: Term*): T =
-    compile[T](toNestedPairs(t, ts: _*))
+  def compileSeq[T](memoCtx: MemoContext, t: Term, ts: Term*): T =
+    compile[T](memoCtx, toNestedPairs(t, ts: _*))
 
   def toNestedPairs(t: Term, ts: Term*): Term =
     if (ts.isEmpty)
@@ -68,12 +70,16 @@ class MemoizeSpec extends FlatSpec with Memoize
       Pair ! t ! toNestedPairs(ts.head, ts.tail: _*)
 
   it should "produce code that compiles to well-typed Scala" in {
+    val memoCtx = new MemoContext()
+    import memoCtx._
     val t = asTerm(('x % IntType) ->: ('y % IntType) ->: (PlusInt('x, 'y)))
-    compileSeq[Any](transform(t), memoizedDerive(t))
+    compileSeq[Any](memoCtx, transform(t), memoizedDerive(t))
   }
 
   it should "produce correct results for multivariate functions" in {
     import abelianGroups.Library._
+    val memoCtx = new MemoContext()
+    import memoCtx._
 
     type DInt = Either[(AbelianGroup[Int], Int), Int]
 
@@ -113,7 +119,7 @@ class MemoizeSpec extends FlatSpec with Memoize
     val val4 = val0 + delta1 + delta2
 
     val (res0, (res1, (res2, (res3, res4)))) =
-      compileSeq[(Int, (Int, (Int, (Int, Int))))](run0, run1, run2, run3, run4)
+      compileSeq[(Int, (Int, (Int, (Int, Int))))](memoCtx, run0, run1, run2, run3, run4)
 
     assert(res0 == val0)
     assert(res1 == val1)

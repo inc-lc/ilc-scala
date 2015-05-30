@@ -13,6 +13,7 @@ trait Memoize extends memoize.MemoizeBase {
   //In fact, we should get the output of CSE probably, so we have good reasons to support let.
   outer: ilc.feature.functions.Syntax with let.Syntax with base.Derivation with memoize.Syntax with analysis.FreeVariables with base.ToScala =>
 
+  class MemoContext(cacheMap: mutable.Map[Term, CacheEntry] = mutable.Map[Term, CacheEntry]()) extends MemoContextBase(cacheMap) {
   def memoizedDerive(t: Term): Term = t match {
     case Abs(x, body) =>
       lambdaTerm(x, DVar(x)) { memoizedDerive(body) }
@@ -69,4 +70,5 @@ trait Memoize extends memoize.MemoizeBase {
   }
 
   def transform(t: Term) = doTransform(t, List())
+  }
 }

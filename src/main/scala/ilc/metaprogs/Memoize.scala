@@ -11,7 +11,7 @@ import collection.mutable
 
 trait Memoize extends memoize.MemoizeBase {
   //In fact, we should get the output of CSE probably, so we have good reasons to support let.
-  outer: ilc.feature.functions.Syntax with base.Derivation with memoize.Syntax with analysis.FreeVariables with base.ToScala =>
+  outer: ilc.feature.functions.Syntax with let.Syntax with base.Derivation with memoize.Syntax with analysis.FreeVariables with base.ToScala =>
 
   def memoizedDerive(t: Term): Term = t match {
     case Abs(x, body) =>
@@ -40,7 +40,6 @@ trait Memoize extends memoize.MemoizeBase {
 
     /*
     val memoizedSubterms: Term = t match {
-      //XXX add support for Let here.
       case App(s, t) => App(doTransform(s, freeVars), doTransform(t, freeVars))
       case Abs(x, t) => Abs(x, doTransform(t, x :: freeVars))
       //case x: Var => x
@@ -50,7 +49,9 @@ trait Memoize extends memoize.MemoizeBase {
     Memo(cacheEntry) ! memoizedSubterms
     */
     t match {
-      //XXX add support for Let here.
+      case Let(x, term, body) =>
+        Memo(cacheEntry, updateCache = true) !
+          Let(x, doTransform(term, freeVars), doTransform(body, freeVars))
       case App(s, t) =>
         Memo(cacheEntry, updateCache = true) !
           App(doTransform(s, freeVars), doTransform(t, freeVars))

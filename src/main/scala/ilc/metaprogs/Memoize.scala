@@ -48,16 +48,17 @@ trait Memoize extends memoize.MemoizeBase {
 
     Memo(cacheEntry) ! memoizedSubterms
     */
+    def memoNode = Memo(cacheEntry, updateCache = true)
     t match {
       case Let(x, term, body) =>
-        Memo(cacheEntry, updateCache = true) !
+        memoNode !
           Let(x, doTransform(term, freeVars), doTransform(body, freeVars))
       case App(s, t) =>
-        Memo(cacheEntry, updateCache = true) !
+        memoNode !
           App(doTransform(s, freeVars), doTransform(t, freeVars))
       case Abs(x, t) =>
         //XXX This will memoize each function in a chain of nested lambdas.
-        Memo(cacheEntry, updateCache = true) !
+        memoNode !
           Abs(x, doTransform(t, x :: freeVars))
       //case x: Var => x
       //Otherwise, for atoms (variables and constants), do *no* memoization.

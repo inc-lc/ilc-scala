@@ -9,7 +9,7 @@ package metaprogs
 import feature._
 import collection.mutable
 
-trait Memoize extends memoize.MemoizeBase {
+trait Memoize extends memoize.MemoizeBase with let.IsAtomic {
   //In fact, we should get the output of CSE probably, so we have good reasons to support let.
   outer: ilc.feature.functions.Syntax with let.Syntax with base.Derivation with memoize.Syntax with analysis.FreeVariables with base.ToScala =>
 
@@ -64,8 +64,7 @@ trait Memoize extends memoize.MemoizeBase {
             Abs(x, doTransform(t, x :: freeVars))
         //case x: Var => x
         //Otherwise, for atoms (variables and constants), do *no* memoization.
-        case x: Var => x
-        case x: Constant => x
+        case x if isAtomic(x) => x
       }
     }
 

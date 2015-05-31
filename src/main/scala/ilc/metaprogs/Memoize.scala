@@ -64,9 +64,9 @@ trait Memoize extends memoize.MemoizeBase {
             Abs(x, doTransform(t, x :: freeVars))
         //case x: Var => x
         //Otherwise, for atoms (variables and constants), do *no* memoization.
-        case x => x
+        case x: Var => x
+        case x: Constant => x
       }
-
     }
 
     def transform(t: Term) = doTransform(t, List())

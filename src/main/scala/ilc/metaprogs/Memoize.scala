@@ -19,7 +19,6 @@ trait Memoize extends memoize.MemoizeBase with let.IsAtomic {
         lambdaTerm(x, DVar(x)) { memoizedDerive(body) }
 
       case App(operator, operand) =>
-        //XXX: What happens here if we have two instances of the same term around?
         val memoizedOperand: Term = Memo(cacheMap(operand), updateCache = false) ! operand
         memoizedDerive(operator) !
           //operand ! // In non-memoizing derivation

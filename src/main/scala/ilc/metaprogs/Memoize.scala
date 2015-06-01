@@ -11,7 +11,7 @@ import collection.mutable
 
 trait Memoize extends memoize.MemoizeBase with let.IsAtomic {
   //In fact, we should get the output of CSE probably, so we have good reasons to support let.
-  this: ilc.feature.functions.Syntax with let.Syntax with base.Derivation with memoize.Syntax with analysis.FreeVariables with base.ToScala =>
+  this: ilc.feature.functions.Syntax with let.Syntax with base.Derivation with memoize.Syntax with analysis.FreeVariables with base.ToScala with let.Traversals =>
 
   class MemoContext(cacheMap: mutable.Map[Term, CacheEntry] = mutable.Map[Term, CacheEntry]()) extends MemoContextBase(cacheMap) {
     def memoIfPossible(t: Term): Term = cacheMap get t match {
@@ -45,24 +45,17 @@ trait Memoize extends memoize.MemoizeBase with let.IsAtomic {
     }
 
     def transform(t: Term): Term = {
-      def memoNode = Memo(getOrElseNewCacheEntry(t), updateCache = true)
-      t match {
-        //For atoms (variables and constants), do *no* memoization.
-        case x if isAtomic(x) => x
-        case Let(x, term, body) =>
-          memoNode !
-            Let(x, transform(term), transform(body))
-        case App(s, t) =>
-          memoNode !
-            App(transform(s), transform(t))
-        case Abs(x, t) =>
+      def doTransform(orig: Term, withTransformedChildren: Term): Term = {
+        def memoNode = Memo(getOrElseNewCacheEntry(orig), updateCache = true)
+        withTransformedChildren match {
+          //For atoms (variables and constants), do *no* memoization.
+          case x if isAtomic(x) => x
           //XXX This will memoize each function in a chain of nested lambdas.
           // But this can only be solved through CBPV.
-          memoNode !
-            Abs(x, transform(t))
-        //case x: Var => x
+          case _ => memoNode ! withTransformedChildren
+        }
       }
+      everywherePrePost(doTransform)(t)
     }
-
   }
 }

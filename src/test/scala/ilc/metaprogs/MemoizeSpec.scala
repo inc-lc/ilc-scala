@@ -13,7 +13,7 @@ class MemoizeSpec extends FlatSpec with Memoize
     with functions.Syntax with let.Syntax
     with inference.PrettySyntax with inference.LetSyntaxSugar
     with inference.LetInference
-    with let.Pretty
+    with let.Pretty with let.Traversals
     with analysis.FreeVariables
     with functions.ToScala with sums.ToScala with abelianGroups.ToScala with products.ToScala with memoize.ToScala
 

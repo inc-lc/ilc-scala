@@ -14,21 +14,24 @@ trait Memoize extends memoize.MemoizeBase with let.IsAtomic {
   this: ilc.feature.functions.Syntax with let.Syntax with base.Derivation with memoize.Syntax with analysis.FreeVariables with base.ToScala =>
 
   class MemoContext(cacheMap: mutable.Map[Term, CacheEntry] = mutable.Map[Term, CacheEntry]()) extends MemoContextBase(cacheMap) {
+    def memoIfPossible(t: Term): Term = cacheMap get t match {
+      case Some(entry) => Memo(entry, updateCache = false) ! t
+      case None => t
+    }
+
     def memoizedDerive(t: Term): Term = t match {
       // This case is as needed as `let.Derivation`, see there for discussion.
       case Let(x, term, body) =>
-        val memoizedTerm: Term = Memo(cacheMap(term), updateCache = false) ! term
-        Let(x, memoizedTerm,
+        Let(x, memoIfPossible(term),
           Let(DVar(x), memoizedDerive(term),
             memoizedDerive(body)))
       case Abs(x, body) =>
         lambdaTerm(x, DVar(x)) { memoizedDerive(body) }
 
       case App(operator, operand) =>
-        val memoizedOperand: Term = Memo(cacheMap(operand), updateCache = false) ! operand
         memoizedDerive(operator) !
           //operand ! // In non-memoizing derivation
-          memoizedOperand ! // Main (only) change from non-memoizing derivation!
+          memoIfPossible(operand) ! // Main (only) change from non-memoizing derivation!
           memoizedDerive(operand)
 
       case v: Var =>

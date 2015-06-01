@@ -50,5 +50,4 @@ trait MemoizeBase {
       cacheMap.getOrElseUpdate(t, newCacheEntry(t))
     }
   }
-
 }

@@ -56,5 +56,4 @@ trait ToScala extends Syntax with base.ToScala {
     } yield s"val ${name} = ${scalaType}()"
     cacheDecls.mkString(s"${indent}")
   }
-
 }

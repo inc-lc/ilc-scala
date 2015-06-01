@@ -45,8 +45,7 @@ trait Memoize extends memoize.MemoizeBase with let.IsAtomic {
     }
 
     def transform(t: Term): Term = {
-      val cacheEntry = getOrElseNewCacheEntry(t)
-      def memoNode = Memo(cacheEntry, updateCache = true)
+      def memoNode = Memo(getOrElseNewCacheEntry(t), updateCache = true)
       t match {
         //For atoms (variables and constants), do *no* memoization.
         case x if isAtomic(x) => x

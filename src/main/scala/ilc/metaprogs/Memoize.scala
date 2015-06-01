@@ -11,7 +11,7 @@ import collection.mutable
 
 trait Memoize extends memoize.MemoizeBase with let.IsAtomic {
   //In fact, we should get the output of CSE probably, so we have good reasons to support let.
-  outer: ilc.feature.functions.Syntax with let.Syntax with base.Derivation with memoize.Syntax with analysis.FreeVariables with base.ToScala =>
+  this: ilc.feature.functions.Syntax with let.Syntax with base.Derivation with memoize.Syntax with analysis.FreeVariables with base.ToScala =>
 
   class MemoContext(cacheMap: mutable.Map[Term, CacheEntry] = mutable.Map[Term, CacheEntry]()) extends MemoContextBase(cacheMap) {
     def memoizedDerive(t: Term): Term = t match {
@@ -41,38 +41,26 @@ trait Memoize extends memoize.MemoizeBase with let.IsAtomic {
         Diff ! t ! t
     }
 
-    def doTransform(t: Term, freeVars: List[Var], m: Map[Term, Name] = Map.empty): Term = {
+    def transform(t: Term): Term = {
       val cacheEntry = getOrElseNewCacheEntry(t)
-
-      /*
-      val memoizedSubterms: Term = t match {
-        case App(s, t) => App(doTransform(s, freeVars), doTransform(t, freeVars))
-        case Abs(x, t) => Abs(x, doTransform(t, x :: freeVars))
-        //case x: Var => x
-        case x => x
-      }
-
-      Memo(cacheEntry) ! memoizedSubterms
-      */
       def memoNode = Memo(cacheEntry, updateCache = true)
       t match {
         //For atoms (variables and constants), do *no* memoization.
         case x if isAtomic(x) => x
         case Let(x, term, body) =>
           memoNode !
-            Let(x, doTransform(term, freeVars), doTransform(body, freeVars))
+            Let(x, transform(term), transform(body))
         case App(s, t) =>
           memoNode !
-            App(doTransform(s, freeVars), doTransform(t, freeVars))
+            App(transform(s), transform(t))
         case Abs(x, t) =>
           //XXX This will memoize each function in a chain of nested lambdas.
           // But this can only be solved through CBPV.
           memoNode !
-            Abs(x, doTransform(t, x :: freeVars))
+            Abs(x, transform(t))
         //case x: Var => x
       }
     }
 
-    def transform(t: Term) = doTransform(t, List())
   }
 }

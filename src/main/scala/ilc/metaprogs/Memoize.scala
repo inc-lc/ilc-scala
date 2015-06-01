@@ -56,6 +56,8 @@ trait Memoize extends memoize.MemoizeBase with let.IsAtomic {
       */
       def memoNode = Memo(cacheEntry, updateCache = true)
       t match {
+        //For atoms (variables and constants), do *no* memoization.
+        case x if isAtomic(x) => x
         case Let(x, term, body) =>
           memoNode !
             Let(x, doTransform(term, freeVars), doTransform(body, freeVars))
@@ -68,8 +70,6 @@ trait Memoize extends memoize.MemoizeBase with let.IsAtomic {
           memoNode !
             Abs(x, doTransform(t, x :: freeVars))
         //case x: Var => x
-        //Otherwise, for atoms (variables and constants), do *no* memoization.
-        case x if isAtomic(x) => x
       }
     }
 

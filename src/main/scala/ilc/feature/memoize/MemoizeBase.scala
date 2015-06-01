@@ -19,7 +19,6 @@ trait MemoizeBase {
     //Long, a bit like in the miniboxing plugin for the Scala compiler.
     if (isScalaPrimitive(v.getType))
       //XXX: Because of evalScala and https://issues.scala-lang.org/browse/SI-6393, pay attention modifying these names.
-      //The classes are supposed to come from the scala.collection.mutable package.
       "MemoizePrimMap" + argScalaTyp.fold("") { scalaTyp => s"[$scalaTyp]" }
     else
       "MemoizeObjMap" + argScalaTyp.fold("") { scalaTyp => s"[$t, $scalaTyp]" }

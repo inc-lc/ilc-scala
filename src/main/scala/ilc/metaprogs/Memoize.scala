@@ -15,6 +15,12 @@ trait Memoize extends memoize.MemoizeBase with let.IsAtomic {
 
   class MemoContext(cacheMap: mutable.Map[Term, CacheEntry] = mutable.Map[Term, CacheEntry]()) extends MemoContextBase(cacheMap) {
     def memoizedDerive(t: Term): Term = t match {
+      // This case is as needed as `let.Derivation`, see there for discussion.
+      case Let(x, term, body) =>
+        val memoizedTerm: Term = Memo(cacheMap(term), updateCache = false) ! term
+        Let(x, memoizedTerm,
+          Let(DVar(x), memoizedDerive(term),
+            memoizedDerive(body)))
       case Abs(x, body) =>
         lambdaTerm(x, DVar(x)) { memoizedDerive(body) }
 

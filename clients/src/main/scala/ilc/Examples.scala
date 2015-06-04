@@ -26,5 +26,8 @@ extends Generator {
   addExample(new SumValuesExample)
 
   addExample(new GroupByExample)
+
+  // add all examples about memoization
+  addArchive(MemoizationExamples)
 }
    // idea for speeding up lookup/update: memoizing algorithms

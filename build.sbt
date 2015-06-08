@@ -6,7 +6,7 @@ lazy val bigClients = project in file("bigClients") dependsOn (clients % "test->
 
 lazy val icfp2014 = project in file("icfp2014") dependsOn (ilc % "test->test;compile->test")
 
-scalaVersion in ThisBuild := "2.11.2"
+scalaVersion in ThisBuild := "2.11.6"
 
 scalacOptions in ThisBuild := Seq("-deprecation", "-feature", "-unchecked", "-Xlint")
 

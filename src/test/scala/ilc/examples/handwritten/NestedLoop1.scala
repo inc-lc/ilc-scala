@@ -227,13 +227,15 @@ class NestedLoop1BenchInput(N: Int) extends NestedLoop1(N) {
 trait MyBenchmarkingSetup extends BaseBenchmark {
   override def reporters = Seq(LoggingReporter())
   //Config. for real measurements.
-  //def myBenchConfig = testConfig
+  def myBenchConfig = testConfig
   //To make tests fast, while still having lots of memory
+  /*
   def myBenchConfig =
     Context(
       //reports.regression.significance -> 0.01, //Confidence level = 99 %
       exec.jvmflags -> s"-Xmx${memorySizeMB}m -Xms${memorySizeMB}m -XX:CompileThreshold=100"
     ) ++ verificationConfig
+  */
 }
 
 

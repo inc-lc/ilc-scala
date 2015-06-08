@@ -28,6 +28,6 @@ extends Generator {
   addExample(new GroupByExample)
 
   // add all examples about memoization
-  addArchive(MemoizationExamples)
+  addExample(new MemoXPlusY)
 }
    // idea for speeding up lookup/update: memoizing algorithms

@@ -28,10 +28,6 @@ trait Archive {
         archive.update(name, example)
     }
   }
-
-  // add all examples in another archive
-  def addArchive(that: Archive): Unit =
-    that.archive.values foreach addExample
 }
 
 object Archive {

@@ -249,14 +249,19 @@ class NestedLoop1BenchInput(M: Int, N: Int) extends NestedLoop1(M, N) {
 
 trait MyBenchmarkingSetup extends BaseBenchmark {
   override def reporters = Seq(LoggingReporter())
-  //Config. for real measurements.
-  //def myBenchConfig = testConfig
-  //To make tests fast, while still having lots of memory
+  override def memorySizeMB: Int = 4096
+
+  private val realBench = false
   def myBenchConfig =
-    Context(
-      //reports.regression.significance -> 0.01, //Confidence level = 99 %
-      exec.jvmflags -> s"-Xmx${memorySizeMB}m -Xms${memorySizeMB}m -XX:CompileThreshold=100"
-    ) ++ verificationConfig
+    if (realBench)
+      //Config. for real measurements.
+      testConfig
+    else
+      //To make tests fast, while still having lots of memory
+      Context(
+        //reports.regression.significance -> 0.01, //Confidence level = 99 %
+        exec.jvmflags -> s"-Xmx${memorySizeMB}m -Xms${memorySizeMB}m -XX:CompileThreshold=100"
+      ) ++ verificationConfig
 }
 
 

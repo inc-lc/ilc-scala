@@ -23,7 +23,12 @@ trait AlphaEquiv {
         doAlphaEquiv(f1, f2, map1, map2, ignoreTypes) && doAlphaEquiv(arg1, arg2, map1, map2, ignoreTypes)
       case (v1 @ Var(n1, t1), v2 @ Var(n2, t2)) =>
          (ignoreTypes || t1 == t2) && map1(n1) == map2(n2)
-      case _ => false
+      case (Constant(pc1, tt1), Constant(pc2, tt2)) =>
+        pc1 == pc2 && (ignoreTypes || tt1 == tt2)
+      case _ =>
+        //Remaining values, that do *not* include type arguments.
+        //So this *will* ignore types.
+        t1 == t2
     }
 }
 

@@ -125,12 +125,12 @@ object MemoUtils {
   }
 }
 
-class NestedLoop1(val N: Int = 1000) extends Serializable {
-  val coll1Init = List[Int](0 to N - 1: _*)
+class NestedLoop1(val M: Int = 1000, val N: Int = 1000) extends Serializable {
+  val coll1Init = List[Int](0 to M - 1: _*)
   val coll2Init = List[Int](1 to N: _*)
   val coll1Upd = coll2Init
 
-  val bag1Init = Bag[Int](0 to N - 1: _*)
+  val bag1Init = Bag[Int](0 to M - 1: _*)
   val bag2Init = Bag[Int](1 to N: _*)
   val bag1Upd = bag2Init
 
@@ -242,7 +242,7 @@ class NestedLoop1(val N: Int = 1000) extends Serializable {
   }
 }
 
-class NestedLoop1BenchInput(N: Int) extends NestedLoop1(N) {
+class NestedLoop1BenchInput(M: Int, N: Int) extends NestedLoop1(M, N) {
   val (res1, res1Cache) = nestedLoop3Memo(coll1Init, coll2Init)
   val (resBag1, resBag1Cache) = nestedLoopBags3Memo(bag1Init, bag2Init)
 }
@@ -261,10 +261,11 @@ trait MyBenchmarkingSetup extends BaseBenchmark {
 
 
 class NestedLoop1Bench extends MyBenchmarkingSetup {
-  val sizes = Gen.range("n")(250, 1000, 250)
+  val sizes = Gen.enumeration("m")(100, 500, 1000, 5000, 10000)
   val inputs = for {
     i <- sizes
-    n = new NestedLoop1BenchInput(i)
+    j <- Gen.exponential("n")(1, 25, 5)
+    n = new NestedLoop1BenchInput(i, j)
   } yield (i, n)
 
   performance of "nestedLoop1" in {

@@ -24,6 +24,10 @@ trait ToScala extends Syntax with IndentUtils {
       sys error s"Unknown type $tau"
   }
 
+  def isScalaPrimitive(tau: Type): Boolean = tau match {
+    case _ => false
+  }
+
   // helper to create scala functions
   // subclasses should always call this helper to create scala
   // functions. CAUTION: supplied parameter names are binding.

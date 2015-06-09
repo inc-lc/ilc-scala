@@ -6,14 +6,12 @@ package handwritten
 import util._
 import collection.{mutable, immutable}
 import org.scalameter.api._
-//import scala.collection.Bag
-import scala.collection.immutable.{HashBag=>Bag}
 
 /*
  * Warning: does not implement any actual collection interface.
  * I still aim for this to support for-comprehensions.
  */
-/*case class Bag[A](contents: immutable.Map[A, Int] = immutable.HashMap()) {
+case class Bag[A](contents: immutable.Map[A, Int] = immutable.HashMap()) {
   import feature.bags.{Library => BagLib}
   import collection.generic.CanBuildFrom
 
@@ -90,20 +88,24 @@ import scala.collection.immutable.{HashBag=>Bag}
           newContents - el
     })
   }
-}*/
+}
 
-/*
 object Bag {
   import feature.bags.{Library => BagLib}
 
   def apply[T](t: T*): Bag[T] =
     new Bag(t.map(BagLib.bagSingletonInt).fold(BagLib.bagEmpty)(BagLib.bagUnionInt _))
 }
-*/
+
+//import scala.collection.Bag
+//import scala.collection.immutable.{HashBag=>Bag}
+
 object BagUtils {
-  implicit def config[T] = Bag.configuration.compact[T]
+  //implicit def config[T] = Bag.configuration.compact[T]
   implicit class FlattenOps[T](b: Bag[Bag[T]]) {
     def flattenB: Bag[T] = {
+      b.flatten
+      /*
       //Alternative implementation, but quadratic because of
       //https://github.com/nicolasstucki/multisets/issues/7
       //b.fold[Bag[T]](Bag.empty)(_ union _)
@@ -111,19 +113,34 @@ object BagUtils {
       for (baglet <- b)
         builder ++= baglet
       builder.result
+      */
     }
   }
 }
 import BagUtils._
 
-class NestedLoop1(val N: Int = 1000) extends Serializable {
-  val coll1Init = List[Int](0 to N - 1: _*)
-  val coll2Init = List[Int](1 to N: _*)
-  val coll1Upd = coll2Init
+object MemoUtils {
+  import feature.memoize.Library._
 
-  val bag1Init = Bag[Int](0 to N - 1: _*)
+  def getIdentityMap[Key, Value]: mutable.Map[Key, Value] = MemoizeObjMap()
+
+  def memoedF[I, O](cache: mutable.Map[I, O])(f: I => O): I => O =
+    x => cache.getOrElseUpdate(x, f(x))
+
+  def memo[A, B](f: A => B): A => B = {
+    val cache = getIdentityMap[A, B]
+    memoedF(cache)(f)
+  }
+}
+
+class NestedLoop1(val M: Int = 1000, val N: Int = 1000) extends Serializable {
+  val coll1Init = List[Int](0 to M - 1: _*)
+  val coll2Init = List[Int](1 to N: _*)
+  val coll1Upd = List[Int](1 to M: _*)
+
+  val bag1Init = Bag[Int](0 to M - 1: _*)
   val bag2Init = Bag[Int](1 to N: _*)
-  val bag1Upd = bag2Init
+  val bag1Upd = Bag[Int](1 to M: _*)
 
   //On lists first. Bag[T] is a Map[T, Int], so it's less clear how to write this on maps.
   def nestedLoop1(coll1: List[Int], coll2: List[Int]): List[Int] =
@@ -165,19 +182,7 @@ class NestedLoop1(val N: Int = 1000) extends Serializable {
     //coll1.flatMap(f)
   }
 
-  def getIdentityMap[Key, Value]: mutable.Map[Key, Value] = {
-    import java.util.IdentityHashMap
-    import scala.collection.JavaConverters._
-    new IdentityHashMap[Key, Value]().asScala
-  }
-
-  def memoedF[I, O](cache: mutable.Map[I, O])(f: I => O): I => O =
-    x => cache.getOrElseUpdate(x, f(x))
-
-  def memo[A, B](f: A => B): A => B = {
-    val cache = getIdentityMap[A, B]
-    memoedF(cache)(f)
-  }
+  import MemoUtils._
 
   //Also return the cache.
   def nestedLoop3Memo(coll1: List[Int], coll2: List[Int]) /*: (List[Int], Any)*/ = {
@@ -245,29 +250,35 @@ class NestedLoop1(val N: Int = 1000) extends Serializable {
   }
 }
 
-class NestedLoop1BenchInput(N: Int) extends NestedLoop1(N) {
+class NestedLoop1BenchInput(M: Int, N: Int) extends NestedLoop1(M, N) {
   val (res1, res1Cache) = nestedLoop3Memo(coll1Init, coll2Init)
   val (resBag1, resBag1Cache) = nestedLoopBags3Memo(bag1Init, bag2Init)
 }
 
 trait MyBenchmarkingSetup extends BaseBenchmark {
   override def reporters = Seq(LoggingReporter())
-  //Config. for real measurements.
-  //def myBenchConfig = testConfig
-  //To make tests fast, while still having lots of memory
+  override def memorySizeMB: Int = 4096
+
+  private val realBench = false
   def myBenchConfig =
-    Context(
-      //reports.regression.significance -> 0.01, //Confidence level = 99 %
-      exec.jvmflags -> s"-Xmx${memorySizeMB}m -Xms${memorySizeMB}m -XX:CompileThreshold=100"
-    ) ++ verificationConfig
+    if (realBench)
+      //Config. for real measurements.
+      testConfig
+    else
+      //To make tests fast, while still having lots of memory
+      Context(
+        //reports.regression.significance -> 0.01, //Confidence level = 99 %
+        exec.jvmflags -> s"-Xmx${memorySizeMB}m -Xms${memorySizeMB}m -XX:CompileThreshold=100"
+      ) ++ verificationConfig
 }
 
 
 class NestedLoop1Bench extends MyBenchmarkingSetup {
-  val sizes = Gen.range("n")(250, 1000, 250)
+  val sizes = Gen.enumeration("m")(100, 500, 1000, 5000, 10000)
   val inputs = for {
     i <- sizes
-    n = new NestedLoop1BenchInput(i)
+    j <- Gen.exponential("n")(1, 25, 5)
+    n = new NestedLoop1BenchInput(i, j)
   } yield (i, n)
 
   performance of "nestedLoop1" in {
@@ -337,7 +348,7 @@ class NestedLoop1Bench extends MyBenchmarkingSetup {
 
 import org.scalatest._
 class NestedLoop1Test extends FlatSpec {
-  val n = new NestedLoop1(3)
+  val n = new NestedLoop1(3, 4)
   import n._
 
   "nestedLoop1" should "be equivalent to nestedLoop3 and incremental variants" in {
@@ -345,7 +356,7 @@ class NestedLoop1Test extends FlatSpec {
     val nl1 = nestedLoop1(coll1Init, coll2Init)
     assert(nl1 == nestedLoop3(coll1Init, coll2Init))
     assert(nl1 == res1)
-    assert(nestedLoop3Incr(coll1Init, coll2Init)(res1, res1Cache)(0, N, true) == nestedLoop1(coll1Upd, coll2Init))
+    assert(nestedLoop3Incr(coll1Init, coll2Init)(res1, res1Cache)(0, M, true) == nestedLoop1(coll1Upd, coll2Init))
   }
 
   "nestedLoopBags1" should "be equivalent to nestedLoopBags3 and incremental variants" in {
@@ -353,6 +364,6 @@ class NestedLoop1Test extends FlatSpec {
     val nl1 = nestedLoopBags1(bag1Init, bag2Init)
     assert(nl1 == nestedLoopBags3(bag1Init, bag2Init))
     assert(nl1 == resBag1)
-    assert(nestedLoopBags3Incr(bag1Init, bag2Init)(resBag1, resBag1Cache)(0, N) == nestedLoopBags1(bag1Upd, bag2Init))
+    assert(nestedLoopBags3Incr(bag1Init, bag2Init)(resBag1, resBag1Cache)(0, M) == nestedLoopBags1(bag1Upd, bag2Init))
   }
 }

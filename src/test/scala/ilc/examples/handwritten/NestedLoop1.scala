@@ -128,11 +128,11 @@ object MemoUtils {
 class NestedLoop1(val M: Int = 1000, val N: Int = 1000) extends Serializable {
   val coll1Init = List[Int](0 to M - 1: _*)
   val coll2Init = List[Int](1 to N: _*)
-  val coll1Upd = coll2Init
+  val coll1Upd = List[Int](1 to M: _*)
 
   val bag1Init = Bag[Int](0 to M - 1: _*)
   val bag2Init = Bag[Int](1 to N: _*)
-  val bag1Upd = bag2Init
+  val bag1Upd = Bag[Int](1 to M: _*)
 
   //On lists first. Bag[T] is a Map[T, Int], so it's less clear how to write this on maps.
   def nestedLoop1(coll1: List[Int], coll2: List[Int]): List[Int] =
@@ -335,7 +335,7 @@ class NestedLoop1Bench extends MyBenchmarkingSetup {
 
 import org.scalatest._
 class NestedLoop1Test extends FlatSpec {
-  val n = new NestedLoop1(3)
+  val n = new NestedLoop1(3, 4)
   import n._
 
   "nestedLoop1" should "be equivalent to nestedLoop3 and incremental variants" in {
@@ -343,7 +343,7 @@ class NestedLoop1Test extends FlatSpec {
     val nl1 = nestedLoop1(coll1Init, coll2Init)
     assert(nl1 == nestedLoop3(coll1Init, coll2Init))
     assert(nl1 == res1)
-    assert(nestedLoop3Incr(coll1Init, coll2Init)(res1, res1Cache)(0, N, true) == nestedLoop1(coll1Upd, coll2Init))
+    assert(nestedLoop3Incr(coll1Init, coll2Init)(res1, res1Cache)(0, M, true) == nestedLoop1(coll1Upd, coll2Init))
   }
 
   "nestedLoopBags1" should "be equivalent to nestedLoopBags3 and incremental variants" in {
@@ -351,6 +351,6 @@ class NestedLoop1Test extends FlatSpec {
     val nl1 = nestedLoopBags1(bag1Init, bag2Init)
     assert(nl1 == nestedLoopBags3(bag1Init, bag2Init))
     assert(nl1 == resBag1)
-    assert(nestedLoopBags3Incr(bag1Init, bag2Init)(resBag1, resBag1Cache)(0, N) == nestedLoopBags1(bag1Upd, bag2Init))
+    assert(nestedLoopBags3Incr(bag1Init, bag2Init)(resBag1, resBag1Cache)(0, M) == nestedLoopBags1(bag1Upd, bag2Init))
   }
 }

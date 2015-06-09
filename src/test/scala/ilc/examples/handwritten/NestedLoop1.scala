@@ -6,14 +6,12 @@ package handwritten
 import util._
 import collection.{mutable, immutable}
 import org.scalameter.api._
-//import scala.collection.Bag
-import scala.collection.immutable.{HashBag=>Bag}
 
 /*
  * Warning: does not implement any actual collection interface.
  * I still aim for this to support for-comprehensions.
  */
-/*case class Bag[A](contents: immutable.Map[A, Int] = immutable.HashMap()) {
+case class Bag[A](contents: immutable.Map[A, Int] = immutable.HashMap()) {
   import feature.bags.{Library => BagLib}
 
   private def mapCommon[B](f: A => B) = {
@@ -82,20 +80,24 @@ import scala.collection.immutable.{HashBag=>Bag}
           newContents - el
     })
   }
-}*/
+}
 
-/*
 object Bag {
   import feature.bags.{Library => BagLib}
 
   def apply[T](t: T*): Bag[T] =
     new Bag(t.map(BagLib.bagSingletonInt).fold(BagLib.bagEmpty)(BagLib.bagUnionInt _))
 }
-*/
+
+//import scala.collection.Bag
+//import scala.collection.immutable.{HashBag=>Bag}
+
 object BagUtils {
-  implicit def config[T] = Bag.configuration.compact[T]
+  //implicit def config[T] = Bag.configuration.compact[T]
   implicit class FlattenOps[T](b: Bag[Bag[T]]) {
     def flattenB: Bag[T] = {
+      b.flatten
+      /*
       //Alternative implementation, but quadratic because of
       //https://github.com/nicolasstucki/multisets/issues/7
       //b.fold[Bag[T]](Bag.empty)(_ union _)
@@ -103,6 +105,7 @@ object BagUtils {
       for (baglet <- b)
         builder ++= baglet
       builder.result
+      */
     }
   }
 }

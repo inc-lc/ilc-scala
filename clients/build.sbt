@@ -2,4 +2,4 @@
 generationSettings
 
 //Also include generated sources.
-EclipseKeys.createSrc := EclipseCreateSrc.Default + EclipseCreateSrc.Managed
+EclipseKeys.createSrc := EclipseCreateSrc.ValueSet(EclipseCreateSrc.ManagedSrc)

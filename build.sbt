@@ -103,3 +103,5 @@ parallelExecution in Test in ThisBuild := false
 
 // Also enable access to source files for navigation.
 EclipseKeys.withSource in ThisBuild := true
+
+EclipseKeys.eclipseOutput in ThisBuild := Some("bin")

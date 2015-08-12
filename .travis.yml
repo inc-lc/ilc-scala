@@ -3,9 +3,16 @@ jdk:
   - openjdk6
   - openjdk7
 sudo: false
+# Caching setup from:
+# http://www.scala-sbt.org/0.13/docs/Travis-CI-with-sbt.html
 cache:
   directories:
-  - ~/.sbt
-  - ~/.ivy2
-  - ~/.m2
-script: sbt test "project clients" "testOnly ilc.*" "project bigClients" "testOnly ilc.*" "project icfp2014" test
+    - $HOME/.sbt/boot
+    - $HOME/.ivy2/cache
+script:
+  - sbt test "project clients" "testOnly ilc.*" "project bigClients" "testOnly ilc.*" "project icfp2014" test
+
+  # Tricks to avoid unnecessary cache updates, also from
+  # http://www.scala-sbt.org/0.13/docs/Travis-CI-with-sbt.html
+  - find $HOME/.sbt -name "*.lock" | xargs rm
+  - find $HOME/.ivy2 -name "ivydata-*.properties" | xargs rm

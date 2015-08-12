@@ -3,4 +3,9 @@ jdk:
   - openjdk6
   - openjdk7
 sudo: false
+cache:
+  directories:
+  - ~/.sbt
+  - ~/.ivy2
+  - ~/.m2
 script: sbt test "project clients" "testOnly ilc.*" "project bigClients" "testOnly ilc.*" "project icfp2014" test

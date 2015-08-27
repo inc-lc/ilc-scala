@@ -39,13 +39,13 @@ package feature
 package base
 
 import org.kiama.output
+import output._
 
-
-trait Pretty extends Syntax with PrettyPrinterInterfaceFromKiama {
+trait Pretty extends Syntax with ParenPrettyPrinter {
   /** Juxtaposition */
-  trait PrettyJuxtaposedExpression extends output.PrettyBinaryExpression {
-    def left : output.PrettyExpression
-    def right: output.PrettyExpression
+  trait PrettyJuxtaposedExpression extends PrettyBinaryExpression {
+    def left : PrettyExpression
+    def right: PrettyExpression
 
     override def op = ""
   }
@@ -55,7 +55,7 @@ trait Pretty extends Syntax with PrettyPrinterInterfaceFromKiama {
       extends PrettyExpression
 
   /** mixfix operator with prefix/postfix keyword */
-  abstract class PrettyEnclosingExpression extends output.PrettyOperatorExpression {
+  abstract class PrettyEnclosingExpression extends PrettyOperatorExpression {
     def op: Doc
     def exp: PrettyExpression
   }
@@ -99,7 +99,7 @@ trait Pretty extends Syntax with PrettyPrinterInterfaceFromKiama {
 
     case u: PrettyEnclosingExpression =>
       val ed = u.exp match {
-        case e: output.PrettyOperatorExpression =>
+        case e: PrettyOperatorExpression =>
           val assoc = u.fixity match {
             case Prefix  => RightAssoc
             case Postfix => LeftAssoc
@@ -115,9 +115,9 @@ trait Pretty extends Syntax with PrettyPrinterInterfaceFromKiama {
         group(ed <> nest(line <> u.op))
 
     // override default implementation of binary operation
-    case b: output.PrettyBinaryExpression =>
+    case b: PrettyBinaryExpression =>
       val ld = b.left match {
-        case l: output.PrettyOperatorExpression =>
+        case l: PrettyOperatorExpression =>
           bracket(l, b, LeftAssoc)
 
         case l =>
@@ -125,7 +125,7 @@ trait Pretty extends Syntax with PrettyPrinterInterfaceFromKiama {
       }
 
       val rd = b.right match {
-        case r: output.PrettyOperatorExpression =>
+        case r: PrettyOperatorExpression =>
           bracket(r, b, RightAssoc)
 
         case r =>
@@ -149,7 +149,7 @@ trait Pretty extends Syntax with PrettyPrinterInterfaceFromKiama {
     pretty(t, defaultWidth)
 
   def pretty(t: Term, width: Width): Layout =
-    ParenPrettyPrinter.pretty(toDoc(t), width)
+    pretty(toDoc(t), width)
 
   def toDoc(t: Type): Doc =
     toParenDoc(toPrettyExpression(t))
@@ -159,37 +159,19 @@ trait Pretty extends Syntax with PrettyPrinterInterfaceFromKiama {
     pretty(t, defaultWidth)
 
   def pretty(t: Type, width: Width): Layout =
-    ParenPrettyPrinter.pretty(toDoc(t), width)
-}
+    pretty(toDoc(t), width)
 
-trait PrettyPrinterInterfaceFromKiama {
-  // we cannot inherit from ParenPrettyPrinter because its
-  // interface conflicts with scalatest.Matchers. They both
-  // define `empty` of different types.
-  //
-  // using Ruby's aliasing pattern to restore dynamic dispatch
-  // so that `toParenDoc` stays an open method.
+  // make parenthesizing super simple
+  override def noparens(inner: PrettyOperatorExpression,
+                        outer: PrettyOperatorExpression,
+                        side: Side): Boolean = {
+    if (matchingAssoc(outer.fixity, side))
+      inner.priority >= outer.priority
+    else
+      inner.priority > outer.priority
+  }
 
-  object ParenPrettyPrinter extends output.ParenPrettyPrinter {
-    override def toParenDoc(e: PrettyExpression): Doc =
-      PrettyPrinterInterfaceFromKiama.this.toParenDoc(e)
-
-    private[PrettyPrinterInterfaceFromKiama]
-    def defaultToParenDoc(e: PrettyExpression): Doc =
-      super.toParenDoc(e)
-
-    // make parenthesizing super simple
-    override def noparens(
-      inner: output.PrettyOperatorExpression,
-      outer: output.PrettyOperatorExpression,
-      side : output.Side):
-        Boolean =
-      if (matchingAssoc(outer.fixity, side))
-        inner.priority >= outer.priority
-      else
-        inner.priority >  outer.priority
-
-  def matchingAssoc(fixity: output.Fixity, side: output.Side): Boolean =
+  def matchingAssoc(fixity: Fixity, side: Side): Boolean =
     fixity match {
       case Infix(LeftAssoc)  => side == LeftAssoc
       case Infix(RightAssoc) => side == RightAssoc
@@ -198,42 +180,6 @@ trait PrettyPrinterInterfaceFromKiama {
       case _                 => false
     }
 
-    // override defaults here
-    override val defaultIndent = 2
-  }
-
-  // aliases such that subclasses need not be aware of Kiama
-  import org.kiama.output
-
-  trait PrettyUnaryExpression  extends output.PrettyUnaryExpression
-  trait PrettyBinaryExpression extends output.PrettyBinaryExpression
-
-  type PrettyExpression = output.PrettyExpression
-  val  LeftAssoc        = output.LeftAssoc
-  val  RightAssoc       = output.RightAssoc
-  val  NonAssoc         = output.NonAssoc
-  val  Prefix           = output.Prefix
-  val  Postfix          = output.Postfix
-  val  Infix            = output.Infix
-
-  type Doc    = ParenPrettyPrinter.Doc
-  type Width  = ParenPrettyPrinter.Width
-  type Layout = ParenPrettyPrinter.Layout
-
-  def bracket(
-    inner: output.PrettyOperatorExpression,
-    outer: output.PrettyOperatorExpression,
-    side : output.Side): Doc
-                      = ParenPrettyPrinter.bracket(inner, outer, side)
-  def group(d: Doc)   = ParenPrettyPrinter.group(d)
-  def nest(d: Doc, i: Int = defaultIndent)
-                      = ParenPrettyPrinter.nest(d, i)
-  def line: Doc       = ParenPrettyPrinter.line
-  def text(s: String) = ParenPrettyPrinter.text(s)
-
-  def defaultWidth    = ParenPrettyPrinter.defaultWidth
-  def defaultIndent   = ParenPrettyPrinter.defaultIndent
-
-  def toParenDoc(e: PrettyExpression): Doc =
-    ParenPrettyPrinter.defaultToParenDoc(e)
+  // override defaults here
+  override val defaultIndent = 2
 }

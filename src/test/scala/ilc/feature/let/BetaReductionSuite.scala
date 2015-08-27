@@ -6,10 +6,9 @@ import org.scalatest.Matchers
 import org.scalatest.FlatSpec
 import ilc.util.EvalGenerated
 
-class BetaReductionSuite
-extends FlatSpec
-   with Matchers
-   with BetaReduction with naturals.ImplicitSyntaxSugar with Pretty with ToScala with ProgramSize with naturals.ToScala with EvalGenerated {
+class BetaReductionSuite extends FlatSpec with Matchers {
+  object Lang extends BetaReduction with naturals.ImplicitSyntaxSugar with Pretty with ToScala with ProgramSize with naturals.ToScala with EvalGenerated
+  import Lang._
 
   val x = Var("x", NatType)
   val y = Var("y", NatType)

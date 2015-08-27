@@ -2,6 +2,8 @@ package ilc
 package feature
 package sums
 
+import org.kiama.output._
+
 trait Pretty extends base.Pretty with Syntax {
   override def operatorPrecedence(tau: Type): Int = tau match {
     case SumType(leftType, rightType) =>

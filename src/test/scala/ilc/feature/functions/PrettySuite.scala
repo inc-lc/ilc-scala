@@ -5,13 +5,12 @@ package functions
 import org.scalatest.FunSuite
 import org.scalatest.Matchers
 
-class PrettySuite
-extends FunSuite
-   with Matchers
-   with Pretty
-{
-  // force line breaks in all possible positions
-  override def defaultWidth = 0
+class PrettySuite extends FunSuite with Matchers {
+  object Lang extends Pretty {
+    // force line breaks in all possible positions
+    override val defaultWidth = 0
+  }
+  import Lang._
 
   def showPrintout(s: String) = info("printout:\n" + s)
 

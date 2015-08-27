@@ -22,7 +22,7 @@ class WriteLambdaTerms extends FlatSpec with Matchers {
   // The object language of paper 63 is simply typed lambda calculus.
   // Syntax trees of the object language can always be constructed
   // if the 3 rules below are observed.
-  // 
+  //
   //
   // t ::= x                 x           // (Scala identifier)
   //     | t₁ t₂             t1 ! t2

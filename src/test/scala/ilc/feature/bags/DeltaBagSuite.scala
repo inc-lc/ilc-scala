@@ -5,15 +5,11 @@ package bags
 import org.scalatest.FunSuite
 import org.scalatest.Matchers
 
-class LibrarySuite
+class DeltaBagSuite
 extends FunSuite with Matchers
 {
+  import integers.Library._
   import Library._
-  import abelianGroups.Library._
-
-  val ayeDeeDeeExclamationMark = 0x61646421
-  val additiveGroupOnIntegers =
-    IndexedGroup[Int](ayeDeeDeeExclamationMark, x => x + _, -_, 0)
 
   def sum(b: Bag[Int]) =
     bagFoldGroup[Int, Int](additiveGroupOnIntegers)(x => x)(b)

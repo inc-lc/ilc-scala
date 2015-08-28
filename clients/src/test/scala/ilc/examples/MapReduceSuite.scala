@@ -8,19 +8,15 @@ import org.scalatest.Matchers
 class MapReduceSuite
 extends FunSuite
    with Matchers
-   with MapReduce
 {
+  object Lang extends MapReduce with feature.base.Pretty
+  import Lang._
+
   case object K1 extends Type
   case object K2 extends Type
   case object V1 extends Type
   case object V2 extends Type
   case object V3 extends Type
-
-  // Matchers defines empty, bags.StdLib does too.
-  // Can't override with override val empty = super[MapReduce].empty because of
-  // https://issues.scala-lang.org/browse/SI-1938
-  // Luckily we don't actually need it here.
-  override val empty = null
 
   // TODO convert tests
   val mapPerKeyType =

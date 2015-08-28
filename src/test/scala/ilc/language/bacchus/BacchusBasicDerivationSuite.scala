@@ -8,3 +8,4 @@ import ilc.feature._
 class BacchusBasicDerivationSuite
 extends DerivativeTests
    with BasicDerivation
+   with base.Pretty

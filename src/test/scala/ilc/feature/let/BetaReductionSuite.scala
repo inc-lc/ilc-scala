@@ -6,10 +6,9 @@ import org.scalatest.Matchers
 import org.scalatest.FlatSpec
 import ilc.util.EvalGenerated
 
-class BetaReductionSuite
-extends FlatSpec
-   with Matchers
-   with BetaReduction with naturals.ImplicitSyntaxSugar with Pretty with ToScala with ProgramSize with naturals.ToScala with EvalGenerated {
+class BetaReductionSuite extends FlatSpec with Matchers {
+  object Lang extends BetaReduction with naturals.ImplicitSyntaxSugar with Pretty with ToScala with ProgramSize with naturals.ToScala with EvalGenerated with ShowTerms
+  import Lang._
 
   val x = Var("x", NatType)
   val y = Var("y", NatType)
@@ -83,8 +82,8 @@ extends FlatSpec
   val duplicating = lambda(Var("f", NatType =>: NatType), Var("expensive", NatType)) {
     case Seq(arg, expensive) => PlusNat ! (arg ! expensive) ! (arg ! expensive)
   } ! u ! (PlusNat ! 42 ! 84)
-  pretty(duplicating)
-  pretty(normalize(duplicating))
+  info(show(duplicating))
+  info(show(normalize(duplicating)))
   /*
   val t =
     lambda(Var("param", NatType)) { param =>

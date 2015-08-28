@@ -6,7 +6,8 @@ lazy val bigClients = project in file("bigClients") dependsOn (clients % "test->
 
 lazy val icfp2014 = project in file("icfp2014") dependsOn (ilc % "test->test;compile->test")
 
-scalaVersion in ThisBuild := "2.11.6"
+// Keep in sync by hand with .travis.yml
+scalaVersion in ThisBuild := "2.11.7"
 
 scalacOptions in ThisBuild := Seq("-deprecation", "-feature", "-unchecked", "-Xlint")
 
@@ -43,6 +44,9 @@ libraryDependencies +=
   "org.scalaz" %% "scalaz-core" % "7.0.6"
 
 libraryDependencies += "io.github.nicolasstucki" %% "multisets" % "0.3"
+
+libraryDependencies +=
+  "com.googlecode.kiama" %% "kiama" % "1.8.0"
 
 initialCommands in console in ThisBuild := """
 import ilc.examples._
@@ -103,3 +107,5 @@ parallelExecution in Test in ThisBuild := false
 
 // Also enable access to source files for navigation.
 EclipseKeys.withSource in ThisBuild := true
+
+EclipseKeys.eclipseOutput in ThisBuild := Some("bin")

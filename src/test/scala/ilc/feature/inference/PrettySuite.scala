@@ -1,4 +1,6 @@
-package ilc.feature.inference
+package ilc
+package feature
+package inference
 
 import org.scalatest._
 import scala.language.implicitConversions
@@ -16,11 +18,12 @@ trait ClashingImplicitConversion {
 class PrettySuite
 extends FlatSpec
    with SyntaxSugar
-   with ilc.feature.maps.Syntax
-   with ilc.feature.integers.Syntax
-   with ilc.util.EvalScala
-   with ilc.feature.bags.StdLib
-   with ilc.feature.abelianMaps.Syntax
+   with maps.Syntax
+   with integers.Syntax
+   with bags.StdLib
+   with abelianMaps.Syntax
+   with util.EvalScala
+   with base.Pretty
 {
   "If a 3rd party implicit adding `apply` method to Symbols is in scope," ++
     " then it " should "fail to compile. Error messages:" in {

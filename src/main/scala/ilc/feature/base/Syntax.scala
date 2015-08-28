@@ -6,14 +6,14 @@ import scala.language.implicitConversions
 import scala.language.postfixOps
 
 trait Syntax
-extends TypeConstructors
+extends TypeConstructors with PrettySyntax
 {
   trait Typed {
     /** Returns type or fails horribly. */
     val getType: Type
   }
 
-  trait Term extends Typed {
+  trait Term extends Typed with PrettyPrintable {
     // forces early failure for object-level type checking
     if(getType == null) {
       val className = this.getClass.getName
@@ -234,14 +234,16 @@ Please do not declare getType as an abstract `val`.
   extends PolymorphicTerm
   {
     def specialize(argumentTypes: Type*): Term = {
-      case object Underscore extends Type { override def toString = "_" }
+      case object Underscore extends Type {
+        override def prettyPrintDefault = text("_")
+      }
 
       if (argumentTypesMatch(argumentTypes, toTerm.getType))
         toTerm
       else {
         val term = toTerm.toString
         val actual = toTerm.getType
-        val expected = argumentTypes.foldRight(Underscore: Type)(_ =>: _).toString
+        val expected = argumentTypes.foldRight[Type](Underscore)(_ =>: _)
 
         typeErrorWrongType(term, actual, expected)
       }

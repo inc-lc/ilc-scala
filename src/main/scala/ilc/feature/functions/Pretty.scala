@@ -1,118 +1,75 @@
 package ilc
-package feature.functions
+package feature
+package functions
 
 /**
  * Pretty printing for first-class functions.
  */
 
-trait Pretty extends Syntax with util.IndentUtils {
-  //Local-only addition to IndentUtils
-  protected def closeParenNoIndent(delim: String) = { indentLess(); delim }
+import org.kiama.output._
 
-  /**
-   * Pretty print an expression according to a template.
-   *
-   * @param inner
-   *   priority of the language construct to be printed
-   * @param outer
-   *   priority of the context to be printed in
-   * @param text
-   *   by-name argument with content to print.
-   */
-  def template(inner : Priority, outer : Priority, text : => String) = {
-    if (bindsStronger(inner, outer))
-      text
-     else
-       s"(${deeper(text, 1)})"
-       //Alternative: have body on separate lines as the parens
-       //openParen("(") + indent() + text + closeParen(")")
+trait Pretty extends base.Pretty with Syntax {
+  override def operatorPrecedence(tau: Type): Int = tau match {
+    case domain =>: range =>
+      5
+      // like in ILC's Agda code base: Parametric.Syntax.Type:
+      // infixr 5 _⇒_
+      //
+      // Ref.
+      // http://www.informatik.uni-marburg.de/~pgiarrusso/ILC/AEC/agda/Parametric.Syntax.Type.html
+
+    case _ =>
+      super.operatorPrecedence(tau)
   }
 
-  override protected def showTerm(t: Term): String = pretty(t)
+  override def operatorPrecedence(t: Term): Int = t match {
+    case Abs(_, _) =>
+      0 // looser than everything
 
-  /**
-   * Print a closed term to human-readable syntax.
-   *
-   * @param t
-   *   the term to print
-   */
-  def pretty(t: Term): String = {
-    indentNoNl() + pretty(t, outermostPriority)
+    case App(_, _) =>
+      10 // tighter than Haskell's default operator precedence (9)
+
+    case _ =>
+      super.operatorPrecedence(t)
   }
 
-  /**
-   * Print a term to human-readable syntax.
-   *
-   * @param t
-   *   the term to print
-   * @param priority
-   *   the priority of the context this term is printed in
-   */
-  def pretty(t : Term, priority : Priority) : String = t match {
-    case variable: Var =>
-      variable.getName.toString
+  override def toPrettyExpression(tau: Type): PrettyExpression = tau match {
+    case domain =>: range =>
+      new PrettyBinaryExpression {
+        def priority = operatorPrecedence(tau)
+        def fixity   = Infix(RightAssoc)
+
+        def left     = toPrettyExpression(domain)
+        def right    = toPrettyExpression(range)
+
+        def op       = UnicodeOutput.choose("→", "->")
+      }
+
+    case _ =>
+      super.toPrettyExpression(tau)
+  }
+
+  override def toPrettyExpression(t: Term): PrettyExpression = t match {
+    case Abs(Var(x, xType), body) =>
+      new PrettyEnclosingExpression {
+        def priority = operatorPrecedence(t)
+        def fixity   = Prefix
+
+        def op       = text("λ") <> text(x.toString) <> text(".")
+        def exp      = toPrettyExpression(body)
+      }
 
     case App(operator, operand) =>
-      template(priorityOfApp, priority,
-        //Increase indentation and break line before each argument.
-        s"${pretty(operator, priorityOfApp + 1)}${deeper(s"$indent${pretty(operand, priorityOfApp)}")}")
+      new PrettyJuxtaposedExpression {
+        // application binds tighter than everything
+        def priority = operatorPrecedence(t)
+        def fixity   = Infix(LeftAssoc)
 
-    case Abs(variable, body) =>
-      //Break lines before the body.
-
-      //How much should the body be indented, for perfect visual alignment? That's tricky.
-      val isBodyNestedAbs = body match {
-        case Abs(_, _) => true
-        case _ => false
+        def left  = toPrettyExpression(operator)
+        def right = toPrettyExpression(operand)
       }
-      val increaseInnerIndent =
-        //Nested abstractions should align with the first one.
-        (if (isBodyNestedAbs) 0 else indentDiff)
 
-      template(priorityOfAbs, priority,
-        s"λ${variable.getName.toString}.${deeper(s"$indent${pretty(body, priorityOfAbs + 1)}", increaseInnerIndent)}")
-
-    // other operations would throw "unknown term" error here.
-    // the pretty printer defaults to calling `toString`.
     case _ =>
-      t.toString
+      super.toPrettyExpression(t)
   }
-
-  // parentheses handling
-  //
-  // - subterms of λ are not parenthesized
-  // - nested applications are not parenthesized
-  // - constants are not parenthesized
-  // - variables are not parenthesized
-  // - all other subterms are parenthesized
-
-  /**
-   * The priority of an operator or language construct, for
-   * deciding whether to add parentheses when pretty printing.
-   *
-   * Smaller numbers mean stronger binding. For example, the
-   * priority of multiplication should be a number less than
-   * the priority of addition.
-   */
-  type Priority = Int
-
-  /**
-   * Priority of application.
-   */
-  val priorityOfApp : Priority = 1
-
-  /**
-   * Priority of abstraction.
-   */
-  val priorityOfAbs : Priority = 2
-
-  /**
-   * Priority of the outermost context.
-   *
-   * This priority is used when a term occurs in a context
-   * that is not a term itself.
-   */
-  val outermostPriority : Priority = 3
-
-  private def bindsStronger(a: Priority, b: Priority): Boolean = a < b
 }

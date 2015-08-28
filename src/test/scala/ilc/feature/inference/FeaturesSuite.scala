@@ -11,6 +11,7 @@ import poly._
 trait InferenceTestHelper
   extends Inference
   with PrettySyntax
+  with base.Pretty
 {
 
   def onTypes[T](transformer: Type => Type): T => T = {

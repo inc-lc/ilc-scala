@@ -13,6 +13,7 @@ extends FunSuite
    with ToScala
    with Subjects
    with EvalScala
+   with feature.base.Pretty
 {
   def run(t: Term): Any = {
     val code = toScala(t)

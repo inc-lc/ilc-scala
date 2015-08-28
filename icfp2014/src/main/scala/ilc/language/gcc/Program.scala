@@ -16,9 +16,9 @@ class ProgramBase extends GCC {
       move.left,    // current direction
       0,            // tick
       (0, 0),       // fruit position
-      empty,        // planned Path
+      emptyList,    // planned Path
       'collectCoins, // active strategy,
-      empty          // unvisited locations
+      emptyList      // unvisited locations
   ) ofType AIState
   lazy val stateSize = 6
 
@@ -86,7 +86,7 @@ class ProgramBase extends GCC {
             'pathValue := lam('path) { foldRight('path, 0, lam('pos, 'sum) { 'sum + 'valueOfPos('pos, 'map) }) },
 
             // find path with maximum value
-            'bestPath := foldRight('allPaths, (empty, -1), lam('path, 'pathAndOldVal) { 'pathAndOldVal.bind('oldPath, 'oldVal) {
+            'bestPath := foldRight('allPaths, (emptyList, -1), lam('path, 'pathAndOldVal) { 'pathAndOldVal.bind('oldPath, 'oldVal) {
               let('value, 'pathValue('path)) {
                 if_('value > 'oldVal) {
                   ('path, 'value)
@@ -119,7 +119,7 @@ class ProgramBase extends GCC {
       } ofType Strategy
       // pseudo-random move, depends on the tick
 //      fun('randomMove)('currentPos % Point, 'state % StrategyState, 'map % WorldMap) {
-//        ('mod('getTick('state), 4) ofType Dir) ::: empty
+//        ('mod('getTick('state), 4) ofType Dir) ::: emptyList
 //      }
   )
 
@@ -214,7 +214,7 @@ class ProgramBase extends GCC {
      * Collects all cells in the which could be used as targets
      */
     fun('collectunvisitedCells)('map % GameMap) {
-      foldRight('map, ('map.size - 1, empty), lam('row, 'acc1) { 'acc1.bind('i, 'cells) {
+      foldRight('map, ('map.size - 1, emptyList), lam('row, 'acc1) { 'acc1.bind('i, 'cells) {
         ('i - 1, foldRight('row, ('row.size - 1, 'cells), lam('cell, 'acc2) { 'acc2.bind('j, 'cells) {
           if_('cell === item.wall) { ('j - 1, 'cells) } else_ { ('j - 1, ('j, 'i) ::: 'cells) }
         }}).second)
@@ -257,7 +257,7 @@ class ProgramBase extends GCC {
           'xSize  := size('map.head),
 
           'unvisited := 'collectunvisitedCells('map)
-        ){ tuple('dir, 'tick, 'fruitPos, empty, 'collectCoins, 'unvisited)  }
+        ){ tuple('dir, 'tick, 'fruitPos, emptyList, 'collectCoins, 'unvisited)  }
     },
 
     // second component: The step function
@@ -269,7 +269,7 @@ class ProgramBase extends GCC {
         'state.bind('currDir % Dir, 'tick % int, 'fruitPos % Point, 'path % Path, 'strategy % Strategy, 'unvisited % ListType(Point)) {
           // something didn't work... Start over again
           if_('currDir === -1) {
-            'step(tuple('currDir, 'tick, 'fruitPos, empty, 'strategy, 'unvisited), 'world)
+            'step(tuple('currDir, 'tick, 'fruitPos, emptyList, 'strategy, 'unvisited), 'world)
           // Hey that's a ghost.. we need to evade
           //}. else_if () {
 

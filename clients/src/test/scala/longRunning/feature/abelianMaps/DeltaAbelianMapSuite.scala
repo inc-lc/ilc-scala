@@ -10,23 +10,24 @@ import ilc.feature.abelianMaps.Library._
 import ilc.feature.abelianMaps.MapChanges
 import ilc.feature.abelianMaps.ToScala
 
-class DeltaAbelianMapSuite
-extends FunSuite
-   with Matchers
-   with AbelianDerivation
-   with integers.AbelianDerivation
-   with MapChanges
-   with functions.SyntaxSugar
-   with integers.SyntaxSugar
-   with maps.SyntaxSugar
-   with ToScala
-   with booleans.ToScala
-   with integers.ToScala
-   with functions.ToScala
-   with products.ToScala
-   with sums.ToScala
-   with EvalGenerated
-{
+class DeltaAbelianMapSuite extends FunSuite with Matchers {
+  object Lang extends AbelianDerivation
+    with integers.AbelianDerivation
+    with MapChanges
+    with functions.SyntaxSugar
+    with integers.SyntaxSugar
+    with maps.SyntaxSugar
+    with ToScala
+    with booleans.ToScala
+    with integers.ToScala
+    with functions.ToScala
+    with products.ToScala
+    with sums.ToScala
+    with EvalGenerated
+    with base.Pretty
+
+  import Lang._
+
   val additiveIntegerGroup = evalGenerated(additiveGroupOnIntegers).
     asInstanceOf[abelianGroups.Library.AbelianGroup[Int]]
 

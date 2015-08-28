@@ -234,14 +234,18 @@ Please do not declare getType as an abstract `val`.
   extends PolymorphicTerm
   {
     def specialize(argumentTypes: Type*): Term = {
-      case object Underscore extends Type
+      case object Underscore extends Type {
+        override def toString = "_"
+        //XXX this changes prettyprinting and improves some error messages,
+        //but we shouldn't redefine prettyprinting for that.
+      }
 
       if (argumentTypesMatch(argumentTypes, toTerm.getType))
         toTerm
       else {
         val term = toTerm.toString
         val actual = toTerm.getType
-        val expected = argumentTypes.foldRight(Underscore: Type)(_ =>: _)
+        val expected = argumentTypes.foldRight[Type](Underscore)(_ =>: _)
 
         typeErrorWrongType(term, actual, expected)
       }

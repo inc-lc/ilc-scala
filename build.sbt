@@ -45,6 +45,9 @@ libraryDependencies +=
 
 libraryDependencies += "io.github.nicolasstucki" %% "multisets" % "0.3"
 
+libraryDependencies +=
+  "com.googlecode.kiama" %% "kiama" % "1.8.0"
+
 initialCommands in console in ThisBuild := """
 import ilc.examples._
 import ilc._; import language._; import feature._

@@ -6,12 +6,7 @@ import org.scalatest.FunSuite
 import org.scalatest.Matchers
 import GCC._
 
-class GCCCollectionsSuite
-extends FunSuite
-   with Matchers
-   with Evaluation
-{
-
+class GCCCollectionsSuite extends FunSuite with Matchers {
   def withLibraries(body: UT) =
      typecheck { letS((collectionApi ++ math ++ points):_*)(body) }
 

@@ -10,9 +10,10 @@ class AlphaEquivSpec extends FlatSpec
     with inference.PrettySyntax with inference.LetSyntaxSugar
     with inference.LetInference
 
-    with ilc.feature.maps.Syntax
-    with ilc.feature.bags.StdLib
-    with ilc.feature.abelianMaps.Syntax
+    with feature.maps.Syntax
+    with feature.bags.StdLib
+    with feature.abelianMaps.Syntax
+    with base.Pretty
 
     with AlphaEquivLet {
   def shouldBeAlphaEquiv(t1: Term, t2: Term, ignoreTypes: Boolean = false) =

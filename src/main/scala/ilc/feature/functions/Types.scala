@@ -13,13 +13,6 @@ trait Types extends base.Types {
    * to create the type of Church numerals for base type foo.
    */
   case class =>: (domain: Type, range: Type) extends Type {
-    override def toString: String = {
-      val arrow = UnicodeOutput.choose("→", "->")
-      domain match {
-        case _ =>: _ => s"($domain) $arrow $range"
-        case _ => s"$domain $arrow $range"
-      }
-    }
     override def traverse(f: Type => Type) = copy(f(domain), f(range))
   }
 

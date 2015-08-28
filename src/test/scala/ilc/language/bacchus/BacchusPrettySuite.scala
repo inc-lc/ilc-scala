@@ -8,8 +8,10 @@ import org.scalatest.Matchers
 class BacchusPrettySuite
 extends FunSuite
    with Matchers
-   with Evaluation
 {
+  object Lang extends Evaluation with feature.base.Pretty
+  import Lang._
+
   test("values have short descriptions") {
     NatValue(9).toString should be("9")
     MapValue(1 -> 4).toString should be("Map(1 -> 4)")

@@ -8,10 +8,8 @@ import org.scalatest.Matchers
 import language.bacchus
 import util.EvalGenerated
 
-class FixpointSuite
-extends FunSuite
-    with Matchers
-    with bacchus.Syntax
+class FixpointSuite extends FunSuite with Matchers {
+  object Lang extends bacchus.Syntax
     with bacchus.Pretty
     with bacchus.ToScala
     with Syntax
@@ -20,7 +18,9 @@ extends FunSuite
     with integers.ImplicitSyntaxSugar
     with integers.ToScala
     with bacchus.BasicDerivation
-    with EvalGenerated {
+    with EvalGenerated
+  import Lang._
+
   def multBase(m: Int, n: Int): Int =
     if (n == 0)
       0

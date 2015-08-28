@@ -199,7 +199,7 @@ trait Collection extends SyntaxSugar { outer =>
     }("foldRightBody", 'go(list))
 
   def map(list: UT, f: UT) =
-    foldRight(list, empty, lam('head, 'tail) {
+    foldRight(list, emptyList, lam('head, 'tail) {
       f('head) ::: 'tail
     })
 
@@ -223,7 +223,7 @@ trait Collection extends SyntaxSugar { outer =>
       )("containsBody", 'go(list, el, comp))
 
     def filterNot(comp: UT /* T =>: bool */)
-      = foldRight(list, empty, lam('el, 'acc) {
+      = foldRight(list, emptyList, lam('el, 'acc) {
         if_(not(comp('el))) {
           'el ::: 'acc
         } else_ {
@@ -240,7 +240,7 @@ trait Collection extends SyntaxSugar { outer =>
         )("zipMain", 'go('list, 'other))*/
 
     def search(comp: UT /* T =>: bool */)
-      = foldRight(list, (empty, 0), lam('el, 'accPair) {
+      = foldRight(list, (emptyList, 0), lam('el, 'accPair) {
         'accPair.bind('acc, 'pos) {
           (if_(comp('el)) {
             ('el, 'pos) ::: 'acc
@@ -327,7 +327,7 @@ trait Collection extends SyntaxSugar { outer =>
 
       fun('toList)('_ % UnitType) {
         letrec (
-          'listResult := empty ofType ListType((KeyType, ValueType)),
+          'listResult := emptyList ofType ListType((KeyType, ValueType)),
 
           fun('toListHelper)('store) {
             if_('store.isEmptyTree) {
@@ -395,9 +395,9 @@ trait Pathfinding extends SyntaxSugar with Points with Collection { self: Lambda
         }
       )("extractPathGo",
         if_('parents.call('PointPointMap, 'isEmpty)(unit)) {
-          empty
+          emptyList
         } else_ {
-          'extractPathGo('to, empty).filterNot(lam('el){ 'pointEq('el, 'from) })
+          'extractPathGo('to, emptyList).filterNot(lam('el){ 'pointEq('el, 'from) })
         })
     },
 
@@ -524,7 +524,7 @@ trait Pathfinding extends SyntaxSugar with Points with Collection { self: Lambda
               }
             }
           }
-        }("pathfindingBody", 'loop('start, empty, 'start ::: empty, initWalked))
+        }("pathfindingBody", 'loop('start, emptyList, 'start ::: emptyList, initWalked))
       }
     }
   )
@@ -574,7 +574,7 @@ trait Points extends SyntaxSugar with Collection { outer: LambdaManApi =>
 
         'findColumn := lam('i, 'cols) {
           if_('cols.isEmpty) {
-            debug(1333) ~: empty
+            debug(1333) ~: emptyList
           }. else_if ('i === 'y) {
             'findCell(0, 'cols.head) ::: 'cols.tail
           } else_{
@@ -584,7 +584,7 @@ trait Points extends SyntaxSugar with Collection { outer: LambdaManApi =>
 
         'findCell := lam('j, 'cells) {
           if_('cells.isEmpty) {
-            debug(1334) ~: empty
+            debug(1334) ~: emptyList
           }. else_if ('j === 'x) {
             'value ::: 'cells.tail
           } else_{
@@ -604,7 +604,7 @@ trait Points extends SyntaxSugar with Collection { outer: LambdaManApi =>
   def createList(length: UT, init: UT): UT =
     letrec(
       'go := lam('n, 'init) {
-        if_('n === 0) { empty } else_ { 'init ::: 'go('n - 1, 'init) }
+        if_('n === 0) { emptyList } else_ { 'init ::: 'go('n - 1, 'init) }
       }
     )("createListBody", 'go(length, init))
 

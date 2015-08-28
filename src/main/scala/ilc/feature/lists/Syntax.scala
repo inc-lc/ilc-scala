@@ -48,10 +48,10 @@ trait InferenceSyntaxSugar extends Syntax with inference.SyntaxSugar {
     def get(i: Int) = project(i, t)
   }
 
-  def empty = asUntyped(Empty)
+  def emptyList = asUntyped(Empty)
 
   def list(args: UntypedTerm*) =
-    args.foldRight(empty)(_ ::: _)
+    args.foldRight(emptyList)(_ ::: _)
 
   //i is 0-based.
   def project(i: Int, t: UntypedTerm): UntypedTerm =

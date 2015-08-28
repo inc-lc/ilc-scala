@@ -9,23 +9,24 @@ import ilc.feature.abelianMaps.Syntax
 import ilc.feature.abelianMaps.ToScala
 import ilc.util.EvalGenerated
 
-class AbelianMapSuite
-extends FunSuite
-   with Matchers
-   with EvalGenerated
-   with Syntax
-   with ToScala
-   with maps.SyntaxSugar // for map building method "fromAssoc"
-   with abelianGroups.Syntax
-   with abelianGroups.ToScala
-   with functions.SyntaxSugar
-   with functions.ToScala
-   with integers.ImplicitSyntaxSugar
-   with integers.ToScala
-   with naturals.Syntax
-   with naturals.ToScala
-   with maybe.ToScala
-{
+class AbelianMapSuite extends FunSuite with Matchers {
+  object Lang extends EvalGenerated
+    with Syntax
+    with ToScala
+    with maps.SyntaxSugar // for map building method "fromAssoc"
+    with abelianGroups.Syntax
+    with abelianGroups.ToScala
+    with functions.SyntaxSugar
+    with functions.ToScala
+    with integers.ImplicitSyntaxSugar
+    with integers.ToScala
+    with naturals.Syntax
+    with naturals.ToScala
+    with maybe.ToScala
+    with base.Pretty
+
+  import Lang._
+
   val myEmpty = EmptyMap(ℤ, ℤ)
   val singleton = SingletonMap ! 3 ! 5
   val _G_+ = additiveGroupOnIntegers

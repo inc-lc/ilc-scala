@@ -63,7 +63,7 @@ trait Syntax extends base.Syntax {
   /** Specify the argument type without specifying a name.
     * Useful in higher-order arguments.
     * {{{
-    * val powerOfTwo = FoldNat ! 1 ! lambda(NatType) {x => Plus ! x ! x}
+    * val powerOfTwo: Term = FoldNat ! Nat(1) ! lambda(NatType) {x => PlusNat ! x ! x}
     * }}}
     */
   def lambda(argumentType: Type)

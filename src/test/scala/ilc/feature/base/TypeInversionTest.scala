@@ -7,6 +7,7 @@ import org.scalatest.FunSuite
 class TypeInversionTest
 extends FunSuite
    with functions.Syntax // for application
+   with Pretty
 {
   case object Bot extends Type
   case class T1(inner: Type) extends Type

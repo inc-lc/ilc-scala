@@ -8,21 +8,21 @@ import org.scalatest._
   * in the presence of simple right-to-left type inference
   */
 
-class WriteLambdaTerms
-extends FlatSpec with Matchers
-   with functions.Pretty
-   with integers.Syntax
-   with products.Syntax
-   with bags.Syntax
-   with sums.Syntax
-   with maps.Types // maps included for illustration only
-{
+class WriteLambdaTerms extends FlatSpec with Matchers {
+  object Lang extends functions.Pretty
+    with integers.Syntax
+    with products.Syntax
+    with bags.Syntax
+    with sums.Syntax
+    with maps.Types // maps included for illustration only
+  import Lang._
+
   // SHORT GUIDE
 
   // The object language of paper 63 is simply typed lambda calculus.
   // Syntax trees of the object language can always be constructed
   // if the 3 rules below are observed.
-  // 
+  //
   //
   // t ::= x                 x           // (Scala identifier)
   //     | t₁ t₂             t1 ! t2

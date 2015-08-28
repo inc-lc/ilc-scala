@@ -58,7 +58,7 @@ extends Syntax
    with inference.PrettySyntax
 {
   //  empty     : Bag v
-  val empty: UntypedTerm = EmptyBag
+  val emptyBag: UntypedTerm = EmptyBag
 
   //  singleton : v → Bag v
   val singleton: UntypedTerm = Singleton

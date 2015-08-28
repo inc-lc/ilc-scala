@@ -14,6 +14,7 @@ extends FunSuite
    with maps.Reification
    with maybe.Reification
    with sums.Reification
+   with base.Pretty
 {
   test("can reify natural numbers") {
     val n: Value = 42

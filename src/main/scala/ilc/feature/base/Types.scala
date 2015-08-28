@@ -4,7 +4,7 @@ package base
 
 import ilc.feature.inference.Reflection
 
-trait Types {
+trait Types extends PrettyTypes {
   // We want subclasses of Type to be case classes.
   // If subclass is not a case class/case object, then they
   // fail to instantiate at compile time (a good thing) with
@@ -18,9 +18,6 @@ trait Types {
   }
 
   // ERROR THROWERS
-
-  def pretty(t: Type): String
-
   def typeErrorWrongType(term: String, actual: Type, expected: Type): Nothing =
     throw TypeError(s"$term has type ${pretty(actual)} but should have type ${pretty(expected)}")
 

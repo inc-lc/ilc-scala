@@ -6,6 +6,7 @@ import org.scalatest.FunSuite
 
 class PrettySuite
 extends FunSuite
+   with base.Syntax
    with base.Pretty
 {
   case object Unit extends Type

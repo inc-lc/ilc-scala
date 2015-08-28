@@ -19,7 +19,7 @@
   *
   * If a new term constructor's case is not overridden in
   * toPrettyExpression, then that constructor will be
-  * printed by calling `toString`.
+  * printed by calling `prettyPrintDefault`.
   *
   * CAUTION: due to interface conflict between Kiama and
   * Scalatest, trait Pretty cannot be a subclass of
@@ -41,11 +41,16 @@ package base
 import org.kiama.output
 import output._
 
-trait PrettyPrintable {
-  def prettyPrintDefault: String = toString
-}
+trait Pretty extends ParenPrettyPrinter {
+  trait PrettyPrintable {
+    /**
+      * By overriding this method, a subclass can customize how it is
+      * pretty-printed by default (if overrides of Pretty don't take
+      * precedence). By default, this delegates to `toString`.
+      */
+    def prettyPrintDefault = toString
+  }
 
-trait Pretty extends Syntax with ParenPrettyPrinter {
   /** Juxtaposition */
   trait PrettyJuxtaposedExpression extends PrettyBinaryExpression {
     def left : PrettyExpression
@@ -62,36 +67,6 @@ trait Pretty extends Syntax with ParenPrettyPrinter {
   abstract class PrettyEnclosingExpression extends PrettyOperatorExpression {
     def op: Doc
     def exp: PrettyExpression
-  }
-
-  def operatorPrecedence(tau: Type): Int =
-    Int.MaxValue // by default, do not parenthesize types
-
-  /** look up the operator precedence of a term */
-  def operatorPrecedence(t: Term): Int = t match {
-    case Var(_, _) =>
-      Int.MaxValue // variables are never parenthesized
-  }
-
-  /** @return org.kiama.output.PrettyExpression
-    *         representing the given type
-    *
-    * By default, render type `tau` by calling `tau.toString`
-    */
-  def toPrettyExpression(tau: Type): PrettyExpression =
-    PrettyNullaryExpression(text(tau.prettyPrintDefault))
-
-  /** @return org.kiama.output.PrettyExpression
-    *         representing the given term
-    *
-    * By default, render term `t` by calling `t.toString`.
-    */
-  def toPrettyExpression(t: Term): PrettyExpression = t match {
-    case Var(name, tpe) =>
-      PrettyNullaryExpression(text(name.toString))
-
-    case unknownTerm =>
-      PrettyNullaryExpression(text(unknownTerm.prettyPrintDefault))
   }
 
   /** `ParenPrettyPrinter.toParenDoc`
@@ -145,26 +120,6 @@ trait Pretty extends Syntax with ParenPrettyPrinter {
       super.toParenDoc(e)
   }
 
-  def toDoc(t: Term): Doc =
-    toParenDoc(toPrettyExpression(t))
-
-  /** support pretty printing on terms */
-  def pretty(t: Term): Layout =
-    pretty(t, defaultWidth)
-
-  def pretty(t: Term, width: Width): Layout =
-    pretty(toDoc(t), width)
-
-  def toDoc(t: Type): Doc =
-    toParenDoc(toPrettyExpression(t))
-
-  /** support pretty printing on terms */
-  def pretty(t: Type): Layout =
-    pretty(t, defaultWidth)
-
-  def pretty(t: Type, width: Width): Layout =
-    pretty(toDoc(t), width)
-
   // make parenthesizing super simple
   override def noparens(inner: PrettyOperatorExpression,
                         outer: PrettyOperatorExpression,
@@ -186,4 +141,62 @@ trait Pretty extends Syntax with ParenPrettyPrinter {
 
   // override defaults here
   override val defaultIndent = 2
+}
+
+trait PrettyTypes extends Pretty {
+  this: Types =>
+
+  def operatorPrecedence(tau: Type): Int =
+    Int.MaxValue // by default, do not parenthesize types
+
+  /** @return org.kiama.output.PrettyExpression
+    *         representing the given type
+    *
+    * By default, render type `tau` by calling `tau.prettyPrintDefault`
+    */
+  def toPrettyExpression(tau: Type): PrettyExpression =
+    PrettyNullaryExpression(text(tau.prettyPrintDefault))
+
+  def toDoc(t: Type): Doc =
+    toParenDoc(toPrettyExpression(t))
+
+  /** support pretty printing on types */
+  def pretty(t: Type): Layout =
+    pretty(t, defaultWidth)
+
+  def pretty(t: Type, width: Width): Layout =
+    pretty(toDoc(t), width)
+}
+
+trait PrettySyntax extends Pretty {
+  this: Syntax =>
+
+  /** look up the operator precedence of a term */
+  def operatorPrecedence(t: Term): Int = t match {
+    case Var(_, _) =>
+      Int.MaxValue // variables are never parenthesized
+  }
+
+  /** @return org.kiama.output.PrettyExpression
+    *         representing the given term
+    *
+    * By default, render term `t` by calling `t.prettyPrintDefault`.
+    */
+  def toPrettyExpression(t: Term): PrettyExpression = t match {
+    case Var(name, tpe) =>
+      PrettyNullaryExpression(text(name.toString))
+
+    case unknownTerm =>
+      PrettyNullaryExpression(text(unknownTerm.prettyPrintDefault))
+  }
+
+  def toDoc(t: Term): Doc =
+    toParenDoc(toPrettyExpression(t))
+
+  /** support pretty printing on terms */
+  def pretty(t: Term): Layout =
+    pretty(t, defaultWidth)
+
+  def pretty(t: Term, width: Width): Layout =
+    pretty(toDoc(t), width)
 }

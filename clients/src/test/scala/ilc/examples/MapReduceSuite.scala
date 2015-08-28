@@ -9,7 +9,7 @@ class MapReduceSuite
 extends FunSuite
    with Matchers
 {
-  object Lang extends MapReduce
+  object Lang extends MapReduce with feature.base.Pretty
   import Lang._
 
   case object K1 extends Type

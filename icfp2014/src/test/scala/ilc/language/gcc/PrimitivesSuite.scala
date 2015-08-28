@@ -8,11 +8,7 @@ import org.scalatest.Matchers
 import Predef.{any2stringadd => _, _}
 import scala.language.reflectiveCalls
 
-class GCCPrimitivesSuite
-extends FunSuite
-   with Matchers
-   with Evaluation
-{
+class GCCPrimitivesSuite extends FunSuite with Matchers {
   import GCC._
 
   test("Booleans") {

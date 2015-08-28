@@ -10,6 +10,7 @@ extends FlatSpec
    with LetSyntaxSugar
    with LetInference
    with LetRecInference
+   with base.Pretty
 
 // Stuff for testing old inference
 with InferenceTestHelper

@@ -11,6 +11,7 @@ extends FunSuite
    with integers.AbelianDerivation
    with integers.Evaluation
    with integers.ImplicitSyntaxSugar
+   with base.Pretty
 {
   implicit class SumTypeOps(sigma: Type) {
     def ⊎ (tau: Type): Type =

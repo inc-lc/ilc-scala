@@ -8,6 +8,7 @@ class TermBuilderSuite
 extends FunSuite
    with base.Syntax
    with functions.Syntax // for term application operator !
+   with Pretty
 {
   case object Bot extends Type { override def toString = "⊥" }
   case object Top extends Type { override def toString = "⊤" }

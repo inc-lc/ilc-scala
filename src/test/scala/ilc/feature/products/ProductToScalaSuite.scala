@@ -7,15 +7,16 @@ import org.scalatest.Matchers
 import ilc.util.EvalScala
 
 class ProductToScalaSuite
-extends FunSuite
-   with Matchers
-   with ToScala
-   with integers.ToScala
-   with functions.ToScala
-   with EvalScala
-   with SyntaxSugar
-   with integers.ImplicitSyntaxSugar
-{
+extends FunSuite with Matchers {
+  object Lang extends ToScala
+      with integers.ToScala
+      with functions.ToScala
+      with EvalScala
+      with SyntaxSugar
+      with integers.ImplicitSyntaxSugar
+      with base.Pretty
+  import Lang._
+
   def run(t: Term): Any = evalScala(toScala(t))
 
   val quintuple: Term = tuple(5) ! 1 ! 2 ! 3 ! 4 ! 5

@@ -12,6 +12,7 @@ extends FunSuite
    with integers.Evaluation
    with integers.ImplicitSyntaxSugar
    with sums.Evaluation
+   with base.Pretty
 {
   //XXX abstract more?
   val toNope = Inj2(deltaType(ℤ)) ! Nope(ℤ)

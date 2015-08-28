@@ -15,6 +15,7 @@ extends FunSuite
    with functions.Derivation
    with functions.Evaluation
    with functions.ToScala
+   with base.Pretty
 {
   val booleans = Seq(False, True)
 

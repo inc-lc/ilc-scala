@@ -235,7 +235,7 @@ Please do not declare getType as an abstract `val`.
   {
     def specialize(argumentTypes: Type*): Term = {
       case object Underscore extends Type {
-        override def prettyPrintDefault = "_"
+        override def prettyPrintDefault = text("_")
       }
 
       if (argumentTypesMatch(argumentTypes, toTerm.getType))

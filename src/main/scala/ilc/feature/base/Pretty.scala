@@ -36,7 +36,7 @@ trait Pretty extends ParenPrettyPrinter {
       * pretty-printed by default (if overrides of Pretty don't take
       * precedence). By default, this delegates to `toString`.
       */
-    def prettyPrintDefault = toString
+    def prettyPrintDefault: Doc = text(toString)
   }
 
   /** Juxtaposition */
@@ -143,7 +143,7 @@ trait PrettyTypes extends Pretty {
     * By default, render type `tau` by calling `tau.prettyPrintDefault`
     */
   def toPrettyExpression(tau: Type): PrettyExpression =
-    PrettyNullaryExpression(text(tau.prettyPrintDefault))
+    PrettyNullaryExpression(tau.prettyPrintDefault)
 
   def toDoc(t: Type): Doc =
     toParenDoc(toPrettyExpression(t))
@@ -175,7 +175,7 @@ trait PrettySyntax extends Pretty {
       PrettyNullaryExpression(text(name.toString))
 
     case unknownTerm =>
-      PrettyNullaryExpression(text(unknownTerm.prettyPrintDefault))
+      PrettyNullaryExpression(unknownTerm.prettyPrintDefault)
   }
 
   def toDoc(t: Term): Doc =

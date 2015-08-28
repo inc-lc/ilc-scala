@@ -13,7 +13,7 @@ extends TypeConstructors
     val getType: Type
   }
 
-  trait Term extends Typed {
+  trait Term extends Typed with PrettyPrintable {
     // forces early failure for object-level type checking
     if(getType == null) {
       val className = this.getClass.getName
@@ -235,9 +235,7 @@ Please do not declare getType as an abstract `val`.
   {
     def specialize(argumentTypes: Type*): Term = {
       case object Underscore extends Type {
-        override def toString = "_"
-        //XXX this changes prettyprinting and improves some error messages,
-        //but we shouldn't redefine prettyprinting for that.
+        override def prettyPrintDefault = "_"
       }
 
       if (argumentTypesMatch(argumentTypes, toTerm.getType))

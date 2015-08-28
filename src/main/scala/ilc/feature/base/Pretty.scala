@@ -41,6 +41,10 @@ package base
 import org.kiama.output
 import output._
 
+trait PrettyPrintable {
+  def prettyPrintDefault: String = toString
+}
+
 trait Pretty extends Syntax with ParenPrettyPrinter {
   /** Juxtaposition */
   trait PrettyJuxtaposedExpression extends PrettyBinaryExpression {
@@ -75,7 +79,7 @@ trait Pretty extends Syntax with ParenPrettyPrinter {
     * By default, render type `tau` by calling `tau.toString`
     */
   def toPrettyExpression(tau: Type): PrettyExpression =
-    PrettyNullaryExpression(text(tau.toString))
+    PrettyNullaryExpression(text(tau.prettyPrintDefault))
 
   /** @return org.kiama.output.PrettyExpression
     *         representing the given term
@@ -87,7 +91,7 @@ trait Pretty extends Syntax with ParenPrettyPrinter {
       PrettyNullaryExpression(text(name.toString))
 
     case unknownTerm =>
-      PrettyNullaryExpression(text(unknownTerm.toString))
+      PrettyNullaryExpression(text(unknownTerm.prettyPrintDefault))
   }
 
   /** `ParenPrettyPrinter.toParenDoc`

@@ -19,8 +19,10 @@ trait Types {
 
   // ERROR THROWERS
 
-  def typeErrorWrongType(term: String, actual: Type, expected: String): Nothing =
-    throw TypeError(s"$term has type $actual but should have type $expected")
+  def pretty(t: Type): String
+
+  def typeErrorWrongType(term: String, actual: Type, expected: Type): Nothing =
+    throw TypeError(s"$term has type ${pretty(actual)} but should have type ${pretty(expected)}")
 
   def typeErrorNotTheSame(context: String, expected: Any, actual: Any) =
     throw TypeError(s"expected $expected instead of $actual in $context")

@@ -57,10 +57,8 @@ trait Pretty extends ParenPrettyPrinter {
     def exp: PrettyExpression
   }
 
-  /** `ParenPrettyPrinter.toParenDoc`
-    * extended to handle PrettyNullaryExpression
-    */
   override def toParenDoc(e: PrettyExpression): Doc = e match {
+    //New cases
     case PrettyNullaryExpression(doc) =>
       doc
 
@@ -83,6 +81,7 @@ trait Pretty extends ParenPrettyPrinter {
 
     // override default implementation of binary operation
     case b: PrettyBinaryExpression =>
+      //From parent.
       val ld = b.left match {
         case l: PrettyOperatorExpression =>
           bracket(l, b, LeftAssoc)
@@ -99,6 +98,7 @@ trait Pretty extends ParenPrettyPrinter {
           toParenDoc(r)
       }
 
+      //Instead of parent's `ld <+> text (b.op) <+> rd`, we have:
       if (b.op.nonEmpty)
         group(ld <+> text(b.op) <> nest(line <> rd))
       else

@@ -20,18 +20,6 @@
   * If a new term constructor's case is not overridden in
   * toPrettyExpression, then that constructor will be
   * printed by calling `prettyPrintDefault`.
-  *
-  * CAUTION: due to interface conflict between Kiama and
-  * Scalatest, trait Pretty cannot be a subclass of
-  * kiama.output.ParenPrettyPrinter. We have to delegate
-  * instead.
-  *
-  * Subclasses may import from ParenPrettyPrinter.
-  * However, directly imported methods won't perform
-  * dynamic dispatch. If dynamic dispatch/open method
-  * is desired, then one must define an alias in
-  * trait PrettyPrinterInterfaceFromKiama, similar to
-  * `bracket`, `line`, `nest` etc.
   */
 
 package ilc

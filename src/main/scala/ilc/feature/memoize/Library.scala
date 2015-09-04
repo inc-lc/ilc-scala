@@ -40,8 +40,10 @@ object Library {
 
   type MemoizePrimMap[V] = scm.LongMap[V]
   val MemoizePrimMap = scm.LongMap
+  // XXX: should switch to http://trove4j.sourceforge.net/javadocs/gnu/trove/map/hash/TLongObjectHashMap.html?
 
   type MemoizeObjMap[K, V] = scm.Map[K, V]
+  // XXX: should avoid the overhead of Scala wrappers?
   def MemoizeObjMap[Key, Value](): MemoizeObjMap[Key, Value] = {
     import java.util.IdentityHashMap
     import scala.collection.JavaConverters._

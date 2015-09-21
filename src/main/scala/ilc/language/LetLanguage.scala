@@ -11,5 +11,4 @@ class LetLanguage extends
       with let.BetaReduction with let.Pretty
       with products.StdLib
       with inference.LetSyntaxSugar
-      with let.ShowTerms
       with letLanguage.Evaluation

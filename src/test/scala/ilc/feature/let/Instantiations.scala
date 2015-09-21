@@ -20,10 +20,7 @@ trait ShowTerms {
 
 trait Instantiations {
   def buildBacchusWithLetSystem(doCSE_ : Boolean, copyPropagation_ : Boolean, partialApplicationsAreSpecial_ : Boolean) =
-    new language.Bacchus with let.ANormalFormAdapter with integers.ImplicitSyntaxSugar
-      with integers.Evaluation with let.Evaluation with let.Pretty
-      with inference.LetInference
-      with BetaReduction with inference.LetSyntaxSugar with inference.InferenceTestHelper with ShowTerms {
+    new language.LetLanguage with let.ANormalFormAdapter with inference.InferenceTestHelper {
         outer =>
         val aNormalizer = new ANormalFormStateful {
           val mySyntax: outer.type = outer
@@ -33,12 +30,7 @@ trait Instantiations {
         }
     }
 
-  def buildBaseBacchus() =
-    new language.Bacchus with integers.ImplicitSyntaxSugar with inference.LetInference
-      with BetaReduction with Pretty
-      with products.StdLib
-      with inference.LetSyntaxSugar
-      with ShowTerms
+  def buildBaseBacchus() = new language.LetLanguage
 
   /**
     * This will produce an AddCaches2 component which shares the component type with its argument.

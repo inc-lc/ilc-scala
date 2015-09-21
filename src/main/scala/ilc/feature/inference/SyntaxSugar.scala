@@ -43,7 +43,7 @@ trait SyntaxSugar extends PrettySyntax with booleans.Syntax {
   //Example:
   //letS('a := 1, 'b := 2){3}
   implicit class NameBindingOps(s: Name) {
-    def :=(t: UntypedTerm) = s -> t
+    def :=(t: UntypedTerm): (Name, UntypedTerm) = s -> t
   }
   implicit def symToNameBindingOps(s: Symbol) = (s: Name): NameBindingOps
 

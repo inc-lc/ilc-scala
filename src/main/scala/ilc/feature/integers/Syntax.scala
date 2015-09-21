@@ -4,7 +4,8 @@ package integers
 
 import scala.language.implicitConversions
 
-trait Syntax
+
+trait BaseSyntax
 extends base.Syntax
    with Types
    with functions.Types
@@ -12,7 +13,9 @@ extends base.Syntax
   case class LiteralInt(i: Int) extends Term {
     override lazy val getType: Type = IntType
   }
+}
 
+trait Syntax extends BaseSyntax {
   case object PlusInt extends Term {
     override lazy val getType: Type = IntType =>: IntType =>: IntType
   }
@@ -36,8 +39,8 @@ extends Syntax
       PlusInt ! NegateInt ! LiteralInt(0)
 }
 
-trait ImplicitSyntaxSugar
-extends SyntaxSugar
-{
+trait ImplicitBaseSyntaxSugar extends BaseSyntax {
   implicit def intToTerm(n: Int): Term = LiteralInt(n)
 }
+
+trait ImplicitSyntaxSugar extends ImplicitBaseSyntaxSugar with SyntaxSugar

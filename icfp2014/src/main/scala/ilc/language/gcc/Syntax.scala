@@ -88,7 +88,6 @@ trait SyntaxSugar
   with bintrees.InferenceSyntaxSugar
 {
   outer =>
-  implicit def intToUTerm(n: Int): UntypedTerm = asUntyped(LiteralInt(n))
   def letrec(pairs: (Name, UntypedTerm)*)
         (bodyName: String, body: UntypedTerm): UntypedTerm = {
     ULetRec(pairs.toList, bodyName, body)

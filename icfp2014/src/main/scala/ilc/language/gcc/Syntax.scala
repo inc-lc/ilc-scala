@@ -9,13 +9,9 @@ import scala.collection.mutable
 
 trait GCCIntSyntax
 extends base.Syntax
-   with integers.Types
+   with integers.BaseSyntax
    with functions.Types
    with booleans.Types {
-
-  case class LiteralInt(i: Int) extends Term {
-    override lazy val getType: Type = IntType
-  }
 
   class IntOp extends Term {
     override lazy val getType: Type = IntType =>: IntType =>: IntType
@@ -58,8 +54,6 @@ extends base.Syntax
     }
   }
 
-  implicit def intToTerm(n: Int): Term = LiteralInt(n)
-
   case object Not extends Term {
     override lazy val getType: Type = BooleanType =>: BooleanType
   }
@@ -76,6 +70,7 @@ extends functions.Syntax
    with functions.LetRecSyntax
    with products.InferenceSyntaxSugar
    with bintrees.Syntax
+   with integers.ImplicitBaseSyntaxSugar
 
 trait SyntaxSugar
   extends Syntax

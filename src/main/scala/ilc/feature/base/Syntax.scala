@@ -207,6 +207,7 @@ Please do not declare getType as an abstract `val`.
       val printedTypeArguments = typeArguments mkString ", "
       s"${pc.getConstantName}($printedTypeArguments)"
     }
+    override def prettyPrintDefault: Doc = pc.getConstantName
   }
 
   trait ConstantWith1TypeParameter extends PolymorphicConstant {

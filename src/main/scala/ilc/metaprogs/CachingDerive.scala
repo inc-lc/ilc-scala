@@ -9,7 +9,7 @@ import collection.mutable
  * @author pgiarrusso
  */
 trait CachingDerive {
-  val mySyntax: base.Syntax with functions.Syntax with let.Syntax with products.Syntax with base.Derivation
+  val mySyntax: base.Syntax with functions.Syntax with let.Syntax with products.Syntax with unit.Syntax with base.Derivation
   //= new letLanguage.Syntax //base.Syntax with functions.Syntax with let.Syntax with products.Syntax
     //with functions.Derivation with let.Derivation with base.ContextSensitiveDerivation with functions.ContextSensitiveDerivation
     //with let.Pretty {}
@@ -59,13 +59,12 @@ trait CachingDerive {
         val newF = Var(f.getName, newFun.getType)
         //XXX must replace f by newF in rest.
         Let(newF, newFun, cacheDecl(rest))
-      case v: Var =>
+      case e =>
         //XXX ??? Case not handled in the formalization — we should specify what to do
         // with top-level expression E in P.
-        v
+        cacheExpr(Abs(Var(freshGen.freshName("unit"), UnitType), UnitTerm))(e)
     }
 
-    //XXX test how our type inference likes these transformations.
     def cacheExpr(deriv: Term)(t: Term): Term = {
       def go(t: Term): Term = t match {
         case Let(x@Var(xName, _), App(fun, funArg@Var(funArgName, funArgType)), body) =>

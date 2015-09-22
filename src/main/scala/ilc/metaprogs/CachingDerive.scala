@@ -10,26 +10,19 @@ import collection.mutable
  */
 trait CachingDerive {
   val mySyntax: base.Syntax with functions.Syntax with let.Syntax with products.Syntax with unit.Syntax with base.Derivation
-  //= new letLanguage.Syntax //base.Syntax with functions.Syntax with let.Syntax with products.Syntax
-    //with functions.Derivation with let.Derivation with base.ContextSensitiveDerivation with functions.ContextSensitiveDerivation
-    //with let.Pretty {}
   import mySyntax._
-
-
-  def mapName(m: scala.collection.mutable.Map[Name, Name], name: Name)(transf: String => String) = {
-    //This freshening is the easiest way to ensure safety.
-    //XXX: Can we avoid that and still have safety in more complex ways?
-    //Generalize DeltaName to SynthesizedName? Can two ones ever conflict?
-    //Would it work to use hygiene technology here?
-    m.getOrElseUpdate(name, freshGen.freshName(transformName(transf)(name)))
-  }
 
   private val freshGen = new base.FreshGen { lazy val syntax: mySyntax.type = mySyntax }
 
   //XXX use this technology also in main derivation.
   class NameMap(val nameMap: mutable.Map[Name, Name], nameMapper: String => String) {
-    def map(name: Name): Name =
-      mapName(nameMap, name)(nameMapper)
+    def map(name: Name): Name = {
+      //This freshening is the easiest way to ensure safety.
+      //XXX: Can we avoid that and still have safety in more complex ways?
+      //Generalize DeltaName to SynthesizedName? Can two ones ever conflict?
+      //Would it work to use hygiene technology here?
+      nameMap.getOrElseUpdate(name, freshGen.freshName(transformName(nameMapper)(name)))
+    }
   }
 
   class Deriver {
@@ -37,7 +30,6 @@ trait CachingDerive {
     val derNameMap = new NameMap(mutable.HashMap(), "der" + _)
     val pairNameMap = new NameMap(mutable.HashMap(), _ + "_p")
 
-    //TODO: make bindings globally unique first
     val derivePVar: Var => Var = {
       case Var(name, typ) =>
         Var(dNameMap map name, deltaType(typ))
@@ -82,6 +74,7 @@ trait CachingDerive {
     }
   }
 
+  //TODO: make bindings globally unique first
   def cacheDerive(t: Term) = (new Deriver).cacheDecl(t)
 }
 

@@ -10,10 +10,10 @@ import org.scalatest.matchers._
  */
 class CachingDeriveSuite extends FlatSpec with Matchers {
   val v = new CachingDerive {
-    val mySyntax = new language.LetLanguage
+    val syntax = new language.LetLanguage
   }
   import v._
-  import mySyntax._
+  import syntax._
 
   "cachingDerivation" should "produce well-typed terms" in {
     val t =

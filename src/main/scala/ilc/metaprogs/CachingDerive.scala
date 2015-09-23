@@ -9,10 +9,11 @@ import collection.mutable
  * @author pgiarrusso
  */
 trait CachingDerive {
-  val mySyntax: base.Syntax with functions.Syntax with let.Syntax with products.Syntax with unit.Syntax with base.Derivation
-  import mySyntax._
+  outer =>
+  val syntax: base.Syntax with functions.Syntax with let.Syntax with products.Syntax with unit.Syntax with base.Derivation
+  import syntax._
 
-  private val freshGen = new base.FreshGen { lazy val syntax: mySyntax.type = mySyntax }
+  private val freshGen = new base.FreshGen { lazy val syntax: outer.syntax.type = outer.syntax }
 
   //XXX use this technology also in main derivation.
   class NameMap(val nameMap: mutable.Map[Name, Name], nameMapper: String => String) {

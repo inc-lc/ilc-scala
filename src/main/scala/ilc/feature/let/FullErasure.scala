@@ -5,8 +5,8 @@ package let
 trait FullErasure {
   outer =>
 
-  val mySyntax: Syntax with IsAtomic with inference.LetUntypedSyntax
-  import mySyntax._
+  val syntax: Syntax with IsAtomic with inference.LetUntypedSyntax
+  import syntax._
 
   //XXX would need a better "everywhere" to abstract the traversal.
   //But whatever, the types are narrow enough to ensure needed recursive calls

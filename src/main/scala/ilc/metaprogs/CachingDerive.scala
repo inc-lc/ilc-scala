@@ -11,6 +11,7 @@ import collection.mutable
 trait CachingDerive {
   outer =>
   val syntax: base.Syntax with functions.Syntax with let.Syntax with products.Syntax with unit.Syntax with base.Derivation
+    with integers.BaseSyntax
   import syntax._
 
   private val freshGen = new base.FreshGen { lazy val syntax: outer.syntax.type = outer.syntax }
@@ -26,6 +27,7 @@ trait CachingDerive {
     }
   }
 
+  //TODO: deal with n-ary applications.
   class Deriver {
     val dNameMap = new NameMap(mutable.HashMap(), "d" + _)
     val derNameMap = new NameMap(mutable.HashMap(), "der" + _)
@@ -37,15 +39,16 @@ trait CachingDerive {
     }
 
     def deriveP: Term => Term = {
-      def go(t: Term): Term = t match {
-        case v@Var(name, typ) =>
-          derivePVar(v)
-        case Let(x@Var(xName, xType), App(fun, Var(funArgName, funArgType)), body) =>
-          Let(derivePVar(x), App(Var(derNameMap map xName, deltaType(fun.getType)), Var(dNameMap map funArgName, deltaType(funArgType))), go(body))
-      }
-
-      go
+      case v@Var(name, typ) =>
+        derivePVar(v)
+      case Let(x@Var(xName, xType), App(fun, v), body) =>
+        Let(derivePVar(x), App(Var(derNameMap map xName, deltaType(fun.getType)), deriveP(v)), deriveP(body))
+      case Let(x@Var(xName, xType), v, body) =>
+        Let(derivePVar(x), deriveP(v), deriveP(body))
+      case l: LiteralInt =>
+        derive(l)
     }
+
     def cacheDecl(t: Term): Term = t match {
       case Let(f, Abs(x, funBody), rest) =>
         val newFun = Abs(x, cacheExpr(Abs(derivePVar(x), deriveP(funBody)))(funBody))

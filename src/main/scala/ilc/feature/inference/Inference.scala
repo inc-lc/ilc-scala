@@ -32,7 +32,7 @@ trait Inference
   val typeVariableCounter: AtomicInteger = new AtomicInteger()
   def _freshTypeVariable(uterm: Option[UntypedTerm]): TypeVariable = TypeVariable(typeVariableCounter.incrementAndGet(), uterm)
   def freshTypeVariable(uterm: UntypedTerm): TypeVariable = _freshTypeVariable(Some(uterm))
-  def freshTypeVariable: TypeVariable = _freshTypeVariable(None)
+  def freshTypeVariable(): TypeVariable = _freshTypeVariable(None)
 
   case class Constraint(actual: Type, expected: Type, ctx: String = "", parent: Option[Constraint] = None) {
     def pretty(showTerm: Boolean = true): String =

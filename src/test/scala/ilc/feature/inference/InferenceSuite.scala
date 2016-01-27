@@ -19,6 +19,23 @@ with integers.ImplicitSyntaxSugar
 {
   val (t0, t1, t2, t3, t4, t5, t6, t7, t8, t9) = (TypeVariable(0), TypeVariable(1), TypeVariable(2), TypeVariable(3), TypeVariable(4), TypeVariable(5), TypeVariable(6), TypeVariable(7), TypeVariable(8), TypeVariable(9))
 
+  def occursEquivFreeVars(tv: TypeVariable, t: Type) = {
+    occurs(tv, t) === freeTypeVars(t).contains(tv)
+  }
+
+  "Type variable computation" should "work" in {
+    freeTypeVars(t0 =>: t1 =>: t2) === (Set(t0, t1, t2))
+    freeTypeVars((t0 =>: t1) =>: t2) === (Set(t0, t1, t2))
+    freeTypeVars(BagType(t0 =>: t1) =>: t2) === (Set(t0, t1, t2))
+  }
+
+  "Occurs check" should "be equivalent to computing and checking free variables" in {
+    occursEquivFreeVars(t0, t0 =>: t0)
+    occursEquivFreeVars(t0, t0 =>: t1)
+    occursEquivFreeVars(t0, BagType(t0) =>: t1)
+    occursEquivFreeVars(t0, t1 =>: BagType(t2))
+  }
+
   "Unification" should "produce no substitutions for equal constraints" in {
     val s: Set[Constraint] = Set(Constraint(TypeVariable(1), TypeVariable(1)))
     assert(unification(s) === Map())

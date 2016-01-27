@@ -144,6 +144,18 @@ trait Inference
     case _ => sys error s"Cannot infer type for $term"
   }
 
+  def freeTypeVars(t: Type): Set[TypeVariable] = t match {
+    case tv: TypeVariable => Set(tv)
+    case _ =>
+      val freeVars = t.productIterator.flatMap { member =>
+        member match {
+          case typ: Type => freeTypeVars(typ)
+          case _         => Set.empty[TypeVariable]
+        }
+      }
+      freeVars.toSet
+  }
+
   def occurs(variable: TypeVariable, value: Type): Boolean = value match {
     case tv: TypeVariable => tv == variable
     case _ =>

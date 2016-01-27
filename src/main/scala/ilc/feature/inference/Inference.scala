@@ -10,14 +10,13 @@ import scala.collection.immutable.ListMap
 /* Largely inspired by http://lampwww.epfl.ch/teaching/archive/type_systems/2010/exercises/5-inference/ */
 
 trait Inference
-extends base.Syntax
-   with functions.Syntax
-   with UntypedSyntax
-   with Reflection
-{
+    extends base.Syntax
+    with functions.Syntax
+    with UntypedSyntax
+    with Reflection {
   case class UnificationFailureDetails(unsat: Constraint, remaining: Set[Constraint], substitutions: Map[TypeVariable, Type]) {
     override def toString = s"failed constraint: ${unsat.pretty()}"
-      //s"remaining constraints: ${remaining.mkString("\n")}\n\nsubstitutions: ${substitutions.mkString("\n")}"
+    //s"remaining constraints: ${remaining.mkString("\n")}\n\nsubstitutions: ${substitutions.mkString("\n")}"
   }
   class UnificationFailure(val details: UnificationFailureDetails) extends Exception("No unification possible")
   def UnificationFailure(unsat: Constraint, remaining: Set[Constraint], substitutions: Map[TypeVariable, Type]) =
@@ -41,7 +40,7 @@ extends base.Syntax
           |Expected: ${expected}
           |${if (showTerm) s"From context: $ctx" else ""}
           |From constraint stack:
-          |${parent.fold("")(_.pretty(false)) }
+          |${parent.fold("")(_.pretty(false))}
           |""".stripMargin
   }
 
@@ -116,7 +115,6 @@ extends base.Syntax
     (ctx, cSet)
   }
 
-
   def doCollectConstraints(term: UntypedTerm): (TypedTerm, Set[Constraint], InferenceContext) = term match {
     case UVar(name) =>
       val tVar = freshTypeVariable(term)
@@ -158,25 +156,25 @@ extends base.Syntax
   }
 
   def quickTraverse(f: Type => Type)(t: Type): Type =
-    f (t traverse quickTraverse(f))
+    f(t traverse quickTraverse(f))
 
   def substituteInType(substitutions: Map[TypeVariable, Type]): Type => Type =
     quickTraverse {
       case tv: TypeVariable => substitutions.getOrElse(tv, tv)
-      case typ => typ
+      case typ              => typ
     }
 
   def substituteInConstraint(substitutions: Map[TypeVariable, Type])(constraint: Constraint): Constraint =
     Constraint(substituteInType(substitutions)(constraint.actual),
-     substituteInType(substitutions)(constraint.expected), constraint.ctx)
+      substituteInType(substitutions)(constraint.expected), constraint.ctx)
 
   def substitute(substitutions: Map[TypeVariable, Type], term: TypedTerm): TypedTerm = term match {
-    case TVar(name, typ) => TVar(name, substituteInType(substitutions)(typ))
-    case TAbs(argumentName, argumentType, body) => TAbs(argumentName, substituteInType(substitutions)(argumentType), substitute(substitutions, body))
-    case TApp(t1, t2, typ) => TApp(substitute(substitutions, t1), substitute(substitutions, t2), substituteInType(substitutions)(typ))
-    case t@TMonomorphicConstant(_) => t
+    case TVar(name, typ)                                => TVar(name, substituteInType(substitutions)(typ))
+    case TAbs(argumentName, argumentType, body)         => TAbs(argumentName, substituteInType(substitutions)(argumentType), substitute(substitutions, body))
+    case TApp(t1, t2, typ)                              => TApp(substitute(substitutions, t1), substitute(substitutions, t2), substituteInType(substitutions)(typ))
+    case t @ TMonomorphicConstant(_)                    => t
     case TPolymorphicConstant(term, typ, typeArguments) => TPolymorphicConstant(term, substituteInType(substitutions)(typ), typeArguments map substituteInType(substitutions))
-    case anythingElse => sys error s"implement substitute for $anythingElse"
+    case anythingElse                                   => sys error s"implement substitute for $anythingElse"
   }
 
   def unification(constraints: Set[Constraint]): Map[TypeVariable, Type] = {
@@ -200,7 +198,7 @@ extends base.Syntax
             val (nextRemaining, nextSubstitutions) = typeVariableAndAnythingElse(tn, a, remaining, substitutions)
             unificationHelper(nextRemaining, nextSubstitutions)
           case c @ Constraint(a, b, ctx, _) if a.getClass == b.getClass => unificationHelper(remaining.tail ++ (getTypes(a), getTypes(b)).zipped.map(Constraint(_, _,
-              ctx, Some(c))).toSet, substitutions)
+            ctx, Some(c))).toSet, substitutions)
           case unsat => throw UnificationFailure(unsat, remaining, substitutions)
         }
     }
@@ -208,12 +206,12 @@ extends base.Syntax
   }
 
   def typedTermToTerm(tt: TypedTerm): Term = tt match {
-    case TVar(name, typ) => Var(name, typ)
-    case TAbs(argumentName, argumentType, body) => Abs(Var(argumentName, argumentType), typedTermToTerm(body))
-    case TApp(t1, t2, _) => App(typedTermToTerm(t1), typedTermToTerm(t2))
-    case TMonomorphicConstant(term) => term
-    case TPolymorphicConstant(constant, typ, typeArguments) => constant(typeArguments:_*)
-    case anythingElse => sys error s"implement typedTermToTerm for $anythingElse"
+    case TVar(name, typ)                                    => Var(name, typ)
+    case TAbs(argumentName, argumentType, body)             => Abs(Var(argumentName, argumentType), typedTermToTerm(body))
+    case TApp(t1, t2, _)                                    => App(typedTermToTerm(t1), typedTermToTerm(t2))
+    case TMonomorphicConstant(term)                         => term
+    case TPolymorphicConstant(constant, typ, typeArguments) => constant(typeArguments: _*)
+    case anythingElse                                       => sys error s"implement typedTermToTerm for $anythingElse"
   }
 
   def inferType(t: UntypedTerm): TypedTerm = {

@@ -107,7 +107,7 @@ trait Inference
   //but we just need to use the Set[Constraint] output with their monoid to fix this).
   def mergeInferenceContexts(ctx1: InferenceContext, ctx2: InferenceContext): (InferenceContext, Set[Constraint]) = {
     val commonNames = ctx1.keySet intersect ctx2.keySet
-    val cSet = commonNames map (name => Constraint(ctx1(name), (ctx2)(name)))
+    val cSet = commonNames map (name => Constraint(ctx1(name), ctx2(name)))
     val ctx = (ctx1 -- commonNames) ++ (ctx2 -- commonNames) ++
       //we could pick ctx2, but we output equality constraints such that the
       //two choices are equivalent.

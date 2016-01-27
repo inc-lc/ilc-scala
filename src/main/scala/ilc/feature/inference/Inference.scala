@@ -148,10 +148,13 @@ extends base.Syntax
 
   def occurs(variable: TypeVariable, value: Type): Boolean = value match {
     case tv: TypeVariable => tv == variable
-    case _ => value.productIterator.exists(member =>
-      if (member.isInstanceOf[Type])
-        occurs(variable, member.asInstanceOf[Type])
-      else false)
+    case _ =>
+      value.productIterator.exists { member =>
+        member match {
+          case typ: Type => occurs(variable, member.asInstanceOf[Type])
+          case _         => false
+        }
+      }
   }
 
   def quickTraverse(f: Type => Type)(t: Type): Type =

@@ -3,6 +3,7 @@ package feature
 package inference
 
 import java.util.concurrent.atomic.AtomicInteger
+
 import scala.annotation.tailrec
 import scala.language.implicitConversions
 import scala.collection.immutable.ListMap
@@ -168,7 +169,7 @@ trait Inference
     case _ =>
       value.productIterator.exists { member =>
         member match {
-          case typ: Type => occurs(variable, member.asInstanceOf[Type])
+          case typ: Type => occurs(variable, typ)
           case _         => false
         }
       }
@@ -209,15 +210,18 @@ trait Inference
         substitutions
       else
         remaining.head match {
-          case Constraint(a, b, _, _) if a == b => unificationHelper(remaining.tail, substitutions)
+          case Constraint(a, b, _, _) if a == b =>
+            unificationHelper(remaining.tail, substitutions)
           case Constraint(tn: TypeVariable, a, _, _) if !occurs(tn, a) =>
             val (nextRemaining, nextSubstitutions) = typeVariableAndAnythingElse(tn, a, remaining, substitutions)
             unificationHelper(nextRemaining, nextSubstitutions)
           case Constraint(a, tn: TypeVariable, _, _) if !occurs(tn, a) =>
             val (nextRemaining, nextSubstitutions) = typeVariableAndAnythingElse(tn, a, remaining, substitutions)
             unificationHelper(nextRemaining, nextSubstitutions)
-          case c @ Constraint(a, b, ctx, _) if a.getClass == b.getClass => unificationHelper(remaining.tail ++ (getTypes(a), getTypes(b)).zipped.map(Constraint(_, _,
-            ctx, Some(c))).toSet, substitutions)
+          case c @ Constraint(a, b, ctx, _) if a.getClass == b.getClass =>
+            unificationHelper(remaining.tail ++
+              (getTypes(a), getTypes(b)).zipped.map(Constraint(_, _, ctx, Some(c))).toSet,
+              substitutions)
           case unsat => throw UnificationFailure(unsat, remaining, substitutions)
         }
     }

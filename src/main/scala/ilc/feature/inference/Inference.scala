@@ -320,3 +320,24 @@ trait LetRecInference extends Inference with LetRecUntypedSyntax with functions.
     case _ => super.typedTermToTerm(tt)
   }
 }
+
+trait MiniMLTypes extends TVars {
+  //HOAS for type binders? No, we use productIterator for traversals, so not.
+//  case class Forall(tBody: Type => Type) extends Type {
+//    override def traverse(f: Type => Type): Type = {
+//      val tVar = freshTypeVariable()
+//      Forall(x => substituteInType(Map(tVar -> x))(f(tBody(tVar))))
+//    }
+//  }
+  case class Forall(tVar: TypeVariable, tBody: Type) extends Type {
+    override def traverse(f: Type => Type): Type =
+      Forall(tVar, f(tBody))
+  }
+}
+
+trait MiniMLSyntax extends base.Syntax with MiniMLTypes {
+  case class TLambda(tVar: TypeVariable, body: Term) extends Term
+  {
+    override lazy val getType = Forall(tVar, body.getType)
+  }
+}

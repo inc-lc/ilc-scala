@@ -89,6 +89,13 @@ class InferenceSuite extends InferenceSuiteHelper {
     val vT: Term = vU
     assert(dropSourceInfo(vT.getType) === TypeVariable(4))
   }
+
+  it should "work correctly on open LetRec terms" in {
+    val vU = ULetRec(List(("fac", 'x ->: 'fac('fac('x)))), "letRecBodyName",
+        asUntyped(Pair)('fac(1: Term), 'freeVar))
+    typecheck(vU)
+  }
+
   it should "assign consistent types for repeated variables" in {
     val vU: UntypedTerm = UApp(UVar("x"), UVar("x"))
     intercept[Throwable] {
@@ -97,8 +104,17 @@ class InferenceSuite extends InferenceSuiteHelper {
   }
 
   it should "work on LetRec" in {
-    val vU = ULetRec(List(("fac", 'x ->: 'fac('fac('x)))), "", 'fac(1: Term))
-    typecheck(vU)
+    val vU = ULetRec(List(("fac", 'x ->: 'fac('fac('x)))), "letRecBodyName", 'fac(1: Term))
+    val typed = typecheck(vU)
+    assert(dropSourceInfo(typed.getType) === IntType)
+  }
+
+  it should "work on LetRec2" in {
+    val vU = ULetRec(List(("fac", 'x ->: 'fac('fac('x))),
+        ("facc", 'fac)), "letRecBodyName", asUntyped(Pair)('fac(1: Term), 'facc))
+    val typed = typecheck(vU)
+    println(typecheck(vU))
+    assert(dropSourceInfo(typed.getType) === ProductType(IntType, IntType =>: IntType))
   }
 
   /*
@@ -121,6 +137,24 @@ class InferenceSuite extends InferenceSuiteHelper {
       'g := 'x ->: ULetRec(List(("f", 'x ->: 'f('f('x)))), "", 'f(1: Term)),
       'h := 'x ->: ULetRec(List(("f", 'x ->: 'f('f('x)))), "", 'f(EmptyBag)))('g)
     typecheck(vU)
+  }
+
+  it should "not allow reusing functions with different types" in {
+    val vU =
+      letS(
+        'f := 'x ->: 'x
+      )(asUntyped(Pair)('f(1: Term), 'f(EmptyBag)))
+    intercept[Throwable] {
+      typecheck(vU)
+    }
+  }
+  it should "identify types even for bound variables" in {
+    val vU =
+      letS(
+        'f := 'x ->: 'x
+      )('bag ->: asUntyped(Pair)('f(1: Term), 'f('bag)))
+    typecheck(vU)
+    //XXX check result is as expected
   }
 }
 

@@ -158,3 +158,40 @@ class InferenceSuite extends InferenceSuiteHelper {
   }
 }
 
+class HMInferenceSuite extends InferenceSuiteHelper with MiniMLInference {
+  "isMono" should "accept monomorphic types" in {
+    isMono(t0) === true
+    isMono(t0 =>: t1) === true
+  }
+
+  it should "reject polymorphic types" in {
+    isMono(Forall(t0, t0)) === false
+    isMono(Forall(t0, t0 =>: t1)) === false
+    isMono(t3 =>: Forall(t0, t0 =>: t1)) === false
+    isHM(t3 =>: Forall(t0, t0 =>: t1)) === false
+  }
+
+  "HM type inference" should "allow reusing functions with different types" in {
+    val vU =
+      letS(
+        'f := 'x ->: 'x
+      )(asUntyped(Pair)('f(1: Term), 'f(EmptyBag)))
+    typecheck(vU)
+  }
+
+  it should "not identify types even for bound variables" in {
+    val vU =
+      letS(
+        'f := 'x ->: 'x
+      )('bag ->: asUntyped(Pair)('f(1: Term), 'f('bag)))
+    typecheck(vU)
+  }
+
+  it should "allow applying higher-order functions to functions of the 'wrong arity'" in {
+    val vU = letS(
+      'apply := 'f ->: 'x ->: 'f('x),
+      'plus := 'x ->: 'y ->: PlusInt('x, 'y)
+    )('apply('apply('plus))(1))
+    println(typecheck(vU))
+  }
+}

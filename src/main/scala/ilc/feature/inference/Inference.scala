@@ -103,17 +103,11 @@ trait Inference
   //implicit def GenericTypedTerm = Generic[TypedTerm]
 
   def collectConstraints(term: UntypedTerm): (TypedTerm, Set[Constraint]) = {
-    //XXX
-    val (tt, cs, ctx) = doCollectConstraints(term)
-    (tt, cs)
-  }
-
-  private final def doCollectConstraints(term: UntypedTerm): (TypedTerm, Set[Constraint], InferenceContext) = {
     val freeTermVars = (freeVars(term) -- initContext.keys).toSeq
     val freshTypingCtx = InferenceContext(freeTermVars map (n => (n, freshTypeVariable(UVar(n)))): _*)
     val ctx = initContext ++ freshTypingCtx
     val (tt, constraints) = doCollectConstraintsFromCtx(term, ctx)
-    (tt, constraints, ctx)
+    (tt, constraints) //And ctx ?
   }
 
   /**
@@ -393,7 +387,6 @@ trait MiniMLInference extends LetInference with MiniMLSyntax with MiniMLTypes {
   }
 
   override def specialize(t: Type) = {
-    //XXX untested, and quickTraverse is not really well-documented.
     quickTraverse {
       case Forall(tVar, tBody) =>
         //Quadratic worst-case complexity. We should remove and accumulate type variables and use parallel substitution.

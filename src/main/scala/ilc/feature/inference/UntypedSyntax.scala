@@ -3,7 +3,7 @@ package feature
 package inference
 
 trait UntypedSyntax {
-  this: base.Syntax with functions.Syntax =>
+  this: base.Syntax =>
 
   trait UntypedTerm
 

@@ -9,11 +9,25 @@ import scala.collection.immutable.ListMap
 
 /* Largely inspired by http://lampwww.epfl.ch/teaching/archive/type_systems/2010/exercises/5-inference/ */
 
+trait TVars extends base.Types with UntypedSyntax with base.Syntax {
+  // Only use this for pattern matching. Create new TypeVariables with freshTypeVariable.
+  case class TypeVariable(name: Int, uterm: Option[UntypedTerm] = None) extends Type {
+    // We don't want to hash uterm for every lookup.
+    override def hashCode() = name
+    override def toString = s"T$name"
+  }
+  object TypeVariable {
+    implicit val ord: Ordering[TypeVariable] = Ordering.by(_.name)
+  }
+}
+
 trait Inference
     extends base.Syntax
     with functions.Syntax
+    with TVars
     with UntypedSyntax
     with Reflection {
+
   case class UnificationFailureDetails(unsat: Constraint, remaining: Set[Constraint], substitutions: Map[TypeVariable, Type]) {
     override def toString = s"failed constraint: ${unsat.pretty()}"
     //s"remaining constraints: ${remaining.mkString("\n")}\n\nsubstitutions: ${substitutions.mkString("\n")}"
@@ -21,13 +35,6 @@ trait Inference
   class UnificationFailure(val details: UnificationFailureDetails) extends Exception("No unification possible")
   def UnificationFailure(unsat: Constraint, remaining: Set[Constraint], substitutions: Map[TypeVariable, Type]) =
     new UnificationFailure(UnificationFailureDetails(unsat, remaining, substitutions))
-
-  // Only use this for pattern matching. Create new TypeVariables with freshTypeVariable.
-  case class TypeVariable(name: Int, uterm: Option[UntypedTerm] = None) extends Type {
-    // We don't want to hash uterm for every lookup.
-    override def hashCode() = name
-    override def toString = s"T$name"
-  }
 
   val typeVariableCounter: AtomicInteger = new AtomicInteger()
   def _freshTypeVariable(uterm: Option[UntypedTerm]): TypeVariable = TypeVariable(typeVariableCounter.incrementAndGet(), uterm)

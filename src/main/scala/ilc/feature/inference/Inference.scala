@@ -384,14 +384,6 @@ trait MiniMLInference extends LetInference with MiniMLSyntax with MiniMLTypes {
     freeVars.foldRight(t)(Forall(_, _))
   }
 
-  /*
-  def generalizeBodyWithCtx(t: Type, ctx: InferenceContext, body: Term): Term = {
-    assert(isMono(t))
-    val freeVars = (freeTypeVars(t) -- ctx.values.flatMap(freeTypeVars)).toList.sorted
-    freeVars.foldRight(body)(TLambda(_, _))
-  }
-  */
-
   /**
    * Potentially wrap body to have the more general type given by targetType.
    */

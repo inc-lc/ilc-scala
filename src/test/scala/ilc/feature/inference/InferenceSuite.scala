@@ -92,7 +92,7 @@ class InferenceSuite extends InferenceSuiteHelper {
 
   it should "work correctly on open LetRec terms" in {
     val vU = ULetRec(List(("fac", 'x ->: 'fac('fac('x)))), "letRecBodyName",
-        asUntyped(Pair)('fac(1: Term), 'freeVar))
+        asUntyped(Pair)('fac(1), 'freeVar))
     typecheck(vU)
   }
 
@@ -104,14 +104,14 @@ class InferenceSuite extends InferenceSuiteHelper {
   }
 
   it should "work on LetRec" in {
-    val vU = ULetRec(List(("fac", 'x ->: 'fac('fac('x)))), "letRecBodyName", 'fac(1: Term))
+    val vU = ULetRec(List(("fac", 'x ->: 'fac('fac('x)))), "letRecBodyName", 'fac(1))
     val typed = typecheck(vU)
     assert(dropSourceInfo(typed.getType) === IntType)
   }
 
   it should "work on LetRec2" in {
     val vU = ULetRec(List(("fac", 'x ->: 'fac('fac('x))),
-        ("facc", 'fac)), "letRecBodyName", asUntyped(Pair)('fac(1: Term), 'facc))
+        ("facc", 'fac)), "letRecBodyName", asUntyped(Pair)('fac(1), 'facc))
     val typed = typecheck(vU)
     println(typecheck(vU))
     assert(dropSourceInfo(typed.getType) === ProductType(IntType, IntType =>: IntType))
@@ -126,7 +126,7 @@ class InferenceSuite extends InferenceSuiteHelper {
   it should "not relate identifiers bounds in different Lets" in {
     val vU =
       letS(
-      'h := 'x ->: letS('f := 'x ->: 'x)('f(1: Term)),
+      'h := 'x ->: letS('f := 'x ->: 'x)('f(1)),
       'i := 'x ->: letS('f := 'x ->: 'x)('f(EmptyBag)))('h)
     typecheck(vU)
   }
@@ -134,7 +134,7 @@ class InferenceSuite extends InferenceSuiteHelper {
   it should "not relate identifiers bounds in different LetRec" in {
     val vU =
       letS(
-      'g := 'x ->: ULetRec(List(("f", 'x ->: 'f('f('x)))), "", 'f(1: Term)),
+      'g := 'x ->: ULetRec(List(("f", 'x ->: 'f('f('x)))), "", 'f(1)),
       'h := 'x ->: ULetRec(List(("f", 'x ->: 'f('f('x)))), "", 'f(EmptyBag)))('g)
     typecheck(vU)
   }
@@ -143,7 +143,7 @@ class InferenceSuite extends InferenceSuiteHelper {
     val vU =
       letS(
         'f := 'x ->: 'x
-      )(asUntyped(Pair)('f(1: Term), 'f(EmptyBag)))
+      )(asUntyped(Pair)('f(1), 'f(EmptyBag)))
     intercept[Throwable] {
       typecheck(vU)
     }
@@ -152,7 +152,7 @@ class InferenceSuite extends InferenceSuiteHelper {
     val vU =
       letS(
         'f := 'x ->: 'x
-      )('bag ->: asUntyped(Pair)('f(1: Term), 'f('bag)))
+      )('bag ->: asUntyped(Pair)('f(1), 'f('bag)))
     typecheck(vU)
     //XXX check result is as expected
   }
@@ -175,7 +175,7 @@ class HMInferenceSuite extends InferenceSuiteHelper with MiniMLInference {
     val vU =
       letS(
         'f := 'x ->: 'x
-      )(asUntyped(Pair)('f(1: Term), 'f(EmptyBag)))
+      )(asUntyped(Pair)('f(1), 'f(EmptyBag)))
     typecheck(vU)
   }
 
@@ -183,7 +183,7 @@ class HMInferenceSuite extends InferenceSuiteHelper with MiniMLInference {
     val vU =
       letS(
         'f := 'x ->: 'x
-      )('bag ->: asUntyped(Pair)('f(1: Term), 'f('bag)))
+      )('bag ->: asUntyped(Pair)('f(1), 'f('bag)))
     typecheck(vU)
   }
 

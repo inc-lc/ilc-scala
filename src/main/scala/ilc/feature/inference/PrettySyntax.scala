@@ -7,6 +7,8 @@ trait PrettySyntax extends Inference {
     typedTermToTerm(inferType(t))
   implicit def polymorphicConstantToUPolymorphicConstant(x: PolymorphicConstant): UntypedTerm = UPolymorphicConstant(x)
   implicit def monomorphicConstantToUMonomorphicConstant(x: Term): UntypedTerm = UMonomorphicConstant(x)
+  implicit def tToTermToUTerm[T](t: T)(implicit conv: T => Term): UntypedTerm = (t: Term): UntypedTerm
+
   implicit def symbolToUVar(x: Symbol): UVar = UVar(x.name)
   implicit def nameToUVar(x: Name): UVar = UVar(x)
   implicit def stringToUVar(x: String): UVar = (x: Name): UVar

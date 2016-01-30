@@ -5,8 +5,8 @@ package let
 trait ToHaskell {
   outer =>
 
-  val mySyntax: inference.LetUntypedSyntax with base.Syntax with IsAtomic
-  import mySyntax._
+  val syntax: inference.LetUntypedSyntax with base.Syntax with IsAtomic
+  import syntax._
 
   def untypedToHaskell: UntypedTerm => String = {
     case UVar(name) =>

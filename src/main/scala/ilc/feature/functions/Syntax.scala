@@ -13,15 +13,15 @@ trait Syntax extends base.Syntax {
           range
         else
           typeErrorNotTheSame(
-            s"operand position of $operator : ${expectedDomain =>: range}",
-            expectedDomain,
-            s"$operand : $actualDomain")
+            s"operand position of ${pretty(operator)} : ${pretty(expectedDomain =>: range)}",
+            pretty(expectedDomain),
+            s"${pretty(operand)} : ${pretty(actualDomain)}")
 
       case (operatorType, actualDomain) =>
         typeErrorNotTheSame(
-          s"operator position for operand $operand : $actualDomain",
-          s"function (with domain $actualDomain)",
-          s"$operator : $operatorType")
+          s"operator position for operand ${pretty(operand)} : ${pretty(actualDomain)}",
+          s"function (with domain ${pretty(actualDomain)})",
+          s"${pretty(operator)} : ${pretty(operatorType)}")
     }
   }
 

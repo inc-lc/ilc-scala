@@ -26,11 +26,13 @@ trait ANormalFormAdapter extends ANormalFormInterface {
  * Alternatively, one could implement this using a writer monad, as suggested by Tillmann.
  */
 trait ANormalForm extends ANormalFormInterface {
-  protected val mySyntax: Syntax with IsAtomic
-  type MySyntax = mySyntax.type
-  import mySyntax._
+  outer =>
 
-  private val freshGen = new base.FreshGen { lazy val syntax: mySyntax.type = mySyntax }
+  protected val syntax: Syntax with IsAtomic
+  type MySyntax = syntax.type
+  import syntax._
+
+  private val freshGen = new base.FreshGen { lazy val syntax: outer.syntax.type = outer.syntax }
   import freshGen.fresh
 
   override def aNormalizeTerm(t: Term): Term = aNormalize(t)(identity)
@@ -64,13 +66,15 @@ trait ANormalForm extends ANormalFormInterface {
 
 //
 trait ANormalFormStateful extends ANormalFormInterface {
-  val mySyntax: Syntax with IsAtomic with Traversals
-  type MySyntax = mySyntax.type
-  import mySyntax._
+  outer =>
+
+  val syntax: Syntax with IsAtomic with Traversals
+  type MySyntax = syntax.type
+  import syntax._
 
   protected val freshGen = new base.FreshGen {
-    //This must be lazy because at this time mySyntax is not initialized yet.
-    lazy val syntax: mySyntax.type = mySyntax
+    //This must be lazy because at this time outer.syntax is not initialized yet.
+    lazy val syntax: outer.syntax.type = outer.syntax
   }
   import freshGen.fresh
 
@@ -234,11 +238,11 @@ trait ANormalFormStateful extends ANormalFormInterface {
 trait AddCaches2 {
   outer =>
 
-  val mySyntax: Syntax with IsAtomic with products.SyntaxSugar with unit.Syntax with Traversals
-  import mySyntax._
+  val syntax: Syntax with IsAtomic with products.SyntaxSugar with unit.Syntax with Traversals
+  import syntax._
 
   val aNormalizer = new ANormalFormStateful {
-    lazy val mySyntax: outer.mySyntax.type = outer.mySyntax
+    val syntax: outer.syntax.type = outer.syntax
     override val partialApplicationsAreSpecial = false
     override def isAFormAtom(t: Term) = {
       super.isAFormAtom(t) && (t match {
@@ -253,8 +257,8 @@ trait AddCaches2 {
     }
   }
   protected val freshGen = new base.FreshGen {
-    //This must be lazy because at this time mySyntax is not initialized yet.
-    lazy val syntax: mySyntax.type = mySyntax
+    //This must be lazy because at this time outer.syntax is not initialized yet.
+    lazy val syntax: outer.syntax.type = outer.syntax
   }
   import aNormalizer._
   import freshGen.fresh

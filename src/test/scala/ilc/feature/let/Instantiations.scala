@@ -20,36 +20,29 @@ trait ShowTerms {
 
 trait Instantiations {
   def buildBacchusWithLetSystem(doCSE_ : Boolean, copyPropagation_ : Boolean, partialApplicationsAreSpecial_ : Boolean) =
-    new language.Bacchus with let.ANormalFormAdapter with integers.ImplicitSyntaxSugar
-      with integers.Evaluation with let.Evaluation with let.Pretty
-      with let.CPS with cbpv.CBPVToCPS //XXX added to also test CPS in worksheets
-      with metaprogs.AlphaEquivLet
-      with inference.LetInference
-      with BetaReduction with inference.LetSyntaxSugar with inference.InferenceTestHelper with ShowTerms {
-        outer =>
-        val aNormalizer = new ANormalFormStateful {
-          val mySyntax: outer.type = outer
-          override val doCSE = doCSE_
-          override val copyPropagation = copyPropagation_
-          override val partialApplicationsAreSpecial = partialApplicationsAreSpecial_
-        }
+    new language.LetLanguage with let.ShowTerms with let.ANormalFormAdapter with inference.InferenceTestHelper
+    //XXX added to also test CPS in worksheets
+    with let.CPS with cbpv.CBPVToCPS {
+      outer =>
+      val aNormalizer = new ANormalFormStateful {
+        val syntax: outer.type = outer
+        override val doCSE = doCSE_
+        override val copyPropagation = copyPropagation_
+        override val partialApplicationsAreSpecial = partialApplicationsAreSpecial_
+      }
     }
 
-  def buildBaseBacchus() =
-    new language.Bacchus with integers.ImplicitSyntaxSugar with inference.LetInference
-      with BetaReduction with Pretty
-      with products.StdLib
-      with inference.LetSyntaxSugar
-      with ShowTerms
+  def buildBaseBacchus() = new language.LetLanguage with let.ShowTerms
+
 
   /**
     * This will produce an AddCaches2 component which shares the component type with its argument.
-    * The method type is inferred to have a dependent type: (bacchus: T): AddCaches { val mySyntax: bacchus.type }.
+    * The method type is inferred to have a dependent type: (bacchus: T): AddCaches { val syntax: bacchus.type }.
     * This is why you can call this method without annotating T to be a singleton type.
     */
   def buildCacher(bacchus: Syntax with IsAtomic with products.SyntaxSugar with unit.Syntax with Traversals) =
     new AddCaches2 {
-      val mySyntax: bacchus.type = bacchus
+      val syntax: bacchus.type = bacchus
     }
 }
 
@@ -58,5 +51,5 @@ object WorksheetHelpers extends Instantiations {
   val cacher = buildCacher(bacchus)
 
   //Assert the equality of these two types as a test.
-  implicitly[bacchus.Term =:= cacher.mySyntax.Term]
+  implicitly[bacchus.Term =:= cacher.syntax.Term]
 }

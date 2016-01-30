@@ -3,7 +3,7 @@ package ilc.feature.inference
 import org.scalatest._
 import ilc.feature._
 
-class InferenceSuite
+trait InferenceSuiteHelper
 extends FlatSpec
    with Inference
    with SyntaxSugar
@@ -12,12 +12,31 @@ extends FlatSpec
    with LetRecInference
    with base.Pretty
 
-// Stuff for testing old inference
-with InferenceTestHelper
-with bags.Syntax
-with integers.ImplicitSyntaxSugar
+   with InferenceTestHelper
+   with bags.Syntax
+   with products.Syntax
+   with integers.ImplicitSyntaxSugar
 {
   val (t0, t1, t2, t3, t4, t5, t6, t7, t8, t9) = (TypeVariable(0), TypeVariable(1), TypeVariable(2), TypeVariable(3), TypeVariable(4), TypeVariable(5), TypeVariable(6), TypeVariable(7), TypeVariable(8), TypeVariable(9))
+
+  def occursEquivFreeVars(tv: TypeVariable, t: Type) = {
+    occurs(tv, t) === freeTypeVars(t).contains(tv)
+  }
+}
+
+class InferenceSuite extends InferenceSuiteHelper {
+  "Type variable computation" should "work" in {
+    freeTypeVars(t0 =>: t1 =>: t2) === (Set(t0, t1, t2))
+    freeTypeVars((t0 =>: t1) =>: t2) === (Set(t0, t1, t2))
+    freeTypeVars(BagType(t0 =>: t1) =>: t2) === (Set(t0, t1, t2))
+  }
+
+  "Occurs check" should "be equivalent to computing and checking free variables" in {
+    occursEquivFreeVars(t0, t0 =>: t0)
+    occursEquivFreeVars(t0, t0 =>: t1)
+    occursEquivFreeVars(t0, BagType(t0) =>: t1)
+    occursEquivFreeVars(t0, t1 =>: BagType(t2))
+  }
 
   "Unification" should "produce no substitutions for equal constraints" in {
     val s: Set[Constraint] = Set(Constraint(TypeVariable(1), TypeVariable(1)))
@@ -57,7 +76,7 @@ with integers.ImplicitSyntaxSugar
     }
   }
 
-  "Type inference" should "infer α -> α for (id id)" in {
+  "Non-HM type inference" should "infer α -> α for (id id)" in {
     val id: UntypedTerm = UAbs("x", None, UVar("x"))
     val (typedTerm, constraints) = collectConstraints(UApp(id, id))
     val solved = unification(constraints)
@@ -70,6 +89,13 @@ with integers.ImplicitSyntaxSugar
     val vT: Term = vU
     assert(dropSourceInfo(vT.getType) === TypeVariable(4))
   }
+
+  it should "work correctly on open LetRec terms" in {
+    val vU = ULetRec(List(("fac", 'x ->: 'fac('fac('x)))), "letRecBodyName",
+        asUntyped(Pair)('fac(1), 'freeVar))
+    typecheck(vU)
+  }
+
   it should "assign consistent types for repeated variables" in {
     val vU: UntypedTerm = UApp(UVar("x"), UVar("x"))
     intercept[Throwable] {
@@ -78,8 +104,17 @@ with integers.ImplicitSyntaxSugar
   }
 
   it should "work on LetRec" in {
-    val vU = ULetRec(List(("fac", 'x ->: 'fac('fac('x)))), "", 'fac(1: Term))
-    typecheck(vU)
+    val vU = ULetRec(List(("fac", 'x ->: 'fac('fac('x)))), "letRecBodyName", 'fac(1))
+    val typed = typecheck(vU)
+    assert(dropSourceInfo(typed.getType) === IntType)
+  }
+
+  it should "work on LetRec2" in {
+    val vU = ULetRec(List(("fac", 'x ->: 'fac('fac('x))),
+        ("facc", 'fac)), "letRecBodyName", asUntyped(Pair)('fac(1), 'facc))
+    val typed = typecheck(vU)
+    println(typecheck(vU))
+    assert(dropSourceInfo(typed.getType) === ProductType(IntType, IntType =>: IntType))
   }
 
   /*
@@ -91,7 +126,7 @@ with integers.ImplicitSyntaxSugar
   it should "not relate identifiers bounds in different Lets" in {
     val vU =
       letS(
-      'h := 'x ->: letS('f := 'x ->: 'x)('f(1: Term)),
+      'h := 'x ->: letS('f := 'x ->: 'x)('f(1)),
       'i := 'x ->: letS('f := 'x ->: 'x)('f(EmptyBag)))('h)
     typecheck(vU)
   }
@@ -99,9 +134,64 @@ with integers.ImplicitSyntaxSugar
   it should "not relate identifiers bounds in different LetRec" in {
     val vU =
       letS(
-      'g := 'x ->: ULetRec(List(("f", 'x ->: 'f('f('x)))), "", 'f(1: Term)),
+      'g := 'x ->: ULetRec(List(("f", 'x ->: 'f('f('x)))), "", 'f(1)),
       'h := 'x ->: ULetRec(List(("f", 'x ->: 'f('f('x)))), "", 'f(EmptyBag)))('g)
     typecheck(vU)
   }
+
+  it should "not allow reusing functions with different types" in {
+    val vU =
+      letS(
+        'f := 'x ->: 'x
+      )(asUntyped(Pair)('f(1), 'f(EmptyBag)))
+    intercept[Throwable] {
+      typecheck(vU)
+    }
+  }
+  it should "identify types even for bound variables" in {
+    val vU =
+      letS(
+        'f := 'x ->: 'x
+      )('bag ->: asUntyped(Pair)('f(1), 'f('bag)))
+    typecheck(vU)
+    //XXX check result is as expected
+  }
 }
 
+class HMInferenceSuite extends InferenceSuiteHelper with MiniMLInference {
+  "isMono" should "accept monomorphic types" in {
+    isMono(t0) === true
+    isMono(t0 =>: t1) === true
+  }
+
+  it should "reject polymorphic types" in {
+    isMono(Forall(t0, t0)) === false
+    isMono(Forall(t0, t0 =>: t1)) === false
+    isMono(t3 =>: Forall(t0, t0 =>: t1)) === false
+    isHM(t3 =>: Forall(t0, t0 =>: t1)) === false
+  }
+
+  "HM type inference" should "allow reusing functions with different types" in {
+    val vU =
+      letS(
+        'f := 'x ->: 'x
+      )(asUntyped(Pair)('f(1), 'f(EmptyBag)))
+    typecheck(vU)
+  }
+
+  it should "not identify types even for bound variables" in {
+    val vU =
+      letS(
+        'f := 'x ->: 'x
+      )('bag ->: asUntyped(Pair)('f(1), 'f('bag)))
+    typecheck(vU)
+  }
+
+  it should "allow applying higher-order functions to functions of the 'wrong arity'" in {
+    val vU = letS(
+      'apply := 'f ->: 'x ->: 'f('x),
+      'plus := 'x ->: 'y ->: PlusInt('x, 'y)
+    )('apply('apply('plus))(1))
+    println(typecheck(vU))
+  }
+}

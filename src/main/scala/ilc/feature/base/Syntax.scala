@@ -5,7 +5,7 @@ package base
 import scala.language.implicitConversions
 import scala.language.postfixOps
 
-trait Syntax
+trait SyntaxBase
 extends TypeConstructors with PrettySyntax
 {
   trait Typed {
@@ -31,7 +31,10 @@ Please do not declare getType as an abstract `val`.
 
   //To override with pretty if pretty is available.
   protected def showTerm(t: Term): String = t.toString
+}
 
+trait TypingContexts {
+  this: SyntaxBase =>
   import collection.immutable.HashMap
 
   // TYPING CONTEXT
@@ -65,19 +68,6 @@ Please do not declare getType as an abstract `val`.
       TypingContext.empty ++ variables
   }
 
-  /**
-   * Extract the base name from an indexed one.
-   * This is useful to prevent creating nested indexed names - they easily get
-   * nested enough to cause StackOverflowExceptions with recursive algorithms.
-   */
-  def decomposeName(n: Name): (NonIndexedName, Int) =
-    n match {
-      case IndexedName(orig, idx) =>
-        (orig, idx)
-      case nin: NonIndexedName =>
-        (nin, 0)
-    }
-
   /** Generate a name unbound in context
     *
     * @param context the typing context whose bound names are
@@ -102,7 +92,10 @@ Please do not declare getType as an abstract `val`.
     }
     newName
   }
+}
 
+trait PolySyntax {
+  this: SyntaxBase with TypingContexts =>
   // POLYMORPHIC TERMS
 
   trait PolymorphicTerm {
@@ -302,37 +295,4 @@ Please do not declare getType as an abstract `val`.
   }
 }
 
-/**
- * A reusable freshname generator. Since this contains mutable state, this module
- * is designed to be imported via composition, not by mixing it in.
- */
-trait FreshGen {
-  val syntax: Syntax
-  import syntax._
-
-  //Have a very simple and reliable fresh variable generator. Tracking free
-  //variables might have been the performance killer of the other normalizer.
-  var index = 0
-  def resetIndex() {
-    index = 0
-  }
-
-  def freshName(varName: Name): Name = {
-    index += 1
-    val compress = false
-    val baseName =
-      if (compress)
-        "z": NonIndexedName
-      else
-        //Keep names, for extra readability.
-        decomposeName(varName)._1
-    //IndexedName("z", index)
-    IndexedName(baseName, index)
-  }
-
-  def fresh(varName: Name, varType: Type): Var = {
-    Var(freshName(varName), varType)
-  }
-
-  def fresh(v: Var): Var = fresh(v.getName, v.getType)
-}
+trait Syntax extends SyntaxBase with TypingContexts with PolySyntax

@@ -157,7 +157,7 @@ trait PrettyTypes extends Pretty {
 }
 
 trait PrettySyntax extends Pretty {
-  this: Syntax =>
+  this: SyntaxBase =>
 
   /** look up the operator precedence of a term */
   def operatorPrecedence(t: Term): Int = t match {

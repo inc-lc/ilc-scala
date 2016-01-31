@@ -61,4 +61,17 @@ trait Names {
     }
     go
   }
+
+  /**
+   * Extract the base name from an indexed one.
+   * This is useful to prevent creating nested indexed names - they easily get
+   * nested enough to cause StackOverflowExceptions with recursive algorithms.
+   */
+  def decomposeName(n: Name): (NonIndexedName, Int) =
+    n match {
+      case IndexedName(orig, idx) =>
+        (orig, idx)
+      case nin: NonIndexedName =>
+        (nin, 0)
+    }
 }

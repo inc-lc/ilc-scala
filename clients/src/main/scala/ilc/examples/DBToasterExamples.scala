@@ -57,10 +57,8 @@ extends DBToasterExample
   }
   override val program: Term = 'x ->: 'x //untypedProgram
 
-  def fooMethod() = try {
-    println(pretty(untypedProgram))
-  } catch { case e: inference.Inference#UnificationFailure =>
-    println(e.details)
+  def fooMethod() = {
+    println(pretty(typecheck(untypedProgram)))
   }
 
   //XXX to call in tests:

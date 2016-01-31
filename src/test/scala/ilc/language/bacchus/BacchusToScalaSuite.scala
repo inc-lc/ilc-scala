@@ -50,7 +50,7 @@ extends FunSuite
     def times: Term = lambda(ℕ, ℕ) { case Seq(m, n) =>
       FoldNat ! 0 ! lambda(ℕ) { PlusNat ! _ ! m } ! n
     }
-    assert(run(Either ! (times ! 10) ! (times ! 20) ! (Inj1(ℕ) ! 4)) === 40)
-    assert(run(Either ! (times ! 10) ! (times ! 20) ! (Inj2(ℕ) ! 4)) === 80)
+    assert(run(Either ! (times ! 10) ! (times ! 20) ! (Inj1.tapply(ℕ) ! 4)) === 40)
+    assert(run(Either ! (times ! 10) ! (times ! 20) ! (Inj2.tapply(ℕ) ! 4)) === 80)
   }
 }

@@ -31,23 +31,23 @@ extends FunSuite
     def add(n: Int) = lambda(ℕ, ℕ) {
       case Seq(x, y) => PlusNat ! (PlusNat ! x ! y) ! n
     }
-    case4(Inj2(ℕ) ! 100, Inj1(ℕ) ! 20,
+    case4(Inj2.tapply(ℕ) ! 100, Inj1.tapply(ℕ) ! 20,
       add(1), add(2), add(3), add(4))
   }
 
   // Maybe Nope
-  expectToGet(0) { Maybe ! 0 ! lambda(ℕ) {x => x} ! Nope(ℕ) }
+  expectToGet(0) { Maybe ! 0 ! lambda(ℕ) {x => x} ! Nope.tapply(ℕ) }
 
   // Maybe Just
   expectToGet(5) { Maybe ! 0 ! lambda(ℕ) {x => x} ! (Just ! 5) }
 
   // Maybe Nope EmptyMap Lookup
-  expectToGet(MaybeValue(None)) { Lookup ! 5 ! EmptyMap(ℕ, ℕ) }
+  expectToGet(MaybeValue(None)) { Lookup ! 5 ! EmptyMap.tapply(ℕ, ℕ) }
 
   // Maybe Just EmptyMap Lookup Update
   expectToGet(MaybeValue(Some(5))) {
     Lookup ! 4 !
-      (Update ! 3 ! 6 ! (Update ! 4 ! 5 ! EmptyMap(ℕ, ℕ)))
+      (Update ! 3 ! 6 ! (Update ! 4 ! 5 ! EmptyMap.tapply(ℕ, ℕ)))
   }
 
   // Plus EmptyMap Update Fold
@@ -55,7 +55,7 @@ extends FunSuite
     getSize !
       (Update ! 3 ! 6 !
         (Update ! 4 ! 5 !
-          (Update ! 5 ! 4 ! EmptyMap(ℕ, ℕ))))
+          (Update ! 5 ! 4 ! EmptyMap.tapply(ℕ, ℕ))))
   }
 
   // 500500 = 1 + 2 + ... + 1000

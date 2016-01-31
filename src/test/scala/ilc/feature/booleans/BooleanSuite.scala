@@ -50,7 +50,7 @@ extends FunSuite
       old2b <- booleans
       new2b <- booleans
     } {
-      val curriedIf = IfThenElse(BooleanType)
+      val curriedIf = IfThenElse.tapply(BooleanType)
       val Seq(old1, new1, old2, new2) = Seq(old1b, new1b, old2b, new2b) map {
         // written in a pointful style to trigger implicit conversion
         // from Term to TermBuilder

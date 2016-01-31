@@ -17,7 +17,7 @@ extends base.Derivation
   }
 
   private[this] def replace(contentType: Type) =
-    Inj2(deltaType(contentType))
+    Inj2.tapply(deltaType(contentType))
 
   override def updateTerm(tau: Type): Term = tau match {
     case MaybeType(contentType) =>
@@ -53,7 +53,7 @@ extends base.Derivation
     case Just(contentType) =>
       lambda(contentType, deltaType(contentType)) {
         case Seq(x, dx) =>
-          Inj1(t.getType) ! dx
+          Inj1.tapply(t.getType) ! dx
       }
 
     // Maybe has slow derivative

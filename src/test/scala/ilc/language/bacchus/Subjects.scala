@@ -19,7 +19,7 @@ extends bacchus.Syntax with bacchus.Prelude with ChangingTerms
     Fold ! (lambda(ℕ, ℕ) { case Seq(_, _) => PlusNat ! 1 }) ! 0
 
   val enumerate: Term = lambda(ℕ) { n =>
-    FoldNat ! EmptyMap(ℕ, ℕ) !
+    FoldNat ! EmptyMap.tapply(ℕ, ℕ) !
       lambda(ℕ ↦ ℕ) { theMap =>
         lambda {m => Update ! m ! m ! theMap} ! (getSize ! theMap)
       } ! (PlusNat ! n ! 1)

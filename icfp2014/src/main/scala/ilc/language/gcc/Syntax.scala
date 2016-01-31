@@ -78,7 +78,6 @@ trait SyntaxSugar
   with inference.SyntaxSugar
   with inference.LetRecUntypedSyntax
   with inference.LetRecInference
-  with products.StdLib
   with lists.InferenceSyntaxSugar
   with bintrees.InferenceSyntaxSugar
 {
@@ -91,17 +90,17 @@ trait SyntaxSugar
   type UT = UntypedTerm
   implicit def booleanToUT(b: Boolean): UT = if (b) True else False
   implicit class UTermOps[T <% UT](a: T) {
-    def +(b: UT) = asUntyped(Plus)(a, b)
-    def -(b: UT) = asUntyped(Minus)(a, b)
-    def *(b: UT) = asUntyped(Mult)(a, b)
-    def /(b: UT) = asUntyped(Div)(a, b)
+    def +(b: UT) = Plus(a, b)
+    def -(b: UT) = Minus(a, b)
+    def *(b: UT) = Mult(a, b)
+    def /(b: UT) = Div(a, b)
 
-    def >=(b: UT) = asUntyped(Gte)(a, b)
-    def >(b: UT) = asUntyped(Gt)(a, b)
+    def >=(b: UT) = Gte(a, b)
+    def >(b: UT) = Gt(a, b)
     def <=(b: UT) = b >= a
     def <(b: UT) = b > a
 
-    def ===(b: UT) = asUntyped(Eq)(a, b)
+    def ===(b: UT) = Eq(a, b)
     def =!=(b: UT) = not(a === b)
 
     def and(b: UT) = if_ (a) { b } else_ { false }
@@ -110,11 +109,11 @@ trait SyntaxSugar
 
   def not(a: UT) = Not(a)
 
-  def if_(cond: UntypedTerm)(thn: UntypedTerm) = ProvideElse(els => asUntyped(IfThenElse)(cond, '_ ->: thn, '_ ->: els))
+  def if_(cond: UntypedTerm)(thn: UntypedTerm) = ProvideElse(els => IfThenElse(cond, '_ ->: thn, '_ ->: els))
   case class ProvideElse(buildIf: UntypedTerm => UntypedTerm) {
     def else_(els: UntypedTerm): UntypedTerm = buildIf(els)
     def else_if(elsCond: UntypedTerm)(elsThn: UntypedTerm) =
-      ProvideElse(elsEls => buildIf(asUntyped(IfThenElse)(elsCond, '_ ->: elsThn, '_ ->: elsEls)))
+      ProvideElse(elsEls => buildIf(IfThenElse(elsCond, '_ ->: elsThn, '_ ->: elsEls)))
   }
 
   val freshener: FreshGen { val syntax: outer.type }
@@ -132,14 +131,14 @@ trait SyntaxSugar
 
   // for specifying switch cases
   implicit class CaseOps[T <% UT](t: T) {
-    def ==>(body: UT) = (asUntyped(t), body)
+    def ==>(body: UT): (UT, UT) = (t, body)
   }
 
   // Sequencing and Debugging
   implicit class SeqOps[T <% UT](t: T) {
-    def ~:(thn: UT) = asUntyped(Sequence)(thn, t)
+    def ~:(thn: UT) = Sequence(thn, t)
   }
-  def debug[T <% UT](t: T): UT = asUntyped(Debug)(t)
+  def debug[T <% UT](t: T): UT = Debug(t)
   def noop = Noop
 
   // Symbol + TypeAnnotation
@@ -162,16 +161,16 @@ trait SyntaxSugar
 
   implicit class NameAssignOps(s: Name) {
     // For assignment
-    def <~(term: UT) = asUntyped(Assign)(s, term)
+    def <~(term: UT) = Assign(s, term)
   }
   implicit def symToNameAssignOps(s: Symbol) = (s: Name): NameAssignOps
 
   implicit def consSyntax[A <% UT, B <% UT](scalaPair: (A, B)): UntypedTerm =
-    pair(scalaPair._1, scalaPair._2)
+    Pair(scalaPair._1, scalaPair._2)
 
   implicit class PairOps[T <% UT](t: T) {
-    def first = outer.first(t)
-    def second = outer.second(t)
+    def first: UntypedTerm = Proj1(t)
+    def second: UntypedTerm = Proj2(t)
     def at(i: Int, n: Int) = project(i, n, t)
 
     // Allows binding the contents of a tuple - similar to let
@@ -198,7 +197,7 @@ trait SyntaxSugar
   def class_(name: Symbol)(fields: NameOrTyped*)(members: (Name, UT)*) = {
 
     val memberNames = members.map { _._1 }
-    val memberRefs = memberNames.map(m => asUntyped(m))
+    val memberRefs = memberNames.map(m => m: UntypedTerm)
 
     val classTag = classTags.size
     classTags.update(name, classTag)

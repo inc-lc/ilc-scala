@@ -38,7 +38,7 @@ extends Derivation
         case groupType @ AbelianGroupType(elemType) =>
           lambda(Var("group", groupType), Var("elem", elemType)) {
             case Seq(group, elem) =>
-              Inj1(groupBasedChangeType(elemType), elemType) ! (Pair ! group ! elem)
+              Inj1.tapply(groupBasedChangeType(elemType), elemType) ! (Pair ! group ! elem)
           }
       }
   }
@@ -46,7 +46,7 @@ extends Derivation
   def replacementChange: TermBuilder = new PolymorphicTerm {
     def specialize(argumentTypes: Type*): Term = {
       val tau = argumentTypes.head
-      Inj2(groupBasedChangeType(tau), tau)
+      Inj2.tapply(groupBasedChangeType(tau), tau)
     }
   }
 

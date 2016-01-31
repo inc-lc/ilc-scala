@@ -12,7 +12,7 @@ extends Example
    with inference.PrettySyntax
 
    with bags.StdLib
-   with products.StdLib
+   with products.Syntax
 
    // context-free derivations
    with products.Derivation
@@ -34,7 +34,7 @@ extends Example
   //   λ pair : inputType.
   //      union (proj₁ pair) (proj₂ pair)
   def untypedProgram: UntypedTerm =
-    'pair % inputType ->: union(first('pair), second('pair))
+    'pair % inputType ->: Union(Proj1('pair), Proj2('pair))
 
   def program: Term = untypedTermToTerm(untypedProgram)
 

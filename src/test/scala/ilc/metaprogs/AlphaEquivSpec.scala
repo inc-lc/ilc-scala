@@ -25,13 +25,9 @@ class AlphaEquivSpec extends FlatSpec
   val idUt = 'x ->: 'x
   val ut1 = letS('x := ifThenElse_(True, asTerm(1), asTerm(2)))('x)
 
-  //XXX from PrettySuite
-  val liftGroup = asUntyped(LiftGroup) // own apply // from abelianMaps
-  val singletonMap = asUntyped(SingletonMap) // from abelianMaps
-
   val ut2 = 'x ->: 'y ->: letS('z := ifThenElse_(True, 'x, 'y))('z)
-  val ut3 = 'f ->: 'g ->: foldGroup(liftGroup(freeAbelianGroup),
-    'e ->: singletonMap('f('e), singleton('g('e))))
+  val ut3 = 'f ->: 'g ->: FoldGroup(LiftGroup(FreeAbelianGroup),
+    'e ->: SingletonMap('f('e), Singleton('g('e))))
 
   val ut4 = letS('x := ifThenElse_(True, asTerm(1), asTerm(2)))('x)
 

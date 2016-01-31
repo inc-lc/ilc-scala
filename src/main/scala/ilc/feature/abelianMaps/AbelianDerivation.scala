@@ -36,7 +36,7 @@ extends Syntax
 
         case2(dm,
           lambda(grp) { case grp0 =>
-            ifEqualGroups((Proj1 ! grp0, LiftGroup(k) ! _Ga),
+            ifEqualGroups((Proj1 ! grp0, LiftGroup.tapply(k) ! _Ga),
                           (_Ga, dGa),
                           (_Gb, dGb)) {
               groupBasedChange ! _Gb !

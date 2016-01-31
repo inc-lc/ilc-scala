@@ -57,28 +57,11 @@ trait StdLib
 extends Syntax
    with inference.PrettySyntax
 {
-  //  empty     : Bag v
-  val emptyBag: UntypedTerm = EmptyBag
-
-  //  singleton : v → Bag v
-  val singleton: UntypedTerm = Singleton
-
-  //  union     : Bag v → Bag v → Bag v
-  val union: UntypedTerm = Union
-
-  //  negate    : Bag v → Bag v
-  val negate: UntypedTerm = Negate
-
-  //  foldGroup : AbelianGroup b → (v → b) → Bag v → b
-  val foldGroup: UntypedTerm = FoldGroup
-
-  val freeAbelianGroup: UntypedTerm = FreeAbelianGroup
-
   // flatMap : (v → Bag u) → Bag v → Bag u
-  val flatMap: UntypedTerm = foldGroup(freeAbelianGroup)
+  val flatMap: UntypedTerm = FoldGroup(FreeAbelianGroup)
 
   // map : (a -> b) -> Bag a -> Bag b
-  val map: UntypedTerm = 'f ->: flatMap('x ->: singleton('f('x)))
+  val map: UntypedTerm = 'f ->: flatMap('x ->: Singleton('f('x)))
 }
 
 trait SyntaxSugar
@@ -92,7 +75,7 @@ extends Syntax
       def specialize(argumentTypes: Type*): Term =
         argumentTypes.head match {
           case fType @ (v =>: BagType(u)) =>
-            FoldGroup(BagType(u), v) ! FreeAbelianGroup(u)
+            FoldGroup.tapply(BagType(u), v) ! FreeAbelianGroup.tapply(u)
         }
     }
 

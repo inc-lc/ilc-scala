@@ -21,7 +21,7 @@ trait Syntax extends base.Syntax with Types {
 
     protected[this]
     def createTerm(myArgumentType: Type, theOtherType: Type): Term =
-      Inj1(myArgumentType, theOtherType)
+      Inj1.tapply(myArgumentType, theOtherType)
   }
 
   object Inj2
@@ -35,7 +35,7 @@ trait Syntax extends base.Syntax with Types {
 
     protected[this]
     def createTerm(myArgumentType: Type, theOtherType: Type): Term =
-      Inj2(theOtherType, myArgumentType)
+      Inj2.tapply(theOtherType, myArgumentType)
   }
 
     /** to support writing the following:
@@ -48,7 +48,7 @@ trait Syntax extends base.Syntax with Types {
     protected[this]
     def createTerm(myArgumentType: Type, theOtherType: Type): Term
 
-    def apply(theOtherType: Type): PolymorphicTerm =
+    def tapply(theOtherType: Type): PolymorphicTerm =
       new PolymorphicTerm {
         def specialize(argumentTypes: Type*): Term =
           argumentTypes match {

@@ -85,7 +85,7 @@ trait Syntax extends base.Syntax {
   private[this]
   def mkLambda(nameSuggestion: Name, argumentType: Option[Type])
     (body: Name => TermBuilder): TermBuilder =
-    context => {
+    TermBuilder(context => {
       val name = ctxToFreshName(context, nameSuggestion)
       argumentType match {
         case Some(knownType) =>
@@ -93,7 +93,7 @@ trait Syntax extends base.Syntax {
         case None =>
           new ContextualAbs(name, context, body)
       }
-    }
+    })
 
   // imports to make use of union types in multivariate lambda
   import ilc.util.UnionType._
@@ -219,11 +219,11 @@ trait Syntax extends base.Syntax {
   }
 
   def appBuilder(operator: TermBuilder, operand: TermBuilder): TermBuilder =
-    context =>
-      PolymorphicApp(operator(context), operand(context).specialize(List.empty: _*))
+    TermBuilder(context =>
+      PolymorphicApp(operator.toPolymorphicTerm(context), operand.toPolymorphicTerm(context).specialize(List.empty: _*)))
 
   def absBuilder(name: Name, body: TermBuilder): TermBuilder =
-    context => PolymorphicAbs(name, body(context))
+    TermBuilder(context => PolymorphicAbs(name, body.toPolymorphicTerm(context)))
 
   /** Swap positions of context argument and type arguments,
     * possibly with the types of some arguments already specified
@@ -237,12 +237,12 @@ trait Syntax extends base.Syntax {
     protected[this]
     def specialize(argumentType: Type, argumentTypes: Seq[Type]): Term = {
       val variable = Var(name, argumentType)
-      val polymorphicBody = body(name)(variable +: context)
+      val polymorphicBody = body(name).toPolymorphicTerm(variable +: context)
       Abs(variable, polymorphicBody specialize (argumentTypes: _*))
     }
     def productName = "ContextualAbs"
     override def toString =
-      s"$productName($name, context = $context, $name => context => ${body(name)(context)}"
+      s"$productName($name, context = $context, $name => context => ${body(name).toPolymorphicTerm(context)}"
   }
 
   /** An abstraction where enough argument types are given
@@ -285,8 +285,8 @@ trait Syntax extends base.Syntax {
       appBuilder(t0, t1)
 
     def composeWith(t1: TermBuilder): TermBuilder =
-      context => {
-        val t1Term = t1(context).toTerm
+      TermBuilder(context => {
+        val t1Term = t1.toPolymorphicTerm(context).toTerm
         val (domain, intermediateType) = t1Term.getType match {
           case domain =>: range =>
             (domain, range)
@@ -296,9 +296,9 @@ trait Syntax extends base.Syntax {
               "function type",
               wrongType)
         }
-        val t0Term = t0(context).specialize(intermediateType)
-        (lambda(Var("hole", domain)) { x => t0Term ! (t1Term ! x) })(TypingContext.empty)
-      }
+        val t0Term = t0.toPolymorphicTerm(context).specialize(intermediateType)
+        (lambda(Var("hole", domain)) { x => t0Term ! (t1Term ! x) }).toPolymorphicTerm(TypingContext.empty)
+      })
 
     def composeWithBuilder(t1: TermBuilder): TermBuilder =
       lambda("hole") { hole =>

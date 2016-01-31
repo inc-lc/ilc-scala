@@ -48,12 +48,12 @@ extends maps.Syntax
       * more productive to simply code unification (in Haskell,
       * it's just a couple dozen lines).
       */
-    def apply(keyType: Type): PolymorphicTerm = new PolymorphicTerm {
+    def tapply(keyType: Type): PolymorphicTerm = new PolymorphicTerm {
       def specialize(argumentTypes: Type*): Term = {
         val Seq(valType) =
           TypeConstructor("v")(AbelianGroupType.apply _).
             inverse(argumentTypes.head)
-        LiftGroup(keyType, valType)
+        LiftGroup.tapply(keyType, valType)
       }
     }
   }

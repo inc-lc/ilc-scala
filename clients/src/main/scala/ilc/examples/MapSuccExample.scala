@@ -20,7 +20,7 @@ extends Example
    with products.ToScala
    with sums.ToScala
 {
-  val inc: UntypedTerm = (PlusInt:UntypedTerm)(LiteralInt(1))
+  val inc: UntypedTerm = PlusInt(LiteralInt(1))
 
   // program : Bag ℤ → Bag ℤ
   // program = map (plus 1)

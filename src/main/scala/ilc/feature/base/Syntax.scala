@@ -246,19 +246,19 @@ trait PolySyntax {
 
   // TERM BUILDERS & SUGARS
 
-  type TermBuilder = TypingContext => PolymorphicTerm
+  case class TermBuilder(toPolymorphicTerm: TypingContext => PolymorphicTerm)
 
   implicit def varBuilder(name: Name): TermBuilder =
-    context => SpecializedTerm(context(name))
+    TermBuilder(context => SpecializedTerm(context(name)))
 
   implicit def createSpecializedBuilder[T <% Term](s0: T): TermBuilder =
-    context => SpecializedTerm(s0)
+    TermBuilder(context => SpecializedTerm(s0))
 
   implicit def createPolymorphicBuilder(t0: PolymorphicTerm): TermBuilder =
-    context => t0
+    TermBuilder(context => t0)
 
   implicit def closeTermBuilder(builder: TermBuilder): Term =
-    builder(TypingContext.empty).toTerm
+    builder.toPolymorphicTerm(TypingContext.empty).toTerm
 
   //Chain implicit conversions
   implicit def closeNameTermBuilder(name: Name): Term =
@@ -281,17 +281,17 @@ trait PolySyntax {
       * `PolymorphicTerm.specialize`.
       */
     def % (argumentTypes: Type*): TermBuilder =
-      context =>
-        SpecializedTerm(t0(context) specialize (argumentTypes: _*))
+      TermBuilder(context =>
+        SpecializedTerm(t0.toPolymorphicTerm(context) specialize (argumentTypes: _*)))
 
     /** Type ascription */
     def ofType(expectedType: Type): TermBuilder =
-      context =>
-        SpecializedTerm(t0(context) ofType expectedType)
+      TermBuilder(context =>
+        SpecializedTerm(t0.toPolymorphicTerm(context) ofType expectedType))
 
     /** Finish building a closed term, starting from the empty context */
     def toTerm: Term =
-      t0(TypingContext.empty).toTerm
+      t0.toPolymorphicTerm(TypingContext.empty).toTerm
   }
 }
 

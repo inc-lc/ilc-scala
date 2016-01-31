@@ -78,10 +78,10 @@ extends base.Derivation
   }
 
   def mkMapReplacement(newMapBuilder: TermBuilder): TermBuilder =
-    context => {
-      val newMap = newMapBuilder(context).toTerm
-      (Inj2.tapply(surgeryMapType(newMap.getType)) ! newMap)(context)
-    }
+    TermBuilder(context => {
+      val newMap = newMapBuilder.toPolymorphicTerm(context).toTerm
+      (Inj2.tapply(surgeryMapType(newMap.getType)) ! newMap).toPolymorphicTerm(context)
+    })
 
   override def updateTerm(tau: Type): Term = tau match {
     case mapType@MapType(k, v) =>

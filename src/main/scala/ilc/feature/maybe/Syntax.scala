@@ -35,9 +35,9 @@ extends base.Syntax
   /** Maybe as a monad */
   implicit class maybeMonad[T <% TermBuilder](t: T) {
     def >>= (f: TermBuilder): TermBuilder =
-      context => {
+      TermBuilder(context => {
         val tBuilder: TermBuilder = t
-        val tTerm: Term = t(context).toTerm
+        val tTerm: Term = t.toPolymorphicTerm(context).toTerm
         val inputType = tTerm.getType match {
           case MaybeType(contentType) =>
             contentType
@@ -46,7 +46,7 @@ extends base.Syntax
             typeErrorNotTheSame("binding a maybe monad",
               "Maybe a", wrongType)
         }
-        val fTerm: Term = f(context).specialize(inputType)
+        val fTerm: Term = f.toPolymorphicTerm(context).specialize(inputType)
         val outputType = fTerm.getType match {
           case a =>: MaybeType(b) if a == inputType =>
             b
@@ -55,7 +55,7 @@ extends base.Syntax
             typeErrorNotTheSame("binding a maybe monad",
               s"$inputType =>: MaybeType(b)", wrongType)
         }
-        (Maybe ! Nope.tapply(outputType) ! fTerm ! tTerm)(context)
-      }
+        (Maybe ! Nope.tapply(outputType) ! fTerm ! tTerm).toPolymorphicTerm(context)
+      })
   }
 }

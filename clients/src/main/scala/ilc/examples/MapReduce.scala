@@ -9,7 +9,7 @@ extends products.Derivation
    with abelianMaps.AbelianDerivation
    with abelianMaps.ToScala
 
-   with products.StdLib
+   with products.Syntax
    with bags.AbelianDerivation
    with bags.ToScala
 
@@ -19,13 +19,6 @@ extends products.Derivation
    with sums.ToScala
    with GroupBy
 {
-  // TODO This type constructor apply method is really annoying (ilc.feature.base.TypeConstructor.TypeConstructor.apply)
-  // We could possibly rename it so that the PolymorphicConstant implicit conversion makes this kind of aliasing unnecessary.
-  val foldByHom: UntypedTerm = FoldByHom
-  //  val singletonMap: UntypedTerm = SingletonMap
-  //  val liftGroup: UntypedTerm = LiftGroup
-
-
   /** {{{
     * mapPerKey : ∀ {k₁ v₁ k₂ v₂} →
     *   AbelianGroup v₁ →
@@ -38,7 +31,7 @@ extends products.Derivation
     * briefly in §4.4, the last paragraph on page 7).
     */
   val mapPerKey: UntypedTerm =
-    'v1Group ->: 'userMap ->: foldByHom('v1Group, freeAbelianGroup, 'userMap)
+    'v1Group ->: 'userMap ->: FoldByHom('v1Group, FreeAbelianGroup, 'userMap)
 
   /** {{{
     * group-by-key : ∀ {k₂ v₂} →
@@ -46,9 +39,9 @@ extends products.Derivation
     * }}}
     */
   val groupByKey: UntypedTerm =
-    foldGroup(
-      liftGroup(freeAbelianGroup),
-      'k2v2Pair ->: singletonMap(first('k2v2Pair), singleton(second('k2v2Pair)))
+    FoldGroup(
+      LiftGroup(FreeAbelianGroup),
+      'k2v2Pair ->: SingletonMap(Proj1('k2v2Pair), Singleton(Proj2('k2v2Pair)))
     )
 
   /** Output of userReduce is v₃, but it corresponds to (Maybe v₃).
@@ -65,10 +58,10 @@ extends products.Derivation
     */
   val reducePerKey: UntypedTerm =
     'v3Group ->: 'userReduce ->:
-      foldByHom(
-        freeAbelianGroup,
-        liftGroup('v3Group),
-        'key ->: 'bag ->: singletonMap('key, 'userReduce('key, 'bag)))
+      FoldByHom(
+        FreeAbelianGroup,
+        LiftGroup('v3Group),
+        'key ->: 'bag ->: SingletonMap('key, 'userReduce('key, 'bag)))
 
   /** {{{
     * mapReduce : ∀ {k₁ v₁ k₂ v₂} →

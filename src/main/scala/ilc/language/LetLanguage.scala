@@ -9,6 +9,5 @@ import feature._
 class LetLanguage extends
     language.Bacchus with integers.Syntax with integers.ImplicitSyntaxSugar with inference.LetInference
       with let.BetaReduction with let.Pretty
-      with products.StdLib
       with inference.LetSyntaxSugar
       with letLanguage.Evaluation

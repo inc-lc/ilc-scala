@@ -10,9 +10,6 @@ extends abelianMaps.AbelianDerivation
    with bags.AbelianDerivation
    with bags.ToScala
 {
-  val singletonMap: UntypedTerm = SingletonMap
-  val liftGroup: UntypedTerm = LiftGroup
-
   /** `groupBy` operation on bags:
     *
     *   groupByGen : ∀t k v. (t → k) → (t → v) → Bag t → Map k (Bag v)
@@ -32,9 +29,9 @@ extends abelianMaps.AbelianDerivation
     */
   val groupByGen: UntypedTerm =
     'f ->: 'g ->:
-      foldGroup(
-        liftGroup(freeAbelianGroup),
-        'e ->: singletonMap('f('e), singleton('g('e))))
+      FoldGroup(
+        LiftGroup(FreeAbelianGroup),
+        'e ->: SingletonMap('f('e), Singleton('g('e))))
 }
 
 /**

@@ -47,14 +47,14 @@ extends base.Syntax
 trait InferenceSyntaxSugar extends Syntax with inference.SyntaxSugar {
 
   implicit class TreeOps[T <% UntypedTerm](t: T) {
-    def nodeValue = asUntyped(NodeValue)(t)
-    def leftTree = asUntyped(LeftTree)(t)
-    def rightTree = asUntyped(RightTree)(t)
-    def isEmptyTree = asUntyped(IsEmptyTree)(t)
+    def nodeValue = NodeValue(t)
+    def leftTree = LeftTree(t)
+    def rightTree = RightTree(t)
+    def isEmptyTree = IsEmptyTree(t)
   }
 
-  def emptyTree = asUntyped(EmptyTree)
+  def emptyTree: UntypedTerm = EmptyTree
   def leaf(t: UntypedTerm) = tree(emptyTree, t, emptyTree)
   def tree(lhs: UntypedTerm, value: UntypedTerm, rhs: UntypedTerm)
-    = asUntyped(Tree)(lhs, value, rhs)
+    = Tree(lhs, value, rhs)
 }

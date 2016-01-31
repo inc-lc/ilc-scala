@@ -29,16 +29,10 @@ extends base.Syntax
   }
 }
 
-trait StdLib extends Syntax with inference.PrettySyntax {
-  val pair: UntypedTerm = Pair
-  val first: UntypedTerm = Proj1
-  val second: UntypedTerm = Proj2
-}
-
-trait InferenceSyntaxSugar extends Syntax with functions.Syntax with StdLib with inference.SyntaxSugar
+trait InferenceSyntaxSugar extends Syntax with functions.Syntax with inference.SyntaxSugar
 {
   def tuple(firstArg: UntypedTerm, args: UntypedTerm*) =
-    (firstArg +: args).reduceRight(pair(_, _))
+    (firstArg +: args).reduceRight(Pair(_, _))
 
   //i is 0-based.
   def project(i: Int, n: Int, t: UntypedTerm): UntypedTerm =
@@ -50,11 +44,11 @@ trait InferenceSyntaxSugar extends Syntax with functions.Syntax with StdLib with
       sys error s"${n}-tuples are not supported"
     else {
       if (i == 0)
-        first(t)
+        Proj1(t)
       else if (i == 1 && n == 2)
-        second(t)
+        Proj2(t)
       else
-        project(i - 1, n - 1, second(t))
+        project(i - 1, n - 1, Proj2(t))
     }
 }
 

@@ -41,14 +41,14 @@ extends base.Syntax
 trait InferenceSyntaxSugar extends Syntax with inference.SyntaxSugar {
 
   implicit class ListOps[T <% UntypedTerm](t: T) {
-    def :::(s: UntypedTerm) = asUntyped(Cons)(s, t)
-    def head = asUntyped(Head)(t)
-    def tail = asUntyped(Tail)(t)
-    def isEmpty = asUntyped(IsEmpty)(t)
+    def :::(s: UntypedTerm) = Cons(s, t)
+    def head = Head(t)
+    def tail = Tail(t)
+    def isEmpty = IsEmpty(t)
     def get(i: Int) = project(i, t)
   }
 
-  def emptyList = asUntyped(Empty)
+  def emptyList: UntypedTerm = Empty
 
   def list(args: UntypedTerm*) =
     args.foldRight(emptyList)(_ ::: _)

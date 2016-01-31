@@ -50,10 +50,10 @@ trait SyntaxSugar extends PrettySyntax with booleans.Syntax {
 
   //XXX Should use a macro version of const_.
   def ifThenElse_(condition: UntypedTerm, thenBranch: UntypedTerm, elseBranch: UntypedTerm) =
-    asUntyped(IfThenElse)(condition, const_(thenBranch), const_(elseBranch))
+    IfThenElse(condition, const_(thenBranch), const_(elseBranch))
 
   //"Libraries"
-  val const_ = asUntyped('a ->: 'b ->: 'a)
+  val const_ : UntypedTerm = 'a ->: 'b ->: 'a
 }
 
 trait LetSyntaxSugar extends SyntaxSugar with LetUntypedSyntax {

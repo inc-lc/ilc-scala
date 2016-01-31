@@ -88,12 +88,9 @@ extends FlatSpec
   }
 
   it should "work when even more complicated" in {
-    val liftGroup = asUntyped(LiftGroup) // own apply // from abelianMaps
-    val singletonMap = asUntyped(SingletonMap) // from abelianMaps
-
     assert(
-      'f ->: 'g ->: foldGroup(liftGroup(freeAbelianGroup),
-        'e ->: singletonMap('f('e), singleton('g('e))))
+      'f ->: 'g ->: FoldGroup(LiftGroup(FreeAbelianGroup),
+        'e ->: SingletonMap('f('e), Singleton('g('e))))
       ===
       UAbs("f",None,
         UAbs("g",None,

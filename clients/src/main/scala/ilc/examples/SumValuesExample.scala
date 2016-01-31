@@ -5,6 +5,7 @@ import feature._
 
 class SumValuesExample
 extends Example
+   with inference.PrettySyntax
 
    with products.Derivation
    with abelianMaps.AbelianDerivation
@@ -12,7 +13,7 @@ extends Example
 
    with functions.Syntax
    with integers.SyntaxSugar
-   with products.StdLib
+   with products.Syntax
 
    with abelianMaps.ToScala
    with booleans.ToScala
@@ -40,6 +41,6 @@ extends Example
   val _flipConst: UntypedTerm = 'first % ℤ ->: 'second ->: 'second
 
   val program: Term = untypedTermToTerm(
-    'inputMap ->: pair(foldByHom(G, G, _flipConst, 'inputMap), G)
+    'inputMap ->: Pair(FoldByHom(G, G, _flipConst, 'inputMap), G)
   )
 }

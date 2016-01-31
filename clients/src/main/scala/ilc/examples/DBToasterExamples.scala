@@ -30,24 +30,24 @@ extends DBToasterExample
   //
   val dictKeyFilter: UntypedTerm =
     'valueGroup ->: 'userKeyFilter ->: 'map ->:
-      foldByHom('valueGroup, liftGroup('valueGroup),
-          'k ->: 'v ->: ifThenElse_('userKeyFilter('k), singletonMap('k, 'v), EmptyMap),
+      FoldByHom('valueGroup, LiftGroup('valueGroup),
+          'k ->: 'v ->: ifThenElse_('userKeyFilter('k), SingletonMap('k, 'v), EmptyMap),
           'map)
 
   //Produces a map of bags.
-  val bagDictKeyFilter: UntypedTerm = dictKeyFilter(freeAbelianGroup)
+  val bagDictKeyFilter: UntypedTerm = dictKeyFilter(FreeAbelianGroup)
 
   def join: UntypedTerm = ???
   //XXX better name, eq is taken!
   val eqq: UntypedTerm = Eq
 
   //All of this is missing aggregation.
-  def untypedProgram0 = 'r ->: 's ->: join('r, 's, 'rEl ->: 'sEl ->: eqq(first('rEl), first('sEl)), pair)
+  def untypedProgram0 = 'r ->: 's ->: join('r, 's, 'rEl ->: 'sEl ->: eqq(Proj1('rEl), Proj2('sEl)), Pair)
   def untypedProgram =
     'r ->: 's ->: {
     letS (
-      ('idxR, groupByGen(first, second, 'r)),
-      ('idxS, groupByGen(first, second, 's))
+      ('idxR, groupByGen(Proj1, Proj2, 'r)),
+      ('idxS, groupByGen(Proj1, Proj2, 's))
     ) {
       'idxR
       //filter (first('r) == first('s)) ...

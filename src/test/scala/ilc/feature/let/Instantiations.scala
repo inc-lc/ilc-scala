@@ -20,14 +20,16 @@ trait ShowTerms {
 
 trait Instantiations {
   def buildBacchusWithLetSystem(doCSE_ : Boolean, copyPropagation_ : Boolean, partialApplicationsAreSpecial_ : Boolean) =
-    new language.LetLanguage with let.ShowTerms with let.ANormalFormAdapter with inference.InferenceTestHelper {
-        outer =>
-        val aNormalizer = new ANormalFormStateful {
-          val syntax: outer.type = outer
-          override val doCSE = doCSE_
-          override val copyPropagation = copyPropagation_
-          override val partialApplicationsAreSpecial = partialApplicationsAreSpecial_
-        }
+    new language.LetLanguage with let.ShowTerms with let.ANormalFormAdapter with inference.InferenceTestHelper
+    //XXX added to also test CPS in worksheets
+    with let.CPS with cbpv.CBPVToCPSTypes {
+      outer =>
+      val aNormalizer = new ANormalFormStateful {
+        val syntax: outer.type = outer
+        override val doCSE = doCSE_
+        override val copyPropagation = copyPropagation_
+        override val partialApplicationsAreSpecial = partialApplicationsAreSpecial_
+      }
     }
 
   def buildBaseBacchus() = new language.LetLanguage with let.ShowTerms

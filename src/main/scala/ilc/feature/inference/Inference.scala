@@ -58,7 +58,7 @@ trait Inference
     context get name
 
   def extend(context: InferenceContext, name: Name, typ: Type): InferenceContext =
-    context + ((name, typ))
+    context + (name -> typ)
   def InferenceContext(l: (Name, Type)*): InferenceContext = ListMap(l: _*)
 
   def initVars: List[Var] = Nil
@@ -117,13 +117,12 @@ trait Inference
   def specialize(t: Type) = t
   def doCollectConstraintsFromCtx(term: UntypedTerm, ctx: InferenceContext): (TypedTerm, Set[Constraint]) = term match {
     case UVar(name) =>
-      val tVar = specialize(lookup(ctx, name).getOrElse (sys error s"Unbound variable $name"))
-      (TVar(name, tVar), emptyConstraintSet)
+      val typ = specialize(lookup(ctx, name).getOrElse (sys error s"Unbound variable $name"))
+      (TVar(name, typ), emptyConstraintSet)
     case UAbs(argumentName, annotatedArgumentType, body) =>
-      val argumentType = freshTypeVariable(term)
-      val (typedBody, c) = doCollectConstraintsFromCtx(body, ctx + (argumentName -> argumentType))
-      val newConstraints = annotatedArgumentType map (typ => Constraint(argumentType, typ))
-      (TAbs(argumentName, argumentType, typedBody), c ++ newConstraints)
+      val argumentType = annotatedArgumentType.getOrElse(freshTypeVariable(term))
+      val (typedBody, c) = doCollectConstraintsFromCtx(body, extend(ctx, argumentName, argumentType))
+      (TAbs(argumentName, argumentType, typedBody), c)
     case UApp(t1, t2) =>
       val (tt1, c1) = doCollectConstraintsFromCtx(t1, ctx)
       val (tt2, c2) = doCollectConstraintsFromCtx(t2, ctx)
@@ -252,11 +251,9 @@ trait LetInference extends Inference with LetUntypedSyntax with let.Syntax {
 
   override def doCollectConstraintsFromCtx(term: UntypedTerm, ctx: InferenceContext): (TypedTerm, Set[Constraint]) = term match {
     case ULet(varName, exp, body) =>
-      //doCollectConstraints( ... desugared node ...)
-      //desugaring result: UApp(UAbs(varName, body), exp)
       val (typedExp, constraintsExp) = doCollectConstraintsFromCtx(exp, ctx)
       val varType = generalize(typedExp.getType, ctx)
-      val (typedBody, constraintsBody) = doCollectConstraintsFromCtx(body, ctx.updated(varName, varType))
+      val (typedBody, constraintsBody) = doCollectConstraintsFromCtx(body, extend(ctx, varName, varType))
 
       (TLet(varName, varType, typedExp, typedBody),
         constraintsExp ++ constraintsBody)
@@ -293,10 +290,6 @@ trait LetRecInference extends Inference with LetRecUntypedSyntax with functions.
             Constraint(defTypExp.getType, defType, s"binding $defName — $defTypExp's type should be $defType"))
       }).unzip
       val (typedBody, bodyConstraints) = doCollectConstraintsFromCtx(body, extCtx)
-      //match bindings with constraints from body
-      val bindingsCtx = InferenceContext(defBindings map {
-        case TBinding(name, typ, term) => (name, typ)
-      }: _*)
       val finalConstraints = bodyConstraints ++ defConstraints.flatten
       (TLetRec(defBindings, bodyName, typedBody), finalConstraints)
 

@@ -15,30 +15,30 @@ extends FunSuite
    with base.Pretty
 {
   //XXX abstract more?
-  val toNope = Inj2(deltaType(ℤ)) ! Nope(ℤ)
+  val toNope = Inj2.tapply(deltaType(ℤ)) ! Nope.tapply(ℤ)
 
-  val to42 = Inj2(deltaType(ℤ)) ! (Just ! 42)
+  val to42 = Inj2.tapply(deltaType(ℤ)) ! (Just ! 42)
 
-  def toJust(i: Int) = Inj1(MaybeType(ℤ)) ! (Inj2(groupBasedChangeType(ℤ)) ! i)
+  def toJust(i: Int) = Inj1.tapply(MaybeType(ℤ)) ! (Inj2.tapply(groupBasedChangeType(ℤ)) ! i)
 
   test("updateTerm behaves as expected") {
     assert(eval(ChangeUpdate ! toNope ! (Just ! 5)) ===
       MaybeValue(None))
 
-    assert(eval(ChangeUpdate ! to42 ! Nope(ℤ)) ===
+    assert(eval(ChangeUpdate ! to42 ! Nope.tapply(ℤ)) ===
       MaybeValue(Some(42)))
 
     assert(eval(ChangeUpdate ! toJust(42) ! (Just ! 5)) ===
       MaybeValue(Some(42)))
 
-    assert(eval(ChangeUpdate ! toJust(42) ! Nope(ℤ)) ===
+    assert(eval(ChangeUpdate ! toJust(42) ! Nope.tapply(ℤ)) ===
       MaybeValue(None))
   }
 
   test("diffTerm produces replacements") {
-    assert(eval(Diff ! Nope(ℤ) ! (Just ! 5)) ===
+    assert(eval(Diff ! Nope.tapply(ℤ) ! (Just ! 5)) ===
       SumValue(Right(MaybeValue(None))))
-    assert(eval(Diff ! (Just ! 5) ! Nope(ℤ)) ===
+    assert(eval(Diff ! (Just ! 5) ! Nope.tapply(ℤ)) ===
       SumValue(Right(MaybeValue(Some(5)))))
   }
 }

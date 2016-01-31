@@ -164,10 +164,10 @@ Please do not declare getType as an abstract `val`.
       * {{{
       * object Lookup extends PolymorphicConstant { ... }
       *
-      * val lookupTerm: Term = Lookup(keyType, valType)
+      * val lookupTerm: Term = Lookup tapply (keyType, valType)
       * }}}
       */
-    def apply(typeArguments: Type*): Term =
+    def tapply(typeArguments: Type*): Term =
       Constant(this, typeArguments)
 
     // inverting the type constructor is necessary
@@ -179,7 +179,7 @@ Please do not declare getType as an abstract `val`.
 
     override def ofType(expectedType: Type): Term = {
       val typeArguments = typeConstructor.inverse(expectedType)
-      val term = apply(typeArguments: _*)
+      val term = tapply(typeArguments: _*)
       require(term.getType == expectedType)
       term
     }

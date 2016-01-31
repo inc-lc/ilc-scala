@@ -70,7 +70,7 @@ extends Syntax
 
     def loop(keyValuePairs: Seq[(K, V)]): Term =
       if (keyValuePairs.isEmpty)
-        EmptyMap(keyType, valueType)
+        EmptyMap.tapply(keyType, valueType)
       else {
         val key: Term = keyValuePairs.head._1
         val value: Term = keyValuePairs.head._2
@@ -90,7 +90,7 @@ extends Syntax
               lambda(k, a, MapType(k, b)) { case Seq(key, value, wipMap) =>
                 Update ! key ! (f ! key ! value) ! wipMap
               } !
-              EmptyMap(k, b)
+              EmptyMap.tapply(k, b)
           }
         }
 

@@ -15,11 +15,11 @@ extends FunSuite
   case object ATerm extends Term { lazy val getType = A }
 
   test("may give type arguments to constants") {
-    info(pretty(EmptyMap(A, B)))
+    info(pretty(EmptyMap.tapply(A, B)))
   }
 
   test("need not give argument type of polymorphic lookup") {
-    val t = Lookup ! ATerm ! EmptyMap(A, B)
+    val t = Lookup ! ATerm ! EmptyMap.tapply(A, B)
     info(pretty(t))
   }
 }

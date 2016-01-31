@@ -35,14 +35,14 @@ class FixpointSuite extends FunSuite with Matchers {
 
   def minus(a: TermBuilder, b: TermBuilder) = PlusInt ! a ! (NegateInt ! b)
 
-  val mult = Fix(ℤ =>: ℤ =>: ℤ) ! (lambda(Var("multRec", ℤ =>: ℤ =>: ℤ), Var("m", ℤ), Var("n", ℤ)) {
+  val mult = Fix.tapply(ℤ =>: ℤ =>: ℤ) ! (lambda(Var("multRec", ℤ =>: ℤ =>: ℤ), Var("m", ℤ), Var("n", ℤ)) {
     case Seq(multRec, m, n) =>
-      ifThenElse(Eq(ℤ) ! n ! 0, 0, PlusInt ! m ! (multRec ! m ! minus(n, 1)))
+      ifThenElse(Eq.tapply(ℤ) ! n ! 0, 0, PlusInt ! m ! (multRec ! m ! minus(n, 1)))
   })
 
-  val power = Fix(ℤ =>: ℤ =>: ℤ) ! (lambda(Var("powerRec", ℤ =>: ℤ =>: ℤ), Var("n", ℤ), Var("exp", ℤ)) {
+  val power = Fix.tapply(ℤ =>: ℤ =>: ℤ) ! (lambda(Var("powerRec", ℤ =>: ℤ =>: ℤ), Var("n", ℤ), Var("exp", ℤ)) {
     case Seq(powerRec, n, exp) =>
-      ifThenElse(Eq(ℤ) ! exp ! 0, 1, mult ! n ! (powerRec ! n ! minus(exp, 1)))
+      ifThenElse(Eq.tapply(ℤ) ! exp ! 0, 1, mult ! n ! (powerRec ! n ! minus(exp, 1)))
   })
 
   //XXX generalize this.

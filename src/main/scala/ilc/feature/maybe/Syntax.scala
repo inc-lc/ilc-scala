@@ -55,7 +55,7 @@ extends base.Syntax
             typeErrorNotTheSame("binding a maybe monad",
               s"$inputType =>: MaybeType(b)", wrongType)
         }
-        (Maybe ! Nope(outputType) ! fTerm ! tTerm)(context)
+        (Maybe ! Nope.tapply(outputType) ! fTerm ! tTerm)(context)
       }
   }
 }

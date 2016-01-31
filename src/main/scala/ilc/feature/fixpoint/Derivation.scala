@@ -14,7 +14,7 @@ trait Derivation extends functions.Derivation with Syntax with functions.Syntax 
       //derive(t): DT
       //derive(body) t: DT => DT
       //So fix(derive(body) t): DT, and DT must be the type parameter to fix.
-      App(Fix(deltaType(typ)), App(derive(body), t))
+      App(Fix.tapply(deltaType(typ)), App(derive(body), t))
 
     case _ => super.derive(t)
   }

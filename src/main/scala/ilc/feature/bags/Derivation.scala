@@ -52,7 +52,7 @@ extends base.Derivation
   {
     import BagSurgery._
     if (changes.isEmpty)
-      EmptyBag(valueType)
+      EmptyBag.tapply(valueType)
     else
       ???
   }

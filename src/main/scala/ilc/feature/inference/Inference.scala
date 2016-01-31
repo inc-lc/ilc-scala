@@ -223,7 +223,7 @@ trait Inference
     case TAbs(argumentName, argumentType, body)             => Abs(Var(argumentName, argumentType), typedTermToTerm(body))
     case TApp(t1, t2, _)                                    => App(typedTermToTerm(t1), typedTermToTerm(t2))
     case TMonomorphicConstant(term)                         => term
-    case TPolymorphicConstant(constant, typ, typeArguments) => constant(typeArguments: _*)
+    case TPolymorphicConstant(constant, typ, typeArguments) => constant.tapply(typeArguments: _*)
     case anythingElse                                       => sys error s"implement typedTermToTerm for $anythingElse"
   }
 

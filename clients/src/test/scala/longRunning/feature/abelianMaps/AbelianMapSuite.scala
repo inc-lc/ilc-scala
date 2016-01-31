@@ -27,7 +27,7 @@ class AbelianMapSuite extends FunSuite with Matchers {
 
   import Lang._
 
-  val myEmpty = EmptyMap(ℤ, ℤ)
+  val myEmpty = EmptyMap.tapply(ℤ, ℤ)
   val singleton = SingletonMap ! 3 ! 5
   val _G_+ = additiveGroupOnIntegers
   val sumValues = FoldByHom ! _G_+ ! _G_+ ! (flipConst % (ℤ, ℤ))
@@ -66,7 +66,7 @@ class AbelianMapSuite extends FunSuite with Matchers {
 
   test("LiftValueGroup") {
     val t: Term =
-      FoldByHom ! (LiftGroup(ℤ) ! _G_+) ! (LiftGroup(ℤ) ! _G_+) !
+      FoldByHom ! (LiftGroup.tapply(ℤ) ! _G_+) ! (LiftGroup.tapply(ℤ) ! _G_+) !
         lambda(ℤ, MapType(ℤ, ℤ)) {
           case Seq(key, innerMap) =>
             SingletonMap ! key ! (sumValues ! innerMap)

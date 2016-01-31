@@ -92,7 +92,7 @@ extends Syntax
       def specialize(argumentTypes: Type*): Term =
         argumentTypes.head match {
           case fType @ (v =>: BagType(u)) =>
-            FoldGroup(BagType(u), v) ! FreeAbelianGroup(u)
+            FoldGroup.tapply(BagType(u), v) ! FreeAbelianGroup.tapply(u)
         }
     }
 

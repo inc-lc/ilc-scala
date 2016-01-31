@@ -82,17 +82,17 @@ trait SyntaxSugar extends Syntax with functions.Syntax
       argumentTypes.head match {
         case tupleType@ProductType(leftType, rightType) =>
           if (i == 1)
-            Proj1(leftType, rightType)
+            Proj1.tapply(leftType, rightType)
           else if (i == 2)
             rightType match {
               case ProductType(carType, cdrType) =>
-                Proj1 composeWith Proj2(leftType, rightType)
+                Proj1 composeWith Proj2.tapply(leftType, rightType)
 
               case _ =>
-                Proj2(leftType, rightType)
+                Proj2.tapply(leftType, rightType)
             }
           else if (i > 2)
-            project(i - 1) composeWith Proj2(leftType, rightType)
+            project(i - 1) composeWith Proj2.tapply(leftType, rightType)
           else
             sys error s"cannot project onto the ${i}th element"
       }

@@ -24,7 +24,7 @@ extends Syntax
     def specialize(argumentTypes: Type*): Term = {
       val BagType(elemType) = argumentTypes.head
       lambda(BagType(elemType)) { bag =>
-        groupBasedChange ! FreeAbelianGroup(elemType) ! bag
+        groupBasedChange ! FreeAbelianGroup.tapply(elemType) ! bag
       }
     }
   }
@@ -34,16 +34,16 @@ extends Syntax
 
   override def deriveSubtree(s: Subtree): Term = s.toTerm match {
     case EmptyBag(valueType) =>
-      freeGroupBasedChange ! EmptyBag(valueType)
+      freeGroupBasedChange ! EmptyBag.tapply(valueType)
 
     case term @ Singleton(valueType) if s.hasStableArgument(0) =>
       lambdaDelta(term) { case Seq(v, dv) =>
-        freeGroupBasedChange ! EmptyBag(valueType)
+        freeGroupBasedChange ! EmptyBag.tapply(valueType)
       }
 
     case term @ Union(valueType) => {
       val (grp, rep) = changeTypes(valueType)
-      val freeAbelianGroup = FreeAbelianGroup(valueType)
+      val freeAbelianGroup = FreeAbelianGroup.tapply(valueType)
       lambdaDelta(term) { case Seq(bag1, dbag1, bag2, dbag2) =>
         // CAUTION:
         // DO NOT bind the replacement change in a let-binding.
@@ -73,7 +73,7 @@ extends Syntax
     case term @ Negate(valueType) =>
       lambdaDelta(term) { case Seq(bag, dbag) =>
         val (grp, rep) = changeTypes(valueType)
-        val freeAbelianGroup = FreeAbelianGroup(valueType)
+        val freeAbelianGroup = FreeAbelianGroup.tapply(valueType)
         val replacement =
           super.deriveSubtree(s) ! bag ! dbag
         case2(dbag,
@@ -92,7 +92,7 @@ extends Syntax
            s.hasStableArgument(1) =>
       lambdaDelta(term) { case Seq(_G, dG, f, df, bag, dbag) =>
         val (grp, rep) = changeTypes(valueType)
-        val freeAbelianGroup = FreeAbelianGroup(valueType)
+        val freeAbelianGroup = FreeAbelianGroup.tapply(valueType)
         val replacement =
           super.deriveSubtree(s) ! _G ! dG ! f ! df ! bag ! dbag
         ifEqualGroups((_G, dG)) {

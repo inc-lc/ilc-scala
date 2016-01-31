@@ -43,7 +43,7 @@ class WriteLambdaTerms extends FlatSpec with Matchers {
   val insert_Int =
     lambda(IntType) { n =>
       lambda(BagType(IntType)) { bag =>
-        Union(IntType) ! (Singleton(IntType) ! n) ! bag
+        Union.tapply(IntType) ! (Singleton.tapply(IntType) ! n) ! bag
       }
     }
 
@@ -83,12 +83,12 @@ class WriteLambdaTerms extends FlatSpec with Matchers {
     Abs(Var("pair", pairOfBags),
       App(
         App(
-          Union(IntType),
+          Union.tapply(IntType),
           App(
-            Proj1(bagOfInts, bagOfInts),
+            Proj1.tapply(bagOfInts, bagOfInts),
             Var("pair", pairOfBags))),
         App(
-          Proj2(bagOfInts, bagOfInts),
+          Proj2.tapply(bagOfInts, bagOfInts),
           Var("pair", pairOfBags))))
 
   // Writing full annotation by hand is tedious and error-prone.
@@ -204,7 +204,7 @@ class WriteLambdaTerms extends FlatSpec with Matchers {
 
   "Type applications on SingletonMap" should "be function calls" in {
     assert(
-      SingletonMap(IntType, IntType).getType
+      SingletonMap.tapply(IntType, IntType).getType
         ==
       (IntType =>: IntType =>: MapType(IntType, IntType))
     )

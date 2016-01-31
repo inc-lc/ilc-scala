@@ -23,14 +23,14 @@ extends base.Derivation
           lambda(SumType(deltaType(a), deltaType(b))) { surgery =>
             case4(surgery, oldSum,
               lambda(deltaType(a), a) { case Seq(dx, x) =>
-                Inj1(b) ! (updateTerm(a) ! dx ! x)
+                Inj1.tapply(b) ! (updateTerm(a) ! dx ! x)
               },
               // TODO: Introduce Error term and use it when
               // invalid changes are detected.
               lambda(deltaType(a), b) { case _ => oldSum }, // invalid
               lambda(deltaType(b), a) { case _ => oldSum }, // invalid
               lambda(deltaType(b), b) { case Seq(dy, y) =>
-                Inj2(a) ! (updateTerm(b) ! dy ! y)
+                Inj2.tapply(a) ! (updateTerm(b) ! dy ! y)
               })
           },
           lambda(tau) { replacement => replacement }
@@ -44,7 +44,7 @@ extends base.Derivation
   override def diffTerm(tau: Type): Term = tau match {
     case SumType(a, b) =>
       lambda(tau, tau) { case Seq(newSum, oldSum) =>
-        Inj2(SumType(deltaType(a), deltaType(b))) ! newSum
+        Inj2.tapply(SumType(deltaType(a), deltaType(b))) ! newSum
       }
 
     case _ =>
@@ -54,14 +54,14 @@ extends base.Derivation
   override def derive(t: Term): Term = t match {
     case Inj1(leftType, rightType) =>
       lambda(leftType, deltaType(leftType)) { case Seq(x, dx) =>
-        Inj1(SumType(leftType, rightType)) !
-          (Inj1(deltaType(rightType)) ! dx)
+        Inj1.tapply(SumType(leftType, rightType)) !
+          (Inj1.tapply(deltaType(rightType)) ! dx)
       }
 
     case Inj2(leftType, rightType) =>
       lambda(rightType, deltaType(rightType)) { case Seq(y, dy) =>
-        Inj1(SumType(leftType, rightType)) !
-          (Inj1(deltaType(leftType)) ! dy)
+        Inj1.tapply(SumType(leftType, rightType)) !
+          (Inj1.tapply(deltaType(leftType)) ! dy)
       }
 
     // Either has a slow derivative

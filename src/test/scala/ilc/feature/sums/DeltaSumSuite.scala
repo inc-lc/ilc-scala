@@ -19,14 +19,14 @@ extends FunSuite
   }
 
   //XXX abstract more
-  val oldSum = Inj1(ℤ) ! 5
-  val swapped = Inj2(ℤ) ! 7
-  val operated = Inj1(ℤ) ! 9
+  val oldSum = Inj1.tapply(ℤ) ! 5
+  val swapped = Inj2.tapply(ℤ) ! 7
+  val operated = Inj1.tapply(ℤ) ! 9
 
-  val replace = Inj2(deltaType(ℤ) ⊎ deltaType(ℤ))
+  val replace = Inj2.tapply(deltaType(ℤ) ⊎ deltaType(ℤ))
 
   val replacement = replace ! swapped
-  val surgery = Inj1(ℤ ⊎ ℤ) ! (Inj1(deltaType(ℤ)) ! (replacementChange ! 9))
+  val surgery = Inj1.tapply(ℤ ⊎ ℤ) ! (Inj1.tapply(deltaType(ℤ)) ! (replacementChange ! 9))
 
   test("updateTerm behaves as expected") {
     assert(eval(ChangeUpdate ! replacement ! oldSum) === eval(swapped))

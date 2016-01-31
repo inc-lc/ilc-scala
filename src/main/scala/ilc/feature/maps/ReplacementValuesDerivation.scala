@@ -49,7 +49,7 @@ extends base.Derivation
     import MapSurgery._
     def loop(changes: Seq[Change]): Term =
       if (changes.isEmpty)
-        EmptyMap(keyType, surgeryValueType(valueType))
+        EmptyMap.tapply(keyType, surgeryValueType(valueType))
       else {
         val (surgeryKey, surgeryValue) = mkSurgeryFrom(changes.head)
         Update ! surgeryKey ! surgeryValue ! loop(changes.tail)
@@ -57,11 +57,11 @@ extends base.Derivation
 
     def mkSurgeryFrom(change: Change): (Term, Term) = {
       val SumType(indelType, modType) = surgeryValueType(valueType)
-      val indel = Inj1(modType)
-      val mod   = Inj2(indelType)
+      val indel = Inj1.tapply(modType)
+      val mod   = Inj2.tapply(indelType)
       change match {
         case DELETE(key) =>
-          (key, indel ! Nope(valueType))
+          (key, indel ! Nope.tapply(valueType))
 
         case INSERT(key, value) =>
           (key, indel ! (Just ! value))
@@ -72,7 +72,7 @@ extends base.Derivation
     }
 
     def wrap(surgicalChanges: Term): Term =
-      Inj1(MapType(keyType, valueType)) ! surgicalChanges
+      Inj1.tapply(MapType(keyType, valueType)) ! surgicalChanges
 
     wrap(loop(changes))
   }
@@ -80,7 +80,7 @@ extends base.Derivation
   def mkMapReplacement(newMapBuilder: TermBuilder): TermBuilder =
     context => {
       val newMap = newMapBuilder(context).toTerm
-      (Inj2(surgeryMapType(newMap.getType)) ! newMap)(context)
+      (Inj2.tapply(surgeryMapType(newMap.getType)) ! newMap)(context)
     }
 
   override def updateTerm(tau: Type): Term = tau match {

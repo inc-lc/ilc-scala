@@ -35,22 +35,22 @@ extends CorrectnessAssertion
   test("[s ⊕ (t ⊝ s) == t] holds for maybe, sums, numbers and maps") {
     def applyDiff(s: Term, t: Term): Value =
       eval(ChangeUpdate ! (Diff ! t ! s) ! s)
-    val ff = Nope(ℕ)
+    val ff = Nope.tapply(ℕ)
     val tt = Just ! 0
-    val ll = Inj1(ℕ) ! 0
-    val rr = Inj2(ℕ) ! 0
+    val ll = Inj1.tapply(ℕ) ! 0
+    val rr = Inj2.tapply(ℕ) ! 0
     List.apply[ChangingTerms](
       ff ↦ ff, ff ↦ tt, tt ↦ ff, tt ↦ tt,
       ll ↦ ll, ll ↦ rr, rr ↦ ll, rr ↦ rr,
       392 ↦ 1522,
       (sum ! oldMap) ↦ (sum ! newMap),
       oldMap ↦ newMap,
-      mapLiteral(oldMap -> EmptyMap(ℕ, ℕ),
+      mapLiteral(oldMap -> EmptyMap.tapply(ℕ, ℕ),
                  newMap -> oldMap,
                  mapLiteral(99 -> 217) -> mapLiteral(2012 -> 56)) ↦
-        mapLiteral(oldMap -> EmptyMap(ℕ, ℕ),
+        mapLiteral(oldMap -> EmptyMap.tapply(ℕ, ℕ),
                    newMap -> newMap,
-                   EmptyMap(ℕ, ℕ) -> newMap)
+                   EmptyMap.tapply(ℕ, ℕ) -> newMap)
     ).foreach { case ChangingTerms(oldTerm, newTerm) =>
       assert(applyDiff(oldTerm, newTerm) === eval(newTerm))
     }
@@ -61,7 +61,7 @@ extends CorrectnessAssertion
       assert(eval(ChangeUpdate ! derive(t) ! t) === eval(t))
 
     List.apply[Term](
-      Nat(5), EmptyMap(ℕ, ℕ), Inj1(ℕ) ! EmptyMap(ℕ, ℕ), Inj2(ℕ) ! 5
+      Nat(5), EmptyMap.tapply(ℕ, ℕ), Inj1.tapply(ℕ) ! EmptyMap.tapply(ℕ, ℕ), Inj2.tapply(ℕ) ! 5
     ).foreach(assertNil)
   }
 
@@ -76,7 +76,7 @@ extends CorrectnessAssertion
     val args2 = List(5 ↦ 1997, (PlusNat ! 25) ↦ (PlusNat ! 100))
     val args3 = args2 ++ List(40 ↦ 5)
 
-    assertCorrect(FoldNat(ℕ), args3: _*)
+    assertCorrect(FoldNat.tapply(ℕ), args3: _*)
 
     val foldNatWithFixedIterations: Term =
       lambda(ℕ, ℕ =>: ℕ) { case Seq(z, f) => FoldNat ! z ! f ! 25 }
@@ -100,7 +100,7 @@ extends CorrectnessAssertion
       oldKey <- keyCases
       newKey <- keyCases
     } {
-      assertCorrect(Update(ℕ, ℕ), oldKey ↦ newKey, 10 ↦ 18, oldMap ↦ newMap)
+      assertCorrect(Update.tapply(ℕ, ℕ), oldKey ↦ newKey, 10 ↦ 18, oldMap ↦ newMap)
     }
   }
 
@@ -111,13 +111,13 @@ extends CorrectnessAssertion
 
     // stable key
     List(1, 3, 5, 7).foreach { i =>
-      assertCorrect(Delete(ℕ, ℕ) ! i, oldMap ↦ newMap)
+      assertCorrect(Delete.tapply(ℕ, ℕ) ! i, oldMap ↦ newMap)
     }
 
     // changing everything
-    assertCorrect(Delete(ℕ, ℕ), 5 ↦ 5, oldMap ↦ oldMap)
-    assertCorrect(Delete(ℕ, ℕ), 5 ↦ 5, oldMap ↦ newMap)
-    assertCorrect(Delete(ℕ, ℕ), 5 ↦ 7, oldMap ↦ newMap)
+    assertCorrect(Delete.tapply(ℕ, ℕ), 5 ↦ 5, oldMap ↦ oldMap)
+    assertCorrect(Delete.tapply(ℕ, ℕ), 5 ↦ 5, oldMap ↦ newMap)
+    assertCorrect(Delete.tapply(ℕ, ℕ), 5 ↦ 7, oldMap ↦ newMap)
   }
 
   test("the derivative of Fold is correct") {
@@ -130,7 +130,7 @@ extends CorrectnessAssertion
     assertCorrect(Fold ! plusValue, 0 ↦ 100, oldMap ↦ newMap)
 
     // changing everything
-    assertCorrect(Fold(ℕ, ℕ, ℕ),
+    assertCorrect(Fold.tapply(ℕ, ℕ, ℕ),
       plusValue ↦ lambda(ℕ, ℕ, ℕ) {
         case Seq(k, x, y) => PlusNat ! (PlusNat ! 2000 ! x) ! y
       },

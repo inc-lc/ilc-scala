@@ -54,17 +54,17 @@ class InferenceSuite extends InferenceSuiteHelper {
   }
 
   it should "be symmetric" in {
-    assert(unification(Set(Constraint(t1, =>:(t2, t3)))) === unification(Set(Constraint(=>:(t2, t3), t1))))
+    assert(unification(Set(Constraint(t1, t2 =>: t3))) === unification(Set(Constraint(t2 =>: t3, t1))))
   }
 
   it should "pass the Wand example" in {
     val ex = Set(
-      (t0, =>:(t1, t2)),
-      (t2, =>:(t3, t4)),
-      (t4, =>:(t5, t6)),
-      (t1, =>:(t8, =>:(t7, t6))),
+      (t0, t1 =>: t2),
+      (t2, t3 =>: t4),
+      (t4, t5 =>: t6),
+      (t1, =>:(t8, t7 =>: t6)),
       (t8, t5),
-      (=>:(t9, t7), t3),
+      (t9 =>: t7, t3),
       (t9, t5)) map Function.tupled(Constraint(_, _))
     val subst = unification(ex)
     assert(substituteInType(subst)(t0) === ((t5 =>: t7 =>: t6) =>: (t5 =>: t7) =>: (t5 =>: t6)))
@@ -72,7 +72,7 @@ class InferenceSuite extends InferenceSuiteHelper {
 
   it should "fail for inputs where no substitution is possible" in {
     intercept[UnificationFailure] {
-      unification(Set(Constraint(t0, =>:(t1, t2)), Constraint(t0, t1)))
+      unification(Set(Constraint(t0, t1 =>: t2), Constraint(t0, t1)))
     }
   }
 

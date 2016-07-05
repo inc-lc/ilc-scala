@@ -62,7 +62,7 @@ class InferenceSuite extends InferenceSuiteHelper {
       (t0, t1 =>: t2),
       (t2, t3 =>: t4),
       (t4, t5 =>: t6),
-      (t1, =>:(t8, t7 =>: t6)),
+      (t1, t8 =>: t7 =>: t6),
       (t8, t5),
       (t9 =>: t7, t3),
       (t9, t5)) map Function.tupled(Constraint(_, _))

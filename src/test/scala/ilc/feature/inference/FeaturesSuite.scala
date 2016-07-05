@@ -167,7 +167,7 @@ class FeaturesSuite
     val (typedTerm, constraints) = collectConstraints(id)
     val solved = unification(constraints)
     val finalTerm = substitute(solved, typedTerm)
-    assert(finalTerm.getType === =>:(IntType, IntType))
+    assert(finalTerm.getType === (IntType =>: IntType))
   }
 
   it should "also work when only applied to the body" in {
@@ -175,7 +175,7 @@ class FeaturesSuite
     val (typedTerm, constraints) = collectConstraints(id)
     val solved = unification(constraints)
     val finalTerm = substitute(solved, typedTerm)
-    assert(finalTerm.getType === =>:(IntType, IntType))
+    assert(finalTerm.getType === (IntType =>: IntType))
   }
 
   "Type annotation" should "result in the same type" in {
@@ -183,7 +183,7 @@ class FeaturesSuite
     val (typedTerm, constraints) = collectConstraintsForTest(id)
     val solved = unification(constraints)
     val finalTerm = substitute(solved, typedTerm)
-    assert(finalTerm.getType === =>:(IntType, IntType))
+    assert(finalTerm.getType === (IntType =>: IntType))
   }
 
   "Type inference for bags" should "produce the same results as the old inference (see MapSuccExample)" in {

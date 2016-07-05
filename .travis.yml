@@ -1,7 +1,5 @@
 language: scala
 # Keep in sync by hand with build.sbt.
-scala:
-  - 2.11.7
 jdk:
   - openjdk7
 sudo: false
@@ -13,9 +11,9 @@ cache:
     - $HOME/.sbt/launchers
     - $HOME/.ivy2/cache
 install:
-  - travis_retry sbt ++$TRAVIS_SCALA_VERSION update
+  - travis_retry sbt update
 script:
-  - sbt ++$TRAVIS_SCALA_VERSION test "project clients" "testOnly ilc.*" "project bigClients" "testOnly ilc.*" "project icfp2014" test
+  - sbt test "project clients" "testOnly ilc.*" "project bigClients" "testOnly ilc.*" "project icfp2014" test
 
   # Tricks to avoid unnecessary cache updates, also from
   # http://www.scala-sbt.org/0.13/docs/Travis-CI-with-sbt.html

@@ -6,8 +6,7 @@ lazy val bigClients = project in file("bigClients") dependsOn (clients % "test->
 
 lazy val icfp2014 = project in file("icfp2014") dependsOn (ilc % "test->test;compile->test")
 
-// Keep in sync by hand with .travis.yml
-scalaVersion in ThisBuild := "2.11.7"
+scalaVersion in ThisBuild := "2.11.8"
 
 scalacOptions in ThisBuild := Seq("-deprecation", "-feature", "-unchecked", "-Xlint")
 
